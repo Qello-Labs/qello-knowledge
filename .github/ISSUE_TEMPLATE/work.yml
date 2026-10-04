@@ -1,0 +1,135 @@
+name: Qello Knowledge 작업
+description: ClickUp 작업에 RAG 구현·조사 산출물과 검증 증거를 연결합니다.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        제목은 [기능명세서 ID] 이번 주에 끝낼 산출물로 작성합니다.
+        기능명세서는 요구 동작, ClickUp 스프린트 작업은 이번 주 검증할 산출물을 관리합니다.
+        담당자·기한·우선순위·상태는 ClickUp에서 합의해 관리하고 팀 보드에 작업을 복제하지 않습니다.
+        명세가 없는 도구·기술부채 작업은 해당 없음과 사유를 적습니다.
+        입력한 ID·URL의 일치와 링크 유효성은 리뷰에서 확인합니다.
+
+  - type: input
+    id: clickup_task_id
+    attributes:
+      label: ClickUp 작업 ID
+      description: 작업 URL에 있는 실제 task ID입니다. 목록 ID나 팀 스프린트 ID가 아닙니다.
+      placeholder: "<CLICKUP-TASK-ID>"
+    validations:
+      required: true
+
+  - type: input
+    id: clickup_task_url
+    attributes:
+      label: ClickUp 작업 URL
+      placeholder: "https://app.clickup.com/t/<CLICKUP-TASK-ID>"
+    validations:
+      required: true
+
+  - type: input
+    id: feature_spec_id
+    attributes:
+      label: 기능명세서 ID
+      placeholder: "QELLO-AUTH-001 또는 해당 없음: 사유"
+    validations:
+      required: true
+
+  - type: input
+    id: feature_spec_url
+    attributes:
+      label: 기능명세서 링크
+      description: 원본 명세 URL을 입력합니다. 명세가 없으면 해당 없음과 사유를 씁니다.
+    validations:
+      required: true
+
+  - type: input
+    id: sprint_id
+    attributes:
+      label: 팀 스프린트 ID
+      description: 사람이 읽는 팀 주기입니다. ClickUp의 task/list ID와 구분합니다.
+      placeholder: "QELLO-SYYYY-Www"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: work_type
+    attributes:
+      label: 작업 종류
+      description: ClickUp 작업 종류 태그와 맞춥니다. 파트·상태·우선순위는 태그로 추가하지 않습니다.
+      options:
+        - feature
+        - bug
+        - tech-debt
+        - research
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverable
+    attributes:
+      label: 이번 주 산출물·구현 범위
+      description: 관찰할 산출물과 필요한 이유, 제외 범위를 작성합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: 완료 조건·검증 방법
+      description: 관찰할 결과 1~3개와 검증 방법을 작성합니다. PR 병합만으로 완료하지 않습니다.
+      placeholder: |
+        - [ ] 관찰할 결과 1 — 검증 방법:
+        - [ ] 관찰할 결과 2 — 검증 방법:
+    validations:
+      required: true
+
+  - type: textarea
+    id: rag_impact
+    attributes:
+      label: 자료·모델·저장·운영 영향
+      description: 해당하는 변경만 작성합니다. 영향이 없으면 해당 없음으로 남깁니다.
+      value: |
+        자료원·접근 범위: 해당 없음
+        임베딩·생성 모델: 해당 없음
+        데이터 스키마·색인: 해당 없음
+        외부 호출·운영비: 해당 없음
+    validations:
+      required: true
+
+  - type: textarea
+    id: related_links
+    attributes:
+      label: 관련 작업·화면·PR
+      description: Android·Backend가 연관되면 별도 작업 URL과 같은 명세 ID를 연결합니다. Figma는 화면 작업만 연결합니다.
+      value: |
+        관련 Android·Backend 작업: 해당 없음 또는 ClickUp URL
+        Figma: 해당 없음 또는 링크
+        GitHub PR: 미정
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification_evidence
+    attributes:
+      label: 검증 결과·증빙
+      description: 실행 후 명령·환경·실제 결과와 테스트 또는 시연 링크를 갱신합니다. 후보·측정·사람 검토 결과를 구분합니다.
+      value: 미실행
+    validations:
+      required: true
+
+  - type: textarea
+    id: blockers
+    attributes:
+      label: 의존성·막힘
+      value: 해당 없음
+
+  - type: checkboxes
+    id: linkage_review
+    attributes:
+      label: 연결·범위 확인
+      options:
+        - label: 주간 계획에서 합의한 ClickUp 작업이며 팀 전체 보드에 중복 작업을 만들지 않았습니다.
+          required: true
+        - label: 완료 조건에 관찰 가능한 결과와 검증 방법을 기록했습니다.
+          required: true
