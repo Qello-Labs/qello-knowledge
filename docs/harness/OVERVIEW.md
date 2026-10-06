@@ -13,12 +13,13 @@
 | --- | --- | --- | --- |
 | 업무 게이트 | ClickUp 작업, 기능명세 ID, `TASK.md`, 작업 브랜치 | 가이드 | 문서 규칙 |
 | 에이전트 계약 | `AGENTS.md`, `CLAUDE.md`, `.claude/skills/*` | 가이드 | 문서 규칙 |
-| 증거 양식 | `templates/*`, PR 템플릿, Issue 폼 | 가이드 | 템플릿 |
-| 기계 검사 | `scripts/preflight.py`, `.claude/settings.json` deny | 센서 | 로컬에서 수동 실행 |
+| 증거 양식 | `templates/*`, PR 템플릿, Issue 폼(명세 드롭다운) | 가이드 | 템플릿 |
+| 기계 검사 | `scripts/preflight.py`, `scripts/roadmap.py`, `.claude/settings.json` deny | 센서 | 로컬 실행 |
 | Claude Code 훅 | `.claude/hooks/speckit_spec_id.py` — Spec Kit 명세 디렉터리를 `specs/<명세 ID>-<이름>`으로 고정 | 센서 | `/speckit-specify` 실행 시 자동 |
-| 강제 장치 | CI, 브랜치 보호 규칙 | 센서 | 없음 |
+| CI | `.github/workflows/harness.yml` — 비밀값 검사, Issue 폼과 로드맵 백로그 대조 | 센서 | PR·`main` push마다 자동 |
+| 강제 장치 | 브랜치 보호 규칙(CI 필수 검사 지정) | 센서 | 없음 |
 
-강제 장치가 없으므로 지금은 모든 규칙이 사람과 에이전트의 자발적 준수에 기댄다. 아래 "다음 단계"가 이 빈칸을 채운다.
+CI는 실패를 보여 줄 뿐 병합을 막지 않는다. `main` 브랜치 보호 규칙에서 CI를 필수 검사로 지정해야 강제 장치가 된다.
 
 ## 출처
 
@@ -61,7 +62,7 @@
 
 가이드를 늘리기보다 이미 있는 규칙을 센서로 바꾸는 순서다.
 
-1. GitHub Actions에서 `python scripts/preflight.py` 실행, `main` 브랜치 보호 규칙 설정
+1. `main` 브랜치 보호 규칙에서 Harness CI를 필수 검사로 지정(저장소 관리자 설정)
 2. `TASK.md` Ownership 경로와 실제 변경 파일을 비교하는 검사
 3. pytest 기준 test-plan / test-run Skill
 4. 평가 실행 Skill과 인덱스 버전 활성화 게이트(평가 통과 시에만 새 버전 활성화)
