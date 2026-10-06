@@ -6,7 +6,7 @@
 
 ## Work gate
 
-- ClickUp 작업 ID / URL: 확인 필요(ClickUp 작업 생성 후 기입)
+- ClickUp 작업 ID / URL: 해당 없음: 초기 세팅 단계 예외. 진행 상태는 WBS 보드 0.2에서 관리
 - 기능명세서 ID / 링크: 해당 없음: Phase 0 조사 작업(WBS 0.2)이라 명세 백로그 대상이 아님. 작업 정의는 `docs/sdd/roadmap.md` 3절
 - 팀 스프린트 ID: `QELLO-S2026-W41`
 - GitHub Issue: `#3`
@@ -69,3 +69,4 @@ git diff --check
 ## Decisions
 
 - 2026-10-06 사용자 결정: GitHub Issue는 ClickUp 작업 ID·URL을 '확인 필요'로 두고 먼저 만든다. 값이 정해지면 Issue #3과 이 파일을 함께 고친다.
+- 2026-10-06 사용자 결정: PR #1·#2처럼 초기 세팅 단계 예외로 ClickUp 작업 없이 진행한다. 진행 상태는 WBS 보드 0.2에서 관리한다.
