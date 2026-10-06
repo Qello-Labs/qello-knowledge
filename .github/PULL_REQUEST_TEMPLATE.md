@@ -1,8 +1,8 @@
 ## ClickUp·기능명세서 연결
 
-- ClickUp 작업 ID:
+- ClickUp 작업 ID: CU-<!-- 작업 URL 끝의 ID. 예: CU-86c1ab2xy. ClickUp GitHub 연동이 이 값으로 PR을 작업에 연결합니다. -->
 - ClickUp 작업 URL:
-- 기능명세서 ID / 링크:
+- 기능명세서 ID / 링크: <!-- docs/sdd/roadmap.md 4절 명세 백로그의 ID. 예: QK-ING-002 / specs/QK-ING-002-…/spec.md -->
 - 팀 스프린트 ID: <!-- QELLO-SYYYY-Www. ClickUp 작업·목록 ID와 구분합니다. -->
 - 이번 주 산출물:
 - 관련 Android·Backend 작업: 해당 없음 또는 ClickUp URL

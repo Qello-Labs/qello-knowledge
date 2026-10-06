@@ -15,42 +15,28 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-ROADMAP = ROOT / "docs" / "sdd" / "roadmap.md"
 SPECS = ROOT / "specs"
 SKILL = "speckit-specify"
 
-SPEC_ID = r"QK-[A-Z]{3}-\d{3}"
+# 백로그 해석 규칙은 Issue 폼 생성·PR 검증과 같아야 하므로 scripts/roadmap.py를 쓴다.
+sys.path.insert(0, str(ROOT / "scripts"))
+try:
+    from roadmap import SPEC_ID, load_backlog
+except ImportError:
+    SPEC_ID = r"QK-[A-Z]{3}-\d{3}"
+    load_backlog = None
+
 LEADING_ID = re.compile(rf"^\[?({SPEC_ID})\]?(?=\s|$)")
 DIRECTORY_ARG = re.compile(r"SPECIFY_FEATURE_DIRECTORY=[\"']?([^\s\"']+)")
 DIRECTORY_NAME = re.compile(rf"^({SPEC_ID})-[a-z0-9]+(?:-[a-z0-9]+)*$")
-TABLE_SEPARATOR = re.compile(r"^\s*\|\s*:?-{3,}")
 USAGE = "사용법: /speckit-specify QK-ING-002 <기능 설명>"
 
 
 def backlog() -> dict[str, str]:
-    """로드맵에서 첫 열 머리글이 `ID`인 표(명세 백로그)를 {ID: 제목}으로 읽는다.
-
-    백로그 표를 찾지 못하면 빈 dict를 돌려주고, 이때는 ID 형식만 검사한다.
-    """
-    if not ROADMAP.is_file():
+    """명세 백로그를 {ID: 제목}으로 읽는다. 읽지 못하면 빈 dict이고, 이때는 ID 형식만 검사한다."""
+    if load_backlog is None:
         return {}
-    lines = ROADMAP.read_text(encoding="utf-8").splitlines()
-    items: dict[str, str] = {}
-    in_backlog = False
-    title_column = 1
-    for index, line in enumerate(lines):
-        if not line.lstrip().startswith("|"):
-            in_backlog = False
-            continue
-        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        next_line = lines[index + 1] if index + 1 < len(lines) else ""
-        if TABLE_SEPARATOR.match(next_line):
-            in_backlog = cells[0] == "ID"
-            title_column = cells.index("제목") if "제목" in cells else 1
-            continue
-        if in_backlog and re.fullmatch(SPEC_ID, cells[0]):
-            items[cells[0]] = cells[title_column] if title_column < len(cells) else ""
-    return items
+    return {spec_id: item.title for spec_id, item in load_backlog().items()}
 
 
 def existing_dirs(spec_id: str) -> list[Path]:

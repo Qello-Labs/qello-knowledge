@@ -1,0 +1,28 @@
+name: Harness
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Scan files for secrets without printing values
+        run: python scripts/preflight.py
+
+      - name: Check issue form matches roadmap backlog
+        run: python scripts/sync_issue_form.py --check
