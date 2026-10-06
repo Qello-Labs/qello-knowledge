@@ -1,0 +1,32 @@
+# 비밀값·로컬 환경
+.env
+.env.*
+!.env.example
+secrets/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Claude Code 개인 설정. 팀 공용 .claude/settings.json과 .claude/skills/는 커밋한다.
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Spec Kit 로컬 상태(.specify/feature.json 등)는 .specify/.gitignore가 관리한다.
+
+# 에디터·OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 로그
+*.log
