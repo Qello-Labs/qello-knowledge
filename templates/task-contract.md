@@ -6,8 +6,8 @@
 
 ## Work gate
 
-- ClickUp 작업 ID / URL:
-- 기능명세서 ID / 링크: <!-- 명세가 없으면 '해당 없음: 사유' -->
+- ClickUp 작업 ID / URL: `CU-<task-id>` / <!-- 작업 URL 끝의 ID 앞에 CU-를 붙인다 -->
+- 기능명세서 ID / 링크: <!-- docs/sdd/roadmap.md 4절 백로그의 ID(예: QK-ING-002). 명세가 없으면 '해당 없음: 사유' -->
 - 팀 스프린트 ID: `QELLO-SYYYY-Www`
 - GitHub Issue: 해당 없음 또는 `#<번호>`
 - Branch:

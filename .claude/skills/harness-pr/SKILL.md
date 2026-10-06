@@ -5,7 +5,7 @@ description: 로컬 검증을 실행하고 PR 옵션을 질문으로 정한 뒤,
 
 # Pull Request
 
-브랜치 작업을 검증 → 초안 → push → PR 생성 → ClickUp 역링크 안내 순으로 마무리한다.
+브랜치 작업을 검증 → 초안 → push → PR 생성 → ClickUp 연결 확인 순으로 마무리한다.
 `AGENTS.md` 5절(커밋과 PR)과 7절(완료 전 검증), `docs/github-workflow.md`의 실행 절차다.
 
 참조: `references/writing-style.md` — PR 본문 문체 규칙과 금지 표현
@@ -25,9 +25,17 @@ gh pr status
 - 이미 열린 PR이 있으면 새로 만들지 않고 "push만 하고 기존 PR 갱신"을 제안한다.
 - 미커밋 변경이 있으면 알리고 `/harness-commit`으로 먼저 커밋할지 묻는다. 임의로 커밋하지 않는다.
 - 커밋이 하나도 없으면 중단한다.
-- `TASK.md`에서 ClickUp 작업 URL, 기능명세서 ID, 팀 스프린트 ID, 완료 조건을 읽는다.
-  비어 있으면 추측하지 않고 사용자에게 묻는다.
-- 브랜치에 `gh-<번호>`가 있으면 `gh issue view <번호> --json title,body,url`로 Issue를 함께 읽는다.
+- 브랜치에 `gh-<번호>`가 있으면 Issue를 읽고 PR 본문의 원본으로 쓴다.
+
+  ```bash
+  gh issue view <번호> --json title,body,url
+  ```
+
+  - `### 기능명세서` 아래 값의 첫 단어가 명세 ID다(예: `QK-ING-002 (WBS 1.5) …`). `해당 없음`이면
+    `### 명세가 없는 사유`를 함께 읽는다.
+  - `### ClickUp 작업 URL` 아래 값의 마지막 경로가 ClickUp 작업 ID다(`https://app.clickup.com/t/<task-id>`).
+- Issue가 없거나 값이 비어 있으면 `TASK.md`에서 ClickUp 작업, 기능명세서 ID, 팀 스프린트 ID, 완료 조건을 읽는다.
+  어디에도 없으면 추측하지 않고 사용자에게 묻는다.
 
 ## 0.5 최신화
 
@@ -45,6 +53,8 @@ PR을 만들기 전에 반드시 실행한다.
 
 ```bash
 python scripts/preflight.py
+python scripts/sync_issue_form.py --check
+python scripts/roadmap.py <명세 ID>   # 명세 ID가 있을 때. 로드맵 백로그에 없으면 실패한다
 git diff --check origin/main...HEAD
 ```
 
@@ -73,14 +83,18 @@ git diff --check origin/main...HEAD
 
 **본문** — `.github/PULL_REQUEST_TEMPLATE.md`의 구조를 그대로 채운다.
 
-- ClickUp·기능명세서 연결: `TASK.md`의 값을 옮긴다. 명세가 없으면 `해당 없음: 사유`를 쓴다.
+- ClickUp·기능명세서 연결: 0단계에서 읽은 값을 옮긴다.
+  - ClickUp 작업 ID는 `CU-<task-id>`로 쓴다. `#<task-id>`는 숫자만으로 된 ID일 때 GitHub Issue 참조로
+    링크되므로 쓰지 않는다.
+  - 기능명세서 ID에는 명세 ID와 `specs/<명세 ID>-…/spec.md`(있으면) 또는 로드맵 링크를 쓴다.
+    명세가 없으면 `해당 없음: 사유`를 쓴다.
 - GitHub Issue: 있으면 `Closes #<번호>`, 없으면 그 행을 지우고 해당 없음으로 쓴다.
 - 변경 내용: 커밋 단위로 무엇을 왜 했는지 쓴다. 자료원, 모델, 데이터 스키마, 외부 호출 비용 영향을 빠뜨리지 않는다.
 - 완료 조건·검증 증빙: `TASK.md` 완료 조건 1~3개를 옮기고 결과를 통과 / 실패 / 미실행으로 구분한다.
 - 검증 실행: 1단계에서 실행한 명령과 결과를 그대로 쓴다. 품질·시간·비용 수치는 데이터 버전, 질문 세트, 모델,
   표본 수, 측정 조건과 함께 쓴다.
 - 위험·복구: 인덱스 버전을 바꿨다면 이전 버전으로 되돌리는 방법을 쓴다.
-- 리뷰 확인 체크박스는 **실제로 한 것만** 체크한다. ClickUp 역링크 항목은 5단계 이후에만 체크할 수 있으므로
+- 리뷰 확인 체크박스는 **실제로 한 것만** 체크한다. ClickUp 연결 항목은 5단계 이후에만 체크할 수 있으므로
   초안에서는 비워 둔다.
 
 본문을 쓰기 전에 `references/writing-style.md`를 읽고, 사용자에게 보여주기 전에 그 문서의 점검 목록을 통과시킨다.
@@ -106,14 +120,21 @@ gh pr create --base main --title "<제목>" --body-file <초안파일>
 
 초안 파일은 scratchpad에 쓰고 저장소에 남기지 않는다.
 
-## 5. ClickUp 역링크
+## 5. ClickUp 연결 확인
 
-`docs/github-workflow.md` 5단계에 따라 ClickUp 작업 설명에 PR URL을 붙여야 한다. 이 Skill은 ClickUp에 쓰지 않는다.
-PR URL을 보여주고 사용자에게 붙여 달라고 요청한다. 사용자가 확인하면 PR 본문의 해당 체크박스를 갱신할지 묻는다.
+ClickUp GitHub 연동이 켜져 있으면 PR 본문의 `CU-<task-id>`로 작업이 연결되고 PR에 ClickUp 댓글이 달린다.
+
+```bash
+gh pr view --comments
+```
+
+댓글이 없거나 연동을 쓰지 않으면 `docs/github-workflow.md`대로 PR URL을 보여 주고, 사용자에게 ClickUp 작업
+설명에 붙여 달라고 요청한다. 이 Skill은 ClickUp에 쓰지 않는다. 연결이 확인되면 PR 본문의 해당 체크박스를
+갱신할지 묻는다.
 
 ## 6. 완료 보고
 
-PR URL, 제목, Draft 여부, 리뷰어, 실행한 검증과 결과, CI 상태, ClickUp 역링크 여부를 보고한다.
+PR URL, 제목, Draft 여부, 리뷰어, 실행한 검증과 결과, CI 상태, ClickUp 연결 여부를 보고한다.
 실행하지 못한 검증은 이유와 남은 위험을 함께 적는다. 리뷰가 필요하면 `/harness-review`를 제안한다.
 머지와 ClickUp 완료 처리는 사람이 한다.
 
