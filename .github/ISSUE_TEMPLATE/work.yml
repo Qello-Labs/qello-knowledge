@@ -4,42 +4,72 @@ body:
   - type: markdown
     attributes:
       value: |
-        제목은 [기능명세서 ID] 이번 주에 끝낼 산출물로 작성합니다.
+        제목은 [기능명세서 ID] 이번 주에 끝낼 산출물로 작성합니다. 예: [QK-ING-002] GitHub 저장소 파일 수집기
         기능명세서는 요구 동작, ClickUp 스프린트 작업은 이번 주 검증할 산출물을 관리합니다.
         담당자·기한·우선순위·상태는 ClickUp에서 합의해 관리하고 팀 보드에 작업을 복제하지 않습니다.
-        명세가 없는 도구·기술부채 작업은 해당 없음과 사유를 적습니다.
-        입력한 ID·URL의 일치와 링크 유효성은 리뷰에서 확인합니다.
+        명세가 없는 도구·기술부채 작업은 기능명세서에서 '해당 없음'을 고르고 사유를 적습니다.
+        ClickUp 작업 URL의 유효성은 리뷰에서 확인합니다.
 
-  - type: input
-    id: clickup_task_id
+  - type: dropdown
+    id: feature_spec
     attributes:
-      label: ClickUp 작업 ID
-      description: 작업 URL에 있는 실제 task ID입니다. 목록 ID나 팀 스프린트 ID가 아닙니다.
-      placeholder: "<CLICKUP-TASK-ID>"
+      label: 기능명세서
+      description: docs/sdd/roadmap.md 4절 명세 백로그입니다. 목록은 scripts/sync_issue_form.py가 만들므로 직접 고치지 않습니다.
+      options:
+        # BEGIN roadmap-backlog — python scripts/sync_issue_form.py가 다시 쓴다
+        - "QK-FND-001 (WBS 1.1) 프로젝트 골격·설정 로딩·docker compose·CI(테스트·린트·비밀값 검사)"
+        - "QK-STO-001 (WBS 1.2) 저장 스키마·마이그레이션·검색 SQL"
+        - "QK-ING-001 (WBS 1.3) 자료원 어댑터 계약·자료원 설정·호출 한도·재시도"
+        - "QK-SEC-001 (WBS 1.4) 색인 제외 경로·비밀값 차단·접근 범위(`access_scope`)"
+        - "QK-ING-002 (WBS 1.5) GitHub 저장소 파일 수집(트리 비교, 포함·제외 패턴)"
+        - "QK-CHK-002 (WBS 1.6) Markdown 청커(저장소 문서·ClickUp 페이지 공용), 검색 헤더"
+        - "QK-EMB-001 (WBS 1.7) 임베딩 Provider(Workers AI), 캐시, 사용량 기록, 일일 예산, 실행 전 사용량 미리 보기"
+        - "QK-SYN-001 (WBS 1.8) 증분 동기화, 문서 단위 원자적 교체, 실행 기록, 스케줄러, CLI"
+        - "QK-RET-001 (WBS 1.9) 하이브리드 검색, RRF, 문맥 확장, 토큰 예산, 키워드 검색 텍스트"
+        - "QK-GEN-001 (WBS 1.10) 프롬프트, 출처 표시, 확인 불가·충돌 처리, 생성 Provider"
+        - "QK-BOT-001 (WBS 1.11) Discord `/ask`, 지연 응답, 답변 표시·분할, 접근 제어, 오류 안내"
+        - "QK-EVL-001 (WBS 1.12) 골든셋 형식 검증, 검색 평가 실행기, 비교 리포트"
+        - "QK-STO-002 (WBS 2.1) 인덱스 버전 생성·평가 게이트·활성화"
+        - "QK-CHK-001 (WBS 2.2) 코드 청커(Java·Kotlin, Android 컴포넌트, 테스트), 코드 메타데이터"
+        - "QK-ING-003 (WBS 2.3) ClickUp Docs 수집, 문서 분류, 회의록·용어집 처리"
+        - "QK-OBS-001 (WBS 2.4) 질의 로그, 피드백 버튼, `/sources`, 질의 원문 저장 옵션"
+        - "QK-EVL-002 (WBS 2.5) 답변 평가, 판정 모델·사람 표본 검토, 생성 모델 비교"
+        - "QK-ING-004 (WBS 3.1) ClickUp Tasks 수집, 작업 스냅샷"
+        - "QK-ING-005 (WBS 3.2) GitHub PR·Issue·Release 수집, 템플릿 필드 추출"
+        - "QK-CHK-003 (WBS 3.3) 명세·작업·PR·Issue·회의 연결 관계"
+        - "QK-TRK-001 (WBS 3.4) 질문 분류, 필터 추론"
+        - "QK-TRK-002 (WBS 3.5) 진행 현황·기능 단위 상태, `/status`"
+        - "QK-RET-002 (WBS 3.6) 관계 기반 후보 확장, 변경 맥락"
+        - "QK-BOT-002 (WBS 3.7) 스레드 대화, 질의 재작성"
+        - "QK-SYN-002 (WBS 3.8) Discord `/reindex`, 실패 문서 재시도"
+        - "QK-ING-006 (WBS 4.1) OpenAPI 수집, 엔드포인트 청킹"
+        - "QK-ING-007 (WBS 4.2) DB 스키마·마이그레이션 수집"
+        - "QK-CHK-004 (WBS 4.3) API·코드·Retrofit·테이블·테스트 교차 관계, 경로 정규화"
+        - "QK-TRK-003 (WBS 4.4) API 구현 여부 판정"
+        - "QK-ING-008 (WBS 4.5) Figma 프레임 수집"
+        - "QK-ING-009 (WBS 4.6) Terraform 수집"
+        - "QK-OBS-002 (WBS 5.1) Grafana 대시보드·알림"
+        - "QK-SYN-003 (WBS 5.2) 전체 대조 삭제 반영, 백업·복구·재색인 절차"
+        - "QK-TRK-004 (WBS 5.3) 정합성 리포트, 회의 전 진행 요약 게시"
+        - "QK-EVL-003 (WBS 5.4) 생산성 사후 측정, 전후 비교 보고"
+        - "해당 없음 (도구·기술부채 작업)"
+        # END roadmap-backlog
     validations:
       required: true
+
+  - type: input
+    id: spec_exception
+    attributes:
+      label: 명세가 없는 사유
+      description: 기능명세서에서 '해당 없음'을 골랐을 때만 적습니다.
+      placeholder: "예: 하네스 검사 스크립트 추가"
 
   - type: input
     id: clickup_task_url
     attributes:
       label: ClickUp 작업 URL
+      description: URL 끝의 작업 ID가 PR 본문에 CU-<작업 ID>로 들어가 ClickUp 작업과 연결됩니다. ClickUp 작업 제목은 이 Issue 제목과 같은 [명세 ID] 형식으로 씁니다.
       placeholder: "https://app.clickup.com/t/<CLICKUP-TASK-ID>"
-    validations:
-      required: true
-
-  - type: input
-    id: feature_spec_id
-    attributes:
-      label: 기능명세서 ID
-      placeholder: "QELLO-AUTH-001 또는 해당 없음: 사유"
-    validations:
-      required: true
-
-  - type: input
-    id: feature_spec_url
-    attributes:
-      label: 기능명세서 링크
-      description: 원본 명세 URL을 입력합니다. 명세가 없으면 해당 없음과 사유를 씁니다.
     validations:
       required: true
 
