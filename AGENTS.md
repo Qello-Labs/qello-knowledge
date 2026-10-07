@@ -38,8 +38,8 @@ ClickUp 작업이나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지�
 
 ### 3.1 자료원과 외부 전송
 
-- 색인 대상은 팀 공용 자료(GitHub, Notion, Figma, DB 스키마, API 문서)다. 개인 페이지,
-  비공개 대화, 계정 정보는 색인하지 않는다.
+- 색인 대상은 팀 공용 자료(GitHub, ClickUp Docs·Tasks, Figma, DB 스키마, API 문서)다.
+  Notion 문서는 색인하지 않는다. 개인 페이지, 비공개 대화, 계정 정보는 색인하지 않는다.
 - 임베딩·생성 API로 보내기 전에 비밀값 패턴을 검사하고, 걸린 청크는 임베딩하거나 저장하지 않는다.
 - 자료원마다 원본 권한을 메타데이터로 보존한다. 권한을 확인할 수 없는 자료는 검색 결과에 노출하지 않는다.
 - 새 자료원이나 새 외부 모델을 추가할 때는 데이터 처리 정책(학습 사용 여부, 보존 기간)을 확인하고
@@ -94,7 +94,8 @@ ClickUp 작업이나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지�
 
 다음 값을 코드, 문서, Issue, PR, 커밋, 평가 세트, 질의 로그, 프롬프트 예시에 기록하지 않는다.
 
-- `.env` 실제 값, API 토큰(Cloudflare, Anthropic, GitHub, Notion, Figma 등), 비밀번호, 개인 키
+- `.env` 실제 값, API 토큰(Cloudflare, Anthropic, GitHub, ClickUp, Notion, Figma 등),
+  Discord 봇 토큰, 비밀번호, 개인 키
 - DB 연결 주소, 서버 주소, 내부 도메인
 - 비공개 문서 원문, 민감한 질의 원문
 
@@ -158,7 +159,7 @@ estimated_or_used_neurons
 - 테스트 삭제·skip, 경고 suppress로 검증 통과
 - 승인 상태나 검증 결과를 추측해서 보고
 - 자신이 만든 설계나 구현을 자신이 승인
-- 원본 자료원(Notion, GitHub, Figma)에 사람이 요청하지 않은 쓰기
+- 원본 자료원(ClickUp, Notion, GitHub, Figma)에 사람이 요청하지 않은 쓰기
 - 비밀값을 파일, 로그, 대화에 복사
 
 필요한 정보나 승인을 확인할 수 없으면 추측해서 진행하지 않고 `BLOCKED`로 반환한다.

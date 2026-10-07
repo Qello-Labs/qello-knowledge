@@ -53,7 +53,7 @@
 
 - `.env`, `.env.*`, `secrets/`를 읽지 않는다. `.claude/settings.json`에서 차단한다.
 - 공유 DB에 `DROP`, `TRUNCATE`, 조건 없는 `DELETE`를 실행하지 않는다.
-- Notion, GitHub, Figma 등 원본 자료원에 쓰는 MCP 도구는 사람이 요청한 경우에만 호출한다.
+- ClickUp, Notion, GitHub, Figma 등 원본 자료원에 쓰는 MCP 도구는 사람이 요청한 경우에만 호출한다.
 - 무료 한도를 넘길 수 있는 대량 임베딩·평가는 예상 사용량을 먼저 보고한다.
 - `AGENTS.md`, `CLAUDE.md`, `.claude/**`는 사람의 승인 후에만 수정한다.
 
