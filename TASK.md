@@ -24,7 +24,7 @@
 - 회의록 위치·형식
 - OpenAPI 노출 위치
 - DB 접근 가능 여부
-- Figma 파일 목록·소유자·좌석
+- Figma 파일 목록·소유자·좌석(보류: Decisions 참조)
 
 ## Explicit exclusions
 
@@ -37,7 +37,7 @@
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: GitHub 공개 저장소 `dnd-side-project/dnd-15th-2-backend`, `dnd-side-project/dnd-15th-2-android`의 메타데이터와 파일 목록(읽기 전용, `gh` CLI). ClickUp·Figma는 조사 수단이 정해지면 추가
+- 새로 읽는 자료원: GitHub 공개 저장소 `dnd-side-project/dnd-15th-2-backend`, `dnd-side-project/dnd-15th-2-android`의 메타데이터와 파일 목록(읽기 전용, `gh` CLI). ClickUp `Qello` Space의 구조, Team Docs 문서 목록, 회의록 2건 본문(로그인된 웹 화면에서 조회, API·토큰 미사용, 2026-10-07). Figma는 조사하지 않는다(Decisions 참조)
 - 외부 API로 보내는 데이터: 해당 없음
 - 예상 임베딩·생성 호출량과 무료 한도 대비: 해당 없음
 - 인덱스 버전 변경: 없음
@@ -70,4 +70,5 @@ git diff --check
 
 - 2026-10-06 사용자 결정: GitHub Issue는 ClickUp 작업 ID·URL을 '확인 필요'로 두고 먼저 만든다. 값이 정해지면 Issue #3과 이 파일을 함께 고친다.
 - 2026-10-06 사용자 결정: PR #1·#2처럼 초기 세팅 단계 예외로 ClickUp 작업 없이 진행한다. 진행 상태는 WBS 보드 0.2에서 관리한다.
+- 2026-10-07 사용자 결정: 팀 회의에서 MVP에서 Figma를 제외하기로 했으므로 Figma 조사는 보류한다. 인벤토리 6절은 보류와 사유로 채우고, Phase 4 명세 전에 다시 조사한다.
 - 2026-10-09 사용자 요청: PR #6 병합 뒤 생긴 `TASK.md` 충돌을 이 브랜치의 0.2 계약으로 대체해 해결한다. 0.10 계약은 `main` 이력(`e1a62ab`)에 남는다.
