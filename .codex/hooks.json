@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/py.sh\" \"$(git rev-parse --show-toplevel)/.codex/hooks/session_context.py\"",
+            "timeout": 10,
+            "additionalContextLimit": 0
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"$(git rev-parse --show-toplevel)/.claude/hooks/py.sh\" \"$(git rev-parse --show-toplevel)/.codex/hooks/speckit_spec_id.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

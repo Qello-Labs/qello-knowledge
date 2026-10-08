@@ -2,8 +2,9 @@
 
 이 문서는 Qello Knowledge 저장소에서 일하는 사람과 AI 에이전트의 공통 계약이다.
 
-도구별 지침(`CLAUDE.md`, Skill, 템플릿)보다 이 문서와 현재 브랜치의 `TASK.md`가 우선한다.
-다른 문서와 자동화는 이 계약을 완화하거나 우회할 수 없다.
+도구별 지침(`CLAUDE.md`, `CODEX.md`, Skill, 템플릿)보다 이 문서와 현재 브랜치의 `TASK.md`가 우선한다.
+다른 문서와 자동화는 이 계약을 완화하거나 우회할 수 없다. 도구별 진입점은 Claude Code가 `CLAUDE.md`,
+Codex가 `CODEX.md`다.
 
 ClickUp·GitHub 연결 절차는 [작업 연결 규칙](docs/github-workflow.md)을, 하네스 구성과 출처는
 [하네스 개요](docs/harness/OVERVIEW.md)를 따른다.
@@ -77,8 +78,8 @@ ClickUp 작업이나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지�
 - 작업 범위 밖의 변경을 자동으로 정리하지 않는다.
 - 공유 데이터베이스의 테이블 삭제·초기화, 인덱스 전체 삭제, 전체 재색인은 사람의 확인 없이 실행하지 않는다.
 - 명령은 재실행해도 안전하게 만들고, 실패할 때 부분 반영을 남기지 않는다.
-- 에이전트 자신의 권한, 금지 명령, 승인 게이트를 바꾸지 않는다. `AGENTS.md`, `CLAUDE.md`, `.claude/**`
-  변경은 별도 승인을 받는다.
+- 에이전트 자신의 권한, 금지 명령, 승인 게이트를 바꾸지 않는다. `AGENTS.md`, `CLAUDE.md`, `CODEX.md`,
+  `.claude/**`, `.codex/**`, `.agents/**` 변경은 별도 승인을 받는다.
 
 ## 5. 커밋과 PR
 

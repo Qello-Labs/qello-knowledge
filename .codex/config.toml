@@ -1,0 +1,18 @@
+# Qello Knowledge 팀 공용 Codex 프로젝트 설정.
+# Codex가 이 저장소를 신뢰한 프로젝트로 열 때만 적용된다. 개인 설정은 ~/.codex/config.toml에 둔다.
+# 훅은 같은 폴더의 hooks.json에 있다.
+
+# .claude/settings.json의 읽기 차단(Read(./.env), Read(./.env.*), Read(./secrets/**))과 같은 대상을
+# Codex 샌드박스 명령에서 막는다. 권한 프로필은 Codex Beta 기능이다.
+# 어느 설정에든 sandbox_mode가 있거나 --sandbox, --dangerously-bypass-approvals-and-sandbox로
+# 실행하면 이 프로필은 적용되지 않는다. 사용자가 승인한 샌드박스 밖 실행에도 적용되지 않는다.
+default_permissions = "qello"
+
+[permissions.qello]
+description = "작업 공간 쓰기. 저장소 루트의 .env, .env.*, secrets/ 읽기 차단"
+extends = ":workspace"
+
+[permissions.qello.filesystem.":workspace_roots"]
+".env" = "deny"
+".env.*" = "deny"
+"secrets" = "deny"
