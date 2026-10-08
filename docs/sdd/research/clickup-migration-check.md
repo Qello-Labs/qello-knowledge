@@ -1,6 +1,6 @@
 # ClickUp 이전 품질 확인
 
-WBS 0.3 산출물이다. 원본 읽기 조사와 사용자가 허용한 테스트 문서 권한 실험의 결과다. Notion 원본과 ClickUp 화면·API Markdown을 비교해 RISK-01의 실제 차이를 확인했다. 권한 케이스 B·C·D는 실험하지 못했고 사유를 4.2절에 적었다.
+WBS 0.3 산출물이다. 원본 읽기 조사와 사용자가 허용한 테스트 문서 권한 실험의 결과다. Notion 원본과 ClickUp 화면·API Markdown을 비교해 RISK-01의 실제 차이를 확인했다. 권한 케이스 B·C는 현재 Workspace에서 해당 없음으로 판정했고, D는 실험하지 못했다. 근거와 사유는 4.2절에 적었다.
 
 | 항목 | 내용 |
 | --- | --- |
@@ -8,7 +8,7 @@ WBS 0.3 산출물이다. 원본 읽기 조사와 사용자가 허용한 테스�
 | 조사 방법 | 브라우저 Computer Use로 화면·렌더링된 DOM 관찰. ClickUp v3 Docs 단일 페이지 `content_format=text/md`, 페이지 메타데이터 트리, v2 사용자·Workspace·Space·Folder·List·Shared Hierarchy GET 조회 |
 | 토큰 | 사용자가 지정한 로컬 환경 파일의 키를 인증 헤더에만 사용. 토큰 값과 다른 멤버 정보는 출력·저장하지 않음. 인증 사용자 ID만 역할 연결을 위해 Git 제외 파일에 저장. 인증 사용자의 Workspace 역할은 공식 역할 매핑과 API 응답으로 Owner(수치값 1) 확인 |
 | 표본 | 하나의 팀 Doc 컨테이너 안의 논리 문서/페이지 7개. D6·D7은 회의 하위 본문 표본이다. 별도 Doc 컨테이너 5개를 조사한 것은 아님. 하위 문서 전체 본문은 미수집 |
-| 진행 상태 | 1·2차 조사 완료, 사람 리뷰 대기(#8). 권한 케이스 B·C·D는 미실험(4.2절). 활동 기록 32개 화면 확인 |
+| 진행 상태 | 1·2차 조사 완료, 사람 리뷰 대기(#8). 권한 케이스 B·C는 현재 해당 없음, D는 미실험(4.2절). 활동 기록 32개 화면 확인 |
 | 증빙 위치 | 받은 Markdown 원문, API 호출 기록, 작업 시트, 정리 증빙(`validation.json`, `run-result.json`, `round2/` 등)은 git 제외 로컬 작업 폴더에만 있다. 원문과 식별자가 들어 있어 저장소에 커밋하지 않는다 |
 | 외부 변경 | 원본 문서·공유 설정은 편집하지 않았다. 허용된 테스트용 Folder 2개, 자동 생성 List 2개, Doc 3개만 생성·이름 지정·공유 상태 확인 후 UI 휴지통으로 이동했다. 2026-10-09 사람이 ClickUp 화면에서 테스트 Folder가 지워진 것을 확인했다. Notion 22개·ClickUp 10개 기록 화면의 최신 표시 버전에서 작업일 편집 기록을 발견하지 못함 |
 
@@ -109,8 +109,8 @@ D6은 원본의 비어 있지 않은 편집 텍스트 구간 12개 모두가 공
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | A | 공용 Space의 팀 문서 | Workspace members. 외부 공유 링크 꺼짐. 페이지 공유 표시 켜짐 | 지정 Doc 필터에서 노출 | 200 | false | 4 | private=false | 조회 200. Doc 포함 여부 판정에 사용하지 않음 |
 | A′ | 공용 테스트 Folder의 기본 Doc | Workspace members 체크, 공개 링크 꺼짐. 공유 설정 미변경 | 지정 Doc 필터에서 노출 | 200 | false | 5 | Space private=false(1차 확인), Folder hidden=false, permission_level=create, space.access=true | 2차 미조회; Doc 대상 아님 |
-| B | 기존 멤버인 비공개 Space | 기존 비공개 Space를 찾지 못해 미실험 | 미실험 | 미실험 | 미확인 | 미확인 | 미확인 | 미실험 |
-| C(전환 시도) | 공용 Folder의 Doc | Private Docs가 Business 요금제에서만 가능하다는 화면으로 차단. Workspace members 체크 유지. **실제 비공개 상태는 추가 확인 필요** | 지정 Doc 필터에서 노출 | 200(전환 실패 상태) | false | 5 | 공용 Folder, hidden=false, permission_level=create, space.access=true | 2차 미조회; Doc 대상 아님 |
+| B | 기존 멤버인 비공개 Space | 화면 계정과 Owner 토큰 모두에서 비공개 Space를 찾지 못했다. **현재 해당 없음**(2026-10-09 사람 판정). 비공개 Space가 생기면 다시 확인 | 해당 없음 | 해당 없음 | 해당 없음 | 해당 없음 | 해당 없음 | 해당 없음 |
+| C(전환 시도) | 공용 Folder의 Doc | Private Docs가 Business 요금제에서만 가능하다는 화면으로 차단. Workspace members 체크 유지. 현재 요금제에서는 문서만 비공개인 상태가 생길 수 없어 **현재 해당 없음**(2026-10-09 사람 판정). 요금제를 바꾸면 다시 확인 | 지정 Doc 필터에서 노출 | 200(전환 실패 상태) | false | 5 | 공용 Folder, hidden=false, permission_level=create, space.access=true | 2차 미조회; Doc 대상 아님 |
 | D | 특정 사용자에게만 공유 | 동의한 팀원이 지정되지 않아 미실험 | 미실험 | 미실험 | 미확인 | 미확인 | 미확인 | 미실험 |
 | E | 외부 공개 링크 켜짐 | C 전환 시도 Doc을 재사용. 링크 공유 체크 켜짐→API 확인 직후 꺼짐 | 지정 Doc 필터에서 노출 | 200 | true(일시) | 5 | 공용 Folder, hidden=false, permission_level=create, space.access=true | 2차 미조회; Doc 대상 아님 |
 | F | 비공개 Folder 하위 Doc | Folder: Make Public 표시, Space 공유 해제, 생성자만. Doc: Workspace members 체크, 공개 링크 꺼짐. Doc ACL 상속은 판단 불가 | 지정 Doc 필터에서 노출 | 200 | false | 5 | hidden=false, permission_level=create, space.access=true. List: folder.hidden=false, folder.access=true | 2차 미조회; Doc 대상 아님 |
@@ -123,9 +123,9 @@ A는 표본 5개가 속한 공통 Doc의 공유 패널을 읽어 확인한 **하
 
 **확인한 사실:** Workspace members에게 공유된 Doc에서도 `public=false`였다. 공용 테스트 Folder와 비공개 테스트 Folder 모두 Folder API에서 `hidden=false`, `permission_level=create`, `space.access=true`를 반환했고, 두 자동 List도 `permission_level=create`, `folder.hidden=false`, `folder.access=true`를 반환했다. 따라서 이 필드 조합은 팀 전체 ACL이나 비공개 여부의 증거가 아니다. `public=true`는 테스트 Doc에서 일시 확인했지만 팀 전체 접근을 뜻한다고 일반화할 수 없다. `200`은 Owner 토큰의 조회 성공이며 팀 전원의 접근을 증명하지 않는다.
 
-**잠정 제안:** 사람이 팀 공유를 확인한 Doc를 허용 목록으로 지정하고, Doc별로 사람 검증 허용 목록·부모·삭제/보관 상태·조회 성공을 재확인한다. 현재 확인되지 않은 자료는 판정 불가로 유지한다. Space 허용 목록만으로는 같은 Space의 개별 비공개 Doc를 구분할 수 없으므로 충분하다고 단정하지 않는다. 이는 QK-SEC-001 입력 제안이며 값 체계 확정·수집 설정 반영이 아니다.
+**잠정 제안:** 사람이 팀 공유를 확인한 Doc를 허용 목록으로 지정하고, Doc별로 사람 검증 허용 목록·부모·삭제/보관 상태·조회 성공을 재확인한다. 현재 확인되지 않은 자료는 판정 불가로 유지한다. 현재 요금제에서는 문서만 비공개인 Doc(C)이 생기지 않지만, 비공개 Folder(F)와 특정인 공유(D)가 남아 있어 Space 허용 목록만으로 충분하다고 단정하지 않는다. 이는 QK-SEC-001 입력 제안이며 값 체계 확정·수집 설정 반영이 아니다.
 
-운영에서 수집 전용 계정의 시야를 제한하는 방식도 검토할 수 있지만, 확인된 Owner 역할의 한계와 B·C·D를 검증하기 전에는 채택 여부를 결정할 수 없다. [Share Docs](https://help.clickup.com/hc/en-us/articles/6325333637271-Share-Docs), [Permissions in detail](https://help.clickup.com/hc/en-us/articles/6309221065495-Permissions-in-detail)는 사용자·팀·위치 상속에 따른 권한을 설명한다.
+운영에서 수집 전용 계정의 시야를 제한하는 방식도 검토할 수 있지만, 확인된 Owner 역할의 한계와 D를 검증하기 전에는 채택 여부를 결정할 수 없다. [Share Docs](https://help.clickup.com/hc/en-us/articles/6325333637271-Share-Docs), [Permissions in detail](https://help.clickup.com/hc/en-us/articles/6309221065495-Permissions-in-detail)는 사용자·팀·위치 상속에 따른 권한을 설명한다.
 
 ## 5. 발견한 점·결정할 것
 
@@ -136,7 +136,7 @@ A는 표본 5개가 속한 공통 Doc의 공유 패널을 읽어 확인한 **하
 | F-03 | D5 표가 이미 화면에서 일반 텍스트 | 가져온 표의 셀 구조를 작성 단계에서 확인해야 함 | 0.4, QK-CHK-002 | 표 복원/작성 규칙. 원본 수정은 이번 조사에서 하지 않음 |
 | F-04 | 코드 경계·언어가 변함 | 코드 청커가 표시 언어·개수만 믿으면 잘못 나눌 수 있음 | QK-CHK-002 | 블록별 내용 비교와 언어 보존 규칙 |
 | F-05 | DB가 문서 계층으로 바뀜 | Doc 루트 본문만으로 행·속성·하위 본문을 확보할 수 없음 | QK-ING-003, 0.4 | DB 속성의 기준 자료원과 이전 이후 신규 행 동기화 방식 |
-| F-06 | public=false인 Workspace members 공유 문서가 있고, 공용·비공개 테스트 Folder/List의 API 필드도 동일하게 보임 | public·hidden·permission_level·space/folder access를 팀 전체 ACL의 단독 기준으로 사용할 수 없음 | QK-SEC-001 | Doc별 사람 검증 허용 목록·부모·삭제/보관·접근 재검증 정책. B·C·D 추가 확인 |
+| F-06 | public=false인 Workspace members 공유 문서가 있고, 공용·비공개 테스트 Folder/List의 API 필드도 동일하게 보임 | public·hidden·permission_level·space/folder access를 팀 전체 ACL의 단독 기준으로 사용할 수 없음 | QK-SEC-001 | Doc별 사람 검증 허용 목록·부모·삭제/보관·접근 재검증 정책. D 추가 확인. B·C는 현재 해당 없음(비공개 Space가 생기거나 요금제를 바꾸면 재확인) |
 | F-07 | 긴 문서의 표는 지연 로딩, 코드 DOM에 중복 요소가 있음 | 초기 DOM 개수는 손실을 과대평가할 수 있음 | 조사·검증 방식 | 전체 스크롤 대조와 고유 블록 ID 기준 적용 |
 | F-08 | D6·D7에서 원본 이미지 4개가 ClickUp/API의 자리표시자로만 남았고, 일치하는 토글 표본은 찾지 못함 | 이미지 내용 손실 표본 2건과 토글 검증 범위가 확인됐지만 전체 보존 판정은 불가 | WBS 0.3 | 이미지 원본·이전본 동시점 스냅샷과 추가 본문 대조 |
 | F-09 | preflight는 Git 제외 조사 파일을 검사하지 않음 | 기본 검사 통과만으로 로컬 원문 안전성을 증명할 수 없음 | 조사·검증 방식 | 작업 결과에 동일 규칙+ClickUp 토큰 규칙 별도 검사 |
@@ -188,7 +188,7 @@ ClickUp 요청은 모두 GET이었다. 지정 팀 Doc 밖의 다른 자동화 �
 
 정식 반영 전(2026-10-09) 조사 지시문을 쓴 Claude Code 세션이 로컬 증빙을 다시 대조했다. 선택 Markdown 7개의 실제 파일 크기 합계 125,238바이트, 2차 호출 기록 26건 모두 GET 200, 수집 스크립트의 GET 전용 여부, 테스트 항목 7개의 이름 접두와 휴지통 이동 기록, 환경 파일과 이미지를 뺀 로컬 텍스트 파일 61개의 비밀값·ClickUp 토큰 검사 0건을 확인했다. 지시문 작성자와 같은 세션의 확인이므로 독립 검증이 아니다.
 
-**남은 조사 항목:** B·C·D의 실제 제한 상태 확인. 작업 계약 연결과 정식 반영은 #8로 마쳤고, 사람 승인(PR 리뷰)이 남았다. 1차의 긴 문서 전체 문장·셀·링크 목적지 검증 한계는 재조사 없이 보존했다. D6·D7의 이미지 차이는 확인했지만 동시점 스냅샷이 아니며 HEAD 대상이 없어 접근 가능성은 미확정이다. 테스트 Doc 3개와 Folder 2개는 UI 휴지통에서 확인했으며 내부 List 2개는 부모와 함께 정리됐다. 휴지통을 비우지 않았고, Folder/List API 삭제 상태는 확정하지 않았다. 2026-10-09 사람이 ClickUp 화면에서 테스트 Folder가 지워진 것을 확인했다. Folder 내부 항목이 별도 휴지통 행으로 표시되지 않는다는 [공식 안내](https://help.clickup.com/hc/en-us/articles/6311742742423-Restore-items-from-the-Trash)와 일치한다. 이 결과를 이유로 ClickUp 완료 상태를 바꾸지 않는다.
+**남은 조사 항목:** D의 실제 제한 상태 확인. B·C는 2026-10-09 사람이 현재 해당 없음으로 판정했다. 작업 계약 연결과 정식 반영은 #8로 마쳤고, 사람 승인(PR 리뷰)이 남았다. 1차의 긴 문서 전체 문장·셀·링크 목적지 검증 한계는 재조사 없이 보존했다. D6·D7의 이미지 차이는 확인했지만 동시점 스냅샷이 아니며 HEAD 대상이 없어 접근 가능성은 미확정이다. 테스트 Doc 3개와 Folder 2개는 UI 휴지통에서 확인했으며 내부 List 2개는 부모와 함께 정리됐다. 휴지통을 비우지 않았고, Folder/List API 삭제 상태는 확정하지 않았다. 2026-10-09 사람이 ClickUp 화면에서 테스트 Folder가 지워진 것을 확인했다. Folder 내부 항목이 별도 휴지통 행으로 표시되지 않는다는 [공식 안내](https://help.clickup.com/hc/en-us/articles/6311742742423-Restore-items-from-the-Trash)와 일치한다. 이 결과를 이유로 ClickUp 완료 상태를 바꾸지 않는다.
 
 ### 6.4 활동 기록
 

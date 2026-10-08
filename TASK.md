@@ -81,6 +81,7 @@ grep -rnE 'pk_[0-9]+_[A-Za-z0-9]{20,}' docs TASK.md   # 결과가 없어야 한�
 - 2026-10-09 사용자 결정: 2차 결과를 정식 반영한다. Issue #8과 이 브랜치를 만들고 보고서를 `docs/sdd/research/clickup-migration-check.md`로 옮긴다.
 - 2026-10-09 사용자 결정: 로컬 작업 폴더 `wbs-0.3-codex/`는 git 추적에서 빠지기만 하면 된다. 제외 규칙은 커밋하지 않는 `.git/info/exclude`에 둔다.
 - 2026-10-09 사용자 결정: PR #7 병합 뒤 생긴 `TASK.md` 충돌을 이 브랜치의 0.3 계약으로 대체해 해결한다. 0.2 계약은 `main` 이력(`d7ac303`)에 남는다.
+- 2026-10-09 사용자 결정: 권한 케이스 B(비공개 Space)와 C(문서만 비공개)는 현재 Workspace에서 해당 없음으로 판정한다. 비공개 Space가 생기거나 요금제를 바꾸면 다시 확인한다.
 
 ## Execution record
 
