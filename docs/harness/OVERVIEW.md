@@ -63,7 +63,7 @@ Spec Kit 1.1.0 소스이고, 동작은 Codex CLI 0.160.0에서 확인했다(2026
 | `templates/decision-record.md` | 같은 파일 | ClickUp·명세 연결, 근거, 데이터·비용, 재검토 조건 절 추가 |
 | `templates/eval-report.md` | `templates/performance-experiment-report.md` | PostGIS 성능 실험을 RAG 검색·생성 평가로 바꿈. Contract를 실행 전에 확정하는 규칙 유지 |
 | `.claude/skills/harness-commit` | 같은 Skill | 브랜치-Issue 번호 필수 규칙 제거(Issue 번호는 있을 때만). RAG 파이프라인 단계 기준 분할. 평가 세트 분리 규칙 추가 |
-| `.claude/skills/harness-pr` | 같은 Skill | `./harness` 명령 제거. ClickUp PR 템플릿 기준으로 본문 작성. ClickUp 역링크 단계 추가. 리뷰어 고정 제거 |
+| `.claude/skills/harness-pr` | 같은 Skill | `./harness` 명령 제거. ClickUp 연결 내용을 담아 본문을 처음부터 작성(템플릿은 담을 내용 목록). ClickUp 역링크와 열린 PR 본문 갱신 단계 추가. 리뷰어 고정 제거 |
 | `.claude/skills/harness-review` | `harness-review` + `agents/pm-reviewer.md` | 두 문서를 합치고 평가·데이터·비용 확인 항목 추가 |
 
 ## 가져오지 않은 것
@@ -85,6 +85,8 @@ Spec Kit 1.1.0 소스이고, 동작은 Codex CLI 0.160.0에서 확인했다(2026
 - 브랜치 형식 `<type>/<short-slug>`, GitHub Issue가 있으면 `<type>/gh-<번호>-<short-slug>`
 - `AGENTS.md` 3절 RAG 규칙. RAG 설계 문서(Step01~06)의 결정을 옮긴 것이므로, 설계 결정이 바뀌면 함께 고친다.
 - PR 제목 `<type>: <summary>`. 백엔드 저장소 관행을 따랐고 검사기는 없다.
+- PR 본문 3,000자 이하, 커밋 해시·브랜치 이름·CI 실행 ID 미기재, 완료 조건 표 두 칸 등 `harness-pr`의
+  `references/writing-style.md` 규칙(2026-10-09 사용자 요청). 검사기는 없다.
 
 ## 다음 단계
 
