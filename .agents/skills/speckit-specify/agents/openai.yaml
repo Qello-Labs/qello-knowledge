@@ -1,0 +1,5 @@
+# Spec Kit이 생성한 SKILL.md 옆에 둔 Codex 전용 메타데이터다(Spec Kit manifest 대상 아님).
+# 명세 ID 규칙 훅(.codex/hooks/speckit_spec_id.py)은 사용자가 입력한 `$speckit-specify`만 검사할 수 있다.
+# 모델이 스스로 이 스킬을 고르면 훅을 거치지 않으므로 암묵 호출을 막는다.
+policy:
+  allow_implicit_invocation: false
