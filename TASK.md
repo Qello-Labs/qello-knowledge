@@ -26,10 +26,11 @@
 - Spec Kit 1.1.0 Codex 통합을 `specify integration install codex --script py`로 설치한다(`.agents/skills/speckit-*`, `.specify/` manifest). `speckit-specify`에 `agents/openai.yaml`을 더해 명시 호출만 허용한다.
 - `AGENTS.md`: 도입부 도구별 지침에 `CODEX.md`를, 4절 승인 대상에 `CODEX.md`, `.codex/**`, `.agents/**`를 추가한다.
 - `docs/harness/OVERVIEW.md`, `README.md`: Codex 구성, Claude 하네스와의 대응표, Codex 사용법을 적는다.
+- PR 작성 규칙: `harness-pr` Skill 두 벌(`.claude/skills/harness-pr`, `.agents/skills/harness-pr`)과 문체 규칙, `.github/PULL_REQUEST_TEMPLATE.md`, `docs/github-workflow.md`에 사용자가 준 PR 규칙을 반영하고 이 브랜치의 PR 본문도 그 규칙으로 고친다.
 
 ## Explicit exclusions
 
-- `.claude/**`와 `CLAUDE.md` 수정
+- `.claude/**`와 `CLAUDE.md` 수정. 예외: 2026-10-09 사용자 요청에 따른 `.claude/skills/harness-pr`
 - CI, 브랜치 보호 규칙
 - 각자의 Codex 사용자 설정(`~/.codex/config.toml`) 변경
 - 원본 자료원(ClickUp, Notion, GitHub, Figma)에 쓰기. GitHub는 Issue #9 생성과 이 브랜치 PR만 한다.
@@ -51,6 +52,7 @@
 | `.specify/integration.json`, `.specify/integrations/*.manifest.json`, `.specify/scripts/bash/` | 확인 필요 | 사람 리뷰 |
 | `AGENTS.md` | 확인 필요 | 사람 리뷰(AGENTS.md 4절 승인 필요) |
 | `docs/harness/OVERVIEW.md`, `README.md` | 확인 필요 | 사람 리뷰 |
+| `.claude/skills/harness-pr/**`, `.github/PULL_REQUEST_TEMPLATE.md`, `docs/github-workflow.md` | 확인 필요 | 사람 리뷰(AGENTS.md 4절 승인 필요) |
 | `TASK.md` | 확인 필요 | 사람 리뷰 |
 
 ## Existing user-owned changes
@@ -84,3 +86,4 @@ git diff --check
 - 2026-10-09 사용자 결정: Codex 실행 확인은 에이전트가 이 워크트리에서 `codex exec`로 한다. 훅 신뢰 검토는 그 실행에 한해 `--dangerously-bypass-hook-trust`로 건너뛴다.
 - 2026-10-09 사용자 승인: `AGENTS.md` 도입부 진입점 안내와 4절 승인 대상(`CODEX.md`, `.codex/**`, `.agents/**`) 추가 문구를 승인했다.
 - 2026-10-09 사용자 정정: Spec Kit Codex 통합과 명세 ID 훅도 Codex에 반드시 필요하다. 잠시 뺐던 통합 산출물과 훅을 다시 넣는다.
+- 2026-10-09 사용자 요청: 사용자가 준 PR 작성 규칙을 `harness-pr` Skill에 영구 반영하고 이 PR에도 적용한다. Codex판과 절차를 맞추려고 이 브랜치에서 함께 고친다. 규칙의 `./harness`, `npm run hooks:validate`, Project Status는 다른 저장소 명령이므로 이 저장소의 `preflight`, `git diff --check`, ClickUp 역링크로 바꿨다.
