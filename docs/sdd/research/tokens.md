@@ -161,7 +161,7 @@ Discord Developer Portal에서 애플리케이션을 만들고 봇 사용자를 
 | Discord | 애플리케이션 `Qello Knowledge` | `DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN` | 정기 교체 없음 | Developer Portal에서 Bot Token 재설정 |
 
 - 토큰 이름은 `qk-<서비스·용도>-<환경>` 형식이다. 지금은 로컬 개발용이라 `dev`로 끝난다. Discord는 애플리케이션 이름이 봇 이름으로 서버에 보이므로 제품 이름을 쓴다.
-- 지금은 저장소 루트의 `.env`에만 둔다. `.env`와 `.env.*`는 `.gitignore`에 있고, Claude Code는 설정으로 읽기가 막혀 있다. Codex에는 이 차단이 적용되지 않으므로 Codex 작업 폴더에 `.env`를 두지 않는다(WBS 0.3에서 Codex가 `.env` 토큰을 직접 쓴 사례).
+- 지금은 저장소 루트의 `.env`에만 둔다. `.env`와 `.env.*`는 `.gitignore`에 있다. Claude Code는 `.claude/settings.json`으로, Codex는 `.codex/config.toml` 권한 프로필로 저장소 루트 `.env` 읽기가 막혀 있다. Codex 차단은 샌드박스 안 명령에만 적용되고, 사용자가 승인한 샌드박스 밖 실행, MCP·커넥터, 브라우저에는 적용되지 않는다([하네스 개요](../../harness/OVERVIEW.md)). 하위 폴더의 `.env`도 대상이 아니므로 Codex 작업 폴더에 `.env`를 두지 않는다(WBS 0.3에서 Codex가 하위 폴더 `.env` 토큰을 직접 쓴 사례).
 - 실행 환경이 정해지면 그 환경의 비밀값 저장소로 옮긴다. 옮긴 위치는 이 표에 적는다.
 
 ## 7. 확인 결과
