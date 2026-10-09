@@ -5,17 +5,17 @@ WBS 0.5 산출물이다. Qello Knowledge가 쓸 계정과 토큰의 권한 범�
 | 항목 | 내용 |
 | --- | --- |
 | 조사일 | 2026-10-09 |
-| 조사 방법 | 각 서비스 공식 문서 확인. 계정을 만들거나 토큰으로 API를 호출하지 않았다. 공식 문서에서 확인하지 못한 내용은 "미확인"으로 표시했다 |
-| 진행 상태 | 권한 범위 초안 작성. Phase 1 3종(GitHub, Cloudflare, Discord) 발급·확인 대기 |
+| 조사 방법 | 각 서비스 공식 문서 확인. 토큰 발급과 확인 호출은 사람이 했고, 에이전트는 확인 명령의 출력 줄만 봤다(7절). 공식 문서에서 확인하지 못한 내용은 "미확인"으로 표시했다 |
+| 진행 상태 | Phase 1 3종(GitHub, Cloudflare, Discord) 발급·확인 완료(2026-10-09). 사람 리뷰 대기(#11) |
 | 확인 환경 | 로컬 개발 환경. 실행 환경(ADR-008)은 0.9에서 정하고, 정해지면 보관 위치를 옮긴다(6절) |
 
 ## 1. 요약
 
 | 토큰 | 용도 | 필요 단계 | 권한 범위 | 만료 | 이번 작업 |
 | --- | --- | --- | --- | --- | --- |
-| GitHub 세분화 토큰 | 제품 저장소 문서·코드·PR·Issue 읽기 | Phase 1 | 공개 저장소 읽기만. 저장소 권한 추가 없음 | 366일 권장 | 발급 |
-| Cloudflare API 토큰 | Workers AI 임베딩·생성 호출 | Phase 1(0.6부터) | 계정 하나의 Workers AI Read·Edit | 기본 없음. TTL 선택 | 발급 |
-| Discord 애플리케이션·봇 | `/ask` 명령 등록과 응답, 요약 게시 | Phase 1 | 권한 있는 인텐트 없음. 서버 설치 범위는 4.3절 | 없음(유출 시 재설정) | 발급. 서버 초대는 하지 않음 |
+| GitHub 세분화 토큰 | 제품 저장소 문서·코드·PR·Issue 읽기 | Phase 1 | 공개 저장소 읽기만. 저장소 권한 추가 없음 | 무기한(2.1절) | 발급·확인 |
+| Cloudflare API 토큰 | Workers AI 임베딩·생성 호출 | Phase 1(0.6부터) | 계정 하나의 Workers AI Read·Edit | 기본 없음. TTL 선택 | 계정 소유 토큰으로 발급·확인 |
+| Discord 애플리케이션·봇 | `/ask` 명령 등록과 응답, 요약 게시 | Phase 1 | 권한 있는 인텐트 없음. 서버 설치 범위는 4.3절 | 없음(유출 시 재설정) | 발급·확인. 서버 초대는 하지 않음 |
 | ClickUp 수집 전용 계정 | ClickUp Docs·Tasks 읽기 | Phase 2 | 계정이 볼 수 있는 범위 전체(범위 지정 불가) | 없음 | 문서화만. Phase 2 전 발급 |
 | DB 읽기 전용 계정 | DB 스키마 수집 | — | — | — | 발급 안 함 |
 | Figma 토큰 | 프레임 수집 | Phase 4 | — | — | 보류 |
@@ -30,7 +30,7 @@ WBS 0.5 산출물이다. Qello Knowledge가 쓸 계정과 토큰의 권한 범�
 | Resource owner | 발급자 본인 계정 | 세분화 토큰은 저장소 권한을 고르지 않아도 GitHub의 모든 공개 저장소를 읽을 수 있다 [G1] |
 | Repository access | 공개 저장소만(읽기). 화면의 정확한 선택지 이름은 미확인 | [G1] |
 | Repository permissions | 추가하지 않음 | Contents·Pull requests·Issues 조회 API는 공개 자료만 요청하면 해당 권한 없이 쓸 수 있다 [G3][G4][G5] |
-| 만료 | 366일 권장. 만료일을 6절 교체 일정에 적는다 | 1~366일 또는 무기한을 고를 수 있고 조직은 최대 수명을 강제할 수 있다 [G1][G2]. 공개 자료 읽기만 하므로 유출돼도 피해는 호출 한도 소모 정도다 |
+| 만료 | 무기한. 초안은 366일을 권장했으나 발급자가 무기한을 골랐다(2026-10-09). 만료로 정리되지 않으므로 6절의 교체 조건을 따른다(T-06) | 1~366일 또는 무기한을 고를 수 있고 조직은 최대 수명을 강제할 수 있다 [G1][G2]. 공개 자료 읽기만 하므로 유출돼도 피해는 호출 한도 소모 정도다 |
 
 - `dnd-side-project` 조직 관리자의 승인은 필요 없다. 승인 대기 중인 토큰도 조직의 공개 자료는 읽을 수 있다 [G2]. 인벤토리 F-1의 "조직 관리자 승인 필요 여부"는 이것으로 답이 된다.
 - 인증하지 않으면 시간당 60회, 토큰을 쓰면 시간당 5,000회까지 호출할 수 있다 [G6].
@@ -53,10 +53,10 @@ WBS 0.5 산출물이다. Qello Knowledge가 쓸 계정과 토큰의 권한 범�
 
 | 설정 | 값 | 근거 |
 | --- | --- | --- |
-| 만드는 곳 | Workers AI 대시보드의 "Use REST API" → "Create a Workers AI API Token", 또는 사용자 지정 토큰 | [C1]. 일반 토큰 템플릿 목록에는 Workers AI 템플릿이 없다 [C4] |
+| 만드는 곳 | 계정 소유 토큰은 Manage account → Account API tokens → Create Token. 사용자 토큰은 Workers AI 대시보드의 "Use REST API" → "Create a Workers AI API Token", 또는 사용자 지정 토큰 | [C7][C1]. 일반 토큰 템플릿 목록에는 Workers AI 템플릿이 없다 [C4] |
 | 권한 | Account → Workers AI → Read, Account → Workers AI → Edit | 사용자 지정 토큰은 두 권한이 모두 필요하다 [C1][C3] |
 | 리소스 | Qello Knowledge용 계정 하나. "All accounts"를 쓰지 않는다 | 템플릿 기본값이 모든 계정이다 [C2][C4] |
-| 소유 | 계정 소유 토큰 권장. 만들 권한이 없으면 사용자 토큰 | 계정 소유 토큰은 만든 사람이 떠나도 동작하고 Workers AI를 지원한다. 만들려면 Super Administrator나 API Token Provisioning 권한이 필요하다 [C7] |
+| 소유 | 계정 소유 토큰 권장. 만들 권한이 없으면 사용자 토큰. 이번에는 계정 소유 토큰으로 발급했다(7절) | 계정 소유 토큰은 만든 사람이 떠나도 동작하고 Workers AI를 지원한다. 만들려면 Super Administrator나 API Token Provisioning 권한이 필요하다. 새 계정 소유 토큰은 `cfat_`로 시작한다 [C7] |
 | IP 제한 | 지금은 쓰지 않는다. 실행 환경이 정해지면 다시 본다 | 선택 사항. Verify 엔드포인트에는 적용되지 않는다 [C5] |
 | TTL | 선택. 정하지 않으면 만료되지 않는다 | [C5] |
 
@@ -96,6 +96,7 @@ Discord Developer Portal에서 애플리케이션을 만들고 봇 사용자를 
 | Application ID | 설치 URL에 쓰이지만 Discord 시작 안내가 민감한 값으로 분류하므로 `.env`에 둔다 | [D1][D2] |
 
 - Privileged Gateway Intents(Presence, Server Members, Message Content)는 모두 끈다. 슬래시 명령만 쓰는 봇에는 Message Content 인텐트가 필요 없다 [D8][D9].
+- Bot 화면의 Public Bot은 껐다(2026-10-09). 화면 설명에 따르면 끄면 앱 소유자만 봇을 서버에 추가할 수 있다. 이 동작의 공식 문서 근거는 미확인이다.
 
 ### 4.2 응답 방식과 필요한 값
 
@@ -153,34 +154,40 @@ Discord Developer Portal에서 애플리케이션을 만들고 봇 사용자를 
 
 ## 6. 보관과 교체
 
-| 토큰 | `.env` 변수 | 교체 시점 | 유출 시 |
-| --- | --- | --- | --- |
-| GitHub | `GITHUB_API_TOKEN` | 만료일 전(발급일 + 366일) | GitHub 설정에서 토큰 삭제 후 재발급 |
-| Cloudflare | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | TTL을 정했다면 만료 전 | 대시보드에서 토큰 삭제 후 재발급 |
-| Discord | `DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN` | 정기 교체 없음 | Developer Portal에서 Bot Token 재설정 |
+| 토큰 | 이름 | `.env` 변수 | 교체 시점 | 유출 시 |
+| --- | --- | --- | --- | --- |
+| GitHub | `qk-github-read-dev` | `GITHUB_API_TOKEN` | 만료 없음. 발급자가 팀을 떠나거나 권한을 바꿀 때 | GitHub 설정에서 토큰 삭제 후 재발급 |
+| Cloudflare | `qk-workers-ai-dev` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | TTL을 정했다면 만료 전 | 대시보드에서 토큰 삭제 후 재발급 |
+| Discord | 애플리케이션 `Qello Knowledge` | `DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN` | 정기 교체 없음 | Developer Portal에서 Bot Token 재설정 |
 
+- 토큰 이름은 `qk-<서비스·용도>-<환경>` 형식이다. 지금은 로컬 개발용이라 `dev`로 끝난다. Discord는 애플리케이션 이름이 봇 이름으로 서버에 보이므로 제품 이름을 쓴다.
 - 지금은 저장소 루트의 `.env`에만 둔다. `.env`와 `.env.*`는 `.gitignore`에 있고, Claude Code는 설정으로 읽기가 막혀 있다. Codex에는 이 차단이 적용되지 않으므로 Codex 작업 폴더에 `.env`를 두지 않는다(WBS 0.3에서 Codex가 `.env` 토큰을 직접 쓴 사례).
 - 실행 환경이 정해지면 그 환경의 비밀값 저장소로 옮긴다. 옮긴 위치는 이 표에 적는다.
 
 ## 7. 확인 결과
 
-사람이 2~4절의 확인 명령을 실행한 뒤 채운다. 상태 코드와 결과 문구만 적는다.
+사람이 2~4절의 확인 명령을 실행한 결과다. 상태 코드와 결과 문구만 적는다.
 
 | 토큰 | 확인 명령 | 기대 결과 | 실제 결과 | 확인일 |
 | --- | --- | --- | --- | --- |
-| GitHub | 2.2 | `github core.limit = 5000` | 미실행 | |
-| Cloudflare | 3.2 | `success = True status = active` | 미실행 | |
-| Discord | 4.4 | `discord users/@me = 200` | 미실행 | |
+| GitHub | 2.2 | `github core.limit = 5000` | `github core.limit = 5000` | 2026-10-09 |
+| Cloudflare | 3.2 계정 소유 토큰 | `success = True status = active` | `success = True status = active`. 사용자 토큰 주소는 `success = False`로, 토큰 종류가 달라 예상한 결과다 | 2026-10-09 |
+| Discord | 4.4 | `discord users/@me = 200` | `discord users/@me = 200` | 2026-10-09 |
+
+- 사람이 로컬에서 2~4절 명령을 스크립트 하나로 묶어 실행했다. 토큰 종류를 따로 묻지 않으려고 3.2의 두 주소를 모두 호출했다. 출력에는 토큰 값과 계정 ID가 없고, 에이전트는 출력 줄만 봤다.
+- 같은 실행에서 `.env`가 git 추적 대상이 아니고 파일 권한이 `-rw-------`인 것을 확인했다.
+- 이 확인은 토큰이 유효하다는 것까지만 보여 준다. Workers AI 권한은 0.6의 첫 추론 호출로, 대상 저장소 읽기는 GitHub 수집(QK-ING-002)에서 확인한다.
 
 ## 8. 발견한 점·결정할 것
 
 | 번호 | 발견한 점 | 영향 | 넘길 곳 | 필요한 결정 |
 | --- | --- | --- | --- | --- |
-| T-01 | `scripts/preflight.py`에 GitHub 세분화 토큰(`github_pat_`), ClickUp(`pk_`), Discord 봇 토큰 형식 규칙이 없다. env 형식 규칙도 `DISCORD_BOT_TOKEN`처럼 `BOT_TOKEN`으로 끝나는 이름은 잡지 않는다 | 이 토큰들이 문서·코드에 들어가도 자동 검사에서 빠진다 | 하네스 후속 작업 | 규칙 추가 작업을 만들지 |
+| T-01 | `scripts/preflight.py`에 GitHub 세분화 토큰(`github_pat_`), ClickUp(`pk_`), Cloudflare 계정 소유 토큰(`cfat_`), Discord 봇 토큰 형식 규칙이 없다. env 형식 규칙도 `DISCORD_BOT_TOKEN`처럼 `BOT_TOKEN`으로 끝나는 이름은 잡지 않는다 | 이 토큰들이 문서·코드에 들어가도 자동 검사에서 빠진다 | 하네스 후속 작업 | 규칙 추가 작업을 만들지 |
 | T-02 | 로드맵 0.5 행에 DB 계정과 Figma 토큰이 남아 있다 | 0.G에서 미발급 항목으로 보일 수 있다 | 로드맵 수정 | 인벤토리 F-14와 함께 Phase 4 준비 작업으로 옮길지 |
 | T-03 | 실행 환경(ADR-008)에 따라 필요한 값이 달라진다. Workers면 Workers AI는 바인딩으로, Discord는 HTTP 엔드포인트로 받을 가능성이 크다 | 운영에서 쓸 토큰 목록이 바뀔 수 있다 | 0.9 | ADR-008 결정 뒤 이 문서 6절 갱신 |
-| T-04 | 개인 토큰(GitHub, Cloudflare 사용자 토큰)과 Discord 애플리케이션은 발급한 사람에게 묶인다 | 발급자가 팀을 떠나면 봇이 멈출 수 있다 | 운영 단계 | GitHub App, Cloudflare 계정 소유 토큰으로 옮길 시점 |
+| T-04 | GitHub 개인 토큰과 Discord 애플리케이션은 발급한 사람에게 묶인다. Cloudflare는 계정 소유 토큰으로 발급해 해당하지 않는다 | 발급자가 팀을 떠나면 수집과 봇이 멈출 수 있다 | 운영 단계 | GitHub App으로 옮길 시점, Discord 애플리케이션 소유를 옮기는 방법 |
 | T-05 | ClickUp 개인 토큰은 범위를 정할 수 없고 만료되지 않는다 | 수집 계정의 접근 범위가 곧 토큰의 범위다 | Phase 2 전, QK-SEC-001 | 수집 계정을 Member로 할지 Guest로 할지, 현재 요금제 |
+| T-06 | GitHub 토큰을 무기한으로 발급했다. 초안 권장은 366일이었다 | 만료로 자동 정리되지 않아, 쓰지 않게 된 토큰이 남을 수 있다 | 운영 단계(T-04와 함께) | 정기 점검을 둘지, 둔다면 주기 |
 
 ## 9. 출처
 
