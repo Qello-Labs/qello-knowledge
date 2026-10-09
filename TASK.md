@@ -1,4 +1,4 @@
-# Task Contract: Codex 하네스 구성
+# Task Contract: WBS 0.5 계정·토큰 발급
 
 > Generated at: `2026-10-09`
 >
@@ -6,84 +6,72 @@
 
 ## Work gate
 
-- ClickUp 작업 ID / URL: 해당 없음: 초기 세팅 단계 예외. 하네스 도구 작업이라 WBS에 등록하지 않음
-- 기능명세서 ID / 링크: 해당 없음: 하네스 도구 작업이라 명세 백로그 대상이 아님. 작업 정의는 Issue #9
+- ClickUp 작업 ID / URL: 해당 없음: 초기 세팅 단계 예외. 진행 상태는 WBS 보드 0.5에서 관리
+- 기능명세서 ID / 링크: 해당 없음: Phase 0 준비 작업(WBS 0.5)이라 명세 백로그 대상이 아님. 작업 정의는 `docs/sdd/roadmap.md` 3절
 - 팀 스프린트 ID: `QELLO-S2026-W41`
-- GitHub Issue: `#9`
-- Branch: `chore/gh-9-codex-harness`
+- GitHub Issue: `#11`
+- Branch: `docs/gh-11-token-scopes`
 - Base branch: `main`
 
 ## Objective
 
-- Claude Code 하네스(`CLAUDE.md`, `.claude/settings.json`, `.claude/hooks`, `.claude/skills`)의 규칙이 Codex에서도 같은 방식으로 적용되게 Codex 하네스를 구성한다.
+- Qello Knowledge가 쓸 계정과 토큰의 권한 범위를 정해 `docs/sdd/research/tokens.md`에 남기고, Phase 1에 필요한 토큰(GitHub, Cloudflare, Discord)을 발급해 호출을 확인한다(FR-SEC-02).
 
 ## Scope
 
-- `CODEX.md`: `CLAUDE.md`와 같은 구조의 Codex 진입점을 만든다.
-- `.codex/hooks.json`, `.codex/hooks/`: SessionStart에서 `CODEX.md`와 `TASK.md`를 주입한다. UserPromptSubmit에서 `$speckit-specify`의 명세 ID를 검사하며, 판정은 `.claude/hooks/speckit_spec_id.py`의 함수를 불러 쓴다.
-- `.codex/config.toml`: `.env`, `.env.*`, `secrets/` 읽기를 막는 권한 프로필을 둔다.
-- `.agents/skills/harness-commit`, `harness-pr`, `harness-review`: Claude Skill을 복사해 Codex 도구와 호출 문법에 맞게 고친다.
-- Spec Kit 1.1.0 Codex 통합을 `specify integration install codex --script py`로 설치한다(`.agents/skills/speckit-*`, `.specify/` manifest). `speckit-specify`에 `agents/openai.yaml`을 더해 명시 호출만 허용한다.
-- `AGENTS.md`: 도입부 도구별 지침에 `CODEX.md`를, 4절 승인 대상에 `CODEX.md`, `.codex/**`, `.agents/**`를 추가한다.
-- `docs/harness/OVERVIEW.md`, `README.md`: Codex 구성, Claude 하네스와의 대응표, Codex 사용법을 적는다.
-- PR 작성 규칙: `harness-pr` Skill 두 벌(`.claude/skills/harness-pr`, `.agents/skills/harness-pr`)과 문체 규칙, `.github/PULL_REQUEST_TEMPLATE.md`, `docs/github-workflow.md`에 사용자가 준 PR 규칙을 반영하고 이 브랜치의 PR 본문도 그 규칙으로 고친다.
+- 토큰마다 용도, 발급 계정, 권한 범위, 만료·교체, 보관 위치, 확인 방법을 공식 문서 근거와 함께 `tokens.md`에 쓴다.
+- 대상: GitHub 세분화 토큰(읽기), Cloudflare 토큰(Workers AI 전용), Discord 애플리케이션·봇, ClickUp 수집 전용 계정, DB 읽기 전용 계정, Figma 토큰.
+- Phase 1 3종(GitHub, Cloudflare, Discord)은 사람이 발급하고 확인 호출을 실행한다. 결과는 상태 코드와 확인한 권한만 `tokens.md`에 적는다.
+- ClickUp 수집 계정, DB 계정, Figma 토큰은 권한 범위와 발급 시점(또는 발급하지 않는 사유)만 적는다.
 
 ## Explicit exclusions
 
-- `.claude/**`와 `CLAUDE.md` 수정. 예외: 2026-10-09 사용자 요청에 따른 `.claude/skills/harness-pr`
-- CI, 브랜치 보호 규칙
-- 각자의 Codex 사용자 설정(`~/.codex/config.toml`) 변경
-- 원본 자료원(ClickUp, Notion, GitHub, Figma)에 쓰기. GitHub는 Issue #9 생성과 이 브랜치 PR만 한다.
+- 토큰·키 값, 계정 비밀번호, 계정 식별자(Cloudflare account ID 등)를 문서·Issue·PR·커밋·대화에 기록. 값은 로컬 `.env`에만 둔다.
+- 에이전트가 토큰 발급 화면을 조작하거나 토큰 값을 보는 일. 발급과 확인 명령 실행은 사람이 한다.
+- ClickUp 수집 전용 계정 생성·초대, DB 계정 발급, Figma 토큰 발급.
+- Discord 서버 초대, 슬래시 명령 등록, 채널 권한 변경.
+- 수집·봇 코드 작성, Workers AI 추론 비교(0.6).
+- `scripts/preflight.py` 규칙 추가. 빠진 토큰 패턴은 `tokens.md`에 후속 작업으로 적는다.
+- `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `docs/sdd/roadmap.md` 수정. 고칠 점은 `tokens.md`에 적는다.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
 - 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음
-- 외부 API로 보내는 데이터: Spec Kit 설치 때 GitHub에서 spec-kit v1.1.0을 받는다. Codex 실행 확인을 하면 확인 대화와 저장소 파일 일부가 OpenAI로 전송된다.
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 해당 없음
+- 새로 읽는 자료원: 해당 없음. 확인 호출은 토큰 자신의 상태와 공개 저장소 메타데이터만 읽는다.
+- 외부 API로 보내는 데이터: GitHub·Cloudflare·Discord 확인 API에 토큰을 인증 헤더로 보낸다. 본문 데이터는 보내지 않는다.
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 해당 없음. Workers AI 추론 호출은 0.6에서 한다.
 - 인덱스 버전 변경: 없음
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `CODEX.md`, `.codex/**`, `.agents/**` | 확인 필요 | 사람 리뷰 |
-| `.specify/integration.json`, `.specify/integrations/*.manifest.json`, `.specify/scripts/bash/` | 확인 필요 | 사람 리뷰 |
-| `AGENTS.md` | 확인 필요 | 사람 리뷰(AGENTS.md 4절 승인 필요) |
-| `docs/harness/OVERVIEW.md`, `README.md` | 확인 필요 | 사람 리뷰 |
-| `.claude/skills/harness-pr/**`, `.github/PULL_REQUEST_TEMPLATE.md`, `docs/github-workflow.md` | 확인 필요 | 사람 리뷰(AGENTS.md 4절 승인 필요) |
+| `docs/sdd/research/tokens.md` | 확인 필요 | 사람 리뷰 |
 | `TASK.md` | 확인 필요 | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-09 워크트리 생성 시 `git status --short` 결과: 변경 없음
-- 원래 작업 트리(`docs/gh-8-clickup-migration-check`)의 미커밋 변경은 이 워크트리와 무관하며 건드리지 않는다.
+- 2026-10-09 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
-python3 scripts/preflight.py
+python scripts/preflight.py
 git diff --check
-# 훅 단위 확인: 이벤트 JSON을 stdin으로 넣고 출력 확인
-# Codex 실행 확인: 세션 시작·명세 ID 훅 출력, 스킬 목록(codex debug prompt-input), 더미 .env 읽기 거부(codex sandbox -P qello)
+grep -rnE 'github_pat_[A-Za-z0-9_]{20,}|pk_[0-9]+_[A-Za-z0-9]{20,}|[A-Za-z0-9_-]{23,}\.[A-Za-z0-9_-]{6,7}\.[A-Za-z0-9_-]{27,}' docs TASK.md   # 결과가 없어야 한다. preflight에 없는 GitHub 세분화·ClickUp·Discord 토큰 형식
 ```
 
 ## Completion criteria
 
-- Codex 세션 시작 시 `CODEX.md`와 `TASK.md`가 컨텍스트에 들어가고, `$speckit-specify`에 명세 ID가 없거나 백로그에 없거나 디렉터리가 이미 있으면 차단된다. 훅 단위 실행 결과와 Codex 실행으로 확인한다.
-- Codex 스킬 목록에 `harness-*`와 `speckit-*`가 보이고, Codex 샌드박스 명령으로 더미 `.env`를 읽으면 거부된다. Codex 실행으로 확인한다.
-- `AGENTS.md` 변경 범위와 문구를 사람이 승인했다(AGENTS.md 4절). PR 리뷰 승인으로 확인한다.
+- `tokens.md`에 토큰마다 용도, 발급 계정, 권한 범위, 만료, 보관 위치, 확인 방법이 있고 값이 없다. 리뷰와 위 검증 명령으로 확인한다.
+- GitHub, Cloudflare, Discord 토큰이 발급되고 확인 호출이 성공했다. 사람이 실행한 확인 명령의 상태 코드를 `tokens.md`에 기록한다.
+- 발급하지 않은 토큰(ClickUp 수집 계정, DB, Figma)의 사유와 발급 시점이 적혀 있다. 리뷰로 확인한다.
 
 ## Decisions
 
-- 2026-10-09 사용자 결정: 0.2·0.10처럼 초기 세팅 단계 예외로 ClickUp 작업 없이 진행한다. 하네스 도구 작업이라 로드맵·WBS 보드에 등록하지 않는다.
-- 2026-10-09 사용자 결정: Issue #9를 만들고 별도 워크트리에서 작업한다.
-- 2026-10-09 사용자 결정: Codex 진입점은 `CLAUDE.md`와 같은 구조의 `CODEX.md`로 둔다. `AGENTS.md`는 진입점 안내와 4절 승인 대상 추가만 고친다.
-- 2026-10-09 사용자 결정: harness Skill은 Claude Skill을 전체 복사한 뒤 Codex용으로 고친다. 원본이 두 벌이므로 절차를 바꿀 때 함께 고친다.
-- 2026-10-09 사용자 결정: Spec Kit Codex 통합은 `uvx`로 공식 명령(`specify integration install codex`)을 실행해 설치한다.
-- 2026-10-09 사용자 확인: 이 `TASK.md` 초안으로 구현을 시작한다. `AGENTS.md` 문구는 구현 뒤 diff로 따로 승인한다.
-- 2026-10-09 사용자 결정: Codex 실행 확인은 에이전트가 이 워크트리에서 `codex exec`로 한다. 훅 신뢰 검토는 그 실행에 한해 `--dangerously-bypass-hook-trust`로 건너뛴다.
-- 2026-10-09 사용자 승인: `AGENTS.md` 도입부 진입점 안내와 4절 승인 대상(`CODEX.md`, `.codex/**`, `.agents/**`) 추가 문구를 승인했다.
-- 2026-10-09 사용자 정정: Spec Kit Codex 통합과 명세 ID 훅도 Codex에 반드시 필요하다. 잠시 뺐던 통합 산출물과 훅을 다시 넣는다.
-- 2026-10-09 사용자 요청: 사용자가 준 PR 작성 규칙을 `harness-pr` Skill에 영구 반영하고 이 PR에도 적용한다. Codex판과 절차를 맞추려고 이 브랜치에서 함께 고친다. 규칙의 `./harness`, `npm run hooks:validate`, Project Status는 다른 저장소 명령이므로 이 저장소의 `preflight`, `git diff --check`, ClickUp 역링크로 바꿨다.
+<!-- YYYY-MM-DD 사용자 결정: 내용 -->
+- 2026-10-09 사용자 결정: 0.2·0.3·0.10처럼 초기 세팅 단계 예외로 ClickUp 작업 없이 진행한다. 진행 상태는 WBS 보드 0.5에서 관리한다.
+- 2026-10-09 사용자 결정: 이번에 발급하는 것은 Phase 1 3종(GitHub, Cloudflare, Discord)이다. ClickUp 수집 계정은 Phase 2 전에 발급하고, DB 계정은 발급하지 않으며(인벤토리 3.2 제안), Figma는 보류한다(인벤토리 F-14). 나머지는 `tokens.md`에 권한 범위만 적는다.
+- 2026-10-09 사용자 결정: 토큰 발급과 확인 호출은 사람이 직접 한다. 에이전트는 설정값과 확인 명령을 준비한다.
+- 2026-10-09 사용자 결정: GitHub 토큰 만료를 무기한으로 발급했다(초안 권장 366일). 정기 점검 여부는 `tokens.md` T-06으로 남긴다. Cloudflare는 계정 소유 토큰으로 발급하고, Discord Public Bot은 끈다.
