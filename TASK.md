@@ -1,4 +1,4 @@
-# Task Contract: WBS 0.4 ClickUp 작성 규칙 합의·적용
+# Task Contract: 로드맵 진행 상태 표시와 작업 설명 Skill
 
 > Generated at: `2026-10-10`
 >
@@ -6,98 +6,72 @@
 
 ## Work gate
 
-- ClickUp 작업 ID / URL: 해당 없음: 초기 세팅 단계 예외(2026-10-10 사용자 결정). 진행 상태는 WBS 보드 0.4에서 관리
-- 기능명세서 ID / 링크: 해당 없음: Phase 0 준비 작업(WBS 0.4)이라 명세 백로그 대상이 아님. 작업 정의는 `docs/sdd/roadmap.md` 3절
+- ClickUp 작업 ID / URL: 해당 없음: 하네스·문서 운영 작업이라 WBS 작업이 아님(#9 Codex 하네스와 같은 예외)
+- 기능명세서 ID / 링크: 해당 없음: 명세 백로그 대상이 아닌 저장소 운영 도구
 - 팀 스프린트 ID: `QELLO-S2026-W41`
-- GitHub Issue: `#16`
-- Branch: `docs/gh-16-clickup-writing-rules`
+- GitHub Issue: `#19`
+- Branch: `chore/gh-19-roadmap-status-explain`
 - Base branch: `main`
 
 ## Objective
 
-- ClickUp 작성 규칙(폴더 구조, 회의록 템플릿, 용어집, 파트 필드, 공통 작성 규칙)을 `docs/sdd/clickup-writing-rules.md`로 확정하고 ClickUp `Qello` Space에 반영한다.
+- 로드맵에서 어떤 WBS 작업이 끝났고 진행 중인지 한눈에 보이게 한다.
+- 다른 팀원이 WBS 번호나 명세 ID 하나로 그 작업의 목적, 선행·후행, 산출물, 완료 조건, 진행 이력, 시작 방법을
+  자세히 설명받을 수 있게 한다.
 
 ## Scope
 
-- `docs/sdd/clickup-writing-rules.md` 작성. 2026-10-10 사용자 결정과 0.2·0.3 발견 사항(인벤토리 F-9~F-12, 0.3 F-03·F-05·F-12)을 근거로 쓴다.
-- ClickUp 반영: 규칙 문서 6절 체크리스트 중 Decisions에서 허용한 작업만 한다.
-- 기존 문서 정규화: 기존 회의록 20개를 회의록 템플릿으로 바꾸고, 다른 문서의 공통 작성 규칙 위반을 고친다(규칙 문서 7절 O-2 결정).
-- 반영 결과 확인: 반영한 사람이 아닌 검토자가 ClickUp을 다시 읽어 규칙 문서와 대조하고, 결과를 규칙 문서에 남긴다(AGENTS.md 2절).
+- `docs/sdd/roadmap.md`: 3절 단계 표에 `상태` 열, 2절 표에 `진행` 열, 상태 범례를 추가하고 1행의 상태 관리 문구를 고친다.
+- `scripts/roadmap_status.py`: GitHub Issue 제목의 `(WBS x.y)`로 상태를 계산해 로드맵 표시를 확인·갱신한다. GitHub는 읽기만 한다.
+- `.claude/skills/roadmap-explain/SKILL.md`, `.agents/skills/roadmap-explain/SKILL.md`: ID를 받아 작업을 설명하는 읽기 전용 Skill.
+- `CLAUDE.md`, `CODEX.md`: 프로젝트 Skill 표에 `roadmap-explain`을 등록한다.
+- `README.md`: 로드맵 진행 상태 보기와 `roadmap-explain` 사용법을 짧게 적는다.
 
 ## Explicit exclusions
 
-- 수집기 코드(QK-ING-003·004), `access_scope` 값 체계(QK-SEC-001).
-- ClickUp 페이지 삭제(빈 `기타문서` 페이지는 예외이며 사람이 지운다), 공유·권한 설정 변경, `Untitled` 정리, 9~11주차 회의록 복원.
-- 기존 문서·회의록 본문 수정은 수정 방법(O-1)과 쓰기 허용 항목이 Decisions에 적히기 전에는 하지 않는다.
-- ClickUp 유료 요금제 전환 등 과금이 시작되는 설정 변경.
-- `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `docs/sdd/roadmap.md` 수정. 로드맵 표기 문제는 규칙 문서 7절 O-7에 적는다.
+- `AGENTS.md`, `.claude/settings.json`, 훅 수정.
+- WBS 보드(claude.ai artifact), ClickUp 쓰기. GitHub 쓰기는 이 작업의 Issue 생성(사용자 요청)과 PR만 한다.
+- 로드맵의 작업 정의(WBS 번호, 선행, 크기, 산출물) 변경. 상태 표시만 더한다.
+- 0.9 작업 브랜치(`docs/gh-18-adr-decisions`)의 변경.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문, ClickUp 식별자는 기록하지 않는다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: ClickUp `Qello` Space(반영 전 현황 확인과 반영 후 대조). 읽는 방법은 반영 담당(O-1)과 함께 정한다.
-- 외부 API로 보내는 데이터: 해당 없음. Workers AI 호출 없음.
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 해당 없음.
-- ClickUp 요금제 영향: Free Forever 요금제다. 파트는 Folder 위치로 정하므로 Custom Field 사용 한도(60회)를 쓰지 않는다.
-- ClickUp API 호출: 원문 백업(GET)과 승인한 페이지 수정(PUT). 토큰당 분당 100회 기본 한도 안에서 호출 간격을 0.7초 이상 둔다.
+- 새로 읽는 자료원: 해당 없음. GitHub Issue 목록은 `gh` CLI로 읽기만 한다. 색인 대상 추가가 아니다.
+- 외부 API로 보내는 데이터: 해당 없음
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
 - 인덱스 버전 변경: 없음
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `docs/sdd/clickup-writing-rules.md` | 확인 필요 | 사람 리뷰 |
-| `TASK.md` | 확인 필요 | 사람 리뷰 |
-| ClickUp `Qello` Space(`Team Docs`, `파트` Custom Field) | 확인 필요 | 사람 승인 |
+| `docs/sdd/roadmap.md` | 확인 필요 | 사람 리뷰 |
+| `scripts/roadmap_status.py` | 확인 필요 | 사람 리뷰 |
+| `.claude/skills/roadmap-explain/`, `.agents/skills/roadmap-explain/`, `CLAUDE.md`, `CODEX.md` | 확인 필요 | 사람 승인(AGENTS.md 4절) |
 
 ## Existing user-owned changes
 
-- 2026-10-10 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-10 `origin/main`(`a4c7be0`)에서 워크트리 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
-grep -nE 'app\.clickup\.com|[0-9]{15,}|pk_[0-9]+_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|[0-9a-f]{32}' TASK.md docs/sdd/clickup-writing-rules.md   # 결과가 없어야 한다. ClickUp 화면 URL·긴 숫자 ID, ClickUp·GitHub 토큰, 32자리 16진수
+python scripts/roadmap_status.py          # 표시가 최신이면 종료 코드 0
+python scripts/roadmap_status.py --write  # 두 번째 실행에서 변경 0건이어야 한다(멱등)
 ```
 
 ## Completion criteria
 
-- `clickup-writing-rules.md`에 폴더 구조, 회의록 템플릿, 용어집, 파트 필드, 공통 작성 규칙이 근거와 함께 있고 사람이 승인했다. 리뷰로 확인한다.
-- Decisions에서 허용한 ClickUp 반영 항목이 반영됐고, 다른 검토자가 다시 읽어 대조한 결과가 규칙 문서에 있다. 리뷰와 문서 기록으로 확인한다.
-- 문서에 토큰·원문·ClickUp 식별자가 없다. 위 검증 명령과 리뷰로 확인한다.
+- 로드맵 3절 모든 WBS 행에 상태가 있고, `python scripts/roadmap_status.py`가 GitHub Issue 상태와 일치한다고 보고한다.
+- `/roadmap-explain 1.5`와 `/roadmap-explain QK-ING-002`가 같은 작업을 출처가 붙은 설명으로 보여 준다. 사람이 실행해 확인한다.
 
 ## Decisions
 
-- 2026-10-10 사용자 확인: 선행 작업 0.1은 끝났다.
-- 2026-10-10 사용자 지시: "2번부터 진행". 에이전트는 진행 순서 2단계(규칙 초안 작성)부터 시작하는 것으로 해석했다. 작업 연결(ClickUp 작업·Issue)과 ClickUp 현황 재확인은 아직 하지 않았다.
-- 2026-10-10 사용자 결정(폴더 구조): ADR은 제외한다. 문서 종류 목록을 고정하고 `기타문서`를 없앤다.
-  에이전트 해석(확인 필요): ClickUp `ADR` 페이지는 색인하지 않고 그대로 둔다. ADR의 기준 원본은 백엔드 저장소 `docs/adr/`이고 새 ADR은 ClickUp에 쓰지 않는다.
-- 2026-10-10 에이전트 메모: 결정에 없던 세부 규칙(회의 종류 목록, 용어집 정렬, 파트 필드 범위·소급·Folder와의 우선순위 등)은 규칙 문서에 "(제안)"으로 표시했다.
-- 2026-10-10 사용자 결정(회의록): 에이전트 제안대로 구성한다. `회의록` 아래 평면 배치, 제목 `YYYY-MM-DD <회의 종류>`, 필드 4개(일시·회의 종류·참석자·관련 명세 ID), `결정 사항`·`액션 아이템` 절 추가.
-- 2026-10-10 사용자 결정: `용어집` 페이지를 만든다.
-- 2026-10-10 사용자 결정: `파트` 필드를 만든다(Custom Field 드롭다운, 값 `Backend`·`Android`·`Design`·`Common`). 아래 O-6 결정으로 바뀌었다(Free Forever 요금제).
-- 2026-10-10 사용자 결정: 공통 작성 규칙을 정한다.
-- 2026-10-10 사용자 답변: ClickUp 반영 방식은 아직 정하지 못했다. 규칙 문서 7절 O-1로 남긴다.
-- 2026-10-10 ClickUp 쓰기 허용 항목: 없음. 위 결정의 "만든다"는 규칙 내용에 대한 결정이며 쓰기 허용이 아니다. ClickUp 작업을 연결한 뒤, 사람이 검토해 승인한 페이지별 변환본과 규칙 문서 6절 항목만 여기에 적고 쓴다.
-- 2026-10-10 에이전트 판단(확인 필요): 저장소에 `sources.md`가 없어 산출물을 `docs/sdd/clickup-writing-rules.md`로 둔다.
-- 2026-10-10 사용자 확인: ClickUp Workspace는 Free Forever(무료) 요금제다.
-- 2026-10-10 사용자 결정(O-2): 기존 문서를 이번에 만든 규칙(회의록 템플릿, 공통 작성 규칙, 폴더 구조)에 맞게 모두 고친다. 수정 방법, 검토 절차, 쓰기 허용은 별도로 정한다.
-- 2026-10-10 사용자 결정(O-1): 에이전트가 ClickUp API로 고친다. 토큰은 서브셸에서만 쓰고 출력·기록하지 않는다. 원문을 `.work/0.4/`(Git 제외)에 백업한 뒤 1개를 시범으로 고치고, 화면에서 확인한 다음 나머지를 고친다.
-- 2026-10-10 사용자 결정: 결정 사항·액션 아이템 재구성은 에이전트가 페이지별 변환본과 원문 대비 차이를 만들고, 사람이 검토한 뒤 반영한다.
-- 2026-10-10 사용자 결정(O-6): 파트는 Folder 위치로 정한다. `파트` Custom Field는 만들지 않는다.
-- 2026-10-10 사용자 결정(작업 연결): ClickUp 작업을 만든다. 사람이 만들고 URL을 Work gate에 적는다. GitHub Issue를 함께 만들지는 확인 필요. 아래 작업 연결 변경으로 대체됐다.
-- 2026-10-10 확인: 저장소 루트 `.env`에 `CLICKUP_API_TOKEN`이 없다(값은 읽지 않고 설정 여부만 확인). 토큰이 들어오기 전에는 ClickUp API를 호출하지 않는다.
-- 2026-10-10 실행 기록: ClickUp `Team Docs` 147페이지를 GET으로 받아 `.work/0.4/raw/`(Git 제외)에 보관했다(호출 148회). 회의록 20개 변환본, 다른 문서 수정안 2건, 검토 파일을 `.work/0.4/`에 만들었다. ClickUp에는 쓰지 않았다.
-- 2026-10-10 사용자 결정(작업 연결 변경): ClickUp 작업을 만들지 않고 0.3·0.5·0.6처럼 초기 세팅 단계 예외로 진행한다.
-- 2026-10-10 사용자 승인("적용해서 ClickUp에 반영하고 템플릿도 적용"): ClickUp 쓰기 허용 항목은 다음과 같다.
-  1. `.work/0.4/plan.json`의 22건 PUT(회의록 20개 본문·제목 변환, 비속어필터링 V2 표, QELLO-GEO-005 코드 블록).
-  2. `Team Docs` 밖에 회의록 템플릿 Doc 1개 생성.
-  3. `Team Docs` 바로 아래에 `용어집` 페이지 1개 생성. 표 머리글만 두고 용어는 넣지 않는다.
-  삭제, 이동, 공유·권한 변경은 허용하지 않는다.
-- 2026-10-10 사용자 결정: 시범 1건(13주차 회의)을 반영한 뒤 API로 다시 읽어 대조하고, 통과하면 나머지를 이어서 반영한다. 화면 확인은 반영 후 사람이 한다.
-- 2026-10-10 실행 기록(ClickUp 쓰기): 승인한 22건을 PUT으로 반영했다. ClickUp Markdown 가져오기 문제(인용 합침, 목록 번호, `~` 취소선, 따옴표 굵게)를 확인하고 고친 내용으로 22건을 다시 반영했다. 시험 쓰기를 포함한 PUT은 49회다. `회의록 템플릿` Doc과 페이지, `용어집` 페이지를 POST 3회로 만들었다. 반영 뒤 API로 다시 읽어 대조했고, 22건 중 21건과 생성 2건이 일치했다. 비속어필터링 V2의 링크 1개는 다시 읽은 Markdown에서 사라져 화면 확인이 필요하다. 삭제·이동·공유 변경은 하지 않았다.
-- 2026-10-10 승인 범위와 다른 점: `용어집` 페이지에 안내 문장 1개와 입력용 빈 행 1개를 넣었다(승인 문구는 "표 머리글만"). 비속어필터링 V2 링크를 복구하려고 추적 매개변수를 뺀 주소로 한 번 썼다가 원래 주소로 되돌렸다.
-- 2026-10-10 GitHub Issue #16을 만들고 브랜치 이름을 `docs/clickup-writing-rules`에서 `docs/gh-16-clickup-writing-rules`로 바꿨다.
+- 2026-10-10 사용자 요청: 로드맵에 완료 체크 표시, ID로 작업을 자세히 설명하는 Skill. 별도 워크트리에서 작업한다.
+- 2026-10-10 사용자 결정: 로드맵 `✅`는 관련 Issue가 완료로 닫히면 표시한다. ClickUp 완료 판정(AGENTS.md 5절)과는 별개라고 로드맵에 적는다.
+- 2026-10-10 사용자 결정: Issue가 없는 0.1·0.7·0.8은 `⬜`로 둔다.
+- 2026-10-10 사용자 결정: GitHub Issue를 만들고, `CLAUDE.md`·`CODEX.md` 프로젝트 Skill 표에 `roadmap-explain`을 등록한다.
