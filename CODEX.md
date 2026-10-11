@@ -28,9 +28,10 @@ Skill은 `.agents/skills/`에 있고 `$<이름>`으로 호출한다.
 | `$harness-commit` | 변경을 검토 목적 단위로 나눈 커밋 초안을 보여주고 승인 후 커밋 |
 | `$harness-pr` | 로컬 검증, PR 초안, 승인 후 push와 PR 생성 |
 | `$harness-review` | 범위, 증빙, 데이터·비용 위험 검토. 구현은 수정하지 않음 |
+| `$roadmap-explain` | WBS 번호나 명세 ID로 로드맵 작업의 목적, 선행·후행, 완료 조건, 진행 이력, 이어받는 방법을 설명. 읽기 전용 |
 | `$speckit-*` | GitHub Spec Kit 명세 흐름. 아래 "Spec Kit 규칙"을 따른다 |
 
-- `harness-*`는 `.claude/skills/harness-*`를 복사해 Codex 도구에 맞게 고쳤다. 절차를 바꾸면 두 벌을 함께 고친다.
+- `harness-*`와 `roadmap-explain`은 `.claude/skills/`의 같은 이름 Skill을 복사해 Codex 도구에 맞게 고쳤다. 절차를 바꾸면 두 벌을 함께 고친다.
 - `speckit-*`는 `specify integration install codex`가 생성했다. 직접 고치지 않고 Spec Kit 버전을 올릴 때 다시 생성한다.
 
 ## Spec Kit 규칙

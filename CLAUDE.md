@@ -21,6 +21,7 @@
 | `/harness-commit` | 변경을 검토 목적 단위로 나눈 커밋 초안을 보여주고 승인 후 커밋 |
 | `/harness-pr` | 로컬 검증, PR 초안, 승인 후 push와 PR 생성 |
 | `/harness-review` | 범위, 증빙, 데이터·비용 위험 검토. 구현은 수정하지 않음 |
+| `/roadmap-explain` | WBS 번호나 명세 ID로 로드맵 작업의 목적, 선행·후행, 완료 조건, 진행 이력, 이어받는 방법을 설명. 읽기 전용 |
 | `/speckit-*` | GitHub Spec Kit 명세 흐름. 아래 "Spec Kit 규칙"을 따른다 |
 
 ## Spec Kit 규칙

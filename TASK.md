@@ -1,4 +1,4 @@
-# Task Contract: WBS 0.9 열린 결정 확정
+# Task Contract: 로드맵 진행 상태 표시와 작업 설명 Skill
 
 > Generated at: `2026-10-10`
 >
@@ -6,87 +6,72 @@
 
 ## Work gate
 
-- ClickUp 작업 ID / URL: 해당 없음: 초기 세팅 단계 예외. 진행 상태는 WBS 보드 0.9에서 관리
-- 기능명세서 ID / 링크: 해당 없음: Phase 0 준비 작업(WBS 0.9)이라 명세 백로그 대상이 아님. 작업 정의는 `docs/sdd/roadmap.md` 3절
+- ClickUp 작업 ID / URL: 해당 없음: 하네스·문서 운영 작업이라 WBS 작업이 아님(#9 Codex 하네스와 같은 예외)
+- 기능명세서 ID / 링크: 해당 없음: 명세 백로그 대상이 아닌 저장소 운영 도구
 - 팀 스프린트 ID: `QELLO-S2026-W41`
-- GitHub Issue: `#18`
-- Branch: `docs/gh-18-adr-decisions`
+- GitHub Issue: `#19`
+- Branch: `chore/gh-19-roadmap-status-explain`
 - Base branch: `main`
 
 ## Objective
 
-- `확인 필요` 상태인 ADR 네 건(ADR-002 임베딩 모델, ADR-008 실행 환경·비용 상한, ADR-009 생성 모델,
-  ADR-016 질의 원문 저장)의 결정을 `templates/decision-record.md` 양식으로 남겨 0.G 완료 조건 첫 항목을 닫고,
-  0.11 명세 3건이 확정된 전제 위에서 쓰이게 한다.
+- 로드맵에서 어떤 WBS 작업이 끝났고 진행 중인지 한눈에 보이게 한다.
+- 다른 팀원이 WBS 번호나 명세 ID 하나로 그 작업의 목적, 선행·후행, 산출물, 완료 조건, 진행 이력, 시작 방법을
+  자세히 설명받을 수 있게 한다.
 
 ## Scope
 
-- `docs/sdd/decisions/` 아래 결정 기록 4건을 만든다. 파일은 `ADR-002-embedding-model.md`,
-  `ADR-008-runtime-and-cost-cap.md`, `ADR-009-generation-model.md`, `ADR-016-query-text-retention.md`다.
-- ADR-002: 임베딩 모델을 `@cf/baai/bge-m3`로 정한다. 근거는 `spike-workers-ai.md` 3.2·5.1절이다.
-- ADR-008: 실행 환경을 Cloudflare Workers와 Supabase Free(pgvector·PGroonga)로 정하고, 색인은 Workers 밖
-  (GitHub Actions 또는 로컬 CLI)에서 실행한다. 추가 고정비 상한은 0원이다.
-- ADR-009: 2026-10-09에 정한 `@cf/qwen/qwen3-30b-a3b-fp8`(`/no_think`)을 기록한다.
-- ADR-016: 질의 메타데이터는 항상 저장하고, 질문·답변 원문은 저장 동의 질문에 동의한 건만 저장한다.
-  Discord 사용자 식별자는 원본 ID를 쓰고 보존 기간은 무기한이다. 동의는 Discord 공지와 ClickUp 문서로 받는다.
-- 각 기록의 Evidence에는 공식 문서 URL과 조회일, 또는 `spike-workers-ai.md`의 절 번호와 측정 조건을 적는다.
-- 네 기록이 다른 문서에 남기는 후속 수정은 각 기록의 발견 사항으로만 적는다.
+- `docs/sdd/roadmap.md`: 3절 단계 표에 `상태` 열, 2절 표에 `진행` 열, 상태 범례를 추가하고 1행의 상태 관리 문구를 고친다.
+- `scripts/roadmap_status.py`: GitHub Issue 제목의 `(WBS x.y)`로 상태를 계산해 로드맵 표시를 확인·갱신한다. GitHub는 읽기만 한다.
+- `.claude/skills/roadmap-explain/SKILL.md`, `.agents/skills/roadmap-explain/SKILL.md`: ID를 받아 작업을 설명하는 읽기 전용 Skill.
+- `CLAUDE.md`, `CODEX.md`: 프로젝트 Skill 표에 `roadmap-explain`을 등록한다.
+- `README.md`: 로드맵 진행 상태 보기와 `roadmap-explain` 사용법을 짧게 적는다.
 
 ## Explicit exclusions
 
-- ADR-007(저장 스키마)·ADR-010(키워드 검색 텍스트) 결정. Phase 1 스파이크 대상이다.
-- 0.11 명세 작성, 구현, 수집·검색·봇 코드.
-- Cloudflare Workers·Supabase 계정 설정, 배포, PGroonga 활성화 확인, 유료 플랜 전환.
-- `inventory.md`, `tokens.md`, `roadmap.md`, `constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
-  고칠 점은 결정 기록의 발견 사항에 적는다.
+- `AGENTS.md`, `.claude/settings.json`, 훅 수정.
+- WBS 보드(claude.ai artifact), ClickUp 쓰기. GitHub 쓰기는 이 작업의 Issue 생성(사용자 요청)과 PR만 한다.
+- 로드맵의 작업 정의(WBS 번호, 선행, 크기, 산출물) 변경. 상태 표시만 더한다.
+- 0.9 작업 브랜치(`docs/gh-18-adr-decisions`)의 변경.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 계정 ID, DB 연결 주소, 비공개 원문은 기록하지 않는다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음.
-- 외부 API로 보내는 데이터: 해당 없음. 외부 호출 없이 저장소 문서만 쓴다. 공식 문서 조회는 읽기뿐이다.
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons. 결정 내용은 추가 고정비 0원이고, 종량 호출은
-  Workers AI 무료 할당(일 10,000 Neurons) 안이다.
-- 인덱스 버전 변경: 없음. 임베딩 모델을 정했으므로 첫 인덱스 버전은 Phase 1(QK-EMB-001)에서 만든다.
+- 새로 읽는 자료원: 해당 없음. GitHub Issue 목록은 `gh` CLI로 읽기만 한다. 색인 대상 추가가 아니다.
+- 외부 API로 보내는 데이터: 해당 없음
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
+- 인덱스 버전 변경: 없음
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `docs/sdd/decisions/` | 확인 필요 | 사람 리뷰. 결정 승인은 사람이 한다(AGENTS.md 2절) |
-| `TASK.md` | 확인 필요 | 사람 리뷰 |
+| `docs/sdd/roadmap.md` | 확인 필요 | 사람 리뷰 |
+| `scripts/roadmap_status.py` | 확인 필요 | 사람 리뷰 |
+| `.claude/skills/roadmap-explain/`, `.agents/skills/roadmap-explain/`, `CLAUDE.md`, `CODEX.md` | 확인 필요 | 사람 승인(AGENTS.md 4절) |
 
 ## Existing user-owned changes
 
-- 2026-10-10 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-10 `origin/main`(`a4c7be0`)에서 워크트리 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
-grep -rnE 'github_pat_[A-Za-z0-9_]{20,}|cfat_[A-Za-z0-9_-]{20,}|pk_[0-9]{6,}|[0-9a-f]{32}' docs TASK.md   # 결과가 없어야 한다
-grep -rnE 'postgres(ql)?://|\.supabase\.co|\.neon\.tech' docs TASK.md                                      # 결과가 없어야 한다. DB 연결 주소
+python scripts/roadmap_status.py          # 표시가 최신이면 종료 코드 0
+python scripts/roadmap_status.py --write  # 두 번째 실행에서 변경 0건이어야 한다(멱등)
 ```
 
 ## Completion criteria
 
-- 결정 기록 4건에 Decision, Rationale, Alternatives considered, Evidence, Revisit conditions가 채워져 있다. 사람 리뷰로 확인한다.
-- ADR-016 기록의 Negative / risks에 무기한 보존이 constitution C-10의 기간 요건과 어긋난다는 내용과 삭제 요청 처리 방법이 있다. 사람 리뷰로 확인한다.
-- 결정 기록에 토큰, 계정 식별자, DB 연결 주소가 없다. 위 검증 명령과 리뷰로 확인한다.
+- 로드맵 3절 모든 WBS 행에 상태가 있고, `python scripts/roadmap_status.py`가 GitHub Issue 상태와 일치한다고 보고한다.
+- `/roadmap-explain 1.5`와 `/roadmap-explain QK-ING-002`가 같은 작업을 출처가 붙은 설명으로 보여 준다. 사람이 실행해 확인한다.
 
 ## Decisions
 
-- 2026-10-10 사용자 결정: 0.4·0.5와 같이 초기 세팅 단계 예외로 ClickUp 작업 없이 진행하고 GitHub Issue(#18)를 만든다.
-- 2026-10-10 사용자 결정: 0.9와 0.11을 분리하고 0.9 Issue·브랜치만 먼저 만든다.
-- 2026-10-10 사용자 결정(ADR-008): 실행 환경은 Cloudflare Workers와 관리형 Postgres 무료 티어다. Postgres는 최대한 무료 플랜으로 운영한다.
-- 2026-10-10 사용자 결정(ADR-008): 색인은 Workers 밖(GitHub Actions 또는 로컬 CLI)에서 실행하고 Workers는 질의응답을 맡는다.
-  Workers Free의 요청당 subrequest 50개와 CPU 10 ms 한도 때문이다.
-- 2026-10-10 사용자 확인: 팀 dev 테스트 서버의 매일 03:00 자동 정지 설정을 없앴다. `inventory.md` 3.1절 서술이 더 이상 사실이 아니다.
-- 2026-10-10 사용자 결정(ADR-002): 임베딩 모델은 `@cf/baai/bge-m3`다.
-- 2026-10-10 사용자 결정(ADR-016): 메타데이터는 항상 저장하고 원문은 옵트인으로 받는다. 옵트인은 저장 동의 질문으로 받는다.
-  저장 항목은 질문과 답변이고, Discord 사용자 식별은 원본 ID를 쓰며, 보존 기간은 무기한이다.
-  동의는 Discord 공지와 ClickUp 문서로 받는다.
-- 2026-10-10 에이전트 보고: 무기한 보존은 constitution C-10("동의한 범위와 기간에만 저장")의 기간 요건과 어긋난다고 알렸고,
-  사용자가 무기한을 다시 선택했다. 결정대로 기록하고 충돌을 각 기록의 위험 항목에 남긴다.
+- 2026-10-10 사용자 요청: 로드맵에 완료 체크 표시, ID로 작업을 자세히 설명하는 Skill. 별도 워크트리에서 작업한다.
+- 2026-10-10 사용자 결정: 로드맵 `✅`는 관련 Issue가 완료로 닫히면 표시한다. ClickUp 완료 판정(AGENTS.md 5절)과는 별개라고 로드맵에 적는다.
+- 2026-10-10 사용자 결정: Issue가 없는 0.1·0.7·0.8은 `⬜`로 둔다.
+- 2026-10-10 사용자 결정: GitHub Issue를 만들고, `CLAUDE.md`·`CODEX.md` 프로젝트 Skill 표에 `roadmap-explain`을 등록한다.

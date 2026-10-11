@@ -8,10 +8,24 @@
 | [AGENTS.md](AGENTS.md) | 사람과 AI 에이전트의 공통 작업 계약 |
 | [CLAUDE.md](CLAUDE.md) | Claude Code 진입점, Spec Kit 규칙 |
 | [CODEX.md](CODEX.md) | Codex 진입점, Spec Kit 규칙. 설정은 아래 "Codex 설정" |
-| [docs/sdd/roadmap.md](docs/sdd/roadmap.md) | 단계별 구축 순서, 명세 백로그(명세 ID) |
+| [docs/sdd/roadmap.md](docs/sdd/roadmap.md) | 단계별 구축 순서, 명세 백로그(명세 ID), 작업별 진행 상태(✅·🔄·⬜) |
 | [구축 WBS](https://claude.ai/artifact/HoKb7gf9wXkZ8nxDcgRZAa) | 로드맵 기준 단계별 작업·담당·진행 상태, 선후관계와 크리티컬 패스, 변경 기록. WBS 번호는 로드맵 백로그의 `WBS` 열과 같다(예: `1.5` = `QK-ING-002`) |
 | [docs/sdd/constitution.md](docs/sdd/constitution.md) | 원칙 초안. `/speckit-constitution`의 입력 |
 | [docs/github-workflow.md](docs/github-workflow.md) | ClickUp·GitHub Issue·PR 연결 |
+
+## 로드맵 진행 상황 보기
+
+- 진행 상태는 [로드맵](docs/sdd/roadmap.md) 표의 `상태` 열에 있다. ✅ 완료(Issue 닫힘), 🔄 진행 중(Issue 열림), ⬜ 시작 전.
+- 상태는 제목에 `(WBS x.y)`가 붙은 GitHub Issue에서 계산한다. WBS 작업 Issue를 만들 때 제목 끝에 붙인다. 예: `... (WBS 0.9)`
+- Issue를 열거나 닫은 뒤 갱신한다(`gh` 로그인 필요).
+
+  ```bash
+  python scripts/roadmap_status.py          # 바뀔 내용만 보기
+  python scripts/roadmap_status.py --write  # 로드맵에 반영
+  ```
+
+- 작업 하나를 이어받기 전에 설명을 본다. Claude Code는 `/roadmap-explain 1.5`, Codex는 `$roadmap-explain 1.5`.
+  WBS 번호 대신 명세 ID(`QK-ING-002`)를 넣어도 된다. 목적, 선행 작업, 완료 조건, 진행 이력, 시작 방법을 출처와 함께 보여 준다.
 
 ## GitHub Spec Kit 사용법
 
