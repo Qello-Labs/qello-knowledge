@@ -1,0 +1,10 @@
+{
+  "action": "opened",
+  "issue": {
+    "number": 99,
+    "title": "[QK-ING-002] GitHub 저장소 파일 수집",
+    "html_url": "https://github.com/Qello-Labs/qello-knowledge/issues/99",
+    "author_association": "MEMBER",
+    "body": "### Jira 상위 이슈 키\n\nSCRUM-42\n\n### 기존 Jira 이슈 키\n\n_No response_\n\n### 기능명세서 ID\n\nQK-ING-002\n\n### 기능명세서 링크\n\nspecs/QK-ING-002-github-repo-source/spec.md\n\n### 팀 스프린트 ID\n\nQELLO-S2026-W43\n\n### 작업 종류\n\nfeature\n\n### 이번 주 산출물·구현 범위\n\n- 산출물: GitHub 저장소 파일 수집기\n- 제외: 코드 청킹\n\n### 완료 조건·검증 방법\n\n- [ ] 저장소 파일 목록을 권한 메타데이터와 함께 읽는다 — 검증: 단위 테스트\n\n### 자료·모델·저장·운영 영향\n\n자료원·접근 범위: 해당 없음\n"
+  }
+}

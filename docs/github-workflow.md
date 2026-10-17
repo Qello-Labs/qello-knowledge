@@ -8,11 +8,24 @@
 
 - 주간 계획에서 합의한 작업만 파트별 Jira 스프린트(`Backend·Sprint N`, `Android·Sprint N`)에 넣는다. 담당자·기한·우선순위·상태는 Jira 기본 필드로 관리한다.
 - 제목은 `[기능명세서 ID] 이번 주에 끝낼 산출물`로 쓴다. 명세가 없는 도구·기술부채 작업은 명세 입력에 해당 없음과 사유를 남긴다.
-- GitHub Issue가 필요하면 Qello Knowledge 작업 폼을 사용한다. Jira 이슈 키(`SCRUM-<번호>`)와 URL, 명세 ID·링크, 팀 주기 `QELLO-SYYYY-Www`를 입력한다. Jira 이슈 설명에도 GitHub Issue URL을 붙여 양쪽에서 찾을 수 있게 한다.
+- GitHub Issue가 필요하면 Qello Knowledge 작업 폼을 사용한다. Jira 상위 이슈 키(기본 `SCRUM-42`), 명세 ID·링크, 팀 주기 `QELLO-SYYYY-Www`를 입력한다. Issue를 열면 Jira 하위 작업이 자동으로 생긴다(아래 "Issue를 열면 생기는 Jira 하위 작업").
 - 팀 주기 ID는 사람이 읽는 표기다. Jira 이슈 키와 스프린트를 대신하지 않는다.
 - `feature`, `bug`, `tech-debt`, `research`는 작업 종류이고 Jira 레이블로 붙인다. 파트는 `team-backend`·`team-android` 레이블로 구분한다. 상태·우선순위 레이블은 만들지 않는다. 이 폼은 GitHub 라벨을 자동 생성하거나 동기화하지 않는다.
 - Android·Backend는 별도 이슈로 만들고 같은 명세 ID를 연결한다. 보드에는 복제하지 않고 스프린트·레이블 필터로 조회한다.
 - 하위 작업(Subtask)은 담당자 또는 완료 조건이 다른 독립 산출물에만 만든다. 구현·리뷰·테스트 순서는 체크리스트로 관리한다.
+
+## Issue를 열면 생기는 Jira 하위 작업
+
+`.github/workflows/jira-subtask.yml`이 작업 폼으로 연 Issue마다 `scripts/jira_subtask.py`를 실행한다. 저장소 소유자·멤버·협업자가 연 Issue만 처리한다.
+
+- 폼의 Jira 상위 이슈 아래에 하위 작업을 만든다. 요약은 Issue 제목, 레이블은 작업 종류와 파트(`team-backend`), 설명은 GitHub Issue URL과 폼의 명세·스프린트·산출물·완료 조건이다. 담당자는 사람이 정한다.
+- 하위 작업은 상위 이슈의 스프린트를 따른다. 상위 이슈가 활성 스프린트에 없으면 하위 작업은 만들고 Issue 댓글로 알린다. 스프린트는 자동으로 옮기지 않는다. 주간 계획에서 상위 이슈를 활성 스프린트로 옮기면 하위 작업도 함께 옮겨진다.
+- 만든 뒤 Issue에 Jira 키와 권장 브랜치 이름을 댓글로 남긴다. 그 댓글이 있거나 폼의 "기존 Jira 이슈 키"를 채웠으면 다시 만들지 않는다.
+- 상위 키가 틀렸거나 API 호출이 실패하면 실패 댓글을 남긴다. 고친 뒤 Actions의 `Jira subtask` 워크플로를 Issue 번호로 수동 실행한다. Issue 본문을 고치는 것만으로는 다시 실행되지 않는다.
+
+필요한 저장소 Secret은 `JIRA_BASE_URL`(Jira 사이트 주소), `JIRA_USER_EMAIL`, `JIRA_API_TOKEN`(그 계정의 Atlassian API 토큰)이다. 토큰 발급과 등록은 사람이 하고 값은 저장소·Issue·대화에 남기지 않는다. 선택 저장소 변수 `JIRA_PROJECT_KEY`(기본 `SCRUM`)와 `JIRA_PART_LABEL`(기본 `team-backend`)로 기본값을 바꿀 수 있다. 하위 작업의 보고자는 토큰 계정이 된다.
+
+실제 호출 없이 만들 내용을 보려면 `python scripts/jira_subtask.py --dry-run --event tests/fixtures/issue_opened.json`을 실행한다. 단위 테스트는 `python -m unittest discover -s tests -v`다.
 
 ## 브랜치·PR과 Jira 연결
 
