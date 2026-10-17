@@ -1,6 +1,6 @@
 ---
 name: harness-review
-description: PR이나 현재 브랜치 변경을 ClickUp 작업 범위, 완료 조건 증빙, 평가 조건, 데이터·비용·비밀값 위험 기준으로 검토하고 승인 / 변경 요청 / BLOCKED 권고를 낸다. "리뷰해줘", "PR 검토", "머지해도 돼?" 요청에 사용한다. 리뷰 중에는 구현을 수정하지 않는다.
+description: PR이나 현재 브랜치 변경을 Jira 이슈 범위, 완료 조건 증빙, 평가 조건, 데이터·비용·비밀값 위험 기준으로 검토하고 승인 / 변경 요청 / BLOCKED 권고를 낸다. "리뷰해줘", "PR 검토", "머지해도 돼?" 요청에 사용한다. 리뷰 중에는 구현을 수정하지 않는다.
 ---
 
 # PM and Safety Review
@@ -15,13 +15,13 @@ PR 본문, 실제 diff, 평가 보고서, 검증 명령 결과를 읽는다.
 
 ### 범위
 
-- ClickUp 작업, 기능명세서 ID, `TASK.md` Scope와 실제 diff가 일치하는가
+- Jira 이슈, 기능명세서 ID, `TASK.md` Scope와 실제 diff가 일치하는가
 - `TASK.md` Ownership 밖의 파일이 바뀌었는가
 - 다른 사람의 변경을 덮어쓰거나 되돌리지 않았는가
 
 ### 연결과 규칙
 
-- PR의 ClickUp URL과 ClickUp 작업 설명의 PR URL이 양쪽에 있는가
+- PR에 Jira 이슈 URL이 있고, 브랜치 이름의 Jira 키가 `TASK.md`의 Jira 이슈와 같은가
 - GitHub Issue가 있으면 `Closes #번호`와 브랜치·커밋 번호가 일치하는가
 - 커밋이 하나의 검토 목적씩 나뉘어 있는가
 

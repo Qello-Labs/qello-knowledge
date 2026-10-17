@@ -7,7 +7,7 @@ description: 로컬 검증을 실행하고 PR 옵션을 질문으로 정한 뒤,
 
 Claude Code판(`.claude/skills/harness-pr`)과 절차가 같고 Codex 도구에 맞춘 부분만 다르다. 절차를 바꾸면 두 Skill을 함께 고친다.
 
-브랜치 작업을 최신화 → 검증 → 초안 → push → PR 생성 → ClickUp 역링크 안내 순으로 마무리한다.
+브랜치 작업을 최신화 → 검증 → 초안 → push → PR 생성 → Jira 연결 확인 순으로 마무리한다.
 `AGENTS.md` 5절(커밋과 PR)과 7절(완료 전 검증), `docs/github-workflow.md`의 실행 절차다.
 
 참조: `references/writing-style.md` — PR 제목·본문 작성 규칙, 금지 표현, 제출 전 점검
@@ -31,9 +31,11 @@ gh pr status
 - 이미 열린 PR이 있으면 새로 만들지 않는다. 0.5~1단계를 거쳐 push한 뒤 4.5단계로 본문을 고친다.
 - 미커밋 변경이 있으면 알리고 `$harness-commit`으로 먼저 커밋할지 묻는다. 임의로 커밋하지 않는다.
 - 커밋이 하나도 없으면 중단한다.
-- `TASK.md`에서 ClickUp 작업 URL, 기능명세서 ID, 팀 스프린트 ID, 완료 조건을 읽는다.
+- `TASK.md`에서 Jira 이슈 키·URL, 기능명세서 ID, 팀 스프린트 ID, 완료 조건을 읽는다.
   비어 있으면 추측하지 않고 사용자에게 묻는다.
 - 브랜치에 `gh-<번호>`가 있으면 `gh issue view <번호> --json title,body,url`로 Issue를 함께 읽는다.
+- 브랜치 이름에 Jira 이슈 키(`SCRUM-<번호>`)가 없고 `TASK.md`에 Jira 이슈가 있으면, 이 PR이 Jira 개발 패널에
+  연결되지 않는다고 알린다. 브랜치 이름을 임의로 바꾸지 않는다.
 
 ## 0.5 최신화
 
@@ -67,7 +69,7 @@ git diff --check origin/main...HEAD
 1. **PR 상태** — Ready for review(기본) / Draft
 2. **리뷰어** — 저장소 협업자 중 선택 / 지정 안 함. 리뷰어를 저장소에 고정하지 않는다.
 
-ClickUp 작업 상태는 묻거나 바꾸지 않는다. PR 병합은 완료 판정이 아니다(`AGENTS.md` 5절).
+Jira 이슈 상태는 묻거나 바꾸지 않는다. PR 병합은 완료 판정이 아니다(`AGENTS.md` 5절).
 
 ## 3. 초안 제시
 
@@ -77,8 +79,9 @@ ClickUp 작업 상태는 묻거나 바꾸지 않는다. PR 병합은 완료 판�
 `.github/PULL_REQUEST_TEMPLATE.md`는 담을 내용의 목록이며, 칸 이름과 안내 주석은 본문에 남기지 않는다.
 
 - 제목은 `<type>: <한국어 요약>`이다. `type`은 브랜치 접두사와 같게 쓰고 scope는 쓰지 않는다.
+  Jira 이슈 키는 제목에 넣지 않는다. Jira 연결은 브랜치 이름으로 한다.
   이 저장소에는 제목 형식 검사기가 없어 리뷰에서 확인한다.
-- `TASK.md`의 ClickUp 작업 URL, 기능명세서 ID, 팀 스프린트 ID와 Issue 번호(`Closes #<번호>`)를 본문에 넣는다.
+- `TASK.md`의 Jira 이슈 URL, 기능명세서 ID, 팀 스프린트 ID와 Issue 번호(`Closes #<번호>`)를 본문에 넣는다.
   명세가 없으면 해당 없음과 사유를 쓴다.
 - 결정 근거, 대안 비교, 커밋별 설명은 본문에 옮기지 않는다. `TASK.md`나 보고서에 없으면 그쪽에 먼저 적고
   본문에는 결론과 링크만 둔다.
@@ -86,7 +89,7 @@ ClickUp 작업 상태는 묻거나 바꾸지 않는다. PR 병합은 완료 판�
   같은 내용을 두 번 쓰지 않는다. 증빙은 결과 칸에 링크로 붙인다.
 - 저장소 파일 링크는 지금 HEAD 커밋에 고정한 주소로 건다. 커밋 전이라 주소를 모르면 초안에 자리표시를 두고
   push 직전에 채운다.
-- 리뷰 확인 체크박스는 **실제로 한 것만** 체크한다. ClickUp 역링크 항목은 5단계 이후에만 체크할 수 있으므로
+- 리뷰 확인 체크박스는 **실제로 한 것만** 체크한다. Jira 연결 확인 항목은 5단계 이후에만 체크할 수 있으므로
   초안에서는 비워 둔다.
 
 초안 파일은 저장소 밖 임시 디렉터리(`mktemp -d`로 만든 곳)에 쓴다. 사용자에게 보여주기 전에 글자 수를 재고
@@ -130,22 +133,22 @@ gh pr view <번호> --json title,body,headRefOid
 gh pr edit <번호> --title "<제목>" --body-file <초안파일>
 ```
 
-## 5. ClickUp 역링크
+## 5. Jira 연결 확인
 
-`docs/github-workflow.md` 5단계에 따라 ClickUp 작업 설명에 PR URL을 붙여야 한다. 이 Skill은 ClickUp에 쓰지 않는다.
-PR URL을 보여주고 사용자에게 붙여 달라고 요청한다. 사용자가 확인하면 PR 본문의 해당 체크박스를 갱신할지 묻는다.
+`docs/github-workflow.md` 5단계에 따라 Jira 이슈 개발 패널에 이 PR이 보이는지 확인해야 한다. 이 Skill은 Jira에 쓰지 않는다.
+PR URL과 Jira 이슈 URL을 보여주고 사용자에게 확인을 요청한다. 보이지 않으면 Jira 이슈 설명에 PR URL을 붙여 달라고 한다. 사용자가 확인하면 PR 본문의 해당 체크박스를 갱신할지 묻는다.
 
 ## 6. 완료 보고
 
-PR URL, 제목, Draft 여부, 리뷰어, 실행한 검증과 결과, CI 상태, ClickUp 역링크 여부를 보고한다.
+PR URL, 제목, Draft 여부, 리뷰어, 실행한 검증과 결과, CI 상태, Jira 연결 확인 여부를 보고한다.
 실행하지 못한 검증은 이유와 남은 위험을 함께 적는다. 리뷰가 필요하면 `$harness-review`를 제안한다.
-머지와 ClickUp 완료 처리는 사람이 한다.
+머지와 Jira 이슈 완료 처리는 사람이 한다.
 
 ## 금지
 
 - 승인 없이 push하거나 PR을 만들거나 PR 제목·본문을 바꾸지 않는다.
 - 검증 실패를 숨기거나 실행하지 않은 검증을 통과로 쓰지 않는다.
 - 일반 force push, `main` 직접 push, PR 자동 머지를 하지 않는다.
-- PR 병합을 ClickUp 완료로 처리하지 않는다.
+- PR 병합을 Jira 이슈 완료로 처리하지 않는다.
 - PR 본문에 `.env` 값, 토큰, DB 연결 정보, 비공개 원문, 민감한 질의 원문을 쓰지 않는다.
 - PR 본문에 작성 도구 이름이나 서명 줄(Generated with ...)을 넣지 않는다.

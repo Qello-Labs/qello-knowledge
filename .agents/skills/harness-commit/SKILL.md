@@ -60,7 +60,7 @@ git log --oneline -10
 - `type`은 Conventional Commits 타입이다. 브랜치 prefix가 있으면 맞춘다.
 - `scope`는 선택이다. 소문자, 숫자, 하이픈만 쓴다.
 - `summary`는 마침표 없는 한 줄이다. 브랜치의 기존 커밋 언어를 따른다.
-- ClickUp ID와 스프린트 ID를 접두사로 쓰지 않는다(`docs/github-workflow.md`).
+- Jira 이슈 키와 스프린트 ID를 커밋 메시지에 넣지 않는다(`docs/github-workflow.md`).
 - 본문(body)은 제목만으로 이유가 부족할 때만 쓴다.
 
 ## 4. 초안 제시
@@ -68,7 +68,7 @@ git log --oneline -10
 커밋하기 전에 전체 계획을 보여주고 승인을 받는다.
 
 ```text
-브랜치: feat/gh-12-notion-loader   (type=feat, issue=#12)
+브랜치: feat/SCRUM-95-gh-12-notion-loader   (type=feat, issue=#12)
 
 1. feat(ingest): add Notion page loader with permission metadata (#12)
    - src/qello_knowledge/sources/notion.py
