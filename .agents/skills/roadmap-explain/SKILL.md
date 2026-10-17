@@ -13,7 +13,7 @@ Codex 샌드박스는 네트워크를 막으므로 `gh issue list`, `gh issue vi
 입력: 사용자가 `$roadmap-explain` 뒤에 적은 값. WBS 번호(`0.9`, `1.5`, `2.G`), 명세 ID(`QK-ING-002`), 접두사를 뺀 명세 ID(`ING-002`) 중 하나다.
 비어 있거나 여러 작업에 걸리면 후보를 한 메시지로 보여 주고 답을 받을 때까지 진행하지 않는다.
 
-이 Skill은 설명만 한다. 파일을 고치지 않고, GitHub·ClickUp·WBS 보드에 쓰지 않으며, `.env`와 `secrets/`를 읽지 않는다.
+이 Skill은 설명만 한다. 파일을 고치지 않고, GitHub·Jira·Confluence·WBS 보드에 쓰지 않으며, `.env`와 `secrets/`를 읽지 않는다.
 설명을 듣고 작업을 시작하려면 사용자가 따로 요청해야 한다.
 
 ## 1. ID 풀기
@@ -106,7 +106,7 @@ Codex 샌드박스는 네트워크를 막으므로 `gh issue list`, `gh issue vi
 
 ## 7. 이어받는 방법
 1. Issue: 없으면 `docs/github-workflow.md` 절차와 Issue 폼으로 만들고 제목 끝에 `(WBS <번호>)`를 붙이라고 안내한다(로드맵 상태 계산에 쓰인다).
-2. 브랜치: `<type>/gh-<번호>-<slug>`(AGENTS.md 1절). Issue가 없으면 번호 자리는 `<번호>`로 둔다.
+2. 브랜치: `<type>/SCRUM-<번호>-gh-<번호>-<slug>`(AGENTS.md 1절). Jira 이슈나 GitHub Issue가 없으면 번호 자리는 `<번호>`로 둔다.
    type은 구현이면 `feat`, 문서·결정·조사면 `docs`, 하네스·도구면 `chore`를 `(제안)`으로 적는다.
 3. `TASK.md`: Scope·Exclusions·Data and cost impact에 적어야 할 이 작업 특유의 항목
 4. 명세가 없으면 `$speckit-specify <명세 ID> <설명>` 예시, 있으면 다음 Spec Kit 단계

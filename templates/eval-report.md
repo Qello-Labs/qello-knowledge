@@ -4,7 +4,7 @@
 > 집계값, 질문 ID, 논리 라벨, 정리한 요약만 기록한다.
 
 > Created at: `<CREATED-AT>`
-> ClickUp 작업: `<CLICKUP-TASK-URL>`
+> Jira 이슈: `<JIRA-ISSUE-URL>`
 > Result: `PASS | FAIL | PARTIAL | NOT_RUN`
 
 ## 1. Contract

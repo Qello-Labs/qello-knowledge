@@ -14,7 +14,7 @@ Codex는 `AGENTS.md`만 자동으로 읽고 `@파일` import 문법이 없다. �
 ## 작업 시작 순서
 
 1. `AGENTS.md`의 공통 정책을 확인한다.
-2. `TASK.md`의 범위와 ClickUp 작업을 확인한다. 없으면 `templates/task-contract.md`로 초안을 만들고
+2. `TASK.md`의 범위와 Jira 이슈를 확인한다. 없으면 `templates/task-contract.md`로 초안을 만들고
    사람의 확인을 받는다.
 3. 작업 유형에 맞는 Skill과 아래 문서 선택표의 해당 행만 읽는다.
 4. 허용 범위와 금지 작업을 확인한 뒤 시작한다.
@@ -57,7 +57,7 @@ Skill은 `.agents/skills/`에 있고 `$<이름>`으로 호출한다.
 
 | 작업 | 읽을 문서 |
 | --- | --- |
-| ClickUp·Issue·PR 연결 | `docs/github-workflow.md` |
+| Jira·Issue·PR 연결 | `docs/github-workflow.md` |
 | 하네스 구조와 출처 | `docs/harness/OVERVIEW.md` |
 | 기술 선택·정책 결정 | `templates/decision-record.md` |
 | 검색·생성 평가 | `templates/eval-report.md`, `AGENTS.md` 3.3~3.5 |
@@ -69,7 +69,7 @@ Skill은 `.agents/skills/`에 있고 `$<이름>`으로 호출한다.
 - `.env`, `.env.*`, `secrets/`를 읽지 않는다. `.codex/config.toml`의 권한 프로필이 샌드박스 명령에서 차단한다.
   샌드박스 밖 실행 승인을 요청하는 명령에도 이 경로를 넣지 않는다.
 - 공유 DB에 `DROP`, `TRUNCATE`, 조건 없는 `DELETE`를 실행하지 않는다.
-- ClickUp, Notion, GitHub, Figma 등 원본 자료원에 쓰는 MCP 도구·커넥터는 사람이 요청한 경우에만 호출한다.
+- Jira, Confluence, ClickUp, Notion, GitHub, Figma 등 원본 자료원에 쓰는 MCP 도구·커넥터는 사람이 요청한 경우에만 호출한다.
 - 무료 한도를 넘길 수 있는 대량 임베딩·평가는 예상 사용량을 먼저 보고한다.
 - `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, `.claude/**`, `.codex/**`, `.agents/**`는 사람의 승인 후에만 수정한다.
 

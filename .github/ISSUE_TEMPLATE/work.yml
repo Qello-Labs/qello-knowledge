@@ -1,29 +1,30 @@
 name: Qello Knowledge 작업
-description: ClickUp 작업에 RAG 구현·조사 산출물과 검증 증거를 연결합니다.
+description: Jira 이슈에 RAG 구현·조사 산출물과 검증 증거를 연결합니다.
 body:
   - type: markdown
     attributes:
       value: |
         제목은 [기능명세서 ID] 이번 주에 끝낼 산출물로 작성합니다.
-        기능명세서는 요구 동작, ClickUp 스프린트 작업은 이번 주 검증할 산출물을 관리합니다.
-        담당자·기한·우선순위·상태는 ClickUp에서 합의해 관리하고 팀 보드에 작업을 복제하지 않습니다.
+        기능명세서는 요구 동작, Jira 스프린트 이슈는 이번 주 검증할 산출물을 관리합니다.
+        담당자·기한·우선순위·상태는 Jira에서 합의해 관리하고 보드에 이슈를 복제하지 않습니다.
+        브랜치는 <type>/SCRUM-<번호>-gh-<이 Issue 번호>-<slug>로 만들어 Jira 개발 패널에 연결합니다.
         명세가 없는 도구·기술부채 작업은 해당 없음과 사유를 적습니다.
         입력한 ID·URL의 일치와 링크 유효성은 리뷰에서 확인합니다.
 
   - type: input
-    id: clickup_task_id
+    id: jira_issue_key
     attributes:
-      label: ClickUp 작업 ID
-      description: 작업 URL에 있는 실제 task ID입니다. 목록 ID나 팀 스프린트 ID가 아닙니다.
-      placeholder: "<CLICKUP-TASK-ID>"
+      label: Jira 이슈 키
+      description: Jira SCRUM 프로젝트의 이슈 키입니다. 스프린트 이름이나 팀 스프린트 ID가 아닙니다.
+      placeholder: "SCRUM-<번호>"
     validations:
       required: true
 
   - type: input
-    id: clickup_task_url
+    id: jira_issue_url
     attributes:
-      label: ClickUp 작업 URL
-      placeholder: "https://app.clickup.com/t/<CLICKUP-TASK-ID>"
+      label: Jira 이슈 URL
+      placeholder: "https://<jira-site>/browse/SCRUM-<번호>"
     validations:
       required: true
 
@@ -47,7 +48,7 @@ body:
     id: sprint_id
     attributes:
       label: 팀 스프린트 ID
-      description: 사람이 읽는 팀 주기입니다. ClickUp의 task/list ID와 구분합니다.
+      description: 사람이 읽는 팀 주기입니다. Jira 이슈 키·스프린트와 구분합니다.
       placeholder: "QELLO-SYYYY-Www"
     validations:
       required: true
@@ -56,7 +57,7 @@ body:
     id: work_type
     attributes:
       label: 작업 종류
-      description: ClickUp 작업 종류 태그와 맞춥니다. 파트·상태·우선순위는 태그로 추가하지 않습니다.
+      description: Jira 작업 종류 레이블과 맞춥니다. 상태·우선순위는 레이블로 추가하지 않습니다.
       options:
         - feature
         - bug
@@ -103,7 +104,7 @@ body:
       label: 관련 작업·화면·PR
       description: Android·Backend가 연관되면 별도 작업 URL과 같은 명세 ID를 연결합니다. Figma는 화면 작업만 연결합니다.
       value: |
-        관련 Android·Backend 작업: 해당 없음 또는 ClickUp URL
+        관련 Android·Backend 작업: 해당 없음 또는 Jira 이슈 URL
         Figma: 해당 없음 또는 링크
         GitHub PR: 미정
     validations:
@@ -129,7 +130,7 @@ body:
     attributes:
       label: 연결·범위 확인
       options:
-        - label: 주간 계획에서 합의한 ClickUp 작업이며 팀 전체 보드에 중복 작업을 만들지 않았습니다.
+        - label: 주간 계획에서 합의한 Jira 이슈이며 보드에 중복 이슈를 만들지 않았습니다.
           required: true
         - label: 완료 조건에 관찰 가능한 결과와 검증 방법을 기록했습니다.
           required: true
