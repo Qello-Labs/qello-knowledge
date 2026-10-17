@@ -6,11 +6,11 @@
 
 ## Work gate
 
-- ClickUp 작업 ID / URL:
+- Jira 이슈: `SCRUM-<번호>` / <!-- 이슈 URL -->
 - 기능명세서 ID / 링크: <!-- 명세가 없으면 '해당 없음: 사유' -->
 - 팀 스프린트 ID: `QELLO-SYYYY-Www`
 - GitHub Issue: 해당 없음 또는 `#<번호>`
-- Branch:
+- Branch: <!-- <type>/SCRUM-<번호>-gh-<번호>-<short-slug> -->
 - Base branch: `main`
 
 ## Objective
@@ -53,7 +53,7 @@ git diff --check
 
 ## Completion criteria
 
-<!-- ClickUp 작업의 관찰 가능한 완료 조건 1~3개를 옮긴다. -->
+<!-- Jira 이슈의 관찰 가능한 완료 조건 1~3개를 옮긴다. -->
 - TODO
 
 ## Decisions

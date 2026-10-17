@@ -1,7 +1,7 @@
 # Decision Record: <DECISION-ID>
 
 > Created at: `<CREATED-AT>`
-> ClickUp 작업: `<CLICKUP-TASK-URL>`
+> Jira 이슈: `<JIRA-ISSUE-URL>`
 > 기능명세서 ID: `<SPEC-ID>` 또는 해당 없음
 > Status: Proposed
 
