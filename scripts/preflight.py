@@ -67,6 +67,7 @@ RULES = (
     ("openai-key", re.compile(r"\bsk-(?!ant-)(?:proj-)?[A-Za-z0-9_-]{32,}")),
     ("notion-token", re.compile(r"\b(?:secret|ntn)_[A-Za-z0-9]{40,}\b")),
     ("figma-token", re.compile(r"\bfigd_[A-Za-z0-9_-]{30,}")),
+    ("atlassian-token", re.compile(r"\bATATT[A-Za-z0-9_=-]{20,}")),
     (
         "db-url-with-password",
         re.compile(r"(?i)\bpostgres(?:ql)?(?:\+\w+)?://[^:/\s@]+:(?!<|\$\{)[^@\s]{3,}@"),
