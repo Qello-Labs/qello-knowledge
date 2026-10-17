@@ -6,21 +6,22 @@
 다른 문서와 자동화는 이 계약을 완화하거나 우회할 수 없다. 도구별 진입점은 Claude Code가 `CLAUDE.md`,
 Codex가 `CODEX.md`다.
 
-ClickUp·GitHub 연결 절차는 [작업 연결 규칙](docs/github-workflow.md)을, 하네스 구성과 출처는
+Jira·GitHub 연결 절차는 [작업 연결 규칙](docs/github-workflow.md)을, 하네스 구성과 출처는
 [하네스 개요](docs/harness/OVERVIEW.md)를 따른다.
 
 ## 1. 작업 시작 게이트
 
 구현 전에 다음을 모두 확인한다.
 
-1. 주간 계획에서 합의한 ClickUp 작업이 있다. 기능명세서 ID가 없으면 해당 없음과 사유가 있다.
+1. 주간 계획에서 합의한 Jira 이슈(`SCRUM-<번호>`)가 있다. 기능명세서 ID가 없으면 해당 없음과 사유가 있다.
 2. `templates/task-contract.md`로 만든 `TASK.md`에 목표, 범위, 제외 범위, 완료 조건이 있다.
 3. `main`이 아닌 작업 브랜치에서 일한다. 브랜치는 최신 `origin/main`에서 만든다.
-   형식은 `<type>/<short-slug>`이고, GitHub Issue가 있으면 `<type>/gh-<번호>-<short-slug>`다.
+   형식은 `<type>/SCRUM-<번호>-<short-slug>`이고, GitHub Issue가 있으면 `<type>/SCRUM-<번호>-gh-<번호>-<short-slug>`다.
+   사람이 Jira 이슈 없이 진행하기로 정한 예외 작업은 `<type>/gh-<번호>-<short-slug>`다.
 4. 시작할 때 `git status --short`를 확인하고 기존 변경을 보존한다.
-5. 브랜치, `TASK.md`, ClickUp 작업이 같은 작업을 가리킨다.
+5. 브랜치, `TASK.md`, Jira 이슈가 같은 작업을 가리킨다.
 
-ClickUp 작업이나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지만 한다. 구현, 색인 실행,
+Jira 이슈나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지만 한다. 구현, 색인 실행,
 외부 API 비용이 드는 작업, PR 생성은 하지 않고 `BLOCKED`로 보고한다.
 
 ## 2. 역할 분리
@@ -84,10 +85,10 @@ ClickUp 작업이나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지�
 ## 5. 커밋과 PR
 
 - 커밋은 Conventional Commits `<type>(<scope>): <summary>` 형식이다. GitHub Issue가 있으면 끝에 `(#번호)`를 붙인다.
-  ClickUp ID와 스프린트 ID는 커밋 접두사로 쓰지 않는다.
+  Jira 이슈 키와 스프린트 ID는 커밋 메시지에 넣지 않는다. Jira 이슈 키는 브랜치 이름에만 넣는다.
 - 하나의 커밋에는 하나의 검토 목적만 담는다. 실행 절차는 `/harness-commit`을 따른다.
 - PR은 `.github/PULL_REQUEST_TEMPLATE.md`를 채운다. 실행 절차는 `/harness-pr`을 따른다.
-- PR 병합은 완료 판정이 아니다. ClickUp 완료는 주간 리뷰에서 완료 조건과 증빙을 확인한 뒤 바꾼다.
+- PR 병합은 완료 판정이 아니다. Jira 이슈 완료는 주간 리뷰에서 완료 조건과 증빙을 확인한 뒤 바꾼다.
 - `main` 직접 push, 일반 force push, Hook 우회(`--no-verify`)를 하지 않는다. rebase 직후 본인 작업 브랜치에
   한해 `--force-with-lease`만 허용한다.
 
@@ -95,7 +96,7 @@ ClickUp 작업이나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지�
 
 다음 값을 코드, 문서, Issue, PR, 커밋, 평가 세트, 질의 로그, 프롬프트 예시에 기록하지 않는다.
 
-- `.env` 실제 값, API 토큰(Cloudflare, Anthropic, GitHub, ClickUp, Notion, Figma 등),
+- `.env` 실제 값, API 토큰(Cloudflare, Anthropic, GitHub, Atlassian, ClickUp, Notion, Figma 등),
   Discord 봇 토큰, 비밀번호, 개인 키
 - DB 연결 주소, 서버 주소, 내부 도메인
 - 비공개 문서 원문, 민감한 질의 원문
@@ -129,7 +130,7 @@ git diff --check
 
 ```text
 status
-clickup_task
+jira_issue
 spec_id
 changed_files
 executed_checks
@@ -154,13 +155,13 @@ estimated_or_used_neurons
 
 ## 9. 금지 행위
 
-- ClickUp 작업이나 `TASK.md` 없이 구현 시작
+- Jira 이슈나 `TASK.md` 없이 구현 시작
 - 실행하지 않은 검증·평가를 통과로 보고
 - 평가 수치를 높이려고 같은 변경에서 평가 세트나 정답 라벨 수정
 - 테스트 삭제·skip, 경고 suppress로 검증 통과
 - 승인 상태나 검증 결과를 추측해서 보고
 - 자신이 만든 설계나 구현을 자신이 승인
-- 원본 자료원(ClickUp, Notion, GitHub, Figma)에 사람이 요청하지 않은 쓰기
+- 원본 자료원(Jira, Confluence, ClickUp, Notion, GitHub, Figma)에 사람이 요청하지 않은 쓰기
 - 비밀값을 파일, 로그, 대화에 복사
 
 필요한 정보나 승인을 확인할 수 없으면 추측해서 진행하지 않고 `BLOCKED`로 반환한다.
