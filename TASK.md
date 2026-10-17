@@ -1,4 +1,4 @@
-# Task Contract: 작업 연결 규칙을 ClickUp에서 Jira로 전환
+# Task Contract: Phase 1 첫 명세 세 건 작성·승인 (WBS 0.11)
 
 > Generated at: `2026-10-18`
 >
@@ -6,44 +6,43 @@
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-91` / https://tkv123.atlassian.net/browse/SCRUM-91 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: 해당 없음: 도구·하네스 작업이라 명세 백로그 대상이 아님
+- Jira 이슈: `SCRUM-92` / https://tkv123.atlassian.net/browse/SCRUM-92 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: QK-FND-001, QK-STO-001, QK-ING-001 / `docs/sdd/roadmap.md` 4절 명세 백로그
 - 팀 스프린트 ID: `QELLO-S2026-W42`
-- GitHub Issue: `#22`
-- Branch: `chore/SCRUM-91-gh-22-jira-integration`
+- GitHub Issue: `#24`
+- Branch: `docs/SCRUM-92-gh-24-phase1-first-specs`
 - Base branch: `main`
 
 ## Objective
 
-- 팀 작업 관리가 ClickUp에서 Jira(SCRUM 프로젝트)·Confluence로 이관됐다. 저장소의 작업 게이트, Issue·PR 템플릿,
-  harness Skill이 ClickUp 작업 대신 Jira 이슈를 요구하게 바꿔, 브랜치·PR이 Jira 개발 패널에 연결되게 한다.
+- Phase 1 첫 명세 세 건(QK-FND-001 골격·설정·CI, QK-STO-001 저장 스키마·검색 SQL, QK-ING-001 자료원 어댑터 계약)을
+  Spec Kit으로 쓰고 사람 승인을 받아, 0.G 완료 조건 "첫 명세 3개가 승인됐다"를 닫는다.
 
 ## Scope
 
-- 정책·진입점: `AGENTS.md` 1·5·6·8·9절의 작업 연결 문구, `CLAUDE.md`, `CODEX.md`의 작업 시작 순서·문서 선택표·명령 제한.
-- 템플릿: `.github/ISSUE_TEMPLATE/work.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, `templates/task-contract.md`,
-  `templates/decision-record.md`, `templates/eval-report.md`.
-- 문서: `docs/github-workflow.md`(Jira·GitHub 연결 절차로 다시 쓴다), `docs/harness/OVERVIEW.md`의 업무 게이트 행,
-  `README.md` 문서 표, `docs/sdd/roadmap.md`의 작업 관리 문구(1행, 원칙 4, 시작 순서 8, 운영 규칙).
-- Skill: `.claude/skills/`와 `.agents/skills/`의 `harness-pr`, `harness-review`, `harness-commit`, `roadmap-explain`.
-- `scripts/preflight.py`: Atlassian API 토큰 패턴을 비밀값 검사에 추가한다.
-- 연결 규칙: Jira 이슈 키는 브랜치 이름에만 넣는다. GitHub Issue는 유지하고 Jira 이슈와 서로 링크한다.
-  커밋 메시지 형식은 바꾸지 않는다.
+- `specs/QK-FND-001-<짧은 이름>/`, `specs/QK-STO-001-<짧은 이름>/`, `specs/QK-ING-001-<짧은 이름>/`의 `spec.md`와
+  `checklists/requirements.md`. `/speckit-specify`로 만들고 필요하면 `/speckit-clarify`로 열린 질문을 닫는다.
+- `.specify/feature.json`: 현재 작성 중인 명세 디렉터리를 가리키도록 갱신한다.
+- 작성 순서는 QK-FND-001 → QK-STO-001·QK-ING-001이다(로드맵 4절 선행 관계).
+- QK-FND-001: 요구사항 FR-ING-10, FR-SEC-01, NFR-10, NFR-12, ADR-017. ADR-008 Follow-ups에 따라 `docker compose`는
+  로컬 개발·테스트 범위로 좁히고, 실행 환경은 Cloudflare Workers(질의응답)와 Workers 밖 색인(GitHub Actions 또는 로컬 CLI)을 전제로 한다.
+- QK-STO-001: 요구사항 FR-STO-01~03, ADR-006·007. Supabase 데이터 처리 정책 확인과 PGroonga 활성화 확인을 명세의 작업 항목으로 넣는다.
+  ADR-007은 Phase 1 스파이크에서 정하므로 두 선택지를 모두 받는 요구로 쓴다.
+- QK-ING-001: 요구사항 FR-ING-01, 10, 11.
+- 다른 문서에 남길 수정(로드맵의 compose 서술 등)은 각 명세의 가정·발견 사항으로만 적는다.
 
 ## Explicit exclusions
 
-- 색인 자료원 변경. `AGENTS.md` 3.1의 색인 대상, 로드맵 Phase 2·3의 ClickUp Docs·Tasks 수집 명세(QK-ING-003·004,
-  QK-CHK-002, QK-SYN-004)는 Confluence·Jira로 바꾸려면 결정 기록이 필요한 별도 작업이다(AGENTS.md 3.1).
-- 과거 기록 문서의 서술: `docs/sdd/research/*.md`, `docs/sdd/clickup-writing-rules.md`, `docs/sdd/decisions/*.md`,
-  로드맵 0.x 완료 행. 작성 당시의 사실이므로 고치지 않는다.
-- `scripts/roadmap_status.py`의 GitHub Issue 기반 상태 계산 방식. GitHub Issue를 유지하므로 그대로 둔다.
-- GitHub for Jira 앱 설치와 `Qello-Labs` org 연결. 사이트 관리자가 직접 한다(2026-10-18 완료).
-- Jira 이슈 상태 변경. 사람이 요청한 경우만 한다.
+- `/speckit-plan`·`/speckit-tasks` 산출물과 구현 코드. 구현은 SCRUM-89(골격·설정·compose·CI)·SCRUM-90(저장, 스키마, 검색 SQL 구현)에서 한다.
+- Cloudflare Workers·Supabase 계정 설정, 배포, PGroonga 실제 활성화, 마이그레이션 실행.
+- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
+- 로드맵 상태 표 갱신(`scripts/roadmap_status.py --write`).
+- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
 - 비밀값, 토큰, `.env` 값, 계정 ID, DB 연결 주소, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음. 색인 대상을 바꾸지 않는다.
+- 새로 읽는 자료원: 해당 없음. 저장소 문서만 읽고 쓴다.
 - 외부 API로 보내는 데이터: 해당 없음
 - 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
 - 인덱스 버전 변경: 없음
@@ -52,35 +51,34 @@
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `AGENTS.md`, `CLAUDE.md`, `CODEX.md`, `.claude/skills/**`, `.agents/skills/**` | 확인 필요 | 사람 승인(AGENTS.md 4절). 2026-10-18 수정 승인, diff 확인 후 커밋 |
-| `.github/`, `templates/`, `docs/`, `README.md`, `scripts/preflight.py` | 확인 필요 | 사람 리뷰 |
-| `TASK.md` | 확인 필요 | 사람 리뷰 |
+| `specs/QK-FND-001-*/`, `specs/QK-STO-001-*/`, `specs/QK-ING-001-*/` | 확인 필요 | 사람 리뷰. 명세 승인은 사람이 한다(AGENTS.md 2절) |
+| `.specify/feature.json`, `TASK.md` | 확인 필요 | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-18 `origin/main`(`35d2415`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-18 `origin/main`(`0abe4b4`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
-git grep -n -i clickup -- AGENTS.md CLAUDE.md CODEX.md README.md .github templates docs/github-workflow.md docs/harness .claude .agents   # 남은 참조는 사유가 있어야 한다
+grep -rn "NEEDS CLARIFICATION" specs/*/spec.md   # 결과가 없어야 한다. 체크리스트 항목 이름은 제외
+grep -rnE 'postgres(ql)?://|\.supabase\.co|\.neon\.tech' specs TASK.md   # 결과가 없어야 한다. DB 연결 주소
 ```
 
 ## Completion criteria
 
-- 작업 게이트, Issue 폼, PR 템플릿, 템플릿, harness Skill이 ClickUp 작업 대신 Jira 이슈 키와 URL을 요구한다. 위 grep과 사람 리뷰로 확인한다.
-- 이 작업의 브랜치·PR이 SCRUM-91 개발 패널에 표시된다. GitHub for Jira 설치 후 Jira 화면에서 확인한다.
-- 비밀값과 계정 식별자가 없다. `python scripts/preflight.py`로 확인한다.
+- 명세 3건의 `spec.md`에 사용자 시나리오, 기능 요구사항, 성공 기준, 가정이 있고 `[NEEDS CLARIFICATION]` 표시가 없다. 위 grep과 사람 리뷰로 확인한다.
+- 각 명세가 로드맵 4절 백로그의 요구사항 ID를 모두 다룬다. 사람 리뷰로 확인한다.
+- 명세 3건을 사람이 승인했다. 명세를 쓴 세션은 승인하지 않는다. PR 리뷰 승인 기록으로 확인한다.
 
 ## Decisions
 
-- 2026-10-18 사용자 요청: ClickUp에서 Jira로 작업 관리를 이관했으니 이슈·PR을 Jira에서 관리하도록 연동한다.
-- 2026-10-18 사용자 결정: GitHub Issue는 유지하고 Jira 이슈와 함께 쓴다. 브랜치는 `<type>/SCRUM-<번호>-gh-<번호>-<slug>`다.
-- 2026-10-18 사용자 결정: 커밋 메시지에는 Jira 키를 넣지 않는다.
-- 2026-10-18 사용자 결정: 이 작업을 추적할 Jira 하위 작업(SCRUM-91)을 SCRUM-42 아래에 만든다.
-- 2026-10-18 사용자 승인: `AGENTS.md`·`CLAUDE.md`·`CODEX.md`·`.claude/**`·`.agents/**` 수정. diff를 확인하고 커밋을 승인했다.
-- 2026-10-18 사용자 확인: GitHub for Jira 앱으로 `Qello-Labs` org 연결을 마쳤다.
-- 2026-10-18 사용자 요청: Confluence `스프린트 작업 연결 규칙` 페이지를 Jira 기준으로 고친다. 버전 6으로 반영했다.
-- 2026-10-18 사용자 결정: PR 제목에 Jira 키를 넣지 않는다. Jira 연결은 브랜치 이름으로만 한다.
+- 2026-10-18 사용자 결정: WBS 0.11은 새 Jira 하위 작업(SCRUM-92, 상위 SCRUM-42)으로 추적하고, 구현 이슈 SCRUM-89·SCRUM-90과 Relates로 링크한다.
+- 2026-10-18 사용자 결정: Backend·Sprint 3에 넣는다. 하위 작업은 스프린트를 직접 받지 않아 상위 SCRUM-42의 스프린트를 따른다.
+- 2026-10-18 에이전트 판단: 명세 3건을 GitHub Issue 하나(#24)로 묶는다. 0.11이 WBS 작업 하나이기 때문이다.
+- 2026-10-18 에이전트 확인: QK-FND-001 백로그 행의 요구사항 ID(FR-ING-10, FR-SEC-01, NFR-10, NFR-12, ADR-017)는 저장소(git 이력 포함),
+  Confluence `SCRUM` 스페이스, 로컬 파일 어디에도 원문이 없다.
+- 2026-10-18 사용자 결정: 요구사항 원문이 없으므로 에이전트가 백로그 제목, constitution, ADR-008, AGENTS.md를 근거로 설계한다.
+  완료 조건 "백로그 요구사항 ID를 모두 다룬다"는 원문이 생길 때까지 명세의 백로그 제목 대응표로 대신 확인한다.
