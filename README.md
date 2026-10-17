@@ -11,7 +11,7 @@
 | [docs/sdd/roadmap.md](docs/sdd/roadmap.md) | 단계별 구축 순서, 명세 백로그(명세 ID), 작업별 진행 상태(✅·🔄·⬜) |
 | [구축 WBS](https://claude.ai/artifact/HoKb7gf9wXkZ8nxDcgRZAa) | 로드맵 기준 단계별 작업·담당·진행 상태, 선후관계와 크리티컬 패스, 변경 기록. WBS 번호는 로드맵 백로그의 `WBS` 열과 같다(예: `1.5` = `QK-ING-002`) |
 | [docs/sdd/constitution.md](docs/sdd/constitution.md) | 원칙 초안. `/speckit-constitution`의 입력 |
-| [docs/github-workflow.md](docs/github-workflow.md) | ClickUp·GitHub Issue·PR 연결 |
+| [docs/github-workflow.md](docs/github-workflow.md) | Jira·GitHub Issue·PR 연결 |
 
 ## 로드맵 진행 상황 보기
 
