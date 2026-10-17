@@ -7,26 +7,27 @@ body:
         제목은 [기능명세서 ID] 이번 주에 끝낼 산출물로 작성합니다.
         기능명세서는 요구 동작, Jira 스프린트 이슈는 이번 주 검증할 산출물을 관리합니다.
         담당자·기한·우선순위·상태는 Jira에서 합의해 관리하고 보드에 이슈를 복제하지 않습니다.
-        브랜치는 <type>/SCRUM-<번호>-gh-<이 Issue 번호>-<slug>로 만들어 Jira 개발 패널에 연결합니다.
+        Issue를 열면 Jira 상위 이슈 아래에 하위 작업이 자동으로 생기고, Jira 키와 권장 브랜치 이름이 댓글로 달립니다.
+        하위 작업은 상위 이슈의 스프린트를 따릅니다. 브랜치는 댓글의 <type>/SCRUM-<번호>-gh-<이 Issue 번호>-<slug>로 만듭니다.
         명세가 없는 도구·기술부채 작업은 해당 없음과 사유를 적습니다.
         입력한 ID·URL의 일치와 링크 유효성은 리뷰에서 확인합니다.
 
   - type: input
-    id: jira_issue_key
+    id: jira_parent_key
     attributes:
-      label: Jira 이슈 키
-      description: Jira SCRUM 프로젝트의 이슈 키입니다. 스프린트 이름이나 팀 스프린트 ID가 아닙니다.
+      label: Jira 상위 이슈 키
+      description: 하위 작업을 만들 Jira SCRUM 프로젝트의 작업 키입니다. RAG 작업은 SCRUM-42(팀 RAG 구축)입니다. 하위 작업 키는 넣지 않습니다.
+      value: "SCRUM-42"
       placeholder: "SCRUM-<번호>"
     validations:
       required: true
 
   - type: input
-    id: jira_issue_url
+    id: jira_existing_key
     attributes:
-      label: Jira 이슈 URL
-      placeholder: "https://<jira-site>/browse/SCRUM-<번호>"
-    validations:
-      required: true
+      label: 기존 Jira 이슈 키
+      description: Jira 이슈를 이미 손으로 만들었을 때만 입력합니다. 입력하면 하위 작업을 새로 만들지 않습니다.
+      placeholder: "SCRUM-<번호>"
 
   - type: input
     id: feature_spec_id
