@@ -82,3 +82,5 @@ grep -rnE 'postgres(ql)?://|\.supabase\.co|\.neon\.tech' specs TASK.md   # 결�
   Confluence `SCRUM` 스페이스, 로컬 파일 어디에도 원문이 없다.
 - 2026-10-18 사용자 결정: 요구사항 원문이 없으므로 에이전트가 백로그 제목, constitution, ADR-008, AGENTS.md를 근거로 설계한다.
   완료 조건 "백로그 요구사항 ID를 모두 다룬다"는 원문이 생길 때까지 명세의 백로그 제목 대응표로 대신 확인한다.
+- 2026-10-19 사용자 결정: PR 작성 규칙(`.claude/skills/harness-pr/references/writing-style.md`, `.github/PULL_REQUEST_TEMPLATE.md`)에
+  "가독성 좋게 쓰고, 쓸데없는 문장은 쓰지 않는다" 원칙을 추가하고 이 브랜치에 함께 커밋한다. 제외 범위의 `.claude/**` 수정에 대한 예외다.
