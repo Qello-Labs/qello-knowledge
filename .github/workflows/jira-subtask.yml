@@ -1,0 +1,43 @@
+name: Jira subtask
+
+# Issue 폼으로 연 GitHub Issue마다 Jira 하위 작업을 만든다. 절차와 Secret은 docs/github-workflow.md를 따른다.
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 하위 작업을 만들 GitHub Issue 번호
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: jira-subtask-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  create:
+    # 외부 작성자의 Issue로 Jira에 쓰지 않는다. 수동 실행은 쓰기 권한이 있는 사람만 할 수 있다.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Create Jira subtask
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY }}
+          JIRA_PART_LABEL: ${{ vars.JIRA_PART_LABEL }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: python3 scripts/jira_subtask.py
