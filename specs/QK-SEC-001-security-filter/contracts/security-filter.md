@@ -88,7 +88,9 @@ def check_outgoing(pieces: Sequence[OutgoingPiece], policy: SecurityPolicy) -> S
 ## 정책 읽기
 
 ```python
-def load_policy(exceptions_path: Path, configs: Sequence[SourceConfig]) -> tuple[SecurityPolicy | None, tuple[PolicyIssue, ...]]: ...
+def load_policy(
+    exceptions_path: Path, configs: Sequence[SourceConfig]
+) -> tuple[SecurityPolicy | None, tuple[PolicyIssue, ...]]: ...
 ```
 
 예외 파일 검증 오류가 하나라도 있으면 `None`과 오류 목록을 돌려준다. 호출자는 원본을 부르기 전에 멈춘다([security-exceptions.md](security-exceptions.md)).

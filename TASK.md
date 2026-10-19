@@ -135,3 +135,13 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-SEC-001-security-filter/*.md specs/QK-SE
 - 2026-10-20 사용자 결정: 사람 리뷰어 Byuntil이 `tasks.md`(설계 조정 두 곳 포함)를 승인했다. tasks를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
   `scripts/preflight.py` 수정(T011, T021)을 허용한다. 구현 범위를 Scope·Ownership에 넓혔다.
 - 2026-10-20 사용자 결정: 구현은 이 Claude 세션이 맡고, 검증·코드 리뷰는 오른쪽 Codex 패널(명세·설계 리뷰를 맡은 세션)이 맡는다.
+- 2026-10-20 사실: tasks.md T001~T050, T052~T056 구현 완료(T051 단독 커밋, T057 PR 본문 남음). AGENTS.md 7절 검증 전체 통과(pytest 459 passed, ruff, preflight 280개 파일,
+  `-I` preflight, 로컬 DB). SC-008 측정: 합성 Markdown 81개, 1,088,640바이트, 0.086초(상한 60초).
+- 2026-10-20 사실(T021): 넓힌 이름 규칙이 `src/qello_knowledge/domain/security.py`의 판정 이름 열거형(`SECRET_BLOCKED = "SECRET_BLOCKED"` 등)을 오탐으로 잡아
+  `scripts/preflight_allowlist.txt`에 `assigned-secret`, `env-assigned-secret` 두 줄을 사유와 함께 넣었다. 실제 비밀값은 없었다.
+- 2026-10-20 사실(구현 중 설계 조정, 리뷰에서 확인): 1) 누출 시험이 공개 호스트 링크의 경로에 든 내부 도메인을 찾아, 링크 필드는 공개 호스트라도 경로·쿼리에
+  주소가 있으면 전체를 가리게 했다(R-07을 더 엄격하게 적용). 2) `scripts/preflight.py`에 다른 시험이 읽는 모듈 속성 `RULES`를 호환용으로 남겼다.
+  3) `tests/unit/test_preflight_allowlist.py` 픽스처가 규칙 모듈도 복사하게 고쳤다. 4) 승인된 `contracts/security-filter.md` 코드 블록 한 곳을 `ruff format`이
+  요구해 서식만 바꿨다(내용 변경 없음). 5) 요약·버전·오류 격리는 판정 단계 구현 때 함께 만들어 해당 시험이 처음부터 통과했다(시험 먼저 원칙의 예외).
+- 2026-10-20 사실: 구현을 `a3196b1`(규칙 공유·preflight), `ddbb0d0`(보안 필터), `afb22bf`(security check 명령), `4e6297d`(SC-006 두 번째 종류,
+  `git show --stat` 결과 `tests/unit/security/test_second_kind.py` 한 파일)로 커밋했다.
