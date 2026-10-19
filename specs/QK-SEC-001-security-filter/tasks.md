@@ -210,6 +210,14 @@ US1 시험은 정책 주입(`SecurityPolicy.kinds`)으로 모든 자료를 팀 �
 
 ---
 
+## Phase 12: 구현 재리뷰 3차 반영 (2026-10-20 Codex 재리뷰 변경 요청 2건)
+
+- [x] T072 `src/qello_knowledge/domain/redact.py`: 코드로 보고 주소에서 빼는 후보를 "숫자가 하나도 없고 영문자에 붙은 후보"(`std::map`, `Foo::bar()`)로 좁힌다. 숫자가 든 후보는 앞뒤에 무엇이 붙든 가린다(`10.0.0.5_backup`, `backup_2001:db8::1`, `a2001:db8::1`, 재리뷰 1번). `IP_RUN` 최소 길이를 2로 낮춰 `::`, `[::]:9`도 가린다(재리뷰 2번). `ADDRESS_POLICY_VERSION`을 `address-v3`로 올렸다
+- [x] T073 [P] 시험: 영문자·`_`에 붙은 IP, 두 글자 IPv6 가림 단위 시험. 누출 시험에 `10.0.0.9_backup`, `::` 식별자 자료를 넣어 사전 차단과 ING-001 로그·요약 비노출 확인
+- [x] T074 AGENTS.md 7절 검증 전체 재실행
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** → 스토리 단계.
