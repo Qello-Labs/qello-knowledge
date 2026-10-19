@@ -86,5 +86,7 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-001-source-adapter-contract/   # 결
 - 2026-10-19 사용자 결정: WBS 1.3은 SCRUM-42 아래 새 하위 작업 SCRUM-98로 추적하고 담당은 구성재(Byuntil)다. 자동 생성이 동작하지 않아 에이전트가 Atlassian 연결로 만들었다.
 - 2026-10-19 기존 결정 따름: Phase 0 완료 리뷰(0.G) 전에 Phase 1을 시작한다(#28 TASK.md 기록).
 - 2026-10-18 기존 결정 따름: 요구사항 FR-ING-01, 10, 11은 원문이 없어 명세의 백로그 제목 대응표로 다룸을 확인한다(SCRUM-92).
+- 2026-10-19 사용자 결정: 설계 산출물(`specs/QK-ING-001-source-adapter-contract/`의 plan.md, research.md, data-model.md, contracts/, quickstart.md, tasks.md.
+  커밋 `8097c71`, `e8a2c6f`, `152d80d`)을 사람 리뷰어 Byuntil이 승인했다. 설계를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
 - 확인 필요: 한 브랜치에서 plan·tasks·구현까지 진행할지(QK-FND-001은 한 브랜치로 진행했다).
 - 확인 필요: 공통 자료 형식 필드를 QK-STO-001 담당과 언제 맞출지(#33의 `data-model.md` 작성 시점).
