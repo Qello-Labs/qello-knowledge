@@ -28,7 +28,7 @@ def test_same_policy_same_version():
         SecurityPolicy(exclusions=(*DEFAULT_EXCLUSIONS, DefaultExclusion("extra", "**/*.bak"))),
         SecurityPolicy(exceptions=frozenset({SecretException("docs", "a.md", "github-token", "r")})),
         SecurityPolicy(address_policy=AddressPolicy(file_extensions=AddressPolicy().file_extensions | {"adoc2"})),
-        SecurityPolicy(address_policy=AddressPolicy(version="address-v2")),
+        SecurityPolicy(address_policy=AddressPolicy(version="address-v99")),
         SecurityPolicy(kinds={**KINDS, "fake": replace(FAKE, rule_name="fake-visibility-v2")}),
         SecurityPolicy(kinds={**KINDS, "fake": replace(FAKE, public_link_hosts=("other.invalid",))}),
         SecurityPolicy(kinds={**KINDS, "fake": replace(FAKE, source_id_is_path=True)}),

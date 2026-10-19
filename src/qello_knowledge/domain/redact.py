@@ -15,7 +15,7 @@ from urllib.parse import unquote, urlsplit
 from qello_knowledge.domain.secret_rules import find_secrets
 
 ADDRESS_MASK = "[가림:address]"
-ADDRESS_POLICY_VERSION = "address-v1"
+ADDRESS_POLICY_VERSION = "address-v2"
 FILE_EXTENSIONS = frozenset(
     {
         "md", "mdx", "markdown", "txt", "rst", "adoc",
@@ -25,12 +25,11 @@ FILE_EXTENSIONS = frozenset(
     }
 )  # fmt: skip
 SCHEME_URL = re.compile(r"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
-IPV4 = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
-# IPv4를 끝에 붙인 혼합 표기(`::ffff:192.0.2.1`)도 한 덩어리로 잡는다.
-IPV6_CANDIDATE = re.compile(
-    r"(?<![\w:.])(?:(?:[0-9A-Fa-f]{0,4}:){2,7}\d{1,3}(?:\.\d{1,3}){3}"
-    r"|[0-9A-Fa-f]{0,4}(?::[0-9A-Fa-f]{0,4}){1,7})(?![\w:])"
-)
+# IP는 경계 정규식으로 찾지 않는다. 숫자·16진수·`:`·`.`가 이어진 구간 안에서 후보를 `ipaddress`로 검증한다.
+# 점이나 확장자가 바로 앞뒤에 붙은 주소(`file.10.0.0.5.md`)도 놓치지 않으려는 것이다.
+IP_RUN = re.compile(r"[0-9A-Fa-f:.]{3,}")
+IP_MAX_LENGTH = 45  # IPv4를 붙인 IPv6 표기의 최대 길이
+WORD_CHAR = re.compile(r"[A-Za-z0-9_]")
 HOST_PORT = re.compile(r"(?<![\w.-])[A-Za-z][A-Za-z0-9.-]*:\d{1,5}\b")
 DOTTED_NAME = re.compile(r"(?<![\w.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![\w-])")
 FILE_NAME = re.compile(r"^(?P<stem>.+)\.(?P<ext>[A-Za-z0-9]+)$")
@@ -44,7 +43,7 @@ class FieldKind(StrEnum):
 
 @dataclass(frozen=True)
 class AddressPolicy:
-    patterns: tuple[re.Pattern[str], ...] = (SCHEME_URL, IPV4, IPV6_CANDIDATE, HOST_PORT, DOTTED_NAME)
+    patterns: tuple[re.Pattern[str], ...] = (SCHEME_URL, IP_RUN, HOST_PORT, DOTTED_NAME)
     file_extensions: frozenset[str] = FILE_EXTENSIONS
     version: str = ADDRESS_POLICY_VERSION
 
@@ -64,17 +63,43 @@ def _is_ip(candidate: str) -> bool:
     return True
 
 
+def _is_word(value: str, index: int) -> bool:
+    return 0 <= index < len(value) and WORD_CHAR.match(value[index]) is not None
+
+
+def _mask_ips(value: str, ip_run: re.Pattern[str]) -> str:
+    """구간마다 왼쪽부터 가장 긴 유효 IP 후보를 가린다.
+
+    후보 앞뒤에 영숫자·`_`가 붙으면 주소로 보지 않는다(`std::map`).
+    """
+    out, last = [], 0
+    for match in ip_run.finditer(value):
+        run, base, i = match.group(0), match.start(), 0
+        while i < len(run):
+            end = None
+            if run[i] != "." and not _is_word(value, base + i - 1):
+                for j in range(min(len(run), i + IP_MAX_LENGTH), i + 1, -1):
+                    if not _is_word(value, base + j) and _is_ip(run[i:j]):
+                        end = j
+                        break
+            if end is None:
+                i += 1
+                continue
+            out += [value[last : base + i], ADDRESS_MASK]
+            last, i = base + end, end
+    return "".join(out) + value[last:]
+
+
 def _mask_definite(value: str, policy: AddressPolicy) -> str:
     """스킴 주소, IP, `host:port`처럼 글자만으로 주소가 확실한 것을 가린다."""
-    scheme, ipv4, ipv6, host_port, _ = policy.patterns
+    scheme, ip_run, host_port, _ = policy.patterns
     value = scheme.sub(ADDRESS_MASK, value)
-    value = ipv6.sub(lambda m: ADDRESS_MASK if _is_ip(m.group(0)) else m.group(0), value)
-    value = ipv4.sub(ADDRESS_MASK, value)
+    value = _mask_ips(value, ip_run)
     return host_port.sub(ADDRESS_MASK, value)
 
 
 def _mask_text(value: str, policy: AddressPolicy) -> str:
-    dotted = policy.patterns[4]
+    dotted = policy.patterns[3]
     value = _mask_definite(value, policy)
     return dotted.sub(lambda m: m.group(0) if all(p.isdigit() for p in m.group(0).split(".")) else ADDRESS_MASK, value)
 

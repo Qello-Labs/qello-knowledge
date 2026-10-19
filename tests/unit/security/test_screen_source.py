@@ -5,6 +5,7 @@ import pytest
 from qello_knowledge.domain.security import AccessScope, Stage, Verdict
 from qello_knowledge.domain.source_config import SourceScope
 from qello_knowledge.security.exceptions import SecretException
+from qello_knowledge.security.kinds import KINDS
 from qello_knowledge.security.policy import SecurityPolicy
 from tests.unit.security.helpers import content_requests, fake_config, team_policy
 from tests.unit.synthetic_secrets import SYNTHETIC
@@ -266,3 +267,16 @@ def test_metadata_check_error_after_access_keeps_evidence(screen, monkeypatch):
     )
     assert verdict.access_raw == (("visibility", "public"),)
     assert sum(result.summary.by_access_scope.values()) == len(result.verdicts) == 9
+
+
+def test_path_identifier_with_ip_next_to_dot_is_blocked_before_fetch():
+    from qello_knowledge.security.screen import screen_items
+
+    item = _item_for("x")
+    item = type(item)(**{**item.__dict__, "source_id": "docs/file.2001:db8::1.md", "location": "docs/x.md"})
+    path_kind = KINDS["fake"].__class__("fake", "test-all-team", lambda a: AccessScope.TEAM, ("fake.invalid",), True)
+    policy = team_policy(kinds={"fake": path_kind})
+    passed, verdicts = screen_items([item], fake_config(), policy)
+    assert passed == ()
+    assert (verdicts[0].field, verdicts[0].rule) == ("source_id", "identifier-address")
+    assert "2001:db8" not in str(verdicts[0].to_dict(policy.output_context("fake")))

@@ -127,3 +127,27 @@ def test_ipv6_with_embedded_ipv4_is_fully_masked(value):
 )
 def test_ipv6_followed_by_period_or_extension_is_masked(value, kind):
     assert "2001:db8" not in safe_text(value, kind, PUBLIC)
+
+
+# --- 구현 재리뷰 2차 반영: IP는 경계 정규식이 아니라 후보를 ipaddress로 검증한다 ---
+
+
+@pytest.mark.parametrize(
+    ("value", "kind", "leftover"),
+    [
+        ("Host ...2001:db8::1.", FieldKind.TEXT, "2001:db8"),
+        ("docs/file.2001:db8::1.md", FieldKind.PATH, "2001:db8"),
+        ("docs/file.::ffff:192.0.2.1.md", FieldKind.PATH, "192.0"),
+        ("docs/file.10.0.0.5.md", FieldKind.PATH, "10.0.0.5"),
+        ("see 10.0.0.5.", FieldKind.TEXT, "10.0.0.5"),
+        ("[2001:db8::1]:443", FieldKind.TEXT, "2001:db8"),
+    ],
+)
+def test_ip_addresses_next_to_dots_and_extensions_are_masked(value, kind, leftover):
+    assert leftover not in safe_text(value, kind, PUBLIC)
+    assert has_unsafe(value, kind, PUBLIC) == "address"
+
+
+@pytest.mark.parametrize("value", ["std::map 정리", "Foo::bar() 호출", "12:30:45 회의", "release 1.2.3", "sha256:abcd"])
+def test_code_like_colons_and_versions_are_not_addresses(value):
+    assert safe_text(value, FieldKind.TEXT, PUBLIC) == value
