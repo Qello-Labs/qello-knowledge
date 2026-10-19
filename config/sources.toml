@@ -1,0 +1,22 @@
+# 첫 실제 자료원은 QK-ING-002가 추가한다.
+# [[source]]
+# name = "qello-knowledge-docs"
+# kind = "github_repo_files"
+# enabled = true
+# auth = "GITHUB_API_TOKEN"  # 설정 항목 이름만 기록한다.
+# max_content_bytes = 1_000_000
+# allowed_hosts = ["api.github.com"]
+# [source.scope]
+# repo = "Qello-Labs/qello-knowledge"
+# ref = "main"
+# include = ["**/*.md"]
+# exclude = ["specs/**/checklists/**"]
+# [source.limits]
+# max_requests_per_minute = 60
+# max_requests_per_run = 2000
+# max_wait_seconds = 300
+# max_run_seconds = 1800
+# [source.retry]
+# max_retries = 3
+# initial_backoff_seconds = 1
+# max_backoff_seconds = 60

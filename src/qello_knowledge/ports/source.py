@@ -1,7 +1,31 @@
-"""자료원 경계. 계약 내용은 QK-ING-001이 정한다."""
+"""자료원은 세션을 통해 읽기 전용 요청만 보낸다."""
 
 from typing import Protocol
 
+from qello_knowledge.domain.source import (
+    ListPage,
+    RateLimitHint,
+    ResponseClass,
+    SourceContent,
+    SourceItem,
+    SourceRequest,
+    SourceResponse,
+)
+from qello_knowledge.domain.source_config import SourceConfig
+
+
+class SourceSession(Protocol):
+    def send(self, request: SourceRequest) -> SourceResponse: ...
+
+
+class SourceTransport(Protocol):
+    def send(self, request: SourceRequest) -> SourceResponse: ...
+
 
 class SourceAdapter(Protocol):
-    """원본 자료원을 읽기 전용으로 수집한다(C-09)."""
+    kind: str
+
+    def list_page(self, session: SourceSession, config: SourceConfig, cursor: str | None) -> ListPage: ...
+    def fetch_content(self, session: SourceSession, config: SourceConfig, item: SourceItem) -> SourceContent: ...
+    def classify(self, response: SourceResponse) -> ResponseClass: ...
+    def rate_limit_hint(self, response: SourceResponse) -> RateLimitHint | None: ...
