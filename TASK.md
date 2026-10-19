@@ -1,86 +1,82 @@
-# Task Contract: Phase 1 첫 명세 세 건 작성·승인 (WBS 0.11)
+# Task Contract: QK-FND-001 프로젝트 골격·설정 로딩·로컬 compose·CI 구현 (WBS 1.1)
 
-> Generated at: `2026-10-18`
+> Generated at: `2026-10-19`
 >
 > 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-92` / https://tkv123.atlassian.net/browse/SCRUM-92 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: QK-FND-001, QK-STO-001, QK-ING-001 / `docs/sdd/roadmap.md` 4절 명세 백로그
-- 팀 스프린트 ID: `QELLO-S2026-W42`
-- GitHub Issue: `#24`
-- Branch: `docs/SCRUM-92-gh-24-phase1-first-specs`
+- Jira 이슈: `SCRUM-97` / https://tkv123.atlassian.net/browse/SCRUM-97 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: QK-FND-001 / `specs/QK-FND-001-project-skeleton-ci/spec.md`
+- 팀 스프린트 ID: `QELLO-S2026-W43`
+- GitHub Issue: `#28`
+- Branch: `feat/SCRUM-97-gh-28-project-skeleton`
 - Base branch: `main`
 
 ## Objective
 
-- Phase 1 첫 명세 세 건(QK-FND-001 골격·설정·CI, QK-STO-001 저장 스키마·검색 SQL, QK-ING-001 자료원 어댑터 계약)을
-  Spec Kit으로 쓰고 사람 승인을 받아, 0.G 완료 조건 "첫 명세 3개가 승인됐다"를 닫는다.
+- QK-FND-001 명세를 `/speckit-plan`·`/speckit-tasks`로 설계하고 구현해, 이후 Phase 1 명세가 올라설 골격·설정·로컬 개발 환경·CI를 만든다.
 
 ## Scope
 
-- `specs/QK-FND-001-<짧은 이름>/`, `specs/QK-STO-001-<짧은 이름>/`, `specs/QK-ING-001-<짧은 이름>/`의 `spec.md`와
-  `checklists/requirements.md`. `/speckit-specify`로 만들고 필요하면 `/speckit-clarify`로 열린 질문을 닫는다.
-- `.specify/feature.json`: 현재 작성 중인 명세 디렉터리를 가리키도록 갱신한다.
-- 작성 순서는 QK-FND-001 → QK-STO-001·QK-ING-001이다(로드맵 4절 선행 관계).
-- QK-FND-001: 요구사항 FR-ING-10, FR-SEC-01, NFR-10, NFR-12, ADR-017. ADR-008 Follow-ups에 따라 `docker compose`는
-  로컬 개발·테스트 범위로 좁히고, 실행 환경은 Cloudflare Workers(질의응답)와 Workers 밖 색인(GitHub Actions 또는 로컬 CLI)을 전제로 한다.
-- QK-STO-001: 요구사항 FR-STO-01~03, ADR-006·007. Supabase 데이터 처리 정책 확인과 PGroonga 활성화 확인을 명세의 작업 항목으로 넣는다.
-  ADR-007은 Phase 1 스파이크에서 정하므로 두 선택지를 모두 받는 요구로 쓴다.
-- QK-ING-001: 요구사항 FR-ING-01, 10, 11.
-- 다른 문서에 남길 수정(로드맵의 compose 서술 등)은 각 명세의 가정·발견 사항으로만 적는다.
+- `specs/QK-FND-001-project-skeleton-ci/`의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`, `tasks.md`
+  (Spec Kit이 만드는 설계 산출물). `.specify/feature.json`은 이 명세 디렉터리를 가리키게 한다.
+- 질의응답 진입점과 색인 진입점, 자료원·임베딩·생성·저장소·채팅 창구 경계(인터페이스) 골격(FR-001~003).
+- 설정 항목 정의, 설정 로딩, 진입점별 필수 검사, 외부 호출 없는 점검 모드, 비밀값 비노출(FR-004~009).
+- 로컬 개발·테스트 전용 `docker compose`(pgvector·PGroonga를 켤 수 있는 빈 DB), 재실행 안전한 시작 절차, 로컬 한정 재설정(FR-010~014).
+- 프로젝트 정의 파일(`pyproject.toml` 등)과 기본 테스트·린트 명령, 외부 API 테스트 분리, 응답 샘플 테스트(FR-015~017).
+- PR CI 워크플로(테스트·린트·비밀값 검사, CI Secret 불필요)(FR-018~022).
+- 로컬 시작부터 기본 테스트 통과까지의 절차 문서(README 또는 `quickstart.md`).
 
 ## Explicit exclusions
 
-- `/speckit-plan`·`/speckit-tasks` 산출물과 구현 코드. 구현은 SCRUM-89(골격·설정·compose·CI)·SCRUM-90(저장, 스키마, 검색 SQL 구현)에서 한다.
-- Cloudflare Workers·Supabase 계정 설정, 배포, PGroonga 실제 활성화, 마이그레이션 실행.
-- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
-- 로드맵 상태 표 갱신(`scripts/roadmap_status.py --write`).
+- 운영 배포, Cloudflare Workers·Supabase 계정과 프로젝트 설정, 운영 비밀값 등록.
+- 저장 스키마·마이그레이션(QK-STO-001), 자료원 어댑터 계약 내용(QK-ING-001), 색인 스케줄(QK-SYN-001).
+- 실제 자료원·임베딩·생성 API 호출.
+- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `CLAUDE.md`, `.claude/**` 수정.
+- `AGENTS.md` 7절 기본 검증 명령 추가(FR-015)는 사람 승인 뒤에만 한다. 승인 전에는 PR 본문에 필요 사항으로 적는다.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 계정 ID, DB 연결 주소, 비공개 원문은 기록하지 않는다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음. 저장소 문서만 읽고 쓴다.
-- 외부 API로 보내는 데이터: 해당 없음
+- 새로 읽는 자료원: 해당 없음
+- 외부 API로 보내는 데이터: 해당 없음. 기본 테스트는 외부 요청 0건이어야 한다(SC-002)
 - 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
 - 인덱스 버전 변경: 없음
+- GitHub Actions 실행 시간: PR마다 검사 한 번(목표 10분 이내, SC-005)
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `specs/QK-FND-001-*/`, `specs/QK-STO-001-*/`, `specs/QK-ING-001-*/` | 확인 필요 | 사람 리뷰. 명세 승인은 사람이 한다(AGENTS.md 2절) |
-| `.specify/feature.json`, `TASK.md` | 확인 필요 | 사람 리뷰 |
+| `specs/QK-FND-001-project-skeleton-ci/` 설계 산출물 | 확인 필요 | 사람 리뷰 |
+| 골격 코드, 설정, `pyproject.toml`, compose 파일, 테스트 | 확인 필요 | 사람 리뷰 |
+| `.github/workflows/` 새 CI 워크플로 | 확인 필요 | 사람 리뷰 |
+| `.specify/feature.json`, `TASK.md`, `README.md` | 확인 필요 | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-18 `origin/main`(`0abe4b4`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-19 `origin/main`(`82efdd6`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
-grep -rn "NEEDS CLARIFICATION" specs/*/spec.md   # 결과가 없어야 한다. 체크리스트 항목 이름은 제외
-grep -rnE 'postgres(ql)?://|\.supabase\.co|\.neon\.tech' specs TASK.md   # 결과가 없어야 한다. DB 연결 주소
+# 아래는 구현 후 pyproject.toml에 등록한 명령으로 바꾼다
+# 기본 테스트(외부 API 테스트 제외), 린트, 설정 점검 모드, compose 시작 두 번 연속 실행
 ```
 
 ## Completion criteria
 
-- 명세 3건의 `spec.md`에 사용자 시나리오, 기능 요구사항, 성공 기준, 가정이 있고 `[NEEDS CLARIFICATION]` 표시가 없다. 위 grep과 사람 리뷰로 확인한다.
-- 각 명세가 로드맵 4절 백로그의 요구사항 ID를 모두 다룬다. 사람 리뷰로 확인한다.
-- 명세 3건을 사람이 승인했다. 명세를 쓴 세션은 승인하지 않는다. PR 리뷰 승인 기록으로 확인한다.
+- 토큰 없이 문서 절차만으로 로컬 시작과 기본 테스트 통과까지 끝나고, 기본 테스트의 외부 요청이 0건이다(SC-001, SC-002).
+- 필수 설정 누락·오류가 항목 이름으로 한 번에 보고되고 비밀 값은 출력에 나오지 않는다(SC-003).
+- PR에서 테스트·린트·비밀값 검사가 각각 표시되고, 같은 커밋의 로컬 결과와 같다(SC-004, SC-006).
 
 ## Decisions
 
-- 2026-10-18 사용자 결정: WBS 0.11은 새 Jira 하위 작업(SCRUM-92, 상위 SCRUM-42)으로 추적하고, 구현 이슈 SCRUM-89·SCRUM-90과 Relates로 링크한다.
-- 2026-10-18 사용자 결정: Backend·Sprint 3에 넣는다. 하위 작업은 스프린트를 직접 받지 않아 상위 SCRUM-42의 스프린트를 따른다.
-- 2026-10-18 에이전트 판단: 명세 3건을 GitHub Issue 하나(#24)로 묶는다. 0.11이 WBS 작업 하나이기 때문이다.
-- 2026-10-18 에이전트 확인: QK-FND-001 백로그 행의 요구사항 ID(FR-ING-10, FR-SEC-01, NFR-10, NFR-12, ADR-017)는 저장소(git 이력 포함),
-  Confluence `SCRUM` 스페이스, 로컬 파일 어디에도 원문이 없다.
-- 2026-10-18 사용자 결정: 요구사항 원문이 없으므로 에이전트가 백로그 제목, constitution, ADR-008, AGENTS.md를 근거로 설계한다.
-  완료 조건 "백로그 요구사항 ID를 모두 다룬다"는 원문이 생길 때까지 명세의 백로그 제목 대응표로 대신 확인한다.
-- 2026-10-19 사용자 결정: PR 작성 규칙(`.claude/skills/harness-pr/references/writing-style.md`, `.github/PULL_REQUEST_TEMPLATE.md`)에
-  "가독성 좋게 쓰고, 쓸데없는 문장은 쓰지 않는다" 원칙을 추가하고 이 브랜치에 함께 커밋한다. 제외 범위의 `.claude/**` 수정에 대한 예외다.
+- 2026-10-19 사용자 결정: Phase 0 완료 리뷰(0.G)를 마치기 전에 Phase 1을 시작한다. 0.7·0.8(골든셋·기준선)은 봇(WBS 1.11) 전까지 끝낸다.
+- 2026-10-19 사용자 결정: WBS 1.1은 기존 SCRUM-89 대신 SCRUM-42 아래 새 하위 작업 SCRUM-97로 추적한다. SCRUM-89 정리는 Jira에서 사람이 한다.
+- 2026-10-19 사용자 결정: 한 브랜치에서 plan·tasks·구현까지 진행한다.
+- 2026-10-19 사실: 저장소에 Jira Secret이 없어 #28의 하위 작업 자동 생성이 실패했고, SCRUM-97은 사람이 Jira에서 직접 만들었다.
