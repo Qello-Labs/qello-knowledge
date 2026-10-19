@@ -14,6 +14,7 @@ def source_report(path: Path, configs: tuple[SourceConfig, ...], issues: tuple[C
         row = {
             "name": config.name,
             "kind": config.kind,
+            "enabled": config.enabled,
             "status": "INVALID" if found else "OK" if config.enabled else "DISABLED",
         }
         if found:
@@ -38,8 +39,8 @@ def render_report(report: dict, json_output: bool = False) -> str:
     active = disabled = error_count = 0
     for row in report["sources"]:
         status = row["status"]
-        disabled += status == "DISABLED"
-        active += status != "DISABLED"
+        disabled += not row["enabled"]
+        active += row["enabled"]
         label = {"OK": "OK", "DISABLED": "비활성", "INVALID": "실패"}[status]
         detail = ""
         if status == "INVALID":

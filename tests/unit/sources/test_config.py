@@ -200,3 +200,40 @@ def test_token_error_does_not_hide_an_independent_invalid_pattern(tmp_path):
     path.write_text(text)
     _, issues = load_sources(path)
     assert {(i.field, i.code) for i in issues} == {("scope.include[0]", "TOKEN_VALUE"), ("scope.include", "INVALID")}
+
+
+@pytest.mark.parametrize(("dialect", "driver"), [("postgresql", "asyncpg"), ("postgres", "psycopg2")])
+def test_postgres_driver_url_is_a_token_value(tmp_path, dialect, driver):
+    marker = dialect + "+" + driver + "://" + "example.invalid/docs"
+    text = (ROOT / "token_value.toml").read_text().replace("TOKEN_PLACEHOLDER", marker)
+    path = tmp_path / "driver-url.toml"
+    path.write_text(text)
+    configs, issues = load_sources(path)
+    assert [(issue.field, issue.code) for issue in issues] == [("auth", "TOKEN_VALUE")]
+    assert marker not in repr(configs) + repr(issues)
+
+
+def test_allowed_hosts_are_normalized_to_lowercase(tmp_path):
+    text = (ROOT / "overlap.toml").read_text()
+    text = text.replace("enabled = true", 'enabled = true\nallowed_hosts = ["FAKE.invalid"]')
+    path = tmp_path / "mixed-case-host.toml"
+    path.write_text(text)
+    configs, issues = load_sources(path)
+    assert not issues
+    assert configs[0].allowed_hosts == ("fake.invalid",)
+
+
+@pytest.mark.parametrize("location", ["leading_space", "path_segment", "url_segment"])
+def test_token_prefix_detection_remains_anchored_at_start(tmp_path, location):
+    marker = "sk" + "-" + "synthetic" * 5
+    value = {
+        "leading_space": " " + marker,
+        "path_segment": "docs/" + marker + "/**",
+        "url_segment": "https://example.invalid/docs/" + marker,
+    }[location]
+    text = (ROOT / "overlap.toml").read_text().replace("**/*.md", value)
+    path = tmp_path / "embedded-prefix.toml"
+    path.write_text(text)
+    configs, issues = load_sources(path)
+    assert not issues
+    assert configs[0].scope.include == (value,)

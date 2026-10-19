@@ -27,3 +27,19 @@ def test_invalid_report_has_codes_and_never_token_values(tmp_path):
     assert {"field": "auth", "code": "TOKEN_VALUE"} in report["sources"][0]["issues"]
     assert token not in render_report(report)
     assert token not in render_report(report, json_output=True)
+
+
+def test_disabled_invalid_source_counts_as_disabled_and_json_retains_enabled(tmp_path):
+    marker = "cfat" + "_" + "synthetic" * 5
+    text = Path("tests/fixtures/sources/valid.toml").read_text()
+    text += f'\n[[source]]\nname = "broken-disabled"\nkind = "fake"\nenabled = false\nauth = "{marker}"\n'
+    path = tmp_path / "three-sources.toml"
+    path.write_text(text)
+    report = source_report(path, *load_sources(path))
+    table = render_report(report)
+    assert "활성 1, 비활성 2, 오류 1" in table
+    rows = json.loads(render_report(report, json_output=True))["sources"]
+    assert [row["enabled"] for row in rows] == [True, False, False]
+    assert [row["status"] for row in rows] == ["OK", "DISABLED", "INVALID"]
+    assert rows[2]["issues"] == [{"field": "auth", "code": "TOKEN_VALUE"}]
+    assert marker not in table + render_report(report, json_output=True)

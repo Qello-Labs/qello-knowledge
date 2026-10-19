@@ -29,7 +29,7 @@ class ConfigIssue:
 
 
 def _token(value: str) -> bool:
-    return value.startswith(TOKEN_PREFIXES) or re.match(r"(?i)^postgres(?:ql)?:", value) is not None
+    return value.startswith(TOKEN_PREFIXES) or re.match(r"(?i)^postgres(?:ql)?(?:\+[a-z0-9_.-]+)?:", value) is not None
 
 
 def _scrub(value, field: str, add):
@@ -182,7 +182,7 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
         RateLimits(**limits),
         RetryPolicy(**retry),
         size,
-        tuple(host for host in hosts if host is not None),
+        tuple(host.lower() for host in hosts if host is not None),
     )
     return config, issues
 
