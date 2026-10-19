@@ -17,7 +17,7 @@ QK-FND-001 [quickstart.md](../QK-FND-001-project-skeleton-ci/quickstart.md)대�
 | SC-004 한도 초과 요청 0건 | `uv run pytest tests/unit/sources/test_limits.py tests/unit/sources/test_session.py -q` | 자료 200개 수집에서 어떤 60초 창에도 요청이 60회 이하. 원본 힌트(남은 0)를 따르고, 대기 상한 초과면 멈춤 |
 | SC-005 재시도 이내 일시적 실패 100% 성공, 영구 실패 재시도 0회 | `uv run pytest tests/unit/sources/test_collect.py -q -k retry` | 일시적 2회 뒤 성공 → `SUCCEEDED`, `retries=2`. 404 → `PERMANENT_FAILED`, `retries=0` |
 | SC-006 실패 격리 | `uv run pytest tests/unit/sources/test_collect.py -q -k isolation` | 한 자료가 영구 실패해도 나머지 모두 `SUCCEEDED` |
-| SC-007 결과·로그 비밀값 0건 | `uv run pytest tests/unit/sources/test_no_secret_leak.py -q` | 결과 JSON과 로그를 `scripts/preflight.py` 규칙으로 검사해 0건 |
+| SC-007 결과·로그 비밀값 0건 | `uv run pytest tests/unit/sources/test_fetch_result_no_secret_leak.py -q` | 결과 JSON과 로그를 `scripts/preflight.py` 규칙으로 검사해 0건 |
 
 ## 명령줄 확인
 

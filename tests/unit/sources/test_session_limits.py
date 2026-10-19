@@ -51,7 +51,6 @@ def test_origin_hint_is_applied_before_any_next_request(clock, scenario, wait, s
     transport = ReplayTransport.from_file(Path(f"tests/fixtures/responses/fake/{scenario}.json"))
     session = DefaultSourceSession(transport, adapter, config(), clock)
     request = SourceRequest("GET", "https://fake.invalid/items/1")
-    assert session.send(request).status == 429
     retry_at = clock.now() + timedelta(seconds=wait)
     if stopped:
         with pytest.raises(RunStopped) as caught:
@@ -65,6 +64,7 @@ def test_origin_hint_is_applied_before_any_next_request(clock, scenario, wait, s
         assert clock.now() == retry_at
         assert clock.sleeps == [30]
         assert session.requests_made == len(transport.requests) == 2
+        assert session.retries_made == 1
 
 
 @pytest.mark.parametrize(("absolute_wait", "expected_wait"), [(10, 30), (50, 50)])

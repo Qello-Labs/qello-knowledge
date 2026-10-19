@@ -216,6 +216,35 @@ class FetchResult:
         _aware(self.started_at)
         _aware(self.finished_at)
 
+    def to_dict(self) -> dict:
+        """본문·헤더·원본 URL을 제외한 JSON 요약만 만든다."""
+        return {
+            "source_name": self.source_name,
+            "started_at": self.started_at.isoformat(),
+            "finished_at": self.finished_at.isoformat(),
+            "requests_made": self.requests_made,
+            "listing_complete": self.listing_complete,
+            "processed": self.processed,
+            "failed": self.failed,
+            "remaining": self.remaining,
+            "stop": None
+            if self.stop is None
+            else {
+                "reason": self.stop.reason.value,
+                "retry_at": self.stop.retry_at.isoformat() if self.stop.retry_at is not None else None,
+            },
+            "items": [
+                {
+                    "source_id": item.source_id,
+                    "status": item.status.value,
+                    "retries": item.retries,
+                    "failure": item.failure.value if item.failure is not None else None,
+                    "http_status": item.http_status,
+                }
+                for item in self.items
+            ],
+        }
+
 
 class TransportError(Exception):
     def __init__(self, kind: str):
@@ -265,3 +294,23 @@ def default_rate_limit_hint(response: SourceResponse) -> RateLimitHint | None:
         return RateLimitHint(remaining=0, retry_at=absolute.astimezone(UTC))
     except (ValueError, TypeError, OverflowError):
         return None
+
+
+def default_classify(response_or_error: SourceResponse | TransportError) -> ResponseClass:
+    """원본 고유 규칙이 없을 때의 실패 분류(research R-07)."""
+    if isinstance(response_or_error, TransportError):
+        failure = FailureType.TIMEOUT if response_or_error.kind == "timeout" else FailureType.CONNECTION
+        return ResponseClass(ResponseOutcome.TRANSIENT, failure)
+    status = response_or_error.status
+    if 200 <= status < 300:
+        return ResponseClass(ResponseOutcome.OK)
+    if status == 429:
+        return ResponseClass(ResponseOutcome.TRANSIENT, FailureType.RATE_LIMITED)
+    if status in {500, 502, 503, 504}:
+        return ResponseClass(ResponseOutcome.TRANSIENT, FailureType.SERVER_ERROR)
+    if status == 401:
+        return ResponseClass(ResponseOutcome.AUTH, FailureType.AUTH_FAILED)
+    failure = {403: FailureType.ACCESS_DENIED, 404: FailureType.NOT_FOUND, 410: FailureType.NOT_FOUND}.get(
+        status, FailureType.INVALID_RESPONSE
+    )
+    return ResponseClass(ResponseOutcome.PERMANENT, failure)

@@ -12,17 +12,16 @@ from qello_knowledge.domain.source import (
     AccessStatus,
     ChangeKeyKind,
     ContentFormat,
-    FailureType,
     InvalidResponse,
     ListPage,
     OriginState,
     RateLimitHint,
     ResponseClass,
-    ResponseOutcome,
     SourceContent,
     SourceItem,
     SourceRequest,
     SourceResponse,
+    default_classify,
     default_rate_limit_hint,
 )
 from qello_knowledge.domain.source_config import SourceConfig
@@ -137,10 +136,7 @@ class FakeSourceAdapter:
         return self._fetch(session, item.source_id)
 
     def classify(self, response: SourceResponse) -> ResponseClass:
-        # 응답 분류 기본 함수는 US4에서 연결한다.
-        if 200 <= response.status < 300:
-            return ResponseClass(ResponseOutcome.OK)
-        return ResponseClass(ResponseOutcome.PERMANENT, FailureType.INVALID_RESPONSE)
+        return default_classify(response)
 
     def rate_limit_hint(self, response: SourceResponse) -> RateLimitHint | None:
         return default_rate_limit_hint(response)
