@@ -150,4 +150,7 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-SEC-001-security-filter/*.md specs/QK-SE
   Codex 직접 실행: pytest 459 passed(로컬 DB 포함), ruff·format·diff 검사 통과. 전체 preflight는 샌드박스 제한으로 미실행.
 - 2026-10-20 사실: 7건을 tasks.md Phase 9(T058~T064)로 고쳤다. 승인된 구현 범위 안의 버그 수정이라 바로 반영했다. AGENTS.md 7절 검증 재실행 통과
   (pytest 478 passed, preflight 283개 파일, `-I` preflight, ruff, 로컬 DB).
+- 2026-10-20 사실: 수정을 `5a2cf24`, `265eb28`, `49d0746`으로 커밋했다. 같은 Codex 세션의 재리뷰에서 이전 7건 중 5건 해소, 4번(IPv6)은 마침표·확장자 회귀,
+  5번(권한 증빙)·7번(본문 식별자)은 남은 사례가 있어 P1 2건, P2 1건 변경 요청. Codex 직접 실행 pytest 478 passed, ruff 통과.
+- 2026-10-20 사실: 3건을 tasks.md Phase 10(T065~T068)으로 고쳤다. AGENTS.md 7절 검증 재실행 통과.
 - 확인 필요: 요약·버전·오류 격리 시험이 구현 뒤에 쓰여 처음부터 통과한 "시험 먼저 원칙 예외"를 사람이 받아들일지(Codex 리뷰 required_human_decisions).

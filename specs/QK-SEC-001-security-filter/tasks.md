@@ -193,6 +193,15 @@ US1 시험은 정책 주입(`SecurityPolicy.kinds`)으로 모든 자료를 팀 �
 
 ---
 
+## Phase 10: 구현 재리뷰 반영 (2026-10-20 Codex 재리뷰 변경 요청 3건)
+
+- [x] T065 [P] `src/qello_knowledge/domain/redact.py`: 순수 16진 IPv6 분기의 뒤 경계에서 마침표를 빼, `2001:db8::1.`·`docs/2001:db8::1.md`도 가린다(재리뷰 1번, T059 회귀). 가림 단위 시험과 누출 시험(식별자 사전 차단, ING-001 로그·요약)에 사례 추가
+- [x] T066 `src/qello_knowledge/security/screen.py`: 성공한 요청 자료와 받은 본문을 순서대로 짝지어 식별자가 다르면 본문을 버리고 요청 자료를 `ERROR`(`fetch:SUCCEEDED:content-mismatch`)로 남긴다. 같은 식별자 본문이 두 번 오면 두 번째는 버린다(재리뷰 2번)
+- [x] T067 `src/qello_knowledge/security/screen.py`: 목록 단계를 경로·접근·메타데이터 단계로 나눠 오류를 잡고, 접근 판정 뒤 단계의 오류에는 권한 증빙을 남긴다(재리뷰 3번, FR-019·021)
+- [x] T068 AGENTS.md 7절 검증 전체 재실행
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** → 스토리 단계.
