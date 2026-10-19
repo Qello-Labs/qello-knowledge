@@ -166,12 +166,12 @@ description: "QK-ING-001 구현 작업 목록"
 
 **Purpose**: 독립 검토가 재현한 문제 1~3번을 고친다. 테스트를 먼저 쓰고 실패를 확인한 뒤 구현한다
 
-- [ ] T054 [P] `tests/unit/sources/test_config.py`에 사례 추가: 공백 없는 48자 경로 패턴(`specs/QK-ING-001-source-adapter-contract/**/*.md`)이 `include`에 있어도 통과, `ghp_`·`github_pat_`·`cfat_` 접두사 값과 `postgres` 스킴 URL은 `TOKEN_VALUE`, 토큰으로 판정된 필드는 `TOKEN_VALUE` 하나만 보고(같은 필드 `INVALID` 중복 없음), 비활성 자료원의 `auth`·`scope`에 토큰 값이 있으면 `TOKEN_VALUE`. 토큰 형식 문자열은 테스트 안에서 이어 붙여 만든다
-- [ ] T055 [P] `tests/unit/indexer/test_cli.py`에 사례 추가: 비활성 자료원에 토큰 값이 있는 설정이면 `sources check`와 `run`이 종료 코드 1이고 출력에 값이 없음
-- [ ] T056 `src/qello_knowledge/sources/config.py`: 토큰 판정을 contracts/sources-config.md "토큰 형식 판단"대로 바꾼다(알려진 접두사에 `cfat_` 추가, `postgres` 스킴 URL, 레지스트리 형식 규칙은 토큰 판정에 쓰지 않음). 비활성 자료원에도 토큰 검사를 적용한다. 레지스트리는 `auth` 이름 검사에만 쓴다. T054·T055 통과
-- [ ] T057 [P] `tests/unit/sources/test_session_hosts.py`와 시나리오(`tests/fixtures/responses/fake/redirect_http_downgrade.json`, `redirect_port_change.json`): 같은 호스트의 `http` 리다이렉트와 포트가 바뀌는 리다이렉트는 `REDIRECT_BLOCKED`이고 그 주소로 요청 0건(인증 헤더 전달 없음), 첫 요청이 `http`이거나 `allowed_hosts` 밖 호스트면 `HostNotAllowed`가 나고 전송 기록 요청 0건, `fetch_contents`가 `HostNotAllowed`를 자료별 결과로 삼키지 않음
-- [ ] T058 `src/qello_knowledge/domain/source.py`에 `HostNotAllowed` 예외를 더하고 `src/qello_knowledge/sources/session.py`에 research.md R-09 보강 규칙(첫 요청 `https`·호스트 검사, 리다이렉트 `https`·호스트·포트 검사)을 넣는다. `src/qello_knowledge/sources/collect.py`는 `HostNotAllowed`를 잡지 않는다. 기존 테스트가 쓰는 설정의 `allowed_hosts`가 새 규칙에 맞는지 확인한다. T057 통과
-- [ ] T059 `uv run pytest tests/unit tests/contract`와 `uv run ruff check .`, `uv run ruff format --check .`로 확인. 파일 basename이 기존 테스트와 겹치지 않는지 확인
+- [x] T054 [P] `tests/unit/sources/test_config.py`에 사례 추가: 공백 없는 48자 경로 패턴(`specs/QK-ING-001-source-adapter-contract/**/*.md`)이 `include`에 있어도 통과, `ghp_`·`github_pat_`·`cfat_` 접두사 값과 `postgres` 스킴 URL은 `TOKEN_VALUE`, 토큰으로 판정된 필드는 `TOKEN_VALUE` 하나만 보고(같은 필드 `INVALID` 중복 없음), 비활성 자료원의 `auth`·`scope`에 토큰 값이 있으면 `TOKEN_VALUE`. 토큰 형식 문자열은 테스트 안에서 이어 붙여 만든다
+- [x] T055 [P] `tests/unit/indexer/test_cli.py`에 사례 추가: 비활성 자료원에 토큰 값이 있는 설정이면 `sources check`와 `run`이 종료 코드 1이고 출력에 값이 없음
+- [x] T056 `src/qello_knowledge/sources/config.py`: 토큰 판정을 contracts/sources-config.md "토큰 형식 판단"대로 바꾼다(알려진 접두사에 `cfat_` 추가, `postgres` 스킴 URL, 레지스트리 형식 규칙은 토큰 판정에 쓰지 않음). 비활성 자료원에도 토큰 검사를 적용한다. 레지스트리는 `auth` 이름 검사에만 쓴다. T054·T055 통과
+- [x] T057 [P] `tests/unit/sources/test_session_hosts.py`와 시나리오(`tests/fixtures/responses/fake/redirect_http_downgrade.json`, `redirect_port_change.json`): 같은 호스트의 `http` 리다이렉트와 포트가 바뀌는 리다이렉트는 `REDIRECT_BLOCKED`이고 그 주소로 요청 0건(인증 헤더 전달 없음), 첫 요청이 `http`이거나 `allowed_hosts` 밖 호스트면 `HostNotAllowed`가 나고 전송 기록 요청 0건, `fetch_contents`가 `HostNotAllowed`를 자료별 결과로 삼키지 않음
+- [x] T058 `src/qello_knowledge/domain/source.py`에 `HostNotAllowed` 예외를 더하고 `src/qello_knowledge/sources/session.py`에 research.md R-09 보강 규칙(첫 요청 `https`·호스트 검사, 리다이렉트 `https`·호스트·포트 검사)을 넣는다. `src/qello_knowledge/sources/collect.py`는 `HostNotAllowed`를 잡지 않는다. 기존 테스트가 쓰는 설정의 `allowed_hosts`가 새 규칙에 맞는지 확인한다. T057 통과
+- [x] T059 `uv run pytest tests/unit tests/contract`와 `uv run ruff check .`, `uv run ruff format --check .`로 확인. 파일 basename이 기존 테스트와 겹치지 않는지 확인
 
 ---
 
