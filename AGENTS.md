@@ -111,9 +111,15 @@ Jira 이슈나 `TASK.md`가 없으면 조사, 계획, 문서 초안까지만 한
 ```bash
 python scripts/preflight.py
 git diff --check
+uv run ruff check .
+uv run ruff format --check .
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
-코드가 생기면 `pyproject.toml`에 정의한 테스트 명령을 추가한다. 색인, 검색, 생성 변경은 평가 세트 실행 결과를 첨부한다.
+테스트·린트 설정은 `pyproject.toml`에 있고, CI(`.github/workflows/ci.yml`)도 같은 명령을 실행한다.
+실제 외부 API를 호출하는 테스트(`uv run pytest -m external`)는 기본 검증에 넣지 않는다.
+색인, 검색, 생성 변경은 평가 세트 실행 결과를 첨부한다.
 
 실행하지 못한 검증은 명령, 이유, 영향 범위, 남은 위험, 후속 방법을 적는다.
 실행하지 않은 검증을 통과로 표현하지 않는다.

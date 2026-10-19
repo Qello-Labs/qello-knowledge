@@ -146,7 +146,7 @@ US1의 DB 연결 판단(T021, T024)이 설정 로더를 쓰므로 US2를 먼저 
 - [x] T043 [P] `uv run ruff format .`와 `uv run ruff check .`로 전체 정리
 - [ ] T044 quickstart.md 1~7단계를 처음부터 다시 따라 하고 걸린 시간과 결과를 기록한다(SC-001 일부. 팀원 실측은 리뷰 때 받는다)
 - [x] T045 `python3 scripts/preflight.py`, `git diff --check origin/main...HEAD`, TASK.md의 grep 검증을 실행한다
-- [ ] T046 PR 본문에 AGENTS.md 7절에 추가할 기본 검증 명령 제안을 적는다(FR-015, research R-12). AGENTS.md는 승인 전에는 고치지 않는다
+- [x] T046 AGENTS.md 7절 기본 검증에 테스트·린트 명령을 추가한다(FR-015, research R-12). 2026-10-19 사용자 승인
 
 ---
 

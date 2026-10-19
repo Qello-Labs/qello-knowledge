@@ -102,5 +102,5 @@
 
 ## R-12 AGENTS.md 7절 갱신
 
-- FR-015는 기본 검증 목록에 테스트·린트 명령을 추가하라고 요구한다. AGENTS.md 수정은 사람 승인 대상이라(TASK.md 제외 범위)
-  이 작업에서는 추가할 문장을 PR 본문에 제안으로만 적는다. 승인되면 같은 PR이나 후속 PR에서 반영한다.
+- FR-015에 따라 AGENTS.md 7절 기본 검증에 린트(`uv run ruff check .`, `uv run ruff format --check .`), 로컬 DB 시작(`uv run qk-dev db up`),
+  테스트(`QK_REQUIRE_LOCALDB=1 uv run pytest`)를 추가했다. AGENTS.md는 사람 승인 대상이라 2026-10-19 사용자 승인을 받고 고쳤다.
