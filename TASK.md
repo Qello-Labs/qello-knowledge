@@ -17,15 +17,21 @@
 
 - 완료: QK-SEC-001 명세(`spec.md`)를 작성하고 사람 승인을 받았다(2026-10-20).
 - 완료: `/speckit-plan` 설계 산출물을 만들고 사람 승인을 받았다(2026-10-20, `7294c48`).
-- 이번 단계: `/speckit-tasks`로 작업을 나눠 사람 리뷰를 받는다.
-- 다음 단계(tasks 승인 후): 구현해, 첫 실제 색인 전에 색인 제외 경로·비밀값 차단·접근 범위 판정이
+- 완료: `/speckit-tasks`로 작업 목록(57개)을 만들고 사람 승인을 받았다(2026-10-20, `ab3c90e`).
+- 이번 단계: `tasks.md`대로 구현해, 첫 실제 색인 전에 색인 제외 경로·비밀값 차단·접근 범위 판정이
   모든 자료에 적용되게 한다(로드맵 2절, RISK-09).
 
 ## Scope
 
 - `specs/QK-SEC-001-security-filter/spec.md`와 `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인).
 - 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`(승인됨, 바꾸려면 다시 승인).
-- 작업 목록: 같은 디렉터리의 `tasks.md`.
+- 작업 목록: 같은 디렉터리의 `tasks.md`(승인됨). 구현 중 체크 표시와 진행 기록은 고친다.
+- 구현(tasks.md, plan.md Project Structure):
+  - 새 파일: `src/qello_knowledge/domain/{security,secret_rules,redact,exclusions}.py`, `src/qello_knowledge/security/`,
+    `config/security_exceptions.toml`, `tests/unit/security/`, `tests/unit/domain/test_{security_types,secret_rules,exclusions}.py`,
+    `tests/unit/test_preflight_shared_rules.py`, `tests/fixtures/security/`, `tests/fixtures/responses/fake/security_*.json`
+  - 고치는 파일: `scripts/preflight.py`(규칙을 공유 모듈에서 불러옴, 2026-10-20 사용자 허용), `scripts/preflight_allowlist.txt`(넓힌 규칙의 오탐만, 사유 필수),
+    `src/qello_knowledge/indexer/cli.py`(`security check`, `run` 검사), `tests/unit/indexer/test_cli.py`, `tests/unit/sources/test_config.py`(T037 사례 추가만)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - 명세가 다룰 동작:
   - 색인 제외 경로: 자료원 설정의 포함·제외 패턴과 별개로 항상 적용하는 제외 규칙과 제외 사유 기록
@@ -35,9 +41,10 @@
 
 ## Explicit exclusions
 
-- 이번 단계에서 구현 코드, 테스트, `scripts/preflight.py` 수정. tasks 승인 후 Decisions에 기록하고 범위를 넓힌다.
 - 실제 GitHub 수집기와 실제 원본 호출(QK-ING-002), 청커(QK-CHK-002), 동기화·삭제 반영(QK-SYN-001), 저장 스키마와 마이그레이션(QK-STO-001).
-- QK-ING-001 코드·명세 수정. 필요한 변경은 PR #35 쪽에서 다룬다.
+- QK-ING-001 코드·명세 수정(`src/qello_knowledge/sources/`, `adapters/`, `domain/source*.py`, `domain/scope.py`). 필요한 변경은 PR #35 쪽에서 다룬다.
+  ING-001 시험 파일에는 T037 사례 추가만 한다.
+- 승인된 `spec.md`·설계 산출물의 내용 변경. FR-023 문구 보완은 PR에서 제안만 한다.
 - 런타임 의존성 추가(`pyproject.toml`의 `dependencies`). 필요하면 사람 승인을 받는다.
 - `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
@@ -56,6 +63,9 @@
 | --- | --- | --- |
 | `specs/QK-SEC-001-security-filter/` | Byuntil | 사람 리뷰 |
 | `TASK.md` | Byuntil | 사람 리뷰 |
+| `src/qello_knowledge/domain/` 새 파일, `src/qello_knowledge/security/`, `src/qello_knowledge/indexer/cli.py`, `config/security_exceptions.toml` | Byuntil | 사람 리뷰 |
+| `scripts/preflight.py`, `scripts/preflight_allowlist.txt` | Byuntil | 사람 리뷰(CI 검사 스크립트) |
+| `tests/` 보안 필터 시험·픽스처 | Byuntil | 사람 리뷰 |
 
 ## Existing user-owned changes
 
@@ -65,7 +75,12 @@
 
 ```bash
 python3 scripts/preflight.py
+python3 -I scripts/preflight.py
 git diff --check
+uv run ruff check .
+uv run ruff format --check .
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
 grep -rn "NEEDS CLARIFICATION" specs/QK-SEC-001-security-filter/*.md specs/QK-SEC-001-security-filter/contracts/   # 결과가 없어야 한다
 ```
 
@@ -115,3 +130,8 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-SEC-001-security-filter/*.md specs/QK-SE
 - 2026-10-20 사실: 같은 Codex 세션의 세 번째 설계 재리뷰에서 남은 P2가 해소되고 설계 승인 권고(PASS)가 나왔다. 설계 산출물은 `7294c48`로 커밋했다.
 - 2026-10-20 사용자 결정: 사람 리뷰어 Byuntil이 설계(`7294c48` 기준)를 승인했다. 설계를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
   `/speckit-tasks`로 작업 목록을 만든다. 구현과 `scripts/preflight.py` 수정은 tasks 승인 뒤에 범위를 넓힌다.
+- 2026-10-20 사실: `tasks.md`(57개 작업)를 이 세션이 썼다. tasks 승인 대기. 설계와 다르게 둔 두 곳(`redact`를 `domain/redact.py`에 둠, 시험 파일
+  `test_screen_no_secret_leak.py` 이름)을 tasks.md 머리에 적었다.
+- 2026-10-20 사용자 결정: 사람 리뷰어 Byuntil이 `tasks.md`(설계 조정 두 곳 포함)를 승인했다. tasks를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
+  `scripts/preflight.py` 수정(T011, T021)을 허용한다. 구현 범위를 Scope·Ownership에 넓혔다.
+- 2026-10-20 사용자 결정: 구현은 이 Claude 세션이 맡고, 검증·코드 리뷰는 오른쪽 Codex 패널(명세·설계 리뷰를 맡은 세션)이 맡는다.
