@@ -1,7 +1,7 @@
 # Qello Knowledge
 
 팀의 코드, ClickUp 문서·작업, GitHub 기록을 근거로 질문에 답하는 RAG 지식 검색 시스템이다.
-지금은 구현 전 단계이며, 구축 순서와 명세 백로그는 [로드맵](docs/sdd/roadmap.md)에 있다.
+구축 순서와 명세 백로그는 [로드맵](docs/sdd/roadmap.md)에 있다.
 
 | 문서 | 내용 |
 | --- | --- |
@@ -12,6 +12,22 @@
 | [구축 WBS](https://claude.ai/artifact/HoKb7gf9wXkZ8nxDcgRZAa) | 로드맵 기준 단계별 작업·담당·진행 상태, 선후관계와 크리티컬 패스, 변경 기록. WBS 번호는 로드맵 백로그의 `WBS` 열과 같다(예: `1.5` = `QK-ING-002`) |
 | [docs/sdd/constitution.md](docs/sdd/constitution.md) | 원칙 초안. `/speckit-constitution`의 입력 |
 | [docs/github-workflow.md](docs/github-workflow.md) | Jira·GitHub Issue·PR 연결 |
+
+## 로컬 시작
+
+토큰과 `.env` 없이 로컬 DB를 띄우고 기본 테스트를 통과시킨다. 준비물은 [uv](https://docs.astral.sh/uv/)와 Docker(Compose v2)다.
+
+```bash
+uv sync
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
+```
+
+- 포트 54322를 다른 프로그램이 쓰면 `QK_LOCAL_DB_PORT=<다른 포트>`를 앞에 붙여 실행한다.
+- 린트는 `uv run ruff check .`와 `uv run ruff format --check .`, 비밀값 검사는 `python3 scripts/preflight.py`다.
+- 로컬 DB는 `uv run qk-dev db down`으로 내리고, `uv run qk-dev db reset`으로 초기화한다. 재설정은 로컬 DB에만 동작한다.
+- 설정 항목은 `.env.example`에 있다. 진입점별 점검은 `uv run qk-index check`, `uv run qk-query check`다.
+- 전체 검증 절차는 [QK-FND-001 quickstart](specs/QK-FND-001-project-skeleton-ci/quickstart.md)에 있다.
 
 ## 로드맵 진행 상황 보기
 

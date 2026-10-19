@@ -11,6 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+# 오탐 예외 목록. 한 줄에 `경로:규칙 이름 # 사유` 하나. 사유가 없으면 검사가 실패한다. 규칙을 끄는 옵션은 두지 않는다.
+ALLOWLIST = ROOT / "scripts" / "preflight_allowlist.txt"
 SKIP_PARTS = {
     ".git",
     ".idea",
@@ -170,6 +172,25 @@ def read_lines(path: Path, staged: bool) -> list[str]:
     return result.stdout.decode("utf-8").splitlines()
 
 
+def load_allowlist(path: Path = ALLOWLIST) -> tuple[set[tuple[str, str]], list[str]]:
+    """예외 목록을 읽는다. 돌려주는 값은 (경로, 규칙 이름) 집합과 형식 오류 목록이다."""
+    entries: set[tuple[str, str]] = set()
+    errors: list[str] = []
+    if not path.is_file():
+        return entries, errors
+    for line_number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        target, _, reason = line.partition("#")
+        relative, _, rule_name = target.strip().rpartition(":")
+        if not relative or not rule_name or not reason.strip():
+            errors.append(f"{path.relative_to(ROOT)}:{line_number}: allowlist-entry-needs-path-rule-and-reason")
+            continue
+        entries.add((relative, rule_name))
+    return entries, errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -178,7 +199,7 @@ def main() -> int:
         help="inspect only the exact staged blobs",
     )
     args = parser.parse_args()
-    findings: list[str] = []
+    allowed, findings = load_allowlist()
     paths = candidate_paths(args.staged)
     for path in tracked_environment_files(args.staged):
         findings.append(f"{path.relative_to(ROOT)}: tracked-env-file")
@@ -190,6 +211,8 @@ def main() -> int:
             continue
         for line_number, line in enumerate(lines, start=1):
             for rule_name, pattern in RULES:
+                if (path.relative_to(ROOT).as_posix(), rule_name) in allowed:
+                    continue
                 if pattern.search(line):
                     findings.append(
                         f"{path.relative_to(ROOT)}:{line_number}: {rule_name}"

@@ -1,0 +1,23 @@
+# 로컬 개발·테스트 전용 DB. 운영 실행 환경이 아니다(ADR-008 Follow-ups, QK-FND-001 FR-010).
+# 운영 저장소(Supabase)와 같은 배포판 이미지라 pgvector·PGroonga를 함께 쓴다.
+# 시작·확장 확인은 `uv run qk-dev db up`으로 한다. 포트는 QK_LOCAL_DB_PORT로 바꾼다.
+name: qello-knowledge
+
+services:
+  db:
+    image: supabase/postgres:17.11.0.004
+    ports:
+      - "127.0.0.1:${QK_LOCAL_DB_PORT:-54322}:5432"
+    environment:
+      # 로컬 컨테이너 전용 기본값이다. 운영 비밀번호를 여기에 쓰지 않는다.
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "127.0.0.1"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+volumes:
+  db-data:

@@ -1,0 +1,46 @@
+[project]
+name = "qello-knowledge"
+version = "0.1.0"
+description = "팀 공용 자료를 근거로 답하는 RAG 지식 검색 시스템"
+readme = "README.md"
+requires-python = ">=3.13"
+# 런타임 의존성은 Cloudflare Python Workers에서도 돌아야 하므로 비워 둔다(research R-03).
+dependencies = []
+
+[project.scripts]
+qk-index = "qello_knowledge.indexer.cli:main"
+qk-query = "qello_knowledge.query.server:main"
+qk-dev = "qello_knowledge.devtools.db:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.13",
+    "psycopg[binary]>=3.2",
+    "workers-py",
+]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+# 기존 하네스 스크립트와 Spec Kit 파일은 이 작업 범위 밖이라 린트하지 않는다(QK-FND-001 research R-08).
+extend-exclude = [".claude", ".agents", ".codex", ".specify", "scripts", "tests/test_jira_subtask.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S108"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-m 'not external' --strict-markers"
+markers = [
+    "localdb: 로컬 개발 DB가 필요한 테스트. QK_REQUIRE_LOCALDB=1이면 DB가 없을 때 실패한다",
+    "external: 실제 외부 API를 호출하는 테스트. 기본 실행에서 빠지고 -m external로 켠다",
+]
