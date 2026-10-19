@@ -218,6 +218,15 @@ US1 시험은 정책 주입(`SecurityPolicy.kinds`)으로 모든 자료를 팀 �
 
 ---
 
+## Phase 13: 구현 재리뷰 4차 반영 (2026-10-20 Codex 넓은 조합 재리뷰 변경 요청 2건)
+
+- [x] T075 `src/qello_knowledge/domain/redact.py`: T072의 코드 예외(숫자 없고 영문자에 붙은 후보)를 없앤다. `face::beef`, `backupbeef::cafe` 같은 숫자 없는 IPv6도 실제 주소라 구분할 수 없으므로 유효한 IPv6 후보는 모두 가린다(재리뷰 1번, FR-023 완화 없음). 대가: 글 필드의 `std::map`도 가려지고, 경로에 `::`가 든 자료는 식별자 주소로 막힌다
+- [x] T076 `src/qello_knowledge/domain/redact.py`: IPv6는 콜론이 두 개 이상인 16진 구간에서만 찾고, IPv4는 숫자·점 덩어리 전체(앞뒤 점 제외)가 유효할 때만 가린다. `1.2.3.456`, `2026.10.20.1`, `docs/2026.10.20.1.md`는 남는다(재리뷰 2번). 16진 문자열 10만 자 4.98초→0.02초. `ADDRESS_POLICY_VERSION`=`address-v4`
+- [x] T077 [P] 시험: 숫자 없는 IPv6(글·경로·링크), 숫자 버전 파일 이름 비차단, 긴 비주소 문자열 처리 시간
+- [x] T078 AGENTS.md 7절 검증 전체 재실행. 넓힌 `env-assigned-secret` 규칙이 새 상수 `IPV4_TOKEN = re.compile(...)`을 오탐으로 잡아 이름을 `IPV4_DIGITS`로 바꿨다(PR 사람 확인 항목: Python 상수 `*_TOKEN = 호출` 계열 오탐)
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** → 스토리 단계.
