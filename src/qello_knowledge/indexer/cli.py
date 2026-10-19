@@ -1,24 +1,43 @@
-"""`qk-index`: 색인 진입점. 지금은 설정 점검만 하고, 수집은 후속 명세(QK-ING-002, QK-SYN-001)가 채운다."""
+"""색인 진입점. 실제 수집 연결은 QK-SYN-001이 맡는다."""
 
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 from qello_knowledge.config.cli import add_check_options, run_check
 from qello_knowledge.config.registry import Entrypoint
+from qello_knowledge.sources.config import load_sources
+from qello_knowledge.sources.report import render_report, source_report
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="qk-index", description="색인 진입점")
     sub = parser.add_subparsers(dest="command", required=True)
     add_check_options(sub.add_parser("check", help="설정만 점검한다. 외부 호출 없음"))
-    add_check_options(sub.add_parser("run", help="설정을 점검하고 색인을 실행한다"))
+    run = sub.add_parser("run", help="설정을 점검하고 색인을 실행한다")
+    add_check_options(run)
+    run.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
+    sources = sub.add_parser("sources", help="자료원 설정을 검사한다")
+    source_commands = sources.add_subparsers(dest="source_command", required=True)
+    check = source_commands.add_parser("check", help="원본 호출 없이 자료원 설정만 검사한다")
+    check.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
+    check.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
-    code, _ = run_check(Entrypoint.INDEX, args)
-    if code != 0 or args.command == "check":
-        return code
-    print("수집할 자료원 없음")
+    if args.command != "sources":
+        code, _ = run_check(Entrypoint.INDEX, args)
+        if code != 0 or args.command == "check":
+            return code
+    configs, issues = load_sources(args.sources)
+    report = source_report(args.sources, configs, issues)
+    if args.command == "sources" or issues:
+        print(render_report(report, json_output=args.json))
+        return 1 if issues else 0
+    for config in configs:
+        print(f"{config.name}: {'수집 대기' if config.enabled else '비활성'}")
+    if not any(config.enabled for config in configs):
+        print("수집할 자료원 없음")
     return 0
 
 
