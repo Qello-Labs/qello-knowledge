@@ -73,6 +73,9 @@
 
 - **Decision**: ruff로 코드 규칙(`ruff check`)과 형식(`ruff format --check`)을 검사한다. 버전은 `uv.lock`으로 고정해 로컬과 CI가 같다(FR-019).
 - **Alternatives considered**: flake8 + black(도구 두 개, 설정 두 벌).
+- **범위**: 기존 하네스 파일(`.claude/`, `.agents/`, `.codex/`, `.specify/`, `scripts/`, `tests/test_jira_subtask.py`)은 린트 대상에서 뺀다.
+  이 파일들에 규칙 위반이 18건 있지만 이 작업 범위 밖이고, 하네스 파일은 사람 승인 없이 고치지 않는다(AGENTS.md 4절).
+  정리는 별도 작업으로 한다.
 
 ## R-09 CI
 
