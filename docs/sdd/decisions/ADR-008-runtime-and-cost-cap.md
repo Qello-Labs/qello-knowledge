@@ -112,6 +112,58 @@ Workers AI 무료 할당(하루 10,000 Neurons) 안에서 쓴다.
 - `docs/sdd/constitution.md` 변경 이력이 "미합의 — Phase 0 리뷰에서 확정"으로 남아 있다. WBS 0.1은 끝났으므로
   (2026-10-10 사용자 확인, 0.4 작업 계약 기록) 합의 상태를 갱신한다. 원칙 문서 수정은 사람 승인을 받는다.
 
+## 변경 제안 (2026-10-19): 운영 저장소를 Oracle Cloud Always Free 인스턴스로
+
+> 상태: 제안. 2026-10-19 사용자가 QK-STO-001 작업 중 "운영 저장소는 아마 Oracle Cloud 프리티어급 인스턴스로 바꾼다"고 정했다.
+> 확정은 이 기록의 승인과 함께 한다. 확정되면 위 Decision의 저장 부분을 이 절로 바꾼다.
+
+### 제안 내용
+
+운영 저장소를 Supabase Free 관리형 PostgreSQL에서 Oracle Cloud Infrastructure(OCI) Always Free Ampere A1 인스턴스 위의
+자체 운영 PostgreSQL로 바꾼다. 이미지는 로컬 개발 DB와 같은 `supabase/postgres:17.11.0.004`(arm64 태그 있음, pgvector·PGroonga 포함)를 쓴다.
+질의응답(Cloudflare Workers), 색인 분리, 고정비 상한 월 0원은 그대로다.
+
+### 근거
+
+- PGroonga를 우리가 직접 켠다. 로컬 개발 DB(aarch64)와 같은 이미지라 Supabase 대시보드 활성화 여부(위 Negative / risks)에 기대지 않는다.
+  QK-STO-001 ADR-007 스파이크에서 같은 이미지의 pgvector 0.8.2·PGroonga 3.2.5로 한국어·식별자 검색을 확인했다.
+- 저장 한도: Always Free 블록 볼륨이 부트 볼륨 포함 200 GB다. Supabase Free 500 MB보다 크다.
+- Supabase Free의 비활성 일시정지가 없다. 대신 아래 유휴 회수 위험이 있다.
+
+### 대가와 위험
+
+- **유휴 인스턴스 회수**: 7일 동안 CPU 95번째 백분위 20% 미만, 네트워크 20% 미만, 메모리 20% 미만(A1만)이면 Oracle이 회수할 수 있다.
+  하루 질문 50건 규모의 DB는 이 조건에 걸릴 가능성이 높다. 대응(유료 계정 전환 시 Always Free 무과금 유지 여부, 메모리 사용률 유지 등)을 정하기 전에는
+  실제 팀 자료의 유일한 사본을 두지 않는다. 원본에서 전체 재색인으로 복구할 수 있어야 한다(RISK-08).
+- **운영 부담**: 백업, 보안 패치, 디스크 관리, 단일 장애점을 팀이 맡는다. 이 기록의 Alternatives에서 "전용 소형 VM 신설"을 뺀 이유 중 고정비는 사라지지만
+  운영 부담은 그대로 남는다.
+- **용량 확보**: 홈 리전에서만 만들 수 있고, "out of host capacity"로 일시적으로 못 만들 수 있다.
+- **Workers 연결**: Supabase Data API가 없어진다. Python Workers에서 TCP 드라이버를 쓸 수 없으므로 인스턴스에 HTTP RPC 계층(예: PostgREST)을 두고
+  공인 포트를 열지 않는 경로(예: Cloudflare Tunnel)로 연결하는 방안을 QK-BOT-001에서 정한다. QK-STO-001은 검색을 SQL 함수로 두어 어느 쪽이든 쓸 수 있다.
+- **계정**: 가입에 결제 수단 등록이 필요하다. 유료 전환은 C-05에 따라 사람 승인을 받는다.
+
+### 데이터 처리 정책 (FR-022 확인 결과)
+
+- 저장 위치: 우리 테넌시의 VM과 블록 볼륨이다. 관리형 DB 서비스가 아니므로 DB 내용을 제공자 서비스가 처리하지 않는다.
+- 학습 사용: OCI Generative AI 문서는 고객 입력을 보존하지 않고 학습 데이터를 공용 모델 개선에 쓰지 않는다고 적는다. 이 시스템은 OCI 생성 AI를 쓰지 않으므로
+  직접 해당하지 않는다. 컴퓨트·블록 볼륨 내용의 학습 사용을 명시적으로 다룬 문서는 찾지 못했다(확인 못 함).
+- 보존 기간: 서비스 종료 뒤 고객 콘텐츠 회수 기간은 Oracle Cloud Services Agreement와 서비스 사양에 따른다고 되어 있다. 기간(일수)은 공식 문서에서 확인하지 못했다(확인 못 함).
+- 확인 못 한 두 항목은 인스턴스를 만들기 전에 계정 약관 화면에서 다시 확인한다.
+
+### 근거 (조회 2026-10-19)
+
+- Always Free 자원(A1 월 1,500 OCPU 시간·9,000 GB 시간 = 2 OCPU·12 GB, 블록 볼륨 200 GB·백업 5개, 송신 10 TB/월, 유휴 회수 조건, 홈 리전 제한, out of host capacity):
+  https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
+- OCI Generative AI 데이터 처리: https://docs.oracle.com/en-us/iaas/Content/generative-ai/data-handling.htm
+- Oracle AI Terms: https://www.oracle.com/contracts/docs/oracle-ai-terms.pdf
+- Oracle Cloud Hosting and Delivery Policies(종료·정지 정책 6절): https://www.oracle.com/contracts/docs/ocloud-hosting-delivery-policies-soc.pdf
+- 이미지 arm64 태그: https://hub.docker.com/r/supabase/postgres/tags , 로컬 실측은 `docs/sdd/decisions/ADR-007-storage-schema.md` Evidence
+
+### 이 제안이 남기는 수정 (이 작업에서 고치지 않는다)
+
+- `docs/sdd/roadmap.md`의 Supabase 표기, `compose.yaml` 주석("운영 저장소(Supabase)와 같은 배포판 이미지")은 확정 뒤 사람 승인을 받아 고친다.
+- PGroonga 운영 확인은 인스턴스가 생긴 뒤 같은 이미지로 `CREATE EXTENSION` 결과를 이 절에 적는다(QK-STO-001 T031).
+
 ## Approval
 
 - Approvers: 확인 필요
