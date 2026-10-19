@@ -5,6 +5,8 @@ description: 구현과 검증을 마친 뒤 실제 Git 변경에서 리뷰할 �
 
 # PR Draft Summary
 
+Claude Code판(`.claude/skills/pr-draft-summary`)과 절차가 같고 호출 문법과 참조 경로만 다르다. 절차를 바꾸면 두 Skill을 함께 고친다.
+
 구현을 마친 뒤 실제 diff에서 PR 제목과 본문 초안을 만든다. 리뷰어가 한 번 읽고 다음 세 가지를 알 수 있어야 한다.
 
 - 왜 이 변경이 필요했는가

@@ -33,6 +33,7 @@ Spec Kit 1.1.0 소스이고, 동작은 Codex CLI 0.160.0에서 확인했다(2026
 | `.claude/settings.json` deny `Read(./.env)` 등 | `.codex/config.toml` 권한 프로필 `qello`(deny) | Claude는 Read 도구를, Codex는 샌드박스 명령을 막는다. Beta 기능이다. `sandbox_mode` 설정이 있거나 샌드박스를 끄면 적용되지 않는다 |
 | `.claude/hooks/speckit_spec_id.py`(UserPromptSubmit, PreToolUse `Skill`) | `.codex/hooks/speckit_spec_id.py`(UserPromptSubmit) | 판정은 Claude 훅의 `resolve()`를 불러 쓴다. Codex에는 Skill 도구가 없어 모델의 스킬 호출을 가로챌 수 없으므로 `speckit-specify`의 암묵 호출을 막았다(`agents/openai.yaml`) |
 | `.claude/skills/harness-*` | `.agents/skills/harness-*` | 전체 복사 후 호출 문법(`$harness-pr`), 질문 방식, 임시 파일 위치, 샌드박스 승인 안내만 고쳤다. 절차를 바꾸면 두 벌을 함께 고친다 |
+| `.claude/skills/pr-draft-summary` | `.agents/skills/pr-draft-summary` | 호출 문법(`/harness-pr`, `$harness-pr`)과 PR 작성 규칙 참조 경로만 다르다. 절차를 바꾸면 두 벌을 함께 고친다 |
 | `.claude/skills/speckit-*`(Spec Kit `claude` 통합) | `.agents/skills/speckit-*`(Spec Kit `codex` 통합) | `specify integration install codex --script py`로 생성했다. 기본 통합은 `claude`로 남는다 |
 | 하네스 파일 수정 승인(`AGENTS.md` 4절) | 같은 규칙 + Codex 샌드박스 보호 경로 | Codex 기본 샌드박스는 `.codex/`, `.agents/`, `.git`을 읽기 전용으로 둔다. 커밋·push에도 샌드박스 밖 실행 승인이 필요하다 |
 

@@ -34,7 +34,7 @@ Skill은 `.agents/skills/`에 있고 `$<이름>`으로 호출한다.
 
 - `harness-*`와 `roadmap-explain`은 `.claude/skills/`의 같은 이름 Skill을 복사해 Codex 도구에 맞게 고쳤다. 절차를 바꾸면 두 벌을 함께 고친다.
 - `speckit-*`는 `specify integration install codex`가 생성했다. 직접 고치지 않고 Spec Kit 버전을 올릴 때 다시 생성한다.
-- `pr-draft-summary`는 Codex 전용이다. `.claude/skills/`에 같은 이름 Skill이 없다.
+- `pr-draft-summary`는 `.claude/skills/`에 Claude Code판이 있다. 호출 문법과 참조 경로만 다르다. 절차를 바꾸면 두 벌을 함께 고친다.
 
 ## Skill 의무 사용
 
