@@ -1,0 +1,8 @@
+[[source]]
+name = "docs"
+kind = "fake"
+enabled = true
+auth = "UNKNOWN_SETTING"
+[source.scope]
+include = ["**/*.md"]
+exclude = []

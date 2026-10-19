@@ -1,0 +1,8 @@
+[[source]]
+name = "docs"
+kind = "fake"
+enabled = true
+auth = "TOKEN_PLACEHOLDER"
+[source.scope]
+include = ["**/*.md"]
+exclude = []

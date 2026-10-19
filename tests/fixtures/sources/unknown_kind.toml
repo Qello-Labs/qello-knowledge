@@ -1,0 +1,7 @@
+[[source]]
+name = "docs"
+kind = "notion"
+enabled = true
+[source.scope]
+include = ["**/*.md"]
+exclude = []

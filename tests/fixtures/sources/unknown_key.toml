@@ -1,0 +1,8 @@
+[[source]]
+name = "docs"
+kind = "fake"
+enabled = true
+max_retrise = 2
+[source.scope]
+include = ["**/*.md"]
+exclude = []

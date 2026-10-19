@@ -1,0 +1,12 @@
+[[source]]
+name = "docs"
+kind = "fake"
+enabled = true
+[source.scope]
+include = ["**/*.md"]
+exclude = []
+
+[[source]]
+name = "old-docs"
+kind = "fake"
+enabled = false
