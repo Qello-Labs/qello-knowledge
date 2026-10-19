@@ -25,11 +25,14 @@
   - `AGENTS.md` 5·7·8절과 PR 템플릿이 요구하는 완료 조건 표와 체크박스는 유지하되 간결하게 쓴다. 테스트 파일은 나열하지 않는다.
   - 본문 상한 3,000자는 유지하고, 기본은 필요한 만큼만 쓴다.
 - `CODEX.md`: 프로젝트 Skill 표에 `$pr-draft-summary` 행 추가, "Skill 의무 사용" 절 추가.
+- `.claude/skills/pr-draft-summary/SKILL.md` 새로 작성. Codex판과 같은 절차로, 호출 문법(`/harness-pr`)과 PR 작성 규칙 참조 경로만 바꾼다.
+- `CLAUDE.md`: 프로젝트 Skill 표에 `/pr-draft-summary` 행 추가, "Skill 의무 사용" 절 추가.
+- `CODEX.md`의 두 벌 동기화 안내, `docs/harness/OVERVIEW.md` 대응표에 `pr-draft-summary` 행 추가.
 - `TASK.md`(이 파일).
 
 ## Explicit exclusions
 
-- `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.github/PULL_REQUEST_TEMPLATE.md` 수정.
+- `AGENTS.md`, `.github/PULL_REQUEST_TEMPLATE.md` 수정. `CLAUDE.md`와 `.claude/**`는 위 범위의 `pr-draft-summary` 추가만 한다.
 - `.agents/skills/harness-pr/**`와 `.claude/skills/harness-pr/**` 수정(두 벌 동기화 대상이라 이번에 건드리지 않는다).
 - 사용자 개인 Skill 저장소 수정.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
@@ -48,6 +51,7 @@
 | --- | --- | --- |
 | `.agents/skills/pr-draft-summary/` | 확인 필요 | 사람 리뷰 |
 | `CODEX.md` | 확인 필요 | 사람 리뷰 |
+| `.claude/skills/pr-draft-summary/`, `CLAUDE.md`, `docs/harness/OVERVIEW.md` | 확인 필요 | 사람 리뷰 |
 | `TASK.md` | 확인 필요 | 사람 리뷰 |
 
 ## Existing user-owned changes
@@ -66,6 +70,7 @@ git diff --check
 - `.agents/skills/pr-draft-summary/SKILL.md`가 frontmatter(`name`, `description`)를 갖고, 원문의 목적·수집·분석·작성 제약·최종 점검을
   저장소 규칙(합쇼체, 완료 조건 표·체크박스, 3,000자 상한)과 충돌 없이 담는다 — 문서 리뷰
 - `CODEX.md`가 `$pr-draft-summary`를 프로젝트 Skill 표와 의무 사용 규칙에 올리고, 초안 생성이 브랜치·커밋·push·PR 생성 권한을 주지 않는다고 적는다 — 문서 리뷰
+- `.claude/skills/pr-draft-summary/SKILL.md`가 Codex판과 호출 문법·참조 경로만 다르고, `CLAUDE.md`가 `/pr-draft-summary`를 Skill 표와 의무 사용 규칙에 올린다 — 문서 리뷰
 
 ## Decisions
 
@@ -74,3 +79,5 @@ git diff --check
 - 2026-10-19 사용자 결정: Jira 이슈는 `SCRUM-42`(팀 RAG 구축 상위 이슈)를 쓴다. GitHub Issue는 없다.
 - 2026-10-19 사실: `CODEX.md`는 공통 규칙을 바꾸면 `CLAUDE.md`와 함께 고치라고 한다. 이번 의무 규칙은 Codex 전용 Skill을 가리키므로
   `CLAUDE.md`에는 넣지 않는다. Claude Code의 PR 작성은 계속 `.claude/skills/harness-pr`을 따른다.
+- 2026-10-20 사용자 결정: `pr-draft-summary`를 Claude Code에도 적용한다. `.claude/skills/pr-draft-summary`를 추가하고 `CLAUDE.md`에 의무 사용 규칙을 넣는다.
+  위 2026-10-19 "`.claude` 쪽은 고치지 않는다"와 "`CLAUDE.md`에는 넣지 않는다" 결정을 대체한다. `harness-pr` 두 벌은 계속 고치지 않는다.
