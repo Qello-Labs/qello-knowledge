@@ -37,13 +37,14 @@ class SourceSession(Protocol):
 9. `content_hash`·`fetched_at`은 비워 둔다. 세션이 채운다.
 10. 예외는 세션이 낸 것(`SourceFailure`)과 `InvalidResponse`만 밖으로 보낸다.
 11. 로그·예외 메시지에 토큰, 요청 헤더, 응답 본문, URL 질의 문자열을 넣지 않는다.
+12. `rate_limit_hint()`는 시각을 계산하지 않는다. 상대값은 `retry_after_seconds`, 절대값은 `retry_at`에 원본이 준 그대로 담는다.
 
 ## 세션이 하는 것
 
 | 일 | 규칙 | 요구사항 |
 | --- | --- | --- |
 | 읽기 전용 강제 | `GET`·`HEAD` 밖이면 보내기 전에 `ReadOnlyViolation` | FR-001, SC-002 |
-| 호출 한도 | 분당(선택: 초당) 창, 실행당 상한, 원본 한도 힌트 중 엄격한 쪽 | FR-014, FR-015 |
+| 호출 한도 | 분당(선택: 초당) 창, 실행당 상한, 원본 한도 힌트 중 엄격한 쪽. 힌트의 `retry_after_seconds`는 세션 시계의 `now()`로 절대 시각으로 바꾼다 | FR-014, FR-015 |
 | 대기 상한 | 기다릴 시간 > `max_wait_seconds`면 `RunStopped(WAIT_TOO_LONG)` | FR-016 |
 | 재시도 | `adapter.classify()`가 일시적이면 백오프 후 재시도, 상한 소진 시 `SourceFailure(TRANSIENT)` | FR-017, FR-018 |
 | 인증 실패 | 재시도 없이 `RunStopped(AUTH_FAILED)` | FR-020 |

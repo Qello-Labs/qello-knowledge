@@ -97,7 +97,8 @@
 ### ResponseClass, RateLimitHint
 
 - `ResponseClass`: `outcome`(`OK`, `TRANSIENT`, `PERMANENT`, `AUTH`)과 `failure`(`FailureType` \| None)
-- `RateLimitHint`: `remaining`(int \| None), `retry_at`(datetime \| None)
+- `RateLimitHint`: `remaining`(int \| None), `retry_after_seconds`(float \| None, 원본이 준 상대값), `retry_at`(datetime \| None, 원본이 준 절대 시각)
+  - 어댑터는 원본이 준 형태 그대로 채우고 변환하지 않는다. 세션이 주입한 시계로 `retry_after_seconds`를 절대 시각으로 바꾸고, 둘 다 있으면 더 늦은 쪽을 쓴다(research R-06)
 
 ## 자료원 설정
 

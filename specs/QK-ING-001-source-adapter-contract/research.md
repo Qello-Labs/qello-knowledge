@@ -81,13 +81,18 @@
   - 실행 1회당 요청 상한에 닿으면 멈춘다(`REQUEST_BUDGET`).
   - 원본이 알려 준 한도(`RateLimitHint`: 남은 호출 수, 다시 시도할 시각)가 있으면 남은 호출이 0일 때 그 시각까지 기다린다. 설정 한도와 원본 한도 중
     더 오래 기다리게 하는 쪽을 따른다(FR-015).
+  - 힌트는 원본이 준 형태 그대로 담는다. 상대값(`Retry-After: 30`)은 `retry_after_seconds`, 절대값(HTTP 날짜, GitHub `x-ratelimit-reset` epoch)은
+    `retry_at`이다. 어댑터는 시각을 계산하지 않고 시계도 받지 않는다. 세션이 주입한 시계의 `now()`로 `retry_after_seconds`를 절대 시각으로 바꾸고,
+    둘 다 있으면 더 늦은 쪽을 쓴다(2026-10-19 사용자 결정, 구현 중 Codex가 보고한 빈틈).
   - 기다릴 시간이 `max_wait_seconds`(기본 300초)를 넘으면 기다리지 않고 멈춘다(`WAIT_TOO_LONG`). 멈출 때 처리·남은 자료 수와 다시 시도할 수
     있는 시각을 결과에 담는다(FR-016).
   - 시각과 대기는 주입한 시계(`Clock`)로 한다. 시험은 가짜 시계로 실제로 기다리지 않는다.
 - **Rationale**: 미끄러지는 창은 "어떤 1분 구간에도 60회를 넘지 않는다"(US3 시나리오 1)를 그대로 보장한다. 기본 응답 헤더 `Retry-After`(초 또는
   HTTP 날짜)는 `domain/source.py` 기본 함수가 읽고, GitHub의 `x-ratelimit-remaining`·`x-ratelimit-reset` 같은 자료원 고유 헤더는 해당 어댑터의
   `rate_limit_hint()`가 읽는다(QK-ING-002).
-- **Alternatives considered**: 토큰 버킷(평균은 지키지만 창 경계에서 순간적으로 상한을 넘을 수 있어 SC-004 검증이 복잡하다).
+- **Alternatives considered**:
+  - 토큰 버킷(평균은 지키지만 창 경계에서 순간적으로 상한을 넘을 수 있어 SC-004 검증이 복잡하다).
+  - `rate_limit_hint(response, *, now)`로 기준 시각을 어댑터에 넘기기: 동작은 같지만 모든 어댑터가 시각 변환을 맡게 되어 어댑터 계약이 넓어진다.
 
 ## R-07 실패 분류와 재시도
 

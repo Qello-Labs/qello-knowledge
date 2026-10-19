@@ -104,15 +104,15 @@ description: "QK-ING-001 구현 작업 목록"
 ### Tests (US3)
 
 - [ ] T031 [P] [US3] `tests/unit/sources/test_limits.py`: 분당 60회 설정에서 요청 200번의 시각 기록을 받아 어떤 60초 창에도 60회 이하(US3-1, SC-004), 선택 초당 상한도 같은 방식, 설정 한도와 원본 힌트 중 더 오래 기다리게 하는 쪽을 따름(FR-015), 필요한 대기가 `max_wait_seconds` 이하면 그만큼 대기(US3-2), 넘으면 `WAIT_TOO_LONG`과 `retry_at`(US3-3), 실행당 상한에 닿으면 `REQUEST_BUDGET`(US3-4)
-- [ ] T032 [P] [US3] `tests/unit/domain/test_rate_limit_hint.py`: 기본 `default_rate_limit_hint`가 `Retry-After`를 초와 HTTP 날짜 두 형식으로 읽고, 헤더가 없으면 `None`
+- [ ] T032 [P] [US3] `tests/unit/domain/test_rate_limit_hint.py`: 기본 `default_rate_limit_hint`가 `Retry-After: 30`은 `retry_after_seconds=30.0`·`retry_at=None`으로, HTTP 날짜는 `retry_at`(UTC)·`retry_after_seconds=None`으로 읽고, 헤더가 없거나 해석할 수 없으면 `None`. 함수는 시각을 읽지 않는다(시스템 시계 호출 없음)
 - [ ] T033 [P] [US3] `tests/fixtures/responses/fake/`: `many_items.json`(200개), `rate_limited.json`(`Retry-After: 30`인 429 뒤 성공), `rate_limited_long.json`(`Retry-After: 3600`)
 - [ ] T034 [P] [US3] `tests/unit/sources/test_session_limits.py`: 세션에 한도를 붙인 뒤 `many_items.json` 수집에서 SC-004, `rate_limited_long.json`에서 멈춘 결과의 `processed`·`remaining`·`stop.retry_at`(US3-3, FR-016)
 
 ### Implementation (US3)
 
 - [ ] T035 [US3] `src/qello_knowledge/sources/limits.py`: `RequestGate(limits, clock)`. 최근 요청 시각 `deque`로 창 계산, 실행당 요청 수, `apply_hint(RateLimitHint)`, `before_request()`가 필요한 대기를 계산해 상한 이하면 `clock.sleep`, 넘으면 `RunStopped(WAIT_TOO_LONG, retry_at)`, 실행당 상한이면 `RunStopped(REQUEST_BUDGET)`. T031 통과
-- [ ] T036 [US3] `src/qello_knowledge/domain/source.py`에 `default_rate_limit_hint(response)` 추가. T032 통과
-- [ ] T037 [US3] `src/qello_knowledge/sources/session.py`: 매 요청 전에 `RequestGate.before_request()`, 응답마다 `adapter.rate_limit_hint()`를 게이트에 반영. T034 통과
+- [ ] T036 [US3] `src/qello_knowledge/domain/source.py`에 `default_rate_limit_hint(response)` 추가. 원본이 준 형태 그대로 담고 시각을 계산하지 않는다(data-model.md RateLimitHint). T032 통과
+- [ ] T037 [US3] `src/qello_knowledge/sources/session.py`: 매 요청 전에 `RequestGate.before_request()`, 응답마다 `adapter.rate_limit_hint()`를 받아 `retry_after_seconds`를 `clock.now()` 기준 절대 시각으로 바꾼 뒤(둘 다 있으면 더 늦은 쪽) 게이트에 반영. T034 통과
 
 **Checkpoint**: 한도가 세션에서 동작한다
 
@@ -127,7 +127,7 @@ description: "QK-ING-001 구현 작업 목록"
 ### Tests (US4)
 
 - [ ] T038 [P] [US4] `tests/unit/domain/test_classify.py`: `default_classify`가 research.md R-07 표를 따른다(2xx `OK`, 429 `RATE_LIMITED`, 500·502·503·504 `SERVER_ERROR`, 401 `AUTH`, 403 `ACCESS_DENIED`, 404·410 `NOT_FOUND`, 그 밖의 4xx `INVALID_RESPONSE`). `TransportError(timeout|connection)`은 `TIMEOUT`·`CONNECTION`
-- [ ] T039 [P] [US4] `tests/unit/sources/test_retry.py`: 간격이 `uniform(0, min(max_backoff, initial_backoff × 2^n))`(고정 시드로 값 확인), 원본 `retry_at`이 있으면 그 시각을 따름, 대기 합이 `max_run_seconds`를 넘으면 `RUN_TIME`으로 멈춤(FR-018, Edge Cases)
+- [ ] T039 [P] [US4] `tests/unit/sources/test_retry.py`: 간격이 `uniform(0, min(max_backoff, initial_backoff × 2^n))`(고정 시드로 값 확인), 원본 힌트가 있으면 세션이 절대 시각으로 바꾼 `retry_at`을 따름, 대기 합이 `max_run_seconds`를 넘으면 `RUN_TIME`으로 멈춤(FR-018, Edge Cases)
 - [ ] T040 [P] [US4] `tests/fixtures/responses/fake/`: `flaky.json`(502 두 번 뒤 성공), `exhausted.json`(503 네 번), `not_found.json`(404), `auth_failed.json`(401), `redirect_ok.json`(`fake.invalid` 안 302), `redirect_blocked.json`(다른 호스트 302), `too_large.json`(목록 `size_bytes`가 상한 초과), `too_large_unknown.json`(크기 미표시, 본문이 상한 초과), `mixed.json`(정상·영구 실패·정상)
 - [ ] T041 [P] [US4] `tests/unit/sources/test_collect.py`: 재시도 상한 3에서 `flaky.json` → `SUCCEEDED`, `retries=2`(US4-1, SC-005), `exhausted.json` → `TRANSIENT_EXHAUSTED`이고 나머지 자료 처리(US4-2), `not_found.json` → `PERMANENT_FAILED`, `retries=0`(US4-3, SC-005), `auth_failed.json` → 첫 401 뒤 요청 0건, 그 자료와 남은 자료 `SKIPPED`, `stop.reason=AUTH_FAILED`(US4-4), `mixed.json` → 나머지 100% `SUCCEEDED`(SC-006), `redirect_blocked.json` → `REDIRECT_BLOCKED`, `redirect_ok.json` → 성공이고 요청 2회 집계(FR-022), `too_large.json` → 본문 요청 없이 `PERMANENT_FAILED(SIZE_EXCEEDED)`, `too_large_unknown.json` → `SIZE_EXCEEDED`(research R-08), 목록 페이지가 재시도 소진하면 `listing_complete=False`(Edge Cases)
 - [ ] T042 [P] [US4] `tests/unit/sources/test_no_secret_leak.py`: 표식 토큰(테스트 안에서 이어 붙여 만든 형식만 맞춘 값)을 `SecretValue`로 넣고, 응답 본문과 헤더에도 표식을 심은 시나리오로 수집한 뒤 `FetchResult.to_dict()` JSON과 `caplog` 로그를 `scripts/preflight.py`의 `RULES`(`importlib`로 읽음)와 표식 문자열로 검사해 0건(US4-5, FR-021, SC-007). `to_dict()`에 본문·헤더·URL 질의 문자열이 없음
@@ -135,7 +135,7 @@ description: "QK-ING-001 구현 작업 목록"
 ### Implementation (US4)
 
 - [ ] T043 [US4] `src/qello_knowledge/domain/source.py`에 `default_classify(response_or_error) -> ResponseClass` 추가(research.md R-07). `adapters/fake.py`의 임시 분류를 이것으로 바꾼다. T038 통과
-- [ ] T044 [US4] `src/qello_knowledge/sources/retry.py`: `next_delay(policy, attempt, rng, retry_at, clock)`과 실행 소요 시간 검사. T039 통과
+- [ ] T044 [US4] `src/qello_knowledge/sources/retry.py`: `next_delay(policy, attempt, rng, retry_at, clock)`(`retry_at`은 세션이 절대 시각으로 바꾼 값)과 실행 소요 시간 검사. T039 통과
 - [ ] T045 [US4] `src/qello_knowledge/sources/session.py`: 분류에 따라 재시도(일시적), `SourceFailure`(영구·재시도 소진), `RunStopped(AUTH_FAILED)`(인증), 3xx `Location` 호스트가 `allowed_hosts`에 있으면 최대 3번 따라가고 아니면 `SourceFailure(REDIRECT_BLOCKED)`, 요청에 `max_bytes=max_content_bytes`를 채우고 `truncated`면 `SourceFailure(SIZE_EXCEEDED)`. 로그에는 자료원 이름·원본 식별자·상태·재시도 횟수·실패 유형·HTTP 상태 코드만 남긴다(research R-13)
 - [ ] T046 [US4] `src/qello_knowledge/sources/collect.py`: `fetch_contents(adapter, config, session, items) -> FetchResult`. `size_bytes`가 상한을 넘으면 요청 없이 `SIZE_EXCEEDED`, `SourceFailure`는 그 자료만 기록하고 계속(C-08), `RunStopped`면 남은 자료 `SKIPPED`로 멈춤, `ReadOnlyViolation`은 잡지 않고 올림. `list_all`은 페이지 실패·중단 시 `complete=False`. `FetchResult.to_dict()`는 본문·헤더·토큰을 담지 않는다. T041·T042 통과
 
