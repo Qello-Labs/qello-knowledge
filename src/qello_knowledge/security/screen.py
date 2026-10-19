@@ -69,13 +69,16 @@ def _source_excluded(location: str, config: SourceConfig) -> bool:
     return any(path.full_match(pattern, case_sensitive=False) for pattern in config.scope.exclude)
 
 
-def _screen_item(item: SourceItem, config: SourceConfig, policy: SecurityPolicy) -> SecurityVerdict | None:
-    """목록 단계 판정. 걸리지 않으면 `None`(본문 단계로 넘김)."""
+def _path_stage(item: SourceItem, config: SourceConfig, policy: SecurityPolicy) -> SecurityVerdict | None:
     category = excluded_by(item.location, policy.exclusions)
     if category is None and _source_excluded(item.location, config):
         category = "source-exclude"
     if category is not None:
         return _verdict(item, policy, Verdict.PATH_EXCLUDED, Stage.PATH, rule=category)
+    return None
+
+
+def _access_stage(item: SourceItem, config: SourceConfig, policy: SecurityPolicy) -> SecurityVerdict | None:
     spec = policy.kinds.get(item.source_kind)
     scope = spec.judge(item.access) if spec is not None else AccessScope.UNKNOWN
     if item.access.status == AccessStatus.UNKNOWN:
@@ -90,6 +93,10 @@ def _screen_item(item: SourceItem, config: SourceConfig, policy: SecurityPolicy)
             access_scope=scope,
             access_raw=item.access.raw,
         )
+    return None
+
+
+def _item_secret_stage(item: SourceItem, config: SourceConfig, policy: SecurityPolicy) -> SecurityVerdict | None:
     found = _item_secret(item, config, policy)
     if found is not None:
         field, rule = found
@@ -97,6 +104,14 @@ def _screen_item(item: SourceItem, config: SourceConfig, policy: SecurityPolicy)
             item, policy, Verdict.SECRET_BLOCKED, Stage.ITEM_SECRET, rule=rule, field=field, **_evidence(item)
         )
     return None
+
+
+# 목록 단계 순서(contracts/security-filter.md 표 1~5번). 세 번째 값은 그 단계 오류에 권한 증빙을 남기는지다.
+ITEM_STAGES = (
+    (Stage.PATH, _path_stage, False),
+    (Stage.ACCESS, _access_stage, False),
+    (Stage.ITEM_SECRET, _item_secret_stage, True),
+)
 
 
 def _error(item: SourceItem, policy: SecurityPolicy, stage: Stage, error_type: str, **fields) -> SecurityVerdict:
@@ -108,10 +123,15 @@ def screen_items(
 ) -> tuple[tuple[SourceItem, ...], tuple[SecurityVerdict, ...]]:
     passed, verdicts = [], []
     for item in items:
-        try:
-            verdict = _screen_item(item, config, policy)
-        except Exception as error:  # 판정 실패는 막는 쪽으로(FR-004). 메시지는 남기지 않는다.
-            verdict = _error(item, policy, Stage.ITEM_SECRET, type(error).__name__)
+        verdict = None
+        for stage, judge, after_access in ITEM_STAGES:
+            try:
+                verdict = judge(item, config, policy)
+            except Exception as error:  # 판정 실패는 막는 쪽으로(FR-004). 메시지는 남기지 않는다.
+                evidence = _evidence(item) if after_access else {}
+                verdict = _error(item, policy, stage, type(error).__name__, **evidence)
+            if verdict is not None:
+                break
         if verdict is None:
             passed.append(item)
         else:
@@ -149,12 +169,14 @@ def screen_contents(
     policy: SecurityPolicy,
 ) -> tuple[tuple[ScreenedContent, ...], tuple[SecurityVerdict, ...]]:
     passed, verdicts = [], []
+    seen = set()
     for content in contents:
         item = items_by_id.get(content.source_id)
-        if item is None:
+        if item is None or content.source_id in seen:
             # 어댑터가 목록에 없는 식별자로 본문을 돌려줬다. 그 본문은 쓰지 않는다(FR-004).
             logger.warning("orphan_content dropped")
             continue
+        seen.add(content.source_id)
         try:
             outcome = _screen_content(content, item, config, policy)
         except Exception as error:  # 판정 실패는 막는 쪽으로(FR-004).
@@ -200,13 +222,16 @@ def screen_source(
         for o in fetch.items
         if o.status != ItemStatus.SUCCEEDED
     )
-    passed, late = screen_contents(fetch.contents, by_id, config, policy)
+    # fetch_contents는 성공한 자료의 본문을 요청 순서대로 담는다. 요청 자료와 받은 본문의 식별자가 다르면
+    # 그 본문은 쓰지 않는다. 다른 자료로 간주하면 그 자료의 예외를 받아 통과할 수 있다.
+    succeeded = [o.source_id for o in fetch.items if o.status == ItemStatus.SUCCEEDED]
+    matched = [c for requested, c in zip(succeeded, fetch.contents, strict=False) if c.source_id == requested]
+    passed, late = screen_contents(matched, by_id, config, policy)
     judged = {v.source_id for v in (*fetch_errors, *late)}
-    # 본문을 받았다고 했는데 판정이 없는 자료(식별자가 다른 본문이 왔다)도 판정 실패로 남긴다.
     late += tuple(
-        _error(item, policy, Stage.FETCH, "fetch:SUCCEEDED:content-mismatch", **_evidence(item))
-        for item in passed_items
-        if item.source_id not in judged and any(o.source_id == item.source_id for o in fetch.items)
+        _error(by_id[source_id], policy, Stage.FETCH, "fetch:SUCCEEDED:content-mismatch", **_evidence(by_id[source_id]))
+        for source_id in succeeded
+        if source_id not in judged
     )
     order = {item.source_id: index for index, item in enumerate(listing.items)}
     verdicts = tuple(sorted((*early, *fetch_errors, *late), key=lambda v: order[v.source_id]))

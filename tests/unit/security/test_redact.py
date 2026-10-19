@@ -115,3 +115,15 @@ def test_percent_encoded_secret_is_masked():
 def test_ipv6_with_embedded_ipv4_is_fully_masked(value):
     out = safe_text(value, FieldKind.TEXT, PUBLIC)
     assert "192.0" not in out and "0.2.1" not in out and "10.0" not in out and "0.5" not in out
+
+
+@pytest.mark.parametrize(
+    ("value", "kind"),
+    [
+        ("connect 2001:db8::1.", FieldKind.TEXT),
+        ("docs/2001:db8::1.md", FieldKind.PATH),
+        ("2001:db8::1", FieldKind.TEXT),
+    ],
+)
+def test_ipv6_followed_by_period_or_extension_is_masked(value, kind):
+    assert "2001:db8" not in safe_text(value, kind, PUBLIC)

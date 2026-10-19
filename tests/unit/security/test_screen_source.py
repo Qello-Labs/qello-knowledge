@@ -220,3 +220,49 @@ def _item_for(source_id):
         "docs", "fake", source_id, f"https://fake.invalid/view/{source_id}", "v1", ChangeKeyKind.VERSION, "v1",
         datetime(2026, 1, 1, tzinfo=UTC), "markdown_file", "t", f"docs/{source_id}.md", None, access, None,
     )  # fmt: skip
+
+
+# --- 구현 재리뷰 반영(2026-10-20) ---
+
+
+def test_content_returned_under_another_listed_id_is_not_attributed_to_it(screen, monkeypatch):
+    from dataclasses import replace as dc_replace
+
+    from qello_knowledge.adapters.fake import FakeSourceAdapter
+
+    real = FakeSourceAdapter.fetch_content
+
+    def swapped(self, session, config, item):
+        content = real(self, session, config, item)
+        return dc_replace(content, source_id="1") if item.source_id == "2" else content
+
+    monkeypatch.setattr(FakeSourceAdapter, "fetch_content", swapped)
+    exception = SecretException("docs", "docs/clean.md", "github-token", "시험")
+    result, _ = screen("security_secrets", policy=team_policy(exceptions=frozenset({exception})))
+    assert "docs/body-secret.md" not in {p.item.location for p in result.passed}
+    assert all(p.content.location == p.item.location for p in result.passed)
+    assert len(result.verdicts) == 9 == len({v.source_id for v in result.verdicts})
+    mismatch = next(v for v in result.verdicts if v.source_id == "2")
+    assert (mismatch.verdict, mismatch.error_type) == (Verdict.ERROR, "fetch:SUCCEEDED:content-mismatch")
+
+
+def test_metadata_check_error_after_access_keeps_evidence(screen, monkeypatch):
+    from qello_knowledge.security import screen as screen_module
+
+    real = screen_module.find_secrets
+
+    def explode(text, skip=frozenset()):
+        if text == "docs/clean.md":
+            raise RuntimeError("x")
+        return real(text, skip)
+
+    monkeypatch.setattr(screen_module, "find_secrets", explode)
+    result, _ = screen("security_secrets")
+    verdict = _by_location(result)["docs/clean.md"]
+    assert (verdict.verdict, verdict.stage, verdict.access_scope) == (
+        Verdict.ERROR,
+        Stage.ITEM_SECRET,
+        AccessScope.TEAM,
+    )
+    assert verdict.access_raw == (("visibility", "public"),)
+    assert sum(result.summary.by_access_scope.values()) == len(result.verdicts) == 9

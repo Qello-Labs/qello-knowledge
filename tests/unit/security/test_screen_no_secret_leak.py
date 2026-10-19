@@ -22,7 +22,8 @@ INTERNAL = "db." + "corp" + ".internal"
 COLLIDING = "intra" + "net-qk.md"
 IP = "10.0." + "0.5"
 HOST_PORT = "build" + "box:8080"
-ADDRESSES = (INTERNAL, COLLIDING + "/", IP, HOST_PORT)
+IPV6 = "2001:" + "db8::1"
+ADDRESSES = (INTERNAL, COLLIDING + "/", IP, HOST_PORT, IPV6)
 BASE = "https://fake.invalid"
 
 
@@ -63,6 +64,7 @@ ITEMS = [
     _item("s", "docs/s.md", f"Setup {TOKEN}", {"visibility": "public"}),
     _item(COLLIDING, "docs/c.md", "c", {"visibility": "public"}),
     _item(INTERNAL, "docs/d.md", "d", {"visibility": "public"}),
+    _item(IPV6 + ".", "docs/v6.md", "v6", {"visibility": "public"}),
     # 판정 실패: 본문 조회 404. 제목과 디렉터리에 주소.
     _item("e", f"{IP}/e.md", f"err {INTERNAL}", {"visibility": "public"}),
 ]
