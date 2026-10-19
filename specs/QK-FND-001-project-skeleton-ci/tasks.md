@@ -108,8 +108,8 @@ US1의 DB 연결 판단(T021, T024)이 설정 로더를 쓰므로 US2를 먼저 
 
 - [x] T029 [US3] `scripts/preflight.py`: `scripts/preflight_allowlist.txt`를 읽어 예외를 적용한다. 사유 없는 줄은 실패, 규칙을 끄는 옵션은 두지 않는다(FR-022). 빈 `scripts/preflight_allowlist.txt`에 형식 설명 주석을 둔다
 - [x] T030 [US3] `.github/workflows/ci.yml`: `pull_request`와 `main` push, `permissions: contents: read`, Secret 사용 없음. job `test`(setup-uv → `uv sync` → `uv run qk-dev db up` → `QK_REQUIRE_LOCALDB=1 uv run pytest`), job `lint`(`uv run ruff check .`, `uv run ruff format --check .`), job `secrets`(`python3 scripts/preflight.py`, `fetch-depth: 0`로 받아 PR이면 `git diff --check origin/<base>...HEAD`, push면 `git diff --check HEAD^ HEAD`). job마다 `timeout-minutes: 10`
-- [ ] T031 [US3] 이 브랜치 PR에서 세 job이 따로 표시되고 통과하는지, 로컬 결과와 같은지 확인하고 실행 기록 링크를 남긴다(SC-005, SC-006)
-- [ ] T032 [US3] SC-004 확인: 임시 브랜치 세 개(실패 테스트, 린트 위반, 비밀값 샘플)를 Draft PR로 열어 해당 job만 실패하는지 보고 링크를 남긴 뒤 닫고 브랜치를 지운다. 비밀값 샘플은 실제 값이 아닌 형식만 맞춘 가짜 문자열을 쓴다
+- [x] T031 [US3] 이 브랜치 PR에서 세 job이 따로 표시되고 통과하는지, 로컬 결과와 같은지 확인하고 실행 기록 링크를 남긴다(SC-005, SC-006)
+- [x] T032 [US3] SC-004 확인: 임시 브랜치 세 개(실패 테스트, 린트 위반, 비밀값 샘플)를 Draft PR로 열어 해당 job만 실패하는지 보고 링크를 남긴 뒤 닫고 브랜치를 지운다. 비밀값 샘플은 실제 값이 아닌 형식만 맞춘 가짜 문자열을 쓴다
 
 **Checkpoint**: CI 동작
 
