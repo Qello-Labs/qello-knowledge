@@ -15,11 +15,11 @@ class SourceAdapter(Protocol):
 
 
 class SourceTransport(Protocol):
-    def send(self, request: SourceRequest) -> SourceResponse: ...   # 요청 하나. 리다이렉트를 따라가지 않는다
+    def send(self, request: SourceRequest) -> SourceResponse: ...  # 요청 하나. 리다이렉트를 따라가지 않는다
 
 
 class SourceSession(Protocol):
-    def send(self, request: SourceRequest) -> SourceResponse: ...   # 어댑터가 쓰는 유일한 요청 창구
+    def send(self, request: SourceRequest) -> SourceResponse: ...  # 어댑터가 쓰는 유일한 요청 창구
 ```
 
 `SourceSession`의 구현은 `sources/session.py`에 있고, 어댑터는 Protocol만 안다.
