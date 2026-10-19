@@ -88,5 +88,9 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-001-source-adapter-contract/   # 결
 - 2026-10-18 기존 결정 따름: 요구사항 FR-ING-01, 10, 11은 원문이 없어 명세의 백로그 제목 대응표로 다룸을 확인한다(SCRUM-92).
 - 2026-10-19 사용자 결정: 설계 산출물(`specs/QK-ING-001-source-adapter-contract/`의 plan.md, research.md, data-model.md, contracts/, quickstart.md, tasks.md.
   커밋 `8097c71`, `e8a2c6f`, `152d80d`)을 사람 리뷰어 Byuntil이 승인했다. 설계를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
-- 확인 필요: 한 브랜치에서 plan·tasks·구현까지 진행할지(QK-FND-001은 한 브랜치로 진행했다).
+- 2026-10-19 사용자 결정: 이 브랜치에서 구현까지 진행한다. 구현은 Codex 세션이 맡는다.
+- 2026-10-19 사용자 결정: Codex가 보고한 설계 빈틈(`Retry-After` 상대값을 절대 시각으로 바꿀 기준 시각 없음)은 B안으로 닫는다.
+  `RateLimitHint`에 `retry_after_seconds`를 두고 세션이 주입한 시계로 변환한다. 어댑터 계약(`rate_limit_hint(response)`)은 바꾸지 않는다.
+- 2026-10-19 사용자 결정: 검증 분담. Codex는 구현과 `uv run pytest`·`uv run ruff`만 실행한다. Codex 샌드박스가 `.env*` 읽기를 막아 preflight를
+  실행할 수 없으므로, AGENTS.md 7절 전체 검증(preflight 포함)은 구현 검토 세션이 실행한다. 이 PC에는 `python`이 없어 `python3`로 실행한다.
 - 확인 필요: 공통 자료 형식 필드를 QK-STO-001 담당과 언제 맞출지(#33의 `data-model.md` 작성 시점).
