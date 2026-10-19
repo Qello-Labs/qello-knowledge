@@ -115,7 +115,9 @@
 
 - 재시도: 상한 `max_retries`(기본 3)는 첫 시도를 뺀 **재시도 횟수**다. 간격은 지수 백오프에 전체 무작위 지연(full jitter)을 쓴다:
   `uniform(0, min(max_backoff, initial_backoff × 2^n))`(기본 1초, 60초). 원본이 다시 시도할 시각을 알려 주면 그 시각을 따른다(FR-018).
-  무작위 값은 주입한 `random.Random`에서 꺼내 시험에서 고정한다.
+  무작위 값은 주입한 지연 함수 `Jitter = Callable[[float], float]`(상한 `cap`을 받아 `[0, cap]` 값을 돌려줌)에서 얻는다. 운영 기본값은
+  `random.SystemRandom().uniform(0, cap)`이고, 시험은 고정값 함수(예: `lambda cap: cap / 2`)를 넘긴다. `random.Random` 시드 고정은 ruff `S311`에
+  걸리므로 쓰지 않는다(2026-10-19 사용자 결정, 경고 억제 없이 해결). `SystemRandom`이 `S311`에 걸리지 않음은 2026-10-19 ruff로 확인했다.
 - 대기를 더하면 실행 최대 소요 시간(`max_run_seconds`, 기본 1,800초)을 넘을 때는 남은 재시도를 하지 않고 멈춘다(`RUN_TIME`).
 - 인증 실패는 재시도하지 않고 그 자료원 수집을 즉시 멈춘다(`AUTH_FAILED`). 남은 자료는 "건너뜀"으로 남긴다(FR-020).
 - **Rationale**: 기본값과 백오프 공식은 명세 가정(재시도 3회, 1초, 60초, 5분, 30분)을 따른다. full jitter는 여러 실행이 같은 시각에 다시 몰리는 것을
