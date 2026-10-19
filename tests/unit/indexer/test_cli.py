@@ -96,3 +96,55 @@ def test_disabled_source_token_rejected_before_run_without_printing_value(env, c
         output = capsys.readouterr().out
         assert "TOKEN_VALUE" in output and marker not in output
         assert "수집할 자료원 없음" not in output
+
+
+# --- QK-SEC-001 security check (contracts/cli.md) ---
+
+SEC = ["--sources", "tests/fixtures/security/sources.toml"]
+
+
+def test_security_check_passes_with_version_and_counts(capsys):
+    assert main(["security", "check", *SEC, "--exceptions", "tests/fixtures/security/valid_exceptions.toml"]) == 0
+    out = capsys.readouterr().out
+    assert "규칙 버전   sec-" in out and "비밀값 규칙 16개, 기본 제외 범주 7개, 예외 2건" in out
+    assert "github_repo_files=github-visibility-v1, fake=fake-visibility-v1" in out and "결과: 통과" in out
+    assert "setup.md" not in out and "자리표시" not in out
+
+
+def test_security_check_reports_entry_field_and_code_only(capsys):
+    assert main(["security", "check", *SEC, "--exceptions", "tests/fixtures/security/invalid_exceptions.toml"]) == 1
+    out = capsys.readouterr().out
+    assert "exception[5].rule  UNKNOWN_RULE" in out and "exception[6].path  WILDCARD_PATH" in out
+    assert "결과: 실패 (오류 9)" in out
+    assert "outside" not in out and "와일드카드" not in out and "docs/" not in out
+
+
+def test_security_check_json_is_one_line(capsys):
+    import json
+
+    assert main(["security", "check", *SEC, "--exceptions", "tests/fixtures/security/absent.toml", "--json"]) == 0
+    output = capsys.readouterr().out
+    data = json.loads(output)
+    assert len(output.splitlines()) == 1 and data["ok"] and data["exceptions"] == 0 and data["secret_rules"] == 16
+    assert data["access_rules"] == {"github_repo_files": "github-visibility-v1", "fake": "fake-visibility-v1"}
+
+
+def test_security_check_with_bad_sources_reports_like_sources_check(capsys):
+    assert main(["security", "check", "--sources", "tests/fixtures/sources/invalid.toml"]) == 1
+    assert "자료원 설정 점검" in capsys.readouterr().out
+
+
+def test_run_stops_on_bad_exceptions_without_requests(env, capsys, monkeypatch):
+    from qello_knowledge.adapters.replay import ReplayTransport
+
+    monkeypatch.setattr(ReplayTransport, "send", lambda self, request: pytest.fail("원본 호출 금지"))
+    extra = env(valid_environ())
+    bad = ["--exceptions", "tests/fixtures/security/invalid_exceptions.toml"]
+    assert main(["run", *extra, *SEC, *bad]) == 1
+    out = capsys.readouterr().out
+    assert "보안 규칙 점검" in out and "수집 대기" not in out
+    assert main(["run", *extra, *SEC, "--exceptions", "tests/fixtures/security/valid_exceptions.toml"]) == 0
+
+
+def test_default_security_check_passes(capsys):
+    assert main(["security", "check"]) == 0
