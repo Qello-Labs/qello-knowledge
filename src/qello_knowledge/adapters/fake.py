@@ -23,6 +23,7 @@ from qello_knowledge.domain.source import (
     SourceItem,
     SourceRequest,
     SourceResponse,
+    default_rate_limit_hint,
 )
 from qello_knowledge.domain.source_config import SourceConfig
 from qello_knowledge.ports.source import SourceSession
@@ -142,5 +143,4 @@ class FakeSourceAdapter:
         return ResponseClass(ResponseOutcome.PERMANENT, FailureType.INVALID_RESPONSE)
 
     def rate_limit_hint(self, response: SourceResponse) -> RateLimitHint | None:
-        # 원본 힌트 기본 함수는 US3에서 연결한다.
-        return None
+        return default_rate_limit_hint(response)

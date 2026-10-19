@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import math
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from enum import StrEnum
 from types import MappingProxyType
 from urllib.parse import urlsplit
@@ -242,3 +245,23 @@ class RunStopped(Exception):
 
 class ReadOnlyViolation(Exception):
     """어댑터가 원본에 쓰려고 한 결함. 자료별 실패로 삼키지 않는다."""
+
+
+def default_rate_limit_hint(response: SourceResponse) -> RateLimitHint | None:
+    """Retry-After 원본 값만 읽는다. 현재 시각은 세션에서만 계산한다."""
+    value = response.headers.get("retry-after")
+    if value is None:
+        return None
+    value = value.strip()
+    if re.fullmatch(r"[0-9]+", value):
+        seconds = float(value)
+        if math.isfinite(seconds):
+            return RateLimitHint(remaining=0, retry_after_seconds=seconds)
+        return None
+    try:
+        absolute = parsedate_to_datetime(value)
+        if absolute.tzinfo is None:
+            absolute = absolute.replace(tzinfo=UTC)
+        return RateLimitHint(remaining=0, retry_at=absolute.astimezone(UTC))
+    except (ValueError, TypeError, OverflowError):
+        return None
