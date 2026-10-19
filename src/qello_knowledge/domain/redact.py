@@ -1,0 +1,130 @@
+"""판정 기록·로그로 내보내는 값을 가린다. 판정(식별자 주소)과 기록이 같은 함수를 쓴다(research R-07).
+
+맨 호스트 이름과 파일 이름은 글자만으로 구분할 수 없다. 그래서 확장자 예외는 경로 필드의 파일 이름 부분에만
+적용하고, 글 필드에서는 숫자 버전이 아닌 점 이름을 모두 주소로 본다.
+"""
+
+from __future__ import annotations
+
+import ipaddress
+import re
+from dataclasses import dataclass, field
+from enum import StrEnum
+from urllib.parse import urlsplit
+
+from qello_knowledge.domain.secret_rules import find_secrets
+
+ADDRESS_MASK = "[가림:address]"
+ADDRESS_POLICY_VERSION = "address-v1"
+FILE_EXTENSIONS = frozenset(
+    {
+        "md", "mdx", "markdown", "txt", "rst", "adoc",
+        "py", "java", "kt", "kts", "ts", "tsx", "js", "jsx", "mjs", "go", "rs", "sh",
+        "json", "yml", "yaml", "toml", "ini", "cfg", "conf", "properties", "env",
+        "sql", "tf", "hcl", "xml", "gradle", "csv", "html", "css", "png", "svg", "jpg", "jpeg", "gif", "pdf",
+    }
+)  # fmt: skip
+SCHEME_URL = re.compile(r"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
+IPV4 = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
+IPV6_CANDIDATE = re.compile(r"(?<![\w:])[0-9A-Fa-f]{0,4}(?::[0-9A-Fa-f]{0,4}){2,7}(?![\w:])")
+HOST_PORT = re.compile(r"(?<![\w.-])[A-Za-z][A-Za-z0-9.-]*:\d{2,5}\b")
+DOTTED_NAME = re.compile(r"(?<![\w.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![\w-])")
+FILE_NAME = re.compile(r"^(?P<stem>.+)\.(?P<ext>[A-Za-z0-9]+)$")
+
+
+class FieldKind(StrEnum):
+    LINK = "LINK"
+    PATH = "PATH"
+    TEXT = "TEXT"
+
+
+@dataclass(frozen=True)
+class AddressPolicy:
+    patterns: tuple[re.Pattern[str], ...] = (SCHEME_URL, IPV4, IPV6_CANDIDATE, HOST_PORT, DOTTED_NAME)
+    file_extensions: frozenset[str] = FILE_EXTENSIONS
+    version: str = ADDRESS_POLICY_VERSION
+
+
+@dataclass(frozen=True)
+class OutputContext:
+    public_link_hosts: tuple[str, ...] = ()
+    source_id_is_path: bool = False
+    address_policy: AddressPolicy = field(default_factory=AddressPolicy)
+
+
+def _is_ip(candidate: str) -> bool:
+    try:
+        ipaddress.ip_address(candidate)
+    except ValueError:
+        return False
+    return True
+
+
+def _mask_definite(value: str, policy: AddressPolicy) -> str:
+    """스킴 주소, IP, `host:port`처럼 글자만으로 주소가 확실한 것을 가린다."""
+    scheme, ipv4, ipv6, host_port, _ = policy.patterns
+    value = scheme.sub(ADDRESS_MASK, value)
+    value = ipv6.sub(lambda m: ADDRESS_MASK if _is_ip(m.group(0)) else m.group(0), value)
+    value = ipv4.sub(ADDRESS_MASK, value)
+    return host_port.sub(ADDRESS_MASK, value)
+
+
+def _mask_text(value: str, policy: AddressPolicy) -> str:
+    dotted = policy.patterns[4]
+    value = _mask_definite(value, policy)
+    return dotted.sub(lambda m: m.group(0) if all(p.isdigit() for p in m.group(0).split(".")) else ADDRESS_MASK, value)
+
+
+def _mask_path(value: str, policy: AddressPolicy) -> str:
+    *directories, name = value.split("/")
+    masked = [_mask_text(part, policy) for part in directories]
+    match = FILE_NAME.match(name)
+    is_file_name = match is not None and match.group("ext").lower() in policy.file_extensions
+    masked.append(_mask_definite(name, policy) if is_file_name else _mask_text(name, policy))
+    return "/".join(masked)
+
+
+def _mask_link(value: str, context: OutputContext) -> str:
+    try:
+        parts = urlsplit(value)
+        port = parts.port
+    except ValueError:
+        return ADDRESS_MASK
+    public = (
+        parts.scheme == "https"
+        and parts.hostname is not None
+        and parts.hostname.lower() in context.public_link_hosts
+        and port in (None, 443)
+        and parts.username is None
+    )
+    if not public:
+        return ADDRESS_MASK
+    # 공개 호스트 링크라도 경로·쿼리에 주소가 들어 있으면 링크 전체를 가린다.
+    policy = context.address_policy
+    path = parts.path.lstrip("/")
+    unsafe_path = bool(path) and _mask_path(path, policy) != path
+    unsafe_rest = any(_mask_text(part, policy) != part for part in (parts.query, parts.fragment) if part)
+    return ADDRESS_MASK if unsafe_path or unsafe_rest else value
+
+
+def _masked(value: str, field_kind: FieldKind, context: OutputContext) -> tuple[str, str | None]:
+    hits = find_secrets(value)
+    if hits:
+        return f"[가림:{hits[0].rule}]", hits[0].rule
+    if field_kind == FieldKind.LINK:
+        out = _mask_link(value, context)
+    elif field_kind == FieldKind.PATH:
+        out = _mask_path(value, context.address_policy)
+    else:
+        out = _mask_text(value, context.address_policy)
+    return out, (None if out == value else "address")
+
+
+def safe_text(value: str, field_kind: FieldKind, context: OutputContext) -> str:
+    """비밀값이면 필드 전체를, 주소면 그 부분을 가린 값을 돌려준다."""
+    return _masked(value, field_kind, context)[0]
+
+
+def has_unsafe(value: str, field_kind: FieldKind, context: OutputContext) -> str | None:
+    """가릴 것이 있으면 비밀값 규칙 이름 또는 `address`, 없으면 `None`."""
+    return _masked(value, field_kind, context)[1]

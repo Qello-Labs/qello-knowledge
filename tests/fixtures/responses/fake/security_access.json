@@ -1,0 +1,112 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-20",
+    "redactions": [],
+    "note": "접근 범위 판정 시나리오. 공개만 본문을 조회한다"
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "1",
+                  "url": "https://fake.invalid/view/1",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 1",
+                  "location": "docs/public.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "2",
+                  "url": "https://fake.invalid/view/2",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 2",
+                  "location": "docs/restricted.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "restricted"
+                  }
+                },
+                {
+                  "id": "3",
+                  "url": "https://fake.invalid/view/3",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 3",
+                  "location": "docs/private.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "private"
+                  }
+                },
+                {
+                  "id": "4",
+                  "url": "https://fake.invalid/view/4",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 4",
+                  "location": "docs/none.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": null
+                },
+                {
+                  "id": "5",
+                  "url": "https://fake.invalid/view/5",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 5",
+                  "location": "docs/odd.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "everyone-maybe"
+                  }
+                }
+              ],
+              "next_cursor": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/1",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Public",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/public.md",
+              "title": "Doc 1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
