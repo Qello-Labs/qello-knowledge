@@ -86,13 +86,14 @@ config/
 src/qello_knowledge/
 ├── domain/
 │   ├── source.py                    # 새 파일. 공통 자료 형식, 요청·응답, 분류·힌트 기본 함수, 결과, 오류
+│   ├── source_config.py             # 새 파일. 자료원 설정 값 객체(SourceConfig 등). 읽기·검증은 sources/config.py
 │   └── scope.py                     # 새 파일. 포함·제외 패턴(full_match, 제외 우선)
 ├── ports/
 │   └── source.py                    # 채움. SourceAdapter, SourceTransport, SourceSession Protocol
 ├── sources/                         # 새 하위 패키지. 수집 공통 동작
 │   ├── __init__.py
 │   ├── kinds.py                     # 등록 종류(github_repo_files, fake)와 scope 키 규칙
-│   ├── config.py                    # TOML 읽기, 검증, ConfigIssue
+│   ├── config.py                    # TOML 읽기, 검증, ConfigIssue. 결과는 domain/source_config.py 값 객체
 │   ├── clock.py                     # Clock Protocol과 시스템 시계
 │   ├── limits.py                    # 미끄러지는 창 한도, 실행당 상한, 원본 힌트 합치기
 │   ├── retry.py                     # RetryPolicy, full jitter 백오프

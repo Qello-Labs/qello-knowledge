@@ -101,6 +101,9 @@
 
 ## 자료원 설정
 
+값 객체(`SourceConfig`, `SourceScope`, `RateLimits`, `RetryPolicy`)는 `domain/source_config.py`에 둔다. `ports/source.py`가 이 타입을 쓰므로
+경계 규칙(표준 라이브러리와 `domain`·`ports`만)을 지키려는 배치다. 파일 읽기와 검증(`ConfigIssue`)은 `sources/config.py`가 한다.
+
 ### SourceConfig (FR-008)
 
 | 필드 | 형식 | 규칙 |
