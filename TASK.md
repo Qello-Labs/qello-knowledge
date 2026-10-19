@@ -1,4 +1,4 @@
-# Task Contract: QK-ING-001 자료원 어댑터 계약·자료원 설정·호출 한도·재시도 구현 (WBS 1.3)
+# Task Contract: QK-STO-001 저장 스키마·마이그레이션·검색 질의 구현 (WBS 1.2)
 
 > Generated at: `2026-10-19`
 >
@@ -6,61 +6,64 @@
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-98` / https://tkv123.atlassian.net/browse/SCRUM-98 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: QK-ING-001 / `specs/QK-ING-001-source-adapter-contract/spec.md`
+- Jira 이슈: `SCRUM-90` / https://tkv123.atlassian.net/browse/SCRUM-90 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: QK-STO-001 / `specs/QK-STO-001-storage-schema-search/spec.md`
 - 팀 스프린트 ID: `QELLO-S2026-W43`
-- GitHub Issue: `#34`
-- Branch: `feat/SCRUM-98-gh-34-source-adapter-contract`
+- GitHub Issue: `#33`
+- Branch: `feat/SCRUM-90-gh-33-storage-schema`
 - Base branch: `main`
 
 ## Objective
 
-- QK-ING-001 명세를 `/speckit-plan`·`/speckit-tasks`로 설계하고 구현해, 자료원 수집기(QK-ING-002 이후)와 그 결과를 쓰는 보안 필터·청커·동기화가
-  공통으로 따를 어댑터 계약, 자료원 설정, 호출 한도·재시도 동작을 만든다.
+- QK-STO-001 명세를 `/speckit-plan`·`/speckit-tasks`로 설계하고 구현해, 임베딩(1.7)과 하이브리드 검색(1.9)이
+  올라설 저장 스키마·마이그레이션·검색 질의를 만든다.
 
 ## Scope
 
-- `specs/QK-ING-001-source-adapter-contract/`의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`, `tasks.md`.
-  `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
-- 어댑터 계약(FR-001~007): `src/qello_knowledge/ports/source.py`의 `SourceAdapter` Protocol을 채운다. 자료 목록 항목·자료 본문·수집 결과
-  공통 타입은 `src/qello_knowledge/domain/`에 둔다. 공통 계약 테스트 세트와 저장된 응답으로 도는 가짜 자료원 어댑터를 만든다.
-- 자료원 설정(FR-008~013): 저장소에 커밋하는 자료원 설정 파일, 등록된 자료원 종류 목록(GitHub 저장소 파일, 가짜 자료원), 설정 검증,
-  검증만 하는 실행 방식. 인증은 `src/qello_knowledge/config/registry.py`의 설정 항목 이름으로만 가리킨다.
-- 호출 한도(FR-014~016): 단위 시간당·실행 1회당 최대 요청 수, 원본이 알려 준 남은 호출 수와 다시 시도할 시각, 멈출 때의 보고.
-- 재시도와 실패 분류(FR-017~022): 일시적·영구·인증 실패 구분, 지수 백오프와 무작위 지연, 등록되지 않은 호스트로의 리다이렉트 차단,
-  결과·로그의 비밀값 비노출.
-- 위 동작의 단위 테스트와 응답 샘플(`tests/fixtures/responses/`). 파일 위치와 실행 방식 이름은 `plan.md`에서 정한다.
+- `specs/QK-STO-001-storage-schema-search/`의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`, `tasks.md`.
+  `.specify/feature.json`은 이 명세 디렉터리를 가리키게 한다.
+- 스키마: 원본 자료, 청크, 임베딩, 인덱스 버전(FR-001~005). 출처 정보가 빠진 청크와 차원이 1,024가 아닌 벡터는 저장을 거부한다.
+- 검색 질의: 벡터 검색, 키워드 검색(PGroonga), 주변 청크 조회. 활성 인덱스 버전·팀 공용 접근 범위·활성 자료 조건을 질의 안에서 적용한다(FR-006~011).
+- 쓰기 연산: 문서 단위 청크 교체(원자적, 동시 실행 안전), 삭제 상태 전환, 임베딩 재사용 조회, 사용량 조회(FR-012~015, FR-023).
+- 마이그레이션: 버전·체크섬·적용 기록, 재적용 안전, 하나씩 원자적 적용, 파괴적 변경 표시, CI에서 빈 로컬 DB 전체 적용(FR-016~020).
+- `ports/store.py` 저장소 경계 계약과 로컬 DB(pgvector·PGroonga) 대상 구현, 로컬 DB 테스트.
+- ADR-007(자체 스키마 vs PGVectorStore) 스파이크와 결정 기록(FR-021). plan 확정 전에 끝낸다.
+- 운영 저장소를 Oracle Cloud Always Free 인스턴스로 바꾸는 ADR-008 변경 제안과 그 데이터 처리 정책 확인 결과를 결정 기록에 남긴다(FR-022).
+  운영 PGroonga 확인은 인스턴스가 생긴 뒤 한다.
 
 ## Explicit exclusions
 
-- 실제 GitHub 수집기와 실제 원본 호출(QK-ING-002). `@pytest.mark.external` 테스트도 만들지 않는다.
-- 색인 제외 경로, 비밀값 차단, 접근 범위 판정(QK-SEC-001). 원본 권한 정보는 그대로 넘기고 없으면 "미확인"으로 채우기까지만 한다.
-- 수집 주기, 이어서 수집하기, 변경 비교, 삭제 반영(QK-SYN-001), 웹훅.
-- 저장 스키마와 마이그레이션(QK-STO-001). 공통 자료 형식의 필드만 QK-STO-001 원본 자료 항목에 맞춘다.
-- 런타임 의존성 추가(`pyproject.toml`의 `dependencies`). 필요하면 사람 승인을 받는다.
+- RRF·문맥 확장 범위·토큰 예산·키워드 검색 텍스트 생성 방식(QK-RET-001, ADR-010).
+- 접근 범위 값 체계와 판정(QK-SEC-001). 이 작업은 값을 저장하고 "팀 공용 확인됨"만 검색 대상으로 삼는다.
+- 인덱스 버전 활성화 절차와 평가 게이트(QK-STO-002), 임베딩 캐시 정책(QK-EMB-001), 교체 시점 판단(QK-SYN-001), 물리 삭제(QK-SYN-003).
+- Oracle Cloud 계정·인스턴스 생성과 운영 DB 구축, 운영 저장소에 마이그레이션 적용, 운영 저장소에 실제 팀 자료 저장.
+- `docs/sdd/roadmap.md`, `compose.yaml`의 Supabase 표기 수정(ADR-008 변경 확정 뒤 별도 승인).
+- 실제 자료원·임베딩·생성 API 호출.
 - `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다. 응답 샘플은 저장 전에 토큰·계정 식별자·내부 주소를 지운다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문, DB 연결 주소는 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음. 자료원 종류를 정의만 하고 실제 호출은 QK-ING-002에서 한다
-- 외부 API로 보내는 데이터: 해당 없음. 테스트의 실제 원본 호출은 0건이어야 한다(SC-002)
+- 새로 읽는 자료원: 해당 없음
+- 외부 API로 보내는 데이터: 해당 없음. 테스트 벡터는 고정 값이나 난수로 만든다
 - 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
-- 인덱스 버전 변경: 없음
+- 인덱스 버전 변경: 없음(스키마에 인덱스 버전 테이블만 만든다. 활성화는 QK-STO-002)
+- 데이터 스키마: 새 스키마와 마이그레이션 추가. 로컬 DB에만 적용한다
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `specs/QK-ING-001-source-adapter-contract/` 설계 산출물 | Byuntil | 사람 리뷰 |
-| `src/qello_knowledge/ports/source.py`, `domain/`, `adapters/`의 자료원 관련 코드, 자료원 설정 파일 | Byuntil | 사람 리뷰 |
-| `tests/` 계약 테스트·가짜 어댑터·응답 샘플 | Byuntil | 사람 리뷰 |
-| `TASK.md` | Byuntil | 사람 리뷰 |
+| `specs/QK-STO-001-storage-schema-search/` 설계 산출물 | 확인 필요 | 사람 리뷰 |
+| 저장소 계약·구현 코드, 마이그레이션 파일, 테스트 | 확인 필요 | 사람 리뷰 |
+| ADR-007 결정 기록, ADR-008 확인 결과 | 확인 필요 | 사람 리뷰 |
+| `.github/workflows/` 마이그레이션 적용 검사 추가 | 확인 필요 | 사람 리뷰 |
+| `.specify/feature.json`, `TASK.md` | 확인 필요 | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-19 `origin/main`(`b7be62a`, PR #29 병합 커밋)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-19 `origin/main`(`b7be62a`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
@@ -71,32 +74,30 @@ uv run ruff check .
 uv run ruff format --check .
 uv run qk-dev db up
 QK_REQUIRE_LOCALDB=1 uv run pytest
-grep -rn "NEEDS CLARIFICATION" specs/QK-ING-001-source-adapter-contract/*.md specs/QK-ING-001-source-adapter-contract/contracts/   # 결과가 없어야 한다. 체크리스트 항목 이름은 제외
+uv run qk-migrate   # 두 번 실행, 두 번째는 applied=0
+uv run qk-migrate
+uv run qk-dev store bench   # SC-005·SC-006 측정(기본 검증 아님)
 ```
 
 ## Completion criteria
 
-- 가짜 어댑터가 공통 계약 테스트를 모두 통과하고, 두 번째 가짜 어댑터를 추가할 때 계약 밖 코드 변경이 0줄이며 원본 쓰기 요청이 0건이다(SC-001, SC-002).
-- 필수 항목 누락·미등록 종류·토큰 값 직접 기재 설정이 모두 실행 전에 실패하고, 원본 호출 0건, 출력·로그에 토큰 값이 없다(SC-003, SC-007).
-- 한도·재시도 시험에서 한도를 넘은 요청이 0건이고, 재시도 상한 이내의 일시적 실패는 모두 성공, 영구 실패는 재시도 0회, 나머지 자료는 모두 처리된다(SC-004~006).
+- 접근 범위 미확인·삭제·비활성 인덱스 청크가 섞인 검증 세트에서 검색 결과에 그런 청크가 0건이다 — 로컬 DB 테스트(SC-002)
+- 교체 도중 실패를 넣은 시험에서 검색 결과가 교체 전과 같고, 마이그레이션 두 번째 적용의 변경이 0건이다 — 로컬 DB 테스트(SC-003, SC-004)
+- ADR-007 결정과 운영 저장소(Oracle Cloud) 데이터 처리 정책·PGroonga 확인 결과가 결정 기록에 있다 — 결정 기록 리뷰(SC-008)
 
 ## Decisions
 
-- 2026-10-19 사실: PR #29(QK-FND-001)가 `b7be62a`로 병합된 뒤 이 브랜치를 만들었다.
-- 2026-10-19 사용자 결정: WBS 1.3은 SCRUM-42 아래 새 하위 작업 SCRUM-98로 추적하고 담당은 구성재(Byuntil)다. 자동 생성이 동작하지 않아 에이전트가 Atlassian 연결로 만들었다.
-- 2026-10-19 기존 결정 따름: Phase 0 완료 리뷰(0.G) 전에 Phase 1을 시작한다(#28 TASK.md 기록).
-- 2026-10-18 기존 결정 따름: 요구사항 FR-ING-01, 10, 11은 원문이 없어 명세의 백로그 제목 대응표로 다룸을 확인한다(SCRUM-92).
-- 2026-10-19 사용자 결정: 설계 산출물(`specs/QK-ING-001-source-adapter-contract/`의 plan.md, research.md, data-model.md, contracts/, quickstart.md, tasks.md.
-  커밋 `8097c71`, `e8a2c6f`, `152d80d`)을 사람 리뷰어 Byuntil이 승인했다. 설계를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
-- 2026-10-19 사용자 결정: 이 브랜치에서 구현까지 진행한다. 구현은 Codex 세션이 맡는다.
-- 2026-10-19 사용자 결정: Codex가 보고한 설계 빈틈(`Retry-After` 상대값을 절대 시각으로 바꿀 기준 시각 없음)은 B안으로 닫는다.
-  `RateLimitHint`에 `retry_after_seconds`를 두고 세션이 주입한 시계로 변환한다. 어댑터 계약(`rate_limit_hint(response)`)은 바꾸지 않는다.
-- 2026-10-19 사용자 결정: 검증 분담. Codex는 구현과 `uv run pytest`·`uv run ruff`만 실행한다. Codex 샌드박스가 `.env*` 읽기를 막아 preflight를
-  실행할 수 없으므로, AGENTS.md 7절 전체 검증(preflight 포함)은 구현 검토 세션이 실행한다. 이 PC에는 `python`이 없어 `python3`로 실행한다.
-- 2026-10-19 사실: 설계·구현·커밋에 관여하지 않은 새 Claude 세션이 `/harness-review`로 검토해 변경 요청을 냈다. 검증 명령은 모두 통과, 직접 재현한 문제 5건.
-- 2026-10-19 사용자 결정(검토 반영): 1) 설정 토큰 판정은 알려진 접두사와 `postgres` URL만 쓰고 길이 규칙은 뺀다. 2) 비활성 자료원에도 토큰 검사를 적용한다.
-  3) 리다이렉트 `https`·포트 고정과 첫 요청 호스트 검사를 이번 PR에서 한다. 4·5) 내용 해시 계산 지점과 계약 테스트 고정값 가정은 QK-ING-002 후속 메모로 넘긴다.
-- 2026-10-19 사실: 같은 검토자의 재검토에서 이전 문제 1~3은 고쳐졌고, 경미한 변경 요청 1건(비활성 자료원 실패 시 요약 집계 오류)과 선택 항목 2건이 나왔다.
-- 2026-10-19 사용자 결정(재검토 반영): A) 요약 집계를 `enabled` 기준으로 고친다. B) 토큰 판정에 `postgres+드라이버` URL만 더하고, 값 중간의 토큰은
-  받아들인 위험으로 둔다(커밋되는 파일은 preflight가 보완). C) `allowed_hosts`는 읽을 때 소문자로 바꾼다.
-- 확인 필요: 공통 자료 형식 필드를 QK-STO-001 담당과 언제 맞출지(#33의 `data-model.md` 작성 시점).
+- 2026-10-19 사실: 선행 PR #29(QK-FND-001)가 `main`에 병합돼 `origin/main`에서 브랜치를 만들었다.
+- 2026-10-19 사실: Jira는 기존 이슈 SCRUM-90을 쓴다(#33 본문). 하위 작업 자동 생성은 쓰지 않는다.
+- 2026-10-19 사용자 결정: 이 TASK.md 초안을 승인했다. `/speckit-plan`을 시작하고 ADR-007 스파이크는 `research.md`에 포함한다.
+- 2026-10-19 사실: ADR-007 스파이크를 로컬 DB 전용 데이터베이스 `qk_spike`에서 실행하고 지웠다. 결과는 자체 스키마 채택(`docs/sdd/decisions/ADR-007-storage-schema.md`, 승인 대기).
+- 2026-10-19 사용자 결정(잠정): 운영 저장소를 Supabase 대신 Oracle Cloud 프리티어급 인스턴스로 바꾼다("아마"). ADR-008에 변경 제안으로 기록했다.
+- 2026-10-19 미결: 운영 PGroonga 확인(T031)은 Oracle Cloud 인스턴스가 필요해 사람 확인 대기다. 유휴 인스턴스 회수 대응도 정해야 한다(ADR-008 변경 제안).
+- 2026-10-19 사용자 결정: plan 설계를 승인했다. `/speckit-tasks`로 `tasks.md`(T001~T036)를 만들었다.
+- 2026-10-19 검증: preflight·`git diff --check`·ruff check·ruff format --check 통과, `qk-migrate` 두 번째 `applied=0`, `QK_REQUIRE_LOCALDB=1 uv run pytest` 183 passed.
+  bench(로컬 arm64, 합성 1.1 MB): 벡터 p95 5.4 ms, 키워드 p95 6.2 ms, 10 MB 추정 137 MB(예산의 27.4%). 같은 세션의 자기 검증이라 독립 검증이 아니다.
+- 2026-10-19 사실: 키워드 토크나이저를 `TokenBigramSplitSymbol`로 정했다. 기본값은 백틱 감싼 경로를 못 찾았다(research R-03). 영문 부분 일치는 ADR-010에서 정한다.
+- 2026-10-19 사용자 결정: ADR-007(자체 스키마)을 승인했다. Status를 Accepted로 바꿨다.
+- 2026-10-19 사용자 결정: ADR-008 운영 저장소 변경(Oracle Cloud)은 제안으로 유지한다. 유휴 회수 대응과 Workers 연결 방식이 정해진 뒤 확정한다.
+- 2026-10-19 사용자 결정: T031은 `BLOCKED`로 두고 운영 인스턴스를 만드는 후속 작업에서 확인한다. 이 PR에서 완료 조건 3은 ADR-007·정책 확인까지만 충족한다.
+- 2026-10-19 사용자 결정: `adapters/postgres/connection.py`의 로컬 기본 비밀번호 린트 억제(`noqa: S105`)는 사유를 달아 유지하고 PR 본문에 명시한다.

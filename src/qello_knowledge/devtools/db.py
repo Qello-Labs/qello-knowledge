@@ -1,4 +1,4 @@
-"""`qk-dev db up|down|reset`: 로컬 개발 DB 관리(FR-010~013).
+"""`qk-dev db up|down|reset`: 로컬 개발 DB 관리(FR-010~013). `qk-dev store bench`: 저장소 측정(QK-STO-001).
 
 - `up`은 재실행해도 안전하다. 떠 있으면 그대로 두고 볼륨을 지우지 않는다.
 - `reset`은 연결 대상이 로컬 compose DB일 때만 볼륨을 지운다. DB에 접속하지 않고 문자열로만 판단한다.
@@ -112,9 +112,20 @@ def main(argv: list[str] | None = None) -> int:
     db = sub.add_parser("db", help="로컬 개발 DB")
     db.add_argument("action", choices=("up", "down", "reset"))
     db.add_argument("--env-file", type=Path, default=Path(".env"))
+    store = sub.add_parser("store", help="저장소 측정(로컬 전용)")
+    store.add_argument("action", choices=("bench",))
+    store.add_argument("--env-file", type=Path, default=Path(".env"))
+    store.add_argument("--text-bytes", type=int, default=1_100_000)
+    store.add_argument("--repeat", type=int, default=100)
+    store.add_argument("--top-n", type=int, default=20)
     args = parser.parse_args(argv)
 
     source = merge_sources(os.environ, read_env_file(args.env_file))
+    if args.group == "store":
+        # psycopg는 postgres 선택 의존성이라 이 명령에서만 가져온다.
+        from qello_knowledge.devtools.bench import run_bench
+
+        return run_bench(source, text_bytes=args.text_bytes, repeat=args.repeat, top_n=args.top_n)
     if args.action == "up":
         return up(source)
     if args.action == "down":
