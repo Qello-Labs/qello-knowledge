@@ -83,8 +83,11 @@ def load_rules(staged: bool) -> tuple | None:
     return module.RULES
 
 
-# 다른 시험이 `preflight.RULES`를 직접 읽는다. 작업 트리 규칙과 같다.
-RULES = load_rules(staged=False)
+def __getattr__(name: str):
+    """다른 시험이 읽는 `preflight.RULES`. 읽을 때만 작업 트리 규칙을 불러와 `--staged` 실행에는 끼어들지 않는다."""
+    if name == "RULES":
+        return load_rules(staged=False)
+    raise AttributeError(name)
 
 
 def git_paths(*arguments: str) -> list[Path]:

@@ -70,3 +70,21 @@ def test_staged_check_fails_when_rules_are_not_in_the_index(repo: Path):
     result = _run(repo, "--staged")
     assert result.returncode == 1
     assert "rules-module-not-staged" in result.stdout
+
+
+@pytest.mark.parametrize("change", ["side-effect", "deleted", "syntax-error"])
+def test_staged_check_never_runs_the_working_tree_rules(repo: Path, change: str):
+    _git(repo, "add", str(RULES_MODULE))
+    working = repo / RULES_MODULE
+    marker = repo / "executed.txt"
+    if change == "side-effect":
+        working.write_text(working.read_text(encoding="utf-8") + f"\nopen({str(marker)!r}, 'w').close()\n", "utf-8")
+    elif change == "deleted":
+        working.unlink()
+    else:
+        working.write_text("def broken(:\n", encoding="utf-8")
+    (repo / "sample.md").write_text("plain\n", encoding="utf-8")
+    _git(repo, "add", "sample.md")
+    result = _run(repo, "--staged")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert not marker.exists()
