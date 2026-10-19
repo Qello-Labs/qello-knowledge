@@ -1,0 +1,238 @@
+{
+  "_meta": {
+    "source_api": "second-fake.offset-api",
+    "saved_at": "2026-10-19",
+    "redactions": []
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://second.invalid/records?offset=0&limit=3",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "records": [
+                {
+                  "key": "doc-1",
+                  "web": "https://second.invalid/view/1",
+                  "revision": "v1",
+                  "changed": "2026-01-01T00:00:00+00:00",
+                  "category": "markdown_file",
+                  "heading": "Guide 1",
+                  "path": "guides/1.md",
+                  "bytes": null,
+                  "permissions": [
+                    [
+                      "visibility",
+                      "public"
+                    ]
+                  ],
+                  "state": "ACTIVE"
+                },
+                {
+                  "key": "doc-2",
+                  "web": "https://second.invalid/view/2",
+                  "revision": "v1",
+                  "changed": "2026-01-01T00:00:00+00:00",
+                  "category": "markdown_file",
+                  "heading": "Guide 2",
+                  "path": "guides/2.md",
+                  "bytes": null,
+                  "permissions": [
+                    [
+                      "visibility",
+                      "public"
+                    ]
+                  ],
+                  "state": "ACTIVE"
+                },
+                {
+                  "key": "doc-3",
+                  "web": "https://second.invalid/view/3",
+                  "revision": "v1",
+                  "changed": "2026-01-01T00:00:00+00:00",
+                  "category": "markdown_file",
+                  "heading": "Guide 3",
+                  "path": "guides/3.md",
+                  "bytes": null,
+                  "permissions": [
+                    [
+                      "visibility",
+                      "public"
+                    ]
+                  ],
+                  "state": "ACTIVE"
+                }
+              ],
+              "next_offset": 2
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://second.invalid/records?offset=2&limit=3",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "records": [
+                {
+                  "key": "doc-3",
+                  "web": "https://second.invalid/view/3",
+                  "revision": "v1",
+                  "changed": "2026-01-01T00:00:00+00:00",
+                  "category": "markdown_file",
+                  "heading": "Guide 3",
+                  "path": "guides/3.md",
+                  "bytes": null,
+                  "permissions": [
+                    [
+                      "visibility",
+                      "public"
+                    ]
+                  ],
+                  "state": "ACTIVE"
+                },
+                {
+                  "key": "doc-4",
+                  "web": "https://second.invalid/view/4",
+                  "revision": "v1",
+                  "changed": "2026-01-01T00:00:00+00:00",
+                  "category": "markdown_file",
+                  "heading": "Guide 4",
+                  "path": "guides/4.md",
+                  "bytes": null,
+                  "permissions": [
+                    [
+                      "visibility",
+                      "public"
+                    ]
+                  ],
+                  "state": "ACTIVE"
+                },
+                {
+                  "key": "doc-5",
+                  "web": "https://second.invalid/view/5",
+                  "revision": "v1",
+                  "changed": "2026-01-01T00:00:00+00:00",
+                  "category": "markdown_file",
+                  "heading": "Guide 5",
+                  "path": "guides/5.md",
+                  "bytes": null,
+                  "permissions": [
+                    [
+                      "visibility",
+                      "public"
+                    ]
+                  ],
+                  "state": "ACTIVE"
+                }
+              ],
+              "next_offset": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://second.invalid/documents/doc-1",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "document": {
+                "text": "# Guide 1",
+                "syntax": "md",
+                "revision": "v1",
+                "path": "guides/1.md",
+                "heading": "Guide 1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://second.invalid/documents/doc-2",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "document": {
+                "text": "# Guide 2",
+                "syntax": "md",
+                "revision": "v1",
+                "path": "guides/2.md",
+                "heading": "Guide 2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://second.invalid/documents/doc-3",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "document": {
+                "text": "# Guide 3",
+                "syntax": "md",
+                "revision": "v1",
+                "path": "guides/3.md",
+                "heading": "Guide 3"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://second.invalid/documents/doc-4",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "document": {
+                "text": "# Guide 4",
+                "syntax": "md",
+                "revision": "v1",
+                "path": "guides/4.md",
+                "heading": "Guide 4"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://second.invalid/documents/doc-5",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "document": {
+                "text": "# Guide 5",
+                "syntax": "md",
+                "revision": "v1",
+                "path": "guides/5.md",
+                "heading": "Guide 5"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
