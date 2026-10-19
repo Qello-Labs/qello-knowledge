@@ -1,0 +1,181 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-19",
+    "redactions": []
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "1",
+                  "url": "https://fake.invalid/view/1",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Document 1",
+                  "location": "docs/1.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE"
+                },
+                {
+                  "id": "2",
+                  "url": "https://fake.invalid/view/2",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Document 2",
+                  "location": "docs/2.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE"
+                },
+                {
+                  "id": "3",
+                  "url": "https://fake.invalid/view/3",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Document 3",
+                  "location": "docs/3.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE"
+                }
+              ],
+              "next_cursor": "next"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=next",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "4",
+                  "url": "https://fake.invalid/view/4",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Document 4",
+                  "location": "docs/4.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE"
+                },
+                {
+                  "id": "5",
+                  "url": "https://fake.invalid/view/5",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Document 5",
+                  "location": "docs/5.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE"
+                }
+              ],
+              "next_cursor": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/1",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Document 1",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/1.md",
+              "title": "Document 1"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/2",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Document 2",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/2.md",
+              "title": "Document 2"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/3",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Document 3",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/3.md",
+              "title": "Document 3"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/4",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Document 4",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/4.md",
+              "title": "Document 4"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/5",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Document 5",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/5.md",
+              "title": "Document 5"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
