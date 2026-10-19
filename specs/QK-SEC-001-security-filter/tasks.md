@@ -202,6 +202,14 @@ US1 시험은 정책 주입(`SecurityPolicy.kinds`)으로 모든 자료를 팀 �
 
 ---
 
+## Phase 11: 구현 재리뷰 2차 반영 (2026-10-20 Codex 재리뷰 변경 요청 1건)
+
+- [x] T069 `src/qello_knowledge/domain/redact.py`: IP를 경계 정규식으로 찾지 않고, `[0-9A-Fa-f:.]` 구간 안의 후보를 `ipaddress`로 검증해 왼쪽부터 가장 긴 것을 가린다. 후보 앞뒤에 영숫자·`_`가 붙으면 주소로 보지 않는다(`std::map`). 점 앞뒤의 IPv6·IPv4(`file.2001:db8::1.md`, `file.10.0.0.5.md`, `file.::ffff:192.0.2.1.md`)를 모두 가린다. 주소 정책이 바뀌어 `ADDRESS_POLICY_VERSION`을 `address-v2`로 올렸다(규칙 버전도 바뀐다)
+- [x] T070 [P] 시험: 점·확장자·괄호 옆 IP 사례, 코드·시각·버전 문자열 비가림 사례, 경로형 식별자 사전 차단과 기록 가림
+- [x] T071 AGENTS.md 7절 검증 전체 재실행
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** → 스토리 단계.
