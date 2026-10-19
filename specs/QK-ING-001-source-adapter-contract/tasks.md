@@ -175,6 +175,15 @@ description: "QK-ING-001 구현 작업 목록"
 
 ---
 
+## Phase 10: 재검토 반영 (2026-10-19 재검토 결과 경미 1건 변경 요청, 사용자 결정)
+
+- [ ] T060 [P] `tests/unit/sources/test_config_report.py`에 사례 추가: 비활성 자료원 하나가 `TOKEN_VALUE`로 실패하고 비활성 하나, 활성 하나인 설정에서 요약이 "활성 1, 비활성 2, 오류 1"이고 실패 행 상태는 `INVALID`, JSON 각 행에 `enabled`가 있음(contracts/cli.md)
+- [ ] T061 [P] `tests/unit/sources/test_config.py`에 사례 추가: `postgresql+asyncpg://` 형태 URL 값은 `TOKEN_VALUE`, `allowed_hosts = ["FAKE.invalid"]`는 검증을 통과하고 `fake.invalid`로 바뀌어 담김. 토큰·URL 문자열은 테스트 안에서 이어 붙여 만든다
+- [ ] T062 `src/qello_knowledge/sources/report.py`: 활성·비활성 수를 `config.enabled`로 세고 JSON 행에 `enabled`를 담는다. `src/qello_knowledge/sources/config.py`: postgres URL 판정에 `+드라이버` 형태를 더하고 `allowed_hosts`를 소문자로 바꿔 담는다. T060·T061 통과
+- [ ] T063 `uv run pytest tests/unit tests/contract`, `uv run ruff check .`, `uv run ruff format --check .`로 확인. basename 중복 없는지 확인
+
+---
+
 ## Dependencies & Execution Order
 
 - Setup(T001~T003) → Foundational(T004~T013) → US1 → US2 → US3 → US4 → SC-001 확인 → Polish

@@ -17,15 +17,17 @@ QK-FND-001 [contracts/cli.md](../../QK-FND-001-project-skeleton-ci/contracts/cli
 
 ```json
 {"file": "config/sources.toml", "ok": false, "sources": [
-  {"name": "qello-knowledge-docs", "kind": "github_repo_files", "status": "OK",
+  {"name": "qello-knowledge-docs", "kind": "github_repo_files", "enabled": true, "status": "OK",
    "scope": {"repo": "Qello-Labs/qello-knowledge", "ref": "main", "include": ["**/*.md"], "exclude": ["specs/**/checklists/**"]}},
-  {"name": "old-wiki", "kind": "github_repo_files", "status": "DISABLED"},
-  {"name": "broken", "kind": "github_repo_files", "status": "INVALID",
+  {"name": "old-wiki", "kind": "github_repo_files", "enabled": false, "status": "DISABLED"},
+  {"name": "broken", "kind": "github_repo_files", "enabled": true, "status": "INVALID",
    "issues": [{"field": "scope.include", "code": "MISSING"}, {"field": "auth", "code": "TOKEN_VALUE"}]}]}
 ```
 
 - `--json` 출력은 한 줄이다. 위 예는 읽기 쉽게 줄을 나눴다.
 - 범위 요약에는 종류별 scope 키와 패턴을 그대로 보여 준다. `TOKEN_VALUE`가 난 필드는 값 대신 코드만 보인다.
+- 요약 줄의 활성·비활성 수는 행 상태가 아니라 설정의 `enabled`로 센다. 비활성 자료원이 토큰 검사 등으로 실패하면 그 행은 `실패`(`INVALID`)로
+  보이고 비활성 수에 들어간다. JSON 행에는 `enabled`를 담는다(2026-10-19 재검토 반영, 사용자 결정).
 
 ## `qk-index run [--sources 경로] [--json]`
 
