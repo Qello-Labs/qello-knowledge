@@ -1,0 +1,6 @@
+[[source]]
+name = "docs"
+kind = "fake"
+enabled = true
+[source.scope]
+exclude = []

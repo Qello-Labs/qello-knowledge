@@ -28,6 +28,13 @@ jobs:
       - run: uv sync --locked
       - name: Start local DB
         run: uv run qk-dev db up
+      # 마이그레이션 두 번 적용: 두 번째는 변경 0건이어야 한다(QK-STO-001 FR-020, SC-004)
+      - name: Apply migrations twice
+        run: |
+          uv run qk-migrate
+          second="$(uv run qk-migrate)"
+          echo "$second"
+          grep -q '^applied=0 ' <<<"$second"
       - name: Run tests
         env:
           QK_REQUIRE_LOCALDB: "1"

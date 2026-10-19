@@ -20,6 +20,7 @@
 ```bash
 uv sync
 uv run qk-dev db up
+uv run qk-migrate
 QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
@@ -27,7 +28,9 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 린트는 `uv run ruff check .`와 `uv run ruff format --check .`, 비밀값 검사는 `python3 scripts/preflight.py`다.
 - 로컬 DB는 `uv run qk-dev db down`으로 내리고, `uv run qk-dev db reset`으로 초기화한다. 재설정은 로컬 DB에만 동작한다.
 - 설정 항목은 `.env.example`에 있다. 진입점별 점검은 `uv run qk-index check`, `uv run qk-query check`다.
-- 전체 검증 절차는 [QK-FND-001 quickstart](specs/QK-FND-001-project-skeleton-ci/quickstart.md)에 있다.
+- `uv run qk-migrate`는 저장 스키마를 적용한다. 다시 실행하면 `applied=0`으로 끝난다. 저장소 테스트는 자기 전용 DB를 따로 만들어 쓴다.
+- 전체 검증 절차는 [QK-FND-001 quickstart](specs/QK-FND-001-project-skeleton-ci/quickstart.md)와
+  [QK-STO-001 quickstart](specs/QK-STO-001-storage-schema-search/quickstart.md)에 있다.
 
 ## 로드맵 진행 상황 보기
 

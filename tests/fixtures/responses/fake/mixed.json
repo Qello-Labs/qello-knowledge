@@ -1,0 +1,92 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-19",
+    "redactions": []
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "1",
+                  "url": "https://fake.invalid/view/1",
+                  "version": "v1",
+                  "item_type": "markdown_file",
+                  "location": "docs/1.md"
+                },
+                {
+                  "id": "2",
+                  "url": "https://fake.invalid/view/2",
+                  "version": "v1",
+                  "item_type": "markdown_file",
+                  "location": "docs/2.md"
+                },
+                {
+                  "id": "3",
+                  "url": "https://fake.invalid/view/3",
+                  "version": "v1",
+                  "item_type": "markdown_file",
+                  "location": "docs/3.md"
+                }
+              ],
+              "next_cursor": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/1",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Document 1",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/1.md",
+              "title": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/2",
+        "responses": [
+          {
+            "status": 404,
+            "headers": {},
+            "body": "missing"
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/3",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# Document 3",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/3.md",
+              "title": null
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
