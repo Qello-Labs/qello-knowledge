@@ -83,3 +83,35 @@ def test_source_id_kind_follows_context():
     assert safe_text(f"docs/{COLLIDING_HOST}", path_kind, PUBLIC) != safe_text(
         f"docs/{COLLIDING_HOST}", opaque_kind, OPAQUE
     )
+
+
+# --- 구현 리뷰 반영(2026-10-20) ---
+
+
+@pytest.mark.parametrize("value", ["buildbox:9", "open buildbox:65535 now"])
+def test_single_digit_and_full_range_ports_are_addresses(value):
+    assert has_unsafe(value, FieldKind.TEXT, PUBLIC) == "address"
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "https://github.com/o/r?next=db%2Eexample%2Einvalid",
+        "https://github.com/o/r?next=http%3A%2F%2Fexample",
+        "https://github.com/o/db%252Eexample%252Einvalid/x.md",
+        "https://github.com/o/r#10%2E0%2E0%2E5",
+    ],
+)
+def test_percent_encoded_addresses_in_public_links_are_masked(value):
+    assert safe_text(value, FieldKind.LINK, PUBLIC) == MASK
+
+
+def test_percent_encoded_secret_is_masked():
+    encoded = TOKEN.replace("_", "%5F")
+    assert has_unsafe(f"docs/{encoded}.md", FieldKind.PATH, PUBLIC) == "github-token"
+
+
+@pytest.mark.parametrize("value", ["::ffff:192.0.2.1", "see ::ffff:192.0.2.1 now", "64:ff9b::10.0.0.5"])
+def test_ipv6_with_embedded_ipv4_is_fully_masked(value):
+    out = safe_text(value, FieldKind.TEXT, PUBLIC)
+    assert "192.0" not in out and "0.2.1" not in out and "10.0" not in out and "0.5" not in out

@@ -45,20 +45,22 @@ def _verdict(item: SourceItem, policy: SecurityPolicy, verdict: Verdict, stage: 
 
 
 def _item_secret(item: SourceItem, config: SourceConfig, policy: SecurityPolicy) -> tuple[str, str] | None:
-    skip = policy.exempt_rules(config.name, normalize_path(item.location))
-    for field, value in (
-        ("source_id", item.source_id),
-        ("location", item.location),
-        ("title", item.title),
-        ("url", item.url),
-    ):
-        if value is not None and (hits := find_secrets(value, skip)):
-            return field, hits[0].rule
+    # source_id는 ING-001 로그와 FetchResult.to_dict()에 그대로 남으므로 오탐 예외를 적용하지 않는다.
     context = policy.output_context(item.source_kind)
     id_kind = FieldKind.PATH if context.source_id_is_path else FieldKind.TEXT
-    if has_unsafe(item.source_id, id_kind, context) == "address":
-        return "source_id", "identifier-address"
+    unsafe = has_unsafe(item.source_id, id_kind, context)
+    if unsafe is not None:
+        return "source_id", "identifier-address" if unsafe == "address" else unsafe
+    skip = policy.exempt_rules(config.name, normalize_path(item.location))
+    for field, value in (("location", item.location), ("title", item.title), ("url", item.url)):
+        if value is not None and (hits := find_secrets(value, skip)):
+            return field, hits[0].rule
     return None
+
+
+def _evidence(item: SourceItem) -> dict:
+    """접근 판정을 통과한 뒤의 판정에 남기는 권한 증빙(FR-019)."""
+    return {"access_scope": AccessScope.TEAM, "access_raw": item.access.raw}
 
 
 def _source_excluded(location: str, config: SourceConfig) -> bool:
@@ -91,12 +93,14 @@ def _screen_item(item: SourceItem, config: SourceConfig, policy: SecurityPolicy)
     found = _item_secret(item, config, policy)
     if found is not None:
         field, rule = found
-        return _verdict(item, policy, Verdict.SECRET_BLOCKED, Stage.ITEM_SECRET, rule=rule, field=field)
+        return _verdict(
+            item, policy, Verdict.SECRET_BLOCKED, Stage.ITEM_SECRET, rule=rule, field=field, **_evidence(item)
+        )
     return None
 
 
-def _error(item: SourceItem, policy: SecurityPolicy, stage: Stage, error_type: str) -> SecurityVerdict:
-    return _verdict(item, policy, Verdict.ERROR, stage, error_type=error_type)
+def _error(item: SourceItem, policy: SecurityPolicy, stage: Stage, error_type: str, **fields) -> SecurityVerdict:
+    return _verdict(item, policy, Verdict.ERROR, stage, error_type=error_type, **fields)
 
 
 def screen_items(
@@ -126,7 +130,14 @@ def _screen_content(
         if hits:
             lines = tuple(sorted({hit.line for hit in hits})) if field == "body" else ()
             return _verdict(
-                item, policy, Verdict.SECRET_BLOCKED, Stage.CONTENT_SECRET, rule=hits[0].rule, field=field, lines=lines
+                item,
+                policy,
+                Verdict.SECRET_BLOCKED,
+                Stage.CONTENT_SECRET,
+                rule=hits[0].rule,
+                field=field,
+                lines=lines,
+                **_evidence(item),
             )
     return ScreenedContent(item, content, AccessScope.TEAM, policy.version)
 
@@ -139,11 +150,15 @@ def screen_contents(
 ) -> tuple[tuple[ScreenedContent, ...], tuple[SecurityVerdict, ...]]:
     passed, verdicts = [], []
     for content in contents:
-        item = items_by_id[content.source_id]
+        item = items_by_id.get(content.source_id)
+        if item is None:
+            # 어댑터가 목록에 없는 식별자로 본문을 돌려줬다. 그 본문은 쓰지 않는다(FR-004).
+            logger.warning("orphan_content dropped")
+            continue
         try:
             outcome = _screen_content(content, item, config, policy)
         except Exception as error:  # 판정 실패는 막는 쪽으로(FR-004).
-            outcome = _error(item, policy, Stage.CONTENT_SECRET, type(error).__name__)
+            outcome = _error(item, policy, Stage.CONTENT_SECRET, type(error).__name__, **_evidence(item))
         if isinstance(outcome, ScreenedContent):
             passed.append(outcome)
             verdicts.append(
@@ -153,8 +168,7 @@ def screen_contents(
                     Verdict.PASSED,
                     Stage.PASSED,
                     rule=_access_rule(item, policy),
-                    access_scope=AccessScope.TEAM,
-                    access_raw=item.access.raw,
+                    **_evidence(item),
                 )
             )
         else:
@@ -181,11 +195,19 @@ def screen_source(
             policy,
             Stage.FETCH,
             f"fetch:{o.status.value}:{o.failure.value if o.failure else 'none'}",
+            **_evidence(by_id[o.source_id]),
         )
         for o in fetch.items
         if o.status != ItemStatus.SUCCEEDED
     )
     passed, late = screen_contents(fetch.contents, by_id, config, policy)
+    judged = {v.source_id for v in (*fetch_errors, *late)}
+    # 본문을 받았다고 했는데 판정이 없는 자료(식별자가 다른 본문이 왔다)도 판정 실패로 남긴다.
+    late += tuple(
+        _error(item, policy, Stage.FETCH, "fetch:SUCCEEDED:content-mismatch", **_evidence(item))
+        for item in passed_items
+        if item.source_id not in judged and any(o.source_id == item.source_id for o in fetch.items)
+    )
     order = {item.source_id: index for index, item in enumerate(listing.items)}
     verdicts = tuple(sorted((*early, *fetch_errors, *late), key=lambda v: order[v.source_id]))
     summary = FilterSummary.from_verdicts(config.name, policy.version, verdicts)

@@ -143,3 +143,80 @@ def test_default_and_human_exclusions_never_fetch(screen):
         "https://fake.invalid/items/ok",
     ]
     assert {p.item.location for p in result.passed} == {".env.example", "infra/prod.tfvars.example", "docs/ok.md"}
+
+
+# --- 구현 리뷰 반영(2026-10-20) ---
+
+
+def test_exception_never_releases_a_secret_identifier(screen, caplog):
+    import json
+    import logging
+
+    caplog.set_level(logging.INFO)
+    token = SYNTHETIC["github-classic"]
+    exception = SecretException("docs", "docs/id.md", "github-token", "시험")
+    result, transport = screen("security_secrets", policy=team_policy(exceptions=frozenset({exception})))
+    verdict = next(v for v in result.verdicts if v.location == "docs/id.md")
+    assert (verdict.verdict, verdict.field) == (Verdict.SECRET_BLOCKED, "source_id")
+    assert token not in caplog.text + json.dumps(result.fetch.to_dict())
+    assert not [u for u in content_requests(transport) if token in u]
+
+
+def test_access_evidence_is_kept_after_the_access_stage(screen):
+    result, _ = screen("security_secrets")
+    verdicts = _by_location(result)
+    for location in ("docs/body-secret.md", "docs/missing.md", "docs/title.md"):
+        assert verdicts[location].access_scope == AccessScope.TEAM
+        assert verdicts[location].access_raw == (("visibility", "public"),)
+    assert result.summary.by_access_scope[AccessScope.TEAM] == 9
+
+
+def test_listing_stop_is_kept(screen):
+    from qello_knowledge.domain.source import StopReason
+
+    result, _ = screen("security_listing_stop")
+    assert result.fetch.listing_complete is False
+    assert result.fetch.stop is not None and result.fetch.stop.reason == StopReason.WAIT_TOO_LONG
+
+
+@pytest.mark.parametrize(
+    ("scenario", "expected"),
+    [
+        ("security_exhausted", {"1": "fetch:TRANSIENT_EXHAUSTED:SERVER_ERROR"}),
+        (
+            "security_auth_failed",
+            {"1": "fetch:SKIPPED:AUTH_FAILED", "2": "fetch:SKIPPED:none", "3": "fetch:SKIPPED:none"},
+        ),
+    ],
+)
+def test_every_fetch_failure_kind_is_a_judgement_error(screen, scenario, expected):
+    result, _ = screen(scenario)
+    errors = {v.source_id: v.error_type for v in result.verdicts if v.verdict == Verdict.ERROR}
+    assert errors == expected
+    assert len(result.verdicts) == len(result.fetch.items)
+
+
+def test_content_with_unexpected_identifier_is_isolated():
+    from dataclasses import replace as dc_replace
+
+    from qello_knowledge.domain.source import ContentFormat, SourceContent
+    from qello_knowledge.security.screen import screen_contents
+
+    good = SourceContent("1", "# ok", ContentFormat.MARKDOWN, "v1", "docs/1.md", "t")
+    orphan = dc_replace(good, source_id="orphan")
+    item = _item_for("1")
+    passed, verdicts = screen_contents([orphan, good], {"1": item}, fake_config(), team_policy())
+    assert [p.item.source_id for p in passed] == ["1"]
+    assert [v.verdict for v in verdicts] == [Verdict.PASSED]
+
+
+def _item_for(source_id):
+    from datetime import UTC, datetime
+
+    from qello_knowledge.domain.source import AccessInfo, AccessStatus, ChangeKeyKind, SourceItem
+
+    access = AccessInfo(AccessStatus.PROVIDED, (("visibility", "public"),))
+    return SourceItem(
+        "docs", "fake", source_id, f"https://fake.invalid/view/{source_id}", "v1", ChangeKeyKind.VERSION, "v1",
+        datetime(2026, 1, 1, tzinfo=UTC), "markdown_file", "t", f"docs/{source_id}.md", None, access, None,
+    )  # fmt: skip

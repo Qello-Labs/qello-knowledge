@@ -10,7 +10,7 @@ import ipaddress
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from qello_knowledge.domain.secret_rules import find_secrets
 
@@ -26,8 +26,12 @@ FILE_EXTENSIONS = frozenset(
 )  # fmt: skip
 SCHEME_URL = re.compile(r"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
 IPV4 = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
-IPV6_CANDIDATE = re.compile(r"(?<![\w:])[0-9A-Fa-f]{0,4}(?::[0-9A-Fa-f]{0,4}){2,7}(?![\w:])")
-HOST_PORT = re.compile(r"(?<![\w.-])[A-Za-z][A-Za-z0-9.-]*:\d{2,5}\b")
+# IPv4를 끝에 붙인 혼합 표기(`::ffff:192.0.2.1`)도 한 덩어리로 잡는다.
+IPV6_CANDIDATE = re.compile(
+    r"(?<![\w:.])(?:(?:[0-9A-Fa-f]{0,4}:){2,7}\d{1,3}(?:\.\d{1,3}){3}"
+    r"|[0-9A-Fa-f]{0,4}(?::[0-9A-Fa-f]{0,4}){1,7})(?![\w:.])"
+)
+HOST_PORT = re.compile(r"(?<![\w.-])[A-Za-z][A-Za-z0-9.-]*:\d{1,5}\b")
 DOTTED_NAME = re.compile(r"(?<![\w.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![\w-])")
 FILE_NAME = re.compile(r"^(?P<stem>.+)\.(?P<ext>[A-Za-z0-9]+)$")
 
@@ -101,23 +105,40 @@ def _mask_link(value: str, context: OutputContext) -> str:
         return ADDRESS_MASK
     # 공개 호스트 링크라도 경로·쿼리에 주소가 들어 있으면 링크 전체를 가린다.
     policy = context.address_policy
-    path = parts.path.lstrip("/")
+    path = _decode(parts.path).lstrip("/")
     unsafe_path = bool(path) and _mask_path(path, policy) != path
-    unsafe_rest = any(_mask_text(part, policy) != part for part in (parts.query, parts.fragment) if part)
+    rest = (_decode(part) for part in (parts.query, parts.fragment) if part)
+    unsafe_rest = any(_mask_text(part, policy) != part for part in rest)
     return ADDRESS_MASK if unsafe_path or unsafe_rest else value
 
 
+def _decode(value: str) -> str:
+    """퍼센트 인코딩을 값이 더 바뀌지 않을 때까지(최대 3번) 푼다. 인코딩으로 규칙을 피하지 못하게 한다."""
+    for _ in range(3):
+        decoded = unquote(value)
+        if decoded == value:
+            break
+        value = decoded
+    return value
+
+
 def _masked(value: str, field_kind: FieldKind, context: OutputContext) -> tuple[str, str | None]:
-    hits = find_secrets(value)
+    decoded = _decode(value)
+    hits = find_secrets(value) or find_secrets(decoded)
     if hits:
         return f"[가림:{hits[0].rule}]", hits[0].rule
-    if field_kind == FieldKind.LINK:
-        out = _mask_link(value, context)
-    elif field_kind == FieldKind.PATH:
-        out = _mask_path(value, context.address_policy)
-    else:
-        out = _mask_text(value, context.address_policy)
+    if decoded != value and _plain_masked(decoded, field_kind, context) != decoded:
+        return ADDRESS_MASK, "address"
+    out = _plain_masked(value, field_kind, context)
     return out, (None if out == value else "address")
+
+
+def _plain_masked(value: str, field_kind: FieldKind, context: OutputContext) -> str:
+    if field_kind == FieldKind.LINK:
+        return _mask_link(value, context)
+    if field_kind == FieldKind.PATH:
+        return _mask_path(value, context.address_policy)
+    return _mask_text(value, context.address_policy)
 
 
 def safe_text(value: str, field_kind: FieldKind, context: OutputContext) -> str:
