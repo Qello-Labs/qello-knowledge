@@ -151,3 +151,22 @@ def test_ip_addresses_next_to_dots_and_extensions_are_masked(value, kind, leftov
 @pytest.mark.parametrize("value", ["std::map 정리", "Foo::bar() 호출", "12:30:45 회의", "release 1.2.3", "sha256:abcd"])
 def test_code_like_colons_and_versions_are_not_addresses(value):
     assert safe_text(value, FieldKind.TEXT, PUBLIC) == value
+
+
+# --- 구현 재리뷰 3차 반영: 숫자가 든 후보는 앞뒤에 무엇이 붙든 가린다. 두 글자 `::`도 IPv6다 ---
+
+
+@pytest.mark.parametrize(
+    ("value", "kind", "leftover"),
+    [
+        ("docs/10.0.0.5_backup.md", FieldKind.PATH, "10.0.0.5"),
+        ("docs/backup_2001:db8::1.md", FieldKind.PATH, "2001:db8"),
+        ("docs/2001:db8::1_backup.md", FieldKind.PATH, "2001:db8"),
+        ("host a2001:db8::1 here", FieldKind.TEXT, "2001:db8"),
+        ("::", FieldKind.TEXT, "::"),
+        ("[::]:9", FieldKind.TEXT, "::"),
+    ],
+)
+def test_ips_glued_to_words_and_the_shortest_ipv6_are_masked(value, kind, leftover):
+    assert leftover not in safe_text(value, kind, PUBLIC)
+    assert has_unsafe(value, kind, PUBLIC) == "address"

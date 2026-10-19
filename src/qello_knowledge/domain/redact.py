@@ -15,7 +15,7 @@ from urllib.parse import unquote, urlsplit
 from qello_knowledge.domain.secret_rules import find_secrets
 
 ADDRESS_MASK = "[가림:address]"
-ADDRESS_POLICY_VERSION = "address-v2"
+ADDRESS_POLICY_VERSION = "address-v3"
 FILE_EXTENSIONS = frozenset(
     {
         "md", "mdx", "markdown", "txt", "rst", "adoc",
@@ -27,9 +27,9 @@ FILE_EXTENSIONS = frozenset(
 SCHEME_URL = re.compile(r"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
 # IP는 경계 정규식으로 찾지 않는다. 숫자·16진수·`:`·`.`가 이어진 구간 안에서 후보를 `ipaddress`로 검증한다.
 # 점이나 확장자가 바로 앞뒤에 붙은 주소(`file.10.0.0.5.md`)도 놓치지 않으려는 것이다.
-IP_RUN = re.compile(r"[0-9A-Fa-f:.]{3,}")
+IP_RUN = re.compile(r"[0-9A-Fa-f:.]{2,}")
 IP_MAX_LENGTH = 45  # IPv4를 붙인 IPv6 표기의 최대 길이
-WORD_CHAR = re.compile(r"[A-Za-z0-9_]")
+LETTER = re.compile(r"[A-Za-z]")
 HOST_PORT = re.compile(r"(?<![\w.-])[A-Za-z][A-Za-z0-9.-]*:\d{1,5}\b")
 DOTTED_NAME = re.compile(r"(?<![\w.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![\w-])")
 FILE_NAME = re.compile(r"^(?P<stem>.+)\.(?P<ext>[A-Za-z0-9]+)$")
@@ -63,23 +63,29 @@ def _is_ip(candidate: str) -> bool:
     return True
 
 
-def _is_word(value: str, index: int) -> bool:
-    return 0 <= index < len(value) and WORD_CHAR.match(value[index]) is not None
+def _is_letter(value: str, index: int) -> bool:
+    return 0 <= index < len(value) and LETTER.match(value[index]) is not None
+
+
+def _code_like(value: str, start: int, end: int) -> bool:
+    """`std::map`, `Foo::bar()`처럼 숫자 없이 영문자에 붙은 후보는 코드로 보고 주소로 보지 않는다.
+
+    숫자가 하나라도 든 후보는 앞뒤에 무엇이 붙든(`10.0.0.5_backup`, `a2001:db8::1`) 주소로 본다.
+    """
+    candidate = value[start:end]
+    return not any(c.isdigit() for c in candidate) and (_is_letter(value, start - 1) or _is_letter(value, end))
 
 
 def _mask_ips(value: str, ip_run: re.Pattern[str]) -> str:
-    """구간마다 왼쪽부터 가장 긴 유효 IP 후보를 가린다.
-
-    후보 앞뒤에 영숫자·`_`가 붙으면 주소로 보지 않는다(`std::map`).
-    """
+    """구간마다 왼쪽부터 가장 긴 유효 IP 후보를 가린다."""
     out, last = [], 0
     for match in ip_run.finditer(value):
         run, base, i = match.group(0), match.start(), 0
         while i < len(run):
             end = None
-            if run[i] != "." and not _is_word(value, base + i - 1):
+            if run[i] != ".":
                 for j in range(min(len(run), i + IP_MAX_LENGTH), i + 1, -1):
-                    if not _is_word(value, base + j) and _is_ip(run[i:j]):
+                    if _is_ip(run[i:j]) and not _code_like(value, base + i, base + j):
                         end = j
                         break
             if end is None:
