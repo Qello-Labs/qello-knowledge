@@ -1,4 +1,4 @@
-# Task Contract: GitHub Issue 생성 시 Jira 하위 작업 자동 생성
+# Task Contract: Phase 1 첫 명세 세 건 작성·승인 (WBS 0.11)
 
 > Generated at: `2026-10-18`
 >
@@ -6,85 +6,81 @@
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-93` / https://tkv123.atlassian.net/browse/SCRUM-93 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: 해당 없음: 도구·하네스 작업이라 명세 백로그 대상이 아님
+- Jira 이슈: `SCRUM-92` / https://tkv123.atlassian.net/browse/SCRUM-92 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: QK-FND-001, QK-STO-001, QK-ING-001 / `docs/sdd/roadmap.md` 4절 명세 백로그
 - 팀 스프린트 ID: `QELLO-S2026-W42`
-- GitHub Issue: `#25`
-- Branch: `ci/SCRUM-93-gh-25-jira-subtask-sync`
+- GitHub Issue: `#24`
+- Branch: `docs/SCRUM-92-gh-24-phase1-first-specs`
 - Base branch: `main`
 
 ## Objective
 
-- Issue 폼으로 GitHub Issue를 열면 Jira SCRUM 프로젝트에 하위 작업이 자동으로 생기게 해, GitHub Issue와 Jira 작업을
-  손으로 두 번 만들지 않게 한다. 하위 작업은 상위 이슈의 스프린트를 따르므로 상위 이슈가 활성 스프린트에 있으면 그 스프린트에 들어간다.
+- Phase 1 첫 명세 세 건(QK-FND-001 골격·설정·CI, QK-STO-001 저장 스키마·검색 SQL, QK-ING-001 자료원 어댑터 계약)을
+  Spec Kit으로 쓰고 사람 승인을 받아, 0.G 완료 조건 "첫 명세 3개가 승인됐다"를 닫는다.
 
 ## Scope
 
-- `.github/workflows/jira-subtask.yml`: Issue `opened`와 수동 실행(`workflow_dispatch`, Issue 번호 입력)에서 실행한다.
-  저장소 소유자·멤버·협업자가 연 Issue에서만 실행한다.
-- `scripts/jira_subtask.py`: 표준 라이브러리만 쓴다. Issue 폼 본문을 읽어 상위 이슈 아래 하위 작업을 만들고 GitHub Issue에 댓글을 남긴다.
-  `--dry-run`은 Jira·GitHub에 쓰지 않고 만들 내용만 출력한다.
-- `tests/test_jira_subtask.py`: `python -m unittest`로 도는 단위 테스트.
-- `.github/ISSUE_TEMPLATE/work.yml`: "Jira 이슈 키·URL" 필수 입력을 "Jira 상위 이슈 키"(기본 `SCRUM-42`)와
-  선택 입력 "기존 Jira 이슈 키"로 바꾼다.
-- `docs/github-workflow.md`: 자동 생성 흐름, 필요한 Secret, 실패했을 때 할 일.
-
-## Behavior
-
-- 하위 작업: 요약은 GitHub Issue 제목, 레이블은 작업 종류와 파트 레이블(저장소 변수 `JIRA_PART_LABEL`, 기본 `team-backend`),
-  설명에는 GitHub Issue URL, 기능명세서 ID·링크, 팀 스프린트 ID, 산출물, 완료 조건을 넣는다. 담당자는 지정하지 않는다.
-- 상위 이슈가 활성 스프린트에 없으면 하위 작업은 만들고, GitHub Issue 댓글로 상위 이슈를 활성 스프린트로 옮겨 달라고 알린다. 스프린트를 옮기지 않는다.
-- 상위 키가 형식에 맞지 않거나, 상위 이슈가 없거나, 하위 작업이면 만들지 않고 실패 댓글을 남긴다.
-- 중복 방지: 이 워크플로가 남긴 댓글의 표식(`<!-- jira-subtask: SCRUM-<번호> -->`)이 있거나 "기존 Jira 이슈 키"가 채워져 있으면 만들지 않는다.
-- 생성 댓글에 Jira 키·URL과 권장 브랜치 이름 `<type>/SCRUM-<번호>-gh-<Issue 번호>-<short-slug>`를 남긴다.
+- `specs/QK-FND-001-<짧은 이름>/`, `specs/QK-STO-001-<짧은 이름>/`, `specs/QK-ING-001-<짧은 이름>/`의 `spec.md`와
+  `checklists/requirements.md`. `/speckit-specify`로 만들고 필요하면 `/speckit-clarify`로 열린 질문을 닫는다.
+- `.specify/feature.json`: 현재 작성 중인 명세 디렉터리를 가리키도록 갱신한다.
+- 작성 순서는 QK-FND-001 → QK-STO-001·QK-ING-001이다(로드맵 4절 선행 관계).
+- QK-FND-001: 요구사항 FR-ING-10, FR-SEC-01, NFR-10, NFR-12, ADR-017. ADR-008 Follow-ups에 따라 `docker compose`는
+  로컬 개발·테스트 범위로 좁히고, 실행 환경은 Cloudflare Workers(질의응답)와 Workers 밖 색인(GitHub Actions 또는 로컬 CLI)을 전제로 한다.
+- QK-STO-001: 요구사항 FR-STO-01~03, ADR-006·007. Supabase 데이터 처리 정책 확인과 PGroonga 활성화 확인을 명세의 작업 항목으로 넣는다.
+  ADR-007은 Phase 1 스파이크에서 정하므로 두 선택지를 모두 받는 요구로 쓴다.
+- QK-ING-001: 요구사항 FR-ING-01, 10, 11.
+- 다른 문서에 남길 수정(로드맵의 compose 서술 등)은 각 명세의 가정·발견 사항으로만 적는다.
 
 ## Explicit exclusions
 
-- Atlassian API 토큰 발급과 GitHub Secret 등록. 사람이 한다(AGENTS.md 6절, 토큰을 에이전트가 다루지 않는다).
-- 담당자 자동 지정, Issue 수정·닫기·재오픈 동기화, Jira → GitHub 방향 동기화.
-- 이미 열린 Issue 소급 처리. 필요하면 수동 실행으로 한 건씩 한다.
-- 색인 자료원 변경, `AGENTS.md`·`CLAUDE.md`·`CODEX.md`·`.claude/**`·`.agents/**` 수정.
-- 다른 세션이 쓰는 기본 작업 폴더(`docs/SCRUM-92-gh-24-phase1-first-specs` 브랜치)의 변경.
+- `/speckit-plan`·`/speckit-tasks` 산출물과 구현 코드. 구현은 SCRUM-89(골격·설정·compose·CI)·SCRUM-90(저장, 스키마, 검색 SQL 구현)에서 한다.
+- Cloudflare Workers·Supabase 계정 설정, 배포, PGroonga 실제 활성화, 마이그레이션 실행.
+- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
+- 로드맵 상태 표 갱신(`scripts/roadmap_status.py --write`).
+- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
+- 비밀값, 토큰, `.env` 값, 계정 ID, DB 연결 주소, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음. 색인 대상이 아니다. 워크플로가 Jira 상위 이슈 한 건과 GitHub Issue 댓글을 읽는다.
-- 외부 API로 보내는 데이터: GitHub Issue 제목과 폼 본문 일부를 같은 팀의 Jira SCRUM 프로젝트로 보낸다. 사람이 요청한 쓰기 자동화다.
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons. Issue 하나당 Jira API 2회(상위 조회, 생성), GitHub API 2~3회, Actions 실행 1회.
+- 새로 읽는 자료원: 해당 없음. 저장소 문서만 읽고 쓴다.
+- 외부 API로 보내는 데이터: 해당 없음
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
 - 인덱스 버전 변경: 없음
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `.github/workflows/jira-subtask.yml`, `scripts/jira_subtask.py`, `tests/` | 확인 필요 | 사람 리뷰 |
-| `.github/ISSUE_TEMPLATE/work.yml`, `docs/github-workflow.md`, `TASK.md` | 확인 필요 | 사람 리뷰 |
+| `specs/QK-FND-001-*/`, `specs/QK-STO-001-*/`, `specs/QK-ING-001-*/` | 확인 필요 | 사람 리뷰. 명세 승인은 사람이 한다(AGENTS.md 2절) |
+| `.specify/feature.json`, `TASK.md` | 확인 필요 | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-18 `origin/main`(`0abe4b4`)에서 별도 작업 폴더(`../qello-knowledge-scrum-93`)를 만들 때 `git status --short` 결과: 변경 없음.
-  기본 작업 폴더에는 다른 세션의 `TASK.md` 수정과 `specs/`가 있어 건드리지 않았다.
+- 2026-10-18 `origin/main`(`0abe4b4`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
-python -m unittest discover -s tests -v
-python scripts/jira_subtask.py --dry-run --event tests/fixtures/issue_opened.json
+grep -rn "NEEDS CLARIFICATION" specs/*/spec.md   # 결과가 없어야 한다. 체크리스트 항목 이름은 제외
+grep -rnE 'postgres(ql)?://|\.supabase\.co|\.neon\.tech' specs TASK.md   # 결과가 없어야 한다. DB 연결 주소
 ```
 
 ## Completion criteria
 
-- 단위 테스트와 `--dry-run` 실행이 통과한다.
-- Secret 등록 후 테스트 Issue 하나로 하위 작업이 상위 이슈 아래에 생기고 스프린트·레이블·댓글이 맞다. Jira·GitHub 화면으로 확인한다.
-- 비밀값이 저장소에 없다. `python scripts/preflight.py`로 확인한다.
+- 명세 3건의 `spec.md`에 사용자 시나리오, 기능 요구사항, 성공 기준, 가정이 있고 `[NEEDS CLARIFICATION]` 표시가 없다. 위 grep과 사람 리뷰로 확인한다.
+- 각 명세가 로드맵 4절 백로그의 요구사항 ID를 모두 다룬다. 사람 리뷰로 확인한다.
+- 명세 3건을 사람이 승인했다. 명세를 쓴 세션은 승인하지 않는다. PR 리뷰 승인 기록으로 확인한다.
 
 ## Decisions
 
-- 2026-10-18 사용자 요청: GitHub에서 Issue를 만들면 Jira에 하위 이슈로, 알맞은 스프린트에 등록되게 한다.
-- 2026-10-18 사용자 결정: 상위 이슈는 폼에서 입력받고 기본값은 `SCRUM-42`다.
-- 2026-10-18 사용자 결정: 상위 이슈가 활성 스프린트에 없으면 하위 작업은 만들고 경고 댓글을 남긴다.
-- 2026-10-18 사용자 결정: #23 병합 후 `main`에서 시작한다(확인 시 이미 병합됨).
-- 2026-10-18 사용자 결정: 이 작업용 Jira 하위 작업(SCRUM-93)과 GitHub Issue(#25)를 만든다.
-- 2026-10-18 에이전트 판단: 저장소에 `pyproject.toml`이 없어 테스트 명령을 `TASK.md` Validation에만 적는다. `pyproject.toml` 도입은 QK-FND-001 범위다.
+- 2026-10-18 사용자 결정: WBS 0.11은 새 Jira 하위 작업(SCRUM-92, 상위 SCRUM-42)으로 추적하고, 구현 이슈 SCRUM-89·SCRUM-90과 Relates로 링크한다.
+- 2026-10-18 사용자 결정: Backend·Sprint 3에 넣는다. 하위 작업은 스프린트를 직접 받지 않아 상위 SCRUM-42의 스프린트를 따른다.
+- 2026-10-18 에이전트 판단: 명세 3건을 GitHub Issue 하나(#24)로 묶는다. 0.11이 WBS 작업 하나이기 때문이다.
+- 2026-10-18 에이전트 확인: QK-FND-001 백로그 행의 요구사항 ID(FR-ING-10, FR-SEC-01, NFR-10, NFR-12, ADR-017)는 저장소(git 이력 포함),
+  Confluence `SCRUM` 스페이스, 로컬 파일 어디에도 원문이 없다.
+- 2026-10-18 사용자 결정: 요구사항 원문이 없으므로 에이전트가 백로그 제목, constitution, ADR-008, AGENTS.md를 근거로 설계한다.
+  완료 조건 "백로그 요구사항 ID를 모두 다룬다"는 원문이 생길 때까지 명세의 백로그 제목 대응표로 대신 확인한다.
+- 2026-10-19 사용자 결정: PR 작성 규칙(`.claude/skills/harness-pr/references/writing-style.md`, `.github/PULL_REQUEST_TEMPLATE.md`)에
+  "가독성 좋게 쓰고, 쓸데없는 문장은 쓰지 않는다" 원칙을 추가하고 이 브랜치에 함께 커밋한다. 제외 범위의 `.claude/**` 수정에 대한 예외다.
