@@ -71,7 +71,7 @@ uv run ruff check .
 uv run ruff format --check .
 uv run qk-dev db up
 QK_REQUIRE_LOCALDB=1 uv run pytest
-grep -rn "NEEDS CLARIFICATION" specs/QK-ING-001-source-adapter-contract/   # 결과가 없어야 한다
+grep -rn "NEEDS CLARIFICATION" specs/QK-ING-001-source-adapter-contract/*.md specs/QK-ING-001-source-adapter-contract/contracts/   # 결과가 없어야 한다. 체크리스트 항목 이름은 제외
 ```
 
 ## Completion criteria
@@ -93,4 +93,7 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-001-source-adapter-contract/   # 결
   `RateLimitHint`에 `retry_after_seconds`를 두고 세션이 주입한 시계로 변환한다. 어댑터 계약(`rate_limit_hint(response)`)은 바꾸지 않는다.
 - 2026-10-19 사용자 결정: 검증 분담. Codex는 구현과 `uv run pytest`·`uv run ruff`만 실행한다. Codex 샌드박스가 `.env*` 읽기를 막아 preflight를
   실행할 수 없으므로, AGENTS.md 7절 전체 검증(preflight 포함)은 구현 검토 세션이 실행한다. 이 PC에는 `python`이 없어 `python3`로 실행한다.
+- 2026-10-19 사실: 설계·구현·커밋에 관여하지 않은 새 Claude 세션이 `/harness-review`로 검토해 변경 요청을 냈다. 검증 명령은 모두 통과, 직접 재현한 문제 5건.
+- 2026-10-19 사용자 결정(검토 반영): 1) 설정 토큰 판정은 알려진 접두사와 `postgres` URL만 쓰고 길이 규칙은 뺀다. 2) 비활성 자료원에도 토큰 검사를 적용한다.
+  3) 리다이렉트 `https`·포트 고정과 첫 요청 호스트 검사를 이번 PR에서 한다. 4·5) 내용 해시 계산 지점과 계약 테스트 고정값 가정은 QK-ING-002 후속 메모로 넘긴다.
 - 확인 필요: 공통 자료 형식 필드를 QK-STO-001 담당과 언제 맞출지(#33의 `data-model.md` 작성 시점).
