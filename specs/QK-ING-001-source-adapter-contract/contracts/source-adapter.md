@@ -35,7 +35,7 @@ class SourceSession(Protocol):
 7. 권한 정보를 원본이 주지 않으면 `AccessInfo(UNKNOWN)`이다. 추측해서 채우지 않는다.
 8. 응답 형식이 예상과 다르면 `InvalidResponse`를 낸다. 빠진 필드를 기본값으로 채우지 않는다.
 9. `content_hash`·`fetched_at`은 비워 둔다. 세션이 채운다.
-10. 예외는 세션이 낸 것(`SourceFailure`)과 `InvalidResponse`만 밖으로 보낸다.
+10. 예외는 세션이 낸 것(`SourceFailure`, `RunStopped`, `ReadOnlyViolation`, `HostNotAllowed`)과 `InvalidResponse`만 밖으로 보낸다.
 11. 로그·예외 메시지에 토큰, 요청 헤더, 응답 본문, URL 질의 문자열을 넣지 않는다.
 12. `rate_limit_hint()`는 시각을 계산하지 않는다. 상대값은 `retry_after_seconds`, 절대값은 `retry_at`에 원본이 준 그대로 담는다.
 
@@ -48,7 +48,8 @@ class SourceSession(Protocol):
 | 대기 상한 | 기다릴 시간 > `max_wait_seconds`면 `RunStopped(WAIT_TOO_LONG)` | FR-016 |
 | 재시도 | `adapter.classify()`가 일시적이면 백오프 후 재시도, 상한 소진 시 `SourceFailure(TRANSIENT)` | FR-017, FR-018 |
 | 인증 실패 | 재시도 없이 `RunStopped(AUTH_FAILED)` | FR-020 |
-| 리다이렉트 | 3xx의 `Location` 호스트가 `allowed_hosts`에 있으면 최대 3번 따라감, 아니면 `SourceFailure(REDIRECT_BLOCKED)` | FR-022 |
+| 첫 요청 주소 | 보내기 전에 `https`이고 호스트가 `allowed_hosts`에 있는지 검사. 아니면 `HostNotAllowed`(어댑터 결함, 실행 중단) | FR-022 강화 |
+| 리다이렉트 | 3xx의 `Location`이 `https`이고 호스트가 `allowed_hosts`에 있고 포트가 원래 요청과 같으면 최대 3번 따라감, 아니면 `SourceFailure(REDIRECT_BLOCKED)` | FR-022 강화 |
 | 크기 상한 | `request.max_bytes`를 `max_content_bytes`로 채우고, 응답이 잘렸으면 `SourceFailure(SIZE_EXCEEDED)` | Edge Cases |
 | 해시·시각 | `SourceContent`의 `content_hash`·`fetched_at`을 채운다 | FR-003 |
 
