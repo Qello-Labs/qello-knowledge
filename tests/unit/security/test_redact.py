@@ -148,7 +148,7 @@ def test_ip_addresses_next_to_dots_and_extensions_are_masked(value, kind, leftov
     assert has_unsafe(value, kind, PUBLIC) == "address"
 
 
-@pytest.mark.parametrize("value", ["std::map 정리", "Foo::bar() 호출", "12:30:45 회의", "release 1.2.3", "sha256:abcd"])
+@pytest.mark.parametrize("value", ["12:30:45 회의", "release 1.2.3", "sha256:abcd", "1.2.3.456", "2026.10.20.1"])
 def test_code_like_colons_and_versions_are_not_addresses(value):
     assert safe_text(value, FieldKind.TEXT, PUBLIC) == value
 
@@ -170,3 +170,34 @@ def test_code_like_colons_and_versions_are_not_addresses(value):
 def test_ips_glued_to_words_and_the_shortest_ipv6_are_masked(value, kind, leftover):
     assert leftover not in safe_text(value, kind, PUBLIC)
     assert has_unsafe(value, kind, PUBLIC) == "address"
+
+
+# --- 구현 재리뷰 4차 반영: 코드 예외를 없애고, IPv4는 숫자 덩어리 전체가 IPv4일 때만 가린다 ---
+
+
+@pytest.mark.parametrize(
+    ("value", "kind", "leftover"),
+    [
+        ("backupbeef::cafe", FieldKind.TEXT, "beef::cafe"),
+        ("face::beefx", FieldKind.TEXT, "face::beef"),
+        ("docs/face::beef.md", FieldKind.PATH, "face::beef"),
+        ("https://github.com/o/r?next=backupbeef::cafe", FieldKind.LINK, "beef::cafe"),
+        ("std::map", FieldKind.TEXT, "d::"),
+    ],
+)
+def test_letter_only_ipv6_is_masked_even_next_to_letters(value, kind, leftover):
+    assert leftover not in safe_text(value, kind, PUBLIC)
+
+
+@pytest.mark.parametrize("value", ["docs/2026.10.20.1.md", "docs/v1.2.3.456.md"])
+def test_numeric_versions_in_file_names_are_not_addresses(value):
+    assert has_unsafe(value, FieldKind.PATH, PUBLIC) is None
+
+
+def test_long_non_address_strings_are_cheap():
+    import time
+
+    started = time.perf_counter()
+    safe_text("a" * 100_000, FieldKind.TEXT, PUBLIC)
+    safe_text("1" * 100_000, FieldKind.TEXT, PUBLIC)
+    assert time.perf_counter() - started < 1

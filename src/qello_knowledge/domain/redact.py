@@ -15,7 +15,7 @@ from urllib.parse import unquote, urlsplit
 from qello_knowledge.domain.secret_rules import find_secrets
 
 ADDRESS_MASK = "[가림:address]"
-ADDRESS_POLICY_VERSION = "address-v3"
+ADDRESS_POLICY_VERSION = "address-v4"
 FILE_EXTENSIONS = frozenset(
     {
         "md", "mdx", "markdown", "txt", "rst", "adoc",
@@ -25,11 +25,12 @@ FILE_EXTENSIONS = frozenset(
     }
 )  # fmt: skip
 SCHEME_URL = re.compile(r"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
-# IP는 경계 정규식으로 찾지 않는다. 숫자·16진수·`:`·`.`가 이어진 구간 안에서 후보를 `ipaddress`로 검증한다.
-# 점이나 확장자가 바로 앞뒤에 붙은 주소(`file.10.0.0.5.md`)도 놓치지 않으려는 것이다.
-IP_RUN = re.compile(r"[0-9A-Fa-f:.]{2,}")
+# IP는 경계 정규식으로 찾지 않고 후보를 `ipaddress`로 검증한다. 점이나 확장자가 바로 붙은 주소도 놓치지 않으려는 것이다.
+# IPv6는 콜론이 두 개 이상인 16진 구간 안에서 찾는다. 코드(`std::map`)와 주소(`face::beef`)는 글자로 구분할 수 없어
+# 유효한 IPv6 후보는 모두 가린다. IPv4는 숫자·점 덩어리 전체(앞뒤 점 제외)가 IPv4일 때만 가린다(`1.2.3.456`은 버전).
+IP_RUN = re.compile(r"[0-9A-Fa-f:.]+")
+IPV4_DIGITS = re.compile(r"[0-9.]+")
 IP_MAX_LENGTH = 45  # IPv4를 붙인 IPv6 표기의 최대 길이
-LETTER = re.compile(r"[A-Za-z]")
 HOST_PORT = re.compile(r"(?<![\w.-])[A-Za-z][A-Za-z0-9.-]*:\d{1,5}\b")
 DOTTED_NAME = re.compile(r"(?<![\w.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![\w-])")
 FILE_NAME = re.compile(r"^(?P<stem>.+)\.(?P<ext>[A-Za-z0-9]+)$")
@@ -43,7 +44,7 @@ class FieldKind(StrEnum):
 
 @dataclass(frozen=True)
 class AddressPolicy:
-    patterns: tuple[re.Pattern[str], ...] = (SCHEME_URL, IP_RUN, HOST_PORT, DOTTED_NAME)
+    patterns: tuple[re.Pattern[str], ...] = (SCHEME_URL, IP_RUN, IPV4_DIGITS, HOST_PORT, DOTTED_NAME)
     file_extensions: frozenset[str] = FILE_EXTENSIONS
     version: str = ADDRESS_POLICY_VERSION
 
@@ -63,29 +64,22 @@ def _is_ip(candidate: str) -> bool:
     return True
 
 
-def _is_letter(value: str, index: int) -> bool:
-    return 0 <= index < len(value) and LETTER.match(value[index]) is not None
+def _is_ipv6(candidate: str) -> bool:
+    return ":" in candidate and _is_ip(candidate)
 
 
-def _code_like(value: str, start: int, end: int) -> bool:
-    """`std::map`, `Foo::bar()`처럼 숫자 없이 영문자에 붙은 후보는 코드로 보고 주소로 보지 않는다.
-
-    숫자가 하나라도 든 후보는 앞뒤에 무엇이 붙든(`10.0.0.5_backup`, `a2001:db8::1`) 주소로 본다.
-    """
-    candidate = value[start:end]
-    return not any(c.isdigit() for c in candidate) and (_is_letter(value, start - 1) or _is_letter(value, end))
-
-
-def _mask_ips(value: str, ip_run: re.Pattern[str]) -> str:
-    """구간마다 왼쪽부터 가장 긴 유효 IP 후보를 가린다."""
+def _mask_ipv6(value: str, ip_run: re.Pattern[str]) -> str:
+    """콜론이 두 개 이상인 구간마다 왼쪽부터 가장 긴 유효 IPv6 후보를 가린다."""
     out, last = [], 0
     for match in ip_run.finditer(value):
         run, base, i = match.group(0), match.start(), 0
+        if run.count(":") < 2:
+            continue
         while i < len(run):
             end = None
             if run[i] != ".":
                 for j in range(min(len(run), i + IP_MAX_LENGTH), i + 1, -1):
-                    if _is_ip(run[i:j]) and not _code_like(value, base + i, base + j):
+                    if _is_ipv6(run[i:j]):
                         end = j
                         break
             if end is None:
@@ -96,16 +90,29 @@ def _mask_ips(value: str, ip_run: re.Pattern[str]) -> str:
     return "".join(out) + value[last:]
 
 
+def _mask_ipv4(value: str, ipv4_digits: re.Pattern[str]) -> str:
+    def replace(match: re.Match[str]) -> str:
+        token = match.group(0)
+        core = token.strip(".")
+        if core.count(".") != 3 or not _is_ip(core):
+            return token
+        start = token.index(core)
+        return token[:start] + ADDRESS_MASK + token[start + len(core) :]
+
+    return ipv4_digits.sub(replace, value)
+
+
 def _mask_definite(value: str, policy: AddressPolicy) -> str:
     """스킴 주소, IP, `host:port`처럼 글자만으로 주소가 확실한 것을 가린다."""
-    scheme, ip_run, host_port, _ = policy.patterns
+    scheme, ip_run, ipv4_digits, host_port, _ = policy.patterns
     value = scheme.sub(ADDRESS_MASK, value)
-    value = _mask_ips(value, ip_run)
+    value = _mask_ipv6(value, ip_run)
+    value = _mask_ipv4(value, ipv4_digits)
     return host_port.sub(ADDRESS_MASK, value)
 
 
 def _mask_text(value: str, policy: AddressPolicy) -> str:
-    dotted = policy.patterns[3]
+    dotted = policy.patterns[4]
     value = _mask_definite(value, policy)
     return dotted.sub(lambda m: m.group(0) if all(p.isdigit() for p in m.group(0).split(".")) else ADDRESS_MASK, value)
 
