@@ -276,6 +276,10 @@ class ReadOnlyViolation(Exception):
     """어댑터가 원본에 쓰려고 한 결함. 자료별 실패로 삼키지 않는다."""
 
 
+class HostNotAllowed(Exception):
+    """어댑터가 설정 밖 주소를 만든 결함. 자료별 실패로 삼키지 않는다."""
+
+
 def default_rate_limit_hint(response: SourceResponse) -> RateLimitHint | None:
     """Retry-After 원본 값만 읽는다. 현재 시각은 세션에서만 계산한다."""
     value = response.headers.get("retry-after")

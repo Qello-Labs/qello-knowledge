@@ -7,6 +7,7 @@ from urllib.parse import urljoin, urlsplit
 
 from qello_knowledge.domain.source import (
     FailureType,
+    HostNotAllowed,
     RateLimitHint,
     ReadOnlyViolation,
     ResponseOutcome,
@@ -25,6 +26,16 @@ from qello_knowledge.ports.source import SourceAdapter, SourceTransport
 from qello_knowledge.sources.clock import Clock
 from qello_knowledge.sources.limits import RequestGate
 from qello_knowledge.sources.retry import Jitter, RunClock, next_delay, system_jitter
+
+
+def _https_origin(url: str) -> tuple[str, int] | None:
+    try:
+        parts = urlsplit(url)
+        if parts.scheme != "https" or parts.hostname is None:
+            return None
+        return parts.hostname, parts.port if parts.port is not None else 443
+    except ValueError:
+        return None
 
 
 class DefaultSourceSession:
@@ -52,10 +63,13 @@ class DefaultSourceSession:
     def send(self, request: SourceRequest) -> SourceResponse:
         if request.method not in {"GET", "HEAD"}:
             raise ReadOnlyViolation("읽기 전용 요청만 허용한다")
+        origin = _https_origin(request.url)
+        if origin is None or origin[0] not in self.config.allowed_hosts:
+            raise HostNotAllowed("첫 요청 주소는 허용된 HTTPS 호스트여야 한다")
         if self.stop is not None:
             raise RunStopped(self.stop)
         try:
-            return self._send(request)
+            return self._send(request, origin[1])
         except RunStopped as stopped:
             self.stop = stopped.stop
             raise
@@ -71,7 +85,7 @@ class DefaultSourceSession:
             self.gate.apply_hint(hint)
         return hint
 
-    def _send(self, request: SourceRequest) -> SourceResponse:
+    def _send(self, request: SourceRequest, original_port: int) -> SourceResponse:
         request = replace(request, max_bytes=self.config.max_content_bytes)
         attempt = redirects = 0
         retry_pending = False
@@ -96,10 +110,15 @@ class DefaultSourceSession:
                     location = response.headers.get("location")
                     try:
                         target = urljoin(request.url, location) if location else ""
-                        host = urlsplit(target).hostname
+                        destination = _https_origin(target)
                     except ValueError:
-                        host = None
-                    if host not in self.config.allowed_hosts or redirects >= 3:
+                        destination = None
+                    if (
+                        destination is None
+                        or destination[0] not in self.config.allowed_hosts
+                        or destination[1] != original_port
+                        or redirects >= 3
+                    ):
                         raise SourceFailure(FailureType.REDIRECT_BLOCKED, response.status)
                     request = replace(request, url=target)
                     redirects += 1

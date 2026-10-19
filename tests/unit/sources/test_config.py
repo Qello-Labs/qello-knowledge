@@ -135,3 +135,68 @@ def test_non_string_auth_reports_issue_instead_of_crashing(tmp_path, auth):
     path.write_text(text)
     _, issues = load_sources(path)
     assert any(i.field == "auth" and i.code == "UNKNOWN_AUTH_SETTING" for i in issues)
+
+
+def test_long_path_pattern_is_not_a_token(tmp_path):
+    pattern = "specs/QK-ING-001-source-adapter-contract/**/*.md"
+    text = (ROOT / "overlap.toml").read_text().replace("**/*.md", pattern)
+    path = tmp_path / "long-pattern.toml"
+    path.write_text(text)
+    configs, issues = load_sources(path)
+    assert len(pattern) > 40 and not issues
+    assert configs[0].scope.include == (pattern,)
+
+
+@pytest.mark.parametrize("prefix", ["ghp", "github_pat", "cfat", "postgres", "postgresql"])
+def test_known_token_prefix_and_postgres_scheme_report_only_token_value(tmp_path, prefix):
+    marker = prefix + ("://" + "example.invalid/docs" if prefix.startswith("postgres") else "_" + "synthetic" * 5)
+    text = (ROOT / "token_value.toml").read_text().replace("TOKEN_PLACEHOLDER", marker)
+    path = tmp_path / "token-prefix.toml"
+    path.write_text(text)
+    configs, issues = load_sources(path)
+    assert [(i.field, i.code) for i in issues] == [("auth", "TOKEN_VALUE")]
+    assert marker not in repr(configs) + repr(issues)
+
+
+@pytest.mark.parametrize("field", ["name", "kind", "enabled", "scope", "scope.include", "scope.include[0]"])
+def test_token_fields_do_not_produce_cascading_format_errors(tmp_path, field):
+    marker = "ghp" + "_" + "synthetic" * 5
+    text = (ROOT / "overlap.toml").read_text()
+    old, new = {
+        "name": ('name = "docs"', f'name = "{marker}"'),
+        "kind": ('kind = "fake"', f'kind = "{marker}"'),
+        "enabled": ("enabled = true", f'enabled = "{marker}"'),
+        "scope": ('[source.scope]\ninclude = ["**/*.md"]\nexclude = ["docs/**"]', f'scope = "{marker}"'),
+        "scope.include": ('include = ["**/*.md"]', f'include = "{marker}"'),
+        "scope.include[0]": ('include = ["**/*.md"]', f'include = ["{marker}"]'),
+    }[field]
+    path = tmp_path / "one-error.toml"
+    path.write_text(text.replace(old, new))
+    configs, issues = load_sources(path)
+    assert [(i.field, i.code) for i in issues] == [(field, "TOKEN_VALUE")]
+    assert marker not in repr(configs) + repr(issues)
+
+
+@pytest.mark.parametrize("field", ["auth", "scope.include[0]"])
+def test_disabled_source_still_rejects_token_values(tmp_path, field):
+    marker = "cfat" + "_" + "synthetic" * 5
+    text = (ROOT / "overlap.toml").read_text().replace("enabled = true", "enabled = false")
+    if field == "auth":
+        text = text.replace("enabled = false", f'enabled = false\nauth = "{marker}"')
+    else:
+        text = text.replace('include = ["**/*.md"]', f'include = ["{marker}"]')
+    path = tmp_path / "disabled-token.toml"
+    path.write_text(text)
+    configs, issues = load_sources(path)
+    assert not configs[0].enabled
+    assert [(i.field, i.code) for i in issues] == [(field, "TOKEN_VALUE")]
+    assert marker not in repr(configs) + repr(issues)
+
+
+def test_token_error_does_not_hide_an_independent_invalid_pattern(tmp_path):
+    marker = "ghp" + "_" + "synthetic" * 5
+    text = (ROOT / "overlap.toml").read_text().replace('include = ["**/*.md"]', f'include = ["{marker}", 123]')
+    path = tmp_path / "two-errors.toml"
+    path.write_text(text)
+    _, issues = load_sources(path)
+    assert {(i.field, i.code) for i in issues} == {("scope.include[0]", "TOKEN_VALUE"), ("scope.include", "INVALID")}

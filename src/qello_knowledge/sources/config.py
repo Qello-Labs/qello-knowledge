@@ -13,8 +13,8 @@ from qello_knowledge.domain.source_config import RateLimits, RetryPolicy, Source
 from qello_knowledge.sources.kinds import KINDS
 
 UNKNOWN_KIND_MESSAGE = "등록되지 않은 자료원 종류다. 종류를 추가하려면 결정 기록이 필요하다(AGENTS.md 3.1)"
-TOKEN_PREFIXES = ("ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_", "xox", "sk-", "ATATT", "figd_")
-SECRETS = tuple(spec for spec in specs_for(Entrypoint.INDEX) if spec.secret)
+TOKEN_PREFIXES = ("ghp_", "gho_", "ghu_", "ghs_", "ghr_", "github_pat_", "cfat_", "xox", "sk-", "ATATT", "figd_")
+AUTH_SETTINGS = frozenset(spec.name for spec in specs_for(Entrypoint.INDEX) if spec.secret)
 
 
 @dataclass(frozen=True)
@@ -29,7 +29,7 @@ class ConfigIssue:
 
 
 def _token(value: str) -> bool:
-    return value.startswith(TOKEN_PREFIXES) or any(spec.rule(value) for spec in SECRETS)
+    return value.startswith(TOKEN_PREFIXES) or re.match(r"(?i)^postgres(?:ql)?:", value) is not None
 
 
 def _scrub(value, field: str, add):
@@ -53,15 +53,22 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
     name = raw.get("name")
     label = name if isinstance(name, str) and not _token(name) else f"[[source]] {ordinal}"
     issues = []
+    token_fields: set[str] = set()
 
     def add(field, code):
+        if code == "TOKEN_VALUE":
+            token_fields.add(field)
+        elif any(
+            field == token_field or field.startswith(token_field + ".") or field.startswith(token_field + "[")
+            for token_field in token_fields
+        ):
+            # 토큰을 지운 자리에서 생긴 후속 형식 오류는 중복 보고하지 않는다.
+            return
         issues.append(ConfigIssue(label, field, code))
 
-    # 비활성은 name·kind·enabled만 검사한다.
-    selected = (
-        {k: v for k, v in raw.items() if k in {"name", "kind", "enabled"}} if raw.get("enabled") is False else raw
-    )
-    data = _scrub(selected, "", add)
+    # 토큰 검사는 활성 여부와 관계없이 모든 문자열에 적용한다.
+    # 비활성 자료원의 나머지 검사는 name·kind·enabled까지만 수행한다.
+    data = _scrub(raw, "", add)
     for key in ("name", "kind", "enabled"):
         if key not in data:
             add(key, "MISSING")
@@ -92,7 +99,7 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
     auth = data.get("auth")
     if spec and spec.requires_auth and "auth" not in data:
         add("auth", "MISSING")
-    if "auth" in data and (not isinstance(auth, str) or auth not in {s.name for s in SECRETS}):
+    if "auth" in data and (not isinstance(auth, str) or auth not in AUTH_SETTINGS):
         add("auth", "UNKNOWN_AUTH_SETTING")
     auth = auth if isinstance(auth, str) else None
     scope = data.get("scope")
@@ -100,7 +107,8 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
         add("scope", "MISSING" if "scope" not in data else "INVALID")
         scope = {}
     scope_keys = spec.scope_keys if spec else ()
-    keys(scope, {"include", "exclude", *scope_keys}, "scope.")
+    if "kind" not in token_fields:
+        keys(scope, {"include", "exclude", *scope_keys}, "scope.")
     patterns = {}
     for key in ("include", "exclude"):
         value = scope.get(key, [] if key == "exclude" else None)
@@ -109,11 +117,14 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
         elif (
             not isinstance(value, list)
             or (key == "include" and not value)
-            or any(not isinstance(v, str) or not v for v in value)
+            or any(
+                (not isinstance(v, str) or not v) and f"scope.{key}[{index}]" not in token_fields
+                for index, v in enumerate(value)
+            )
         ):
             add("scope." + key, "INVALID")
             value = []
-        patterns[key] = tuple(value or ())
+        patterns[key] = tuple(v for v in (value or ()) if v is not None)
     extra = []
     for key in scope_keys:
         value = scope.get(key)
@@ -145,7 +156,10 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
                 add(f"{table_name}.{key}", "INVALID")
             else:
                 values[key] = value
-    if retry["max_backoff_seconds"] < retry["initial_backoff_seconds"]:
+    if (
+        not token_fields.intersection({"retry.max_backoff_seconds", "retry.initial_backoff_seconds"})
+        and retry["max_backoff_seconds"] < retry["initial_backoff_seconds"]
+    ):
         add("retry.max_backoff_seconds", "INVALID")
     size = data.get("max_content_bytes", 1_000_000)
     if not _number(size, 1, integer=True):
@@ -153,7 +167,9 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
         size = 1_000_000
     hosts = data.get("allowed_hosts", list(spec.default_allowed_hosts) if spec else [])
     if not isinstance(hosts, list) or any(
-        not isinstance(host, str) or not re.fullmatch(r"[a-zA-Z0-9.-]+", host) for host in hosts
+        (not isinstance(host, str) or not re.fullmatch(r"[a-zA-Z0-9.-]+", host))
+        and f"allowed_hosts[{index}]" not in token_fields
+        for index, host in enumerate(hosts)
     ):
         add("allowed_hosts", "INVALID")
         hosts = []
@@ -166,7 +182,7 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
         RateLimits(**limits),
         RetryPolicy(**retry),
         size,
-        tuple(hosts),
+        tuple(host for host in hosts if host is not None),
     )
     return config, issues
 

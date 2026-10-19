@@ -10,7 +10,9 @@ from qello_knowledge.sources.session import DefaultSourceSession
 def test_all_pages_deduplicated_before_scope_filter(clock):
     adapter = FakeSourceAdapter()
     transport = ReplayTransport.from_file(Path("tests/fixtures/responses/fake/page_overlap.json"))
-    config = SourceConfig("docs", "fake", True, scope=SourceScope(("docs/**",), ("docs/2.md",)))
+    config = SourceConfig(
+        "docs", "fake", True, scope=SourceScope(("docs/**",), ("docs/2.md",)), allowed_hosts=("fake.invalid",)
+    )
     session = DefaultSourceSession(transport, adapter, config, clock)
     listing = list_all(adapter, config, session)
     assert [item.source_id for item in listing.items] == ["1", "3", "4", "5"]
@@ -21,6 +23,6 @@ def test_all_pages_deduplicated_before_scope_filter(clock):
 def test_items_outside_include_are_excluded(clock):
     adapter = FakeSourceAdapter()
     transport = ReplayTransport.from_file(Path("tests/fixtures/responses/fake/basic.json"))
-    config = SourceConfig("docs", "fake", True, scope=SourceScope(("elsewhere/**",)))
+    config = SourceConfig("docs", "fake", True, scope=SourceScope(("elsewhere/**",)), allowed_hosts=("fake.invalid",))
     listing = list_all(adapter, config, DefaultSourceSession(transport, adapter, config, clock))
     assert listing.items == () and listing.excluded == 5

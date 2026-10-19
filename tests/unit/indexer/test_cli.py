@@ -78,3 +78,21 @@ def test_sources_check_json_and_default_empty_config(capsys):
     output = capsys.readouterr().out
     assert len(output.splitlines()) == 1 and json.loads(output)["ok"]
     assert main(["sources", "check"]) == 0
+
+
+@pytest.mark.parametrize("field", ["auth", "scope"])
+def test_disabled_source_token_rejected_before_run_without_printing_value(env, capsys, tmp_path, field):
+    marker = "cfat" + "_" + "synthetic" * 5
+    text = '[[source]]\nname = "old-docs"\nkind = "fake"\nenabled = false\n'
+    if field == "auth":
+        text += f'auth = "{marker}"\n'
+    else:
+        text += f'[source.scope]\ninclude = ["{marker}"]\n'
+    path = tmp_path / "disabled.toml"
+    path.write_text(text)
+    extra = env(valid_environ())
+    for command in (["sources", "check"], ["run", *extra]):
+        assert main([*command, "--sources", str(path)]) == 1
+        output = capsys.readouterr().out
+        assert "TOKEN_VALUE" in output and marker not in output
+        assert "수집할 자료원 없음" not in output

@@ -132,7 +132,7 @@ def test_incomplete_listing_retains_known_items_and_is_reported(clock, jitter):
     data["body"]["exchanges"][1]["responses"] = [dict(status=503, headers={}, body="busy")] * 4
     transport = ReplayTransport(data["body"]["exchanges"])
     adapter = FakeSourceAdapter()
-    config = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)))
+    config = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)), allowed_hosts=("fake.invalid",))
     session = DefaultSourceSession(transport, adapter, config, clock, jitter=jitter)
     listing = list_all(adapter, config, session)
     assert not listing.complete and len(listing.items) == 3
@@ -147,7 +147,7 @@ def test_read_only_adapter_defect_is_not_swallowed(clock, jitter):
 
     adapter = WritingAdapter()
     transport = ReplayTransport.from_file(Path("tests/fixtures/responses/fake/basic.json"))
-    config = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)))
+    config = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)), allowed_hosts=("fake.invalid",))
     session = DefaultSourceSession(transport, adapter, config, clock, jitter=jitter)
     listing = list_all(adapter, config, session)
     before = len(transport.requests)
@@ -179,7 +179,7 @@ def test_retry_transport_error_counts_attempts_and_recovers(clock, jitter, kind)
     data["body"]["exchanges"][1]["responses"][0:2] = [{"error": kind}] * 2
     transport = ReplayTransport(data["body"]["exchanges"])
     adapter = FakeSourceAdapter()
-    config = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)))
+    config = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)), allowed_hosts=("fake.invalid",))
     session = DefaultSourceSession(transport, adapter, config, clock, jitter=jitter)
     result = fetch_contents(adapter, config, session, list_all(adapter, config, session))
     assert result.processed == 3 and result.items[0].retries == 2
@@ -207,7 +207,7 @@ def test_auth_stop_prevents_subsequent_sends_even_if_caller_retries(clock, jitte
     from qello_knowledge.domain.source import RunStopped
 
     transport = ReplayTransport.from_file(Path("tests/fixtures/responses/fake/auth_failed.json"))
-    config = SourceConfig("docs", "fake", True)
+    config = SourceConfig("docs", "fake", True, allowed_hosts=("fake.invalid",))
     session = DefaultSourceSession(transport, FakeSourceAdapter(), config, clock, jitter=jitter)
     request = SourceRequest("GET", "https://fake.invalid/items/1")
     for _ in range(2):

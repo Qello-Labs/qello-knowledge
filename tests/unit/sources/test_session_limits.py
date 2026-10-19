@@ -24,7 +24,7 @@ class TimedTransport:
 
 
 def config(**changes):
-    original = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)))
+    original = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)), allowed_hosts=("fake.invalid",))
     return replace(original, **changes)
 
 
