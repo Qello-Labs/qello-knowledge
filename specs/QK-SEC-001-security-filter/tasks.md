@@ -181,6 +181,18 @@ US1 시험은 정책 주입(`SecurityPolicy.kinds`)으로 모든 자료를 팀 �
 
 ---
 
+## Phase 9: 구현 리뷰 반영 (2026-10-20 Codex 구현 리뷰 변경 요청 7건)
+
+- [x] T058 [P] `tests/unit/security/test_screen_source.py`, `src/qello_knowledge/security/screen.py`: `source_id`에는 오탐 예외를 적용하지 않고 비밀값·주소가 있으면 본문 조회 전에 막는다(리뷰 1번, FR-020·023). 회귀 시험은 예외가 있어도 ING-001 로그·`fetch.to_dict()`에 토큰이 없는지 본다
+- [x] T059 [P] `tests/unit/security/test_redact.py`, `src/qello_knowledge/domain/redact.py`: 포트 1~5자리(리뷰 2번), 퍼센트 인코딩을 최대 3번 풀어 다시 판정(리뷰 3번), IPv4를 붙인 IPv6 전체 가림(리뷰 4번)
+- [x] T060 `src/qello_knowledge/security/screen.py`: 접근 판정 뒤의 모든 판정(`ITEM_SECRET`, `FETCH`, `CONTENT_SECRET`, 본문 단계 오류, `PASSED`)에 `access_scope=TEAM`과 `access_raw`를 남긴다(리뷰 5번, FR-019·021)
+- [x] T061 `scripts/preflight.py`, `tests/unit/test_preflight_shared_rules.py`: 호환용 `RULES`를 모듈 `__getattr__`로 읽을 때만 불러와 `--staged`가 작업 트리 규칙을 실행하지 않게 한다. 작업 트리 규칙의 부작용·삭제·문법 오류 사례 시험(리뷰 6번, R-02)
+- [x] T062 `src/qello_knowledge/security/screen.py`: 목록에 없는 식별자로 온 본문은 버리고, 본문을 받았다는데 판정이 없는 자료는 `ERROR`(`fetch:SUCCEEDED:content-mismatch`)로 남긴다(리뷰 7번, FR-004)
+- [x] T063 [P] 시험 보완: 목록 멈춤 보존(`security_listing_stop.json`), 재시도 소진·인증 실패 건너뜀(`security_exhausted.json`, `security_auth_failed.json`). ING-001의 `exhausted.json`·`auth_failed.json`은 권한 정보가 없어 FR-016대로 모두 `ACCESS_HELD`가 되므로 권한 있는 시나리오를 따로 둔다
+- [x] T064 AGENTS.md 7절 검증 전체 재실행
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** → 스토리 단계.

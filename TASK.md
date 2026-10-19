@@ -145,3 +145,9 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-SEC-001-security-filter/*.md specs/QK-SE
   요구해 서식만 바꿨다(내용 변경 없음). 5) 요약·버전·오류 격리는 판정 단계 구현 때 함께 만들어 해당 시험이 처음부터 통과했다(시험 먼저 원칙의 예외).
 - 2026-10-20 사실: 구현을 `a3196b1`(규칙 공유·preflight), `ddbb0d0`(보안 필터), `afb22bf`(security check 명령), `4e6297d`(SC-006 두 번째 종류,
   `git show --stat` 결과 `tests/unit/security/test_second_kind.py` 한 파일)로 커밋했다.
+- 2026-10-20 사실: 같은 Codex 세션이 구현을 검토해 변경 요청(FAIL)을 냈다. P1 3건(오탐 예외가 `source_id` 사전 차단을 해제, 한 자리 포트 미탐지,
+  퍼센트 인코딩 주소 미탐지), P2 4건(혼합 IPv6 일부만 가림, 접근 판정 뒤 권한 증빙 누락, `--staged`가 작업 트리 규칙 실행, 예상 밖 본문 식별자가 배치 중단).
+  Codex 직접 실행: pytest 459 passed(로컬 DB 포함), ruff·format·diff 검사 통과. 전체 preflight는 샌드박스 제한으로 미실행.
+- 2026-10-20 사실: 7건을 tasks.md Phase 9(T058~T064)로 고쳤다. 승인된 구현 범위 안의 버그 수정이라 바로 반영했다. AGENTS.md 7절 검증 재실행 통과
+  (pytest 478 passed, preflight 283개 파일, `-I` preflight, ruff, 로컬 DB).
+- 확인 필요: 요약·버전·오류 격리 시험이 구현 뒤에 쓰여 처음부터 통과한 "시험 먼저 원칙 예외"를 사람이 받아들일지(Codex 리뷰 required_human_decisions).
