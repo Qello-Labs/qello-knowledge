@@ -27,12 +27,25 @@ Skill은 `.agents/skills/`에 있고 `$<이름>`으로 호출한다.
 | --- | --- |
 | `$harness-commit` | 변경을 검토 목적 단위로 나눈 커밋 초안을 보여주고 승인 후 커밋 |
 | `$harness-pr` | 로컬 검증, PR 초안, 승인 후 push와 PR 생성 |
+| `$pr-draft-summary` | 구현·검증 뒤 실제 diff에서 간결한 PR 제목·본문 초안 작성. 초안만 만든다 |
 | `$harness-review` | 범위, 증빙, 데이터·비용 위험 검토. 구현은 수정하지 않음 |
 | `$roadmap-explain` | WBS 번호나 명세 ID로 로드맵 작업의 목적, 선행·후행, 완료 조건, 진행 이력, 이어받는 방법을 설명. 읽기 전용 |
 | `$speckit-*` | GitHub Spec Kit 명세 흐름. 아래 "Spec Kit 규칙"을 따른다 |
 
 - `harness-*`와 `roadmap-explain`은 `.claude/skills/`의 같은 이름 Skill을 복사해 Codex 도구에 맞게 고쳤다. 절차를 바꾸면 두 벌을 함께 고친다.
 - `speckit-*`는 `specify integration install codex`가 생성했다. 직접 고치지 않고 Spec Kit 버전을 올릴 때 다시 생성한다.
+- `pr-draft-summary`는 `.claude/skills/`에 Claude Code판이 있다. 호출 문법과 참조 경로만 다르다. 절차를 바꾸면 두 벌을 함께 고친다.
+
+## Skill 의무 사용
+
+### `$pr-draft-summary`
+
+- 해당 구현 리뷰와 검증을 마친 뒤, 코드·테스트·예제·빌드 설정·동작에 영향을 주는 문서가 바뀌었으면
+  `.agents/skills/pr-draft-summary/SKILL.md`를 따라 최종 Git diff에서 PR 제목과 본문 초안을 만든다.
+- 그 Skill의 출력 형식과 작성 제약을 따른다. 불필요한 구현 세부, 반복 설명, 파일 전체 요약을 넣지 않는다.
+- 동작 영향이 없는 문구 수정은 건너뛴다. 사용자가 PR 초안을 명시적으로 요청하면 쓴다.
+- 초안 생성은 브랜치 생성, 커밋, push, PR 생성 권한을 주지 않는다. 그 작업은 따로 승인을 받고 `$harness-commit`, `$harness-pr`로 한다.
+- `$harness-pr` 3단계에서 본문을 쓸 때도 이 Skill로 초안을 만든 뒤 `harness-pr` 작성 규칙으로 점검한다.
 
 ## Spec Kit 규칙
 
