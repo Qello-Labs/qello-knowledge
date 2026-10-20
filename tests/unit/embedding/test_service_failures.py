@@ -68,4 +68,5 @@ def test_default_retry_delay_uses_retry_after_then_backoff() -> None:
     from qello_knowledge.embedding.service import default_retry_delay
 
     assert default_retry_delay(0, 2.5) == 2.5
+    assert default_retry_delay(0, 3600) == 60  # 제공자 대기 시간도 60초를 넘지 않는다
     assert [default_retry_delay(n, None) for n in range(8)] == [1, 2, 4, 8, 16, 32, 60, 60]

@@ -105,3 +105,16 @@ def test_usage_rows_hold_no_text(make_harness) -> None:
     harness.embedder.embed(index_request([secret]))
     harness.embedder.embed(query_request([secret + " 질문"]))
     assert all(secret not in str(value) for row in harness.ledger.rows for value in row.values())
+
+
+def test_store_failure_still_settles_reservation(make_harness) -> None:
+    harness = make_harness()
+
+    def broken(ref, vector):
+        raise RuntimeError("store down")
+
+    harness.store.put_embedding = broken
+    with pytest.raises(RuntimeError):
+        harness.embedder.embed(index_request(["하나"]))
+    [row] = harness.ledger.rows
+    assert (row["state"], row["outcome"]) == ("settled", "ok")

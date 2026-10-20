@@ -66,13 +66,14 @@ _ITEM_FAILURE = {
 QUOTA_MISMATCH_WARNING = "provider_quota_with_index_budget_left"
 QUERY_RESERVE_WARNING = "query_reserve_exceeded"
 USAGE_UNAVAILABLE_WARNING = "usage_unavailable"
+MAX_RETRY_DELAY = 60.0
 
 
 def default_retry_delay(attempt: int, retry_after_seconds: float | None) -> float:
     """조립 코드가 재시도 규칙을 넘기지 않을 때의 기본값: 제공자 대기 시간, 없으면 1·2·4초…(최대 60초)."""
     if retry_after_seconds is not None:
-        return max(0.0, retry_after_seconds)
-    return float(min(60, 2**attempt))
+        return min(MAX_RETRY_DELAY, max(0.0, retry_after_seconds))
+    return float(min(MAX_RETRY_DELAY, 2**attempt))
 
 
 @dataclass
@@ -321,18 +322,21 @@ class EmbeddingService:
         measured = result.neurons is not None
         neurons = result.neurons if result.neurons is not None else estimated
         valid = len(result.vectors) == len(texts) and all(len(v) == plan.model.dimension for v in result.vectors)
-        if not valid:
-            logger.info("embed_bad_response items=%s", len(batch))
-            self._fail(plan, batch, EmbedFailureKind.BAD_RESPONSE)
-        else:
-            for unique_index, vector in zip(batch, result.vectors, strict=True):
-                unique = plan.uniques[unique_index]
-                if request.purpose is EmbedPurpose.INDEX:
-                    self._store.put_embedding(self._ref(unique.text, plan.model), vector)
-                for position in unique.positions:
-                    plan.items[position] = EmbedItem(position, vector=tuple(vector))
         kind = None if valid else ProviderFailureKind.BAD_RESPONSE
-        self._account(request, plan, run, reservation, texts, size, estimated, neurons, measured, kind)
+        try:
+            if not valid:
+                logger.info("embed_bad_response items=%s", len(batch))
+                self._fail(plan, batch, EmbedFailureKind.BAD_RESPONSE)
+            else:
+                for unique_index, vector in zip(batch, result.vectors, strict=True):
+                    unique = plan.uniques[unique_index]
+                    if request.purpose is EmbedPurpose.INDEX:
+                        self._store.put_embedding(self._ref(unique.text, plan.model), vector)
+                    for position in unique.positions:
+                        plan.items[position] = EmbedItem(position, vector=tuple(vector))
+        finally:
+            # 저장이 실패해도 호출은 나갔으므로 정산해 예약을 남기지 않는다.
+            self._account(request, plan, run, reservation, texts, size, estimated, neurons, measured, kind)
 
     def _account(
         self,
