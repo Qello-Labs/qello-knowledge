@@ -1,0 +1,43 @@
+source = "dnd-backend-docs"
+reviewed_on = 2026-10-20
+reviewer_role = "qello-backend-developer"
+method = "대상 커밋 6aeccd0 기준 포함 범위 81개 문서를 모두 열어 이름·연락처·계정 정보 확인. 보조로 메일·전화번호·@ 표기 자동 후보 검사(에이전트) 결과를 대조"
+result = "개인 정보 경로 제외함"
+
+[scope]
+repo = "dnd-side-project/dnd-15th-2-backend"
+ref = "main"
+include = [
+  "README.md",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "CODEX.md",
+  "TASK.md",
+  "docs/adr/**/*.md",
+  "docs/product/**/*.md",
+  "docs/harness/**/*.md",
+  "docs/api-response.md",
+  "docs/error-codes.md",
+  "docs/filtering-production-gate.md",
+  "docs/push-production-setup.md",
+  "docs/api/OPENAPI_WRITING_GUIDE.md",
+  "docs/superpowers/plans/**/*.md",
+  "docs/superpowers/specs/**/*.md",
+  "infra/**/*.md",
+  "**/AGENTS.md",
+  ".github/PULL_REQUEST_TEMPLATE.md",
+  "scripts/repo-map/README.md",
+]
+exclude = [
+  ".claude/**",
+  ".agents/**",
+  ".codex/**",
+  "agents/**",
+  "templates/**",
+  "docs/experiments/**",
+  "docs/harness/ARCHITECTURE.md",
+]
+
+[[moved_to_exclude]]
+pattern = "docs/harness/ARCHITECTURE.md"
+reason = "흐름도에 팀원 GitHub 계정 표기가 있다(AGENTS.md 3.1 계정 정보)"
