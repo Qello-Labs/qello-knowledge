@@ -1,6 +1,6 @@
 """`qk-index usage`, `qk-index usage prune`(QK-EMB-001 contracts/cli.md). 외부 호출 없이 저장소만 본다.
 
-종료 코드: 0 정상, 1 설정 검사 실패(예산 교차 검사 포함), 2 저장소 사용 불가.
+종료 코드: 0 정상, 1 설정 검사 실패(예산 교차 검사 포함), 2 저장소 사용 불가, 3 원격 대상 prune에 `--allow-remote` 없음.
 """
 
 from __future__ import annotations
@@ -20,6 +20,24 @@ from qello_knowledge.domain.embedding import BudgetSettings, DailyUsage, EmbedEr
 EXIT_OK = 0
 EXIT_SETTINGS = 1
 EXIT_UNAVAILABLE = 2
+EXIT_REMOTE = 3
+
+
+def _retention_days(value: str) -> int:
+    """오늘 기록을 지우면 그날 예산이 초기화되므로 1일 미만은 받지 않는다."""
+    try:
+        days = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("정수여야 한다") from None
+    if days < 1:
+        raise argparse.ArgumentTypeError("1 이상이어야 한다")
+    return days
+
+
+def _target(source: Mapping[str, str]) -> str:
+    from qello_knowledge.adapters.postgres.connection import target_label
+
+    return target_label(source)
 
 
 class UsageReader(Protocol):
@@ -44,7 +62,8 @@ def add_usage_parser(sub: argparse._SubParsersAction) -> None:
     usage.add_argument("--env-file", type=Path, default=Path(".env"))
     commands = usage.add_subparsers(dest="usage_command")
     prune = commands.add_parser("prune", help="보관 기간이 지난 호출별 사용량 기록을 일 합계로 옮기고 지운다")
-    prune.add_argument("--retention-days", type=int, default=90)
+    prune.add_argument("--retention-days", type=_retention_days, default=90)
+    prune.add_argument("--allow-remote", action="store_true", help="로컬이 아닌 DB에서도 지운다")
     prune.add_argument("--env-file", type=Path, default=argparse.SUPPRESS)  # 상위 옵션 값을 덮지 않는다
 
 
@@ -82,10 +101,17 @@ def run_usage(args: argparse.Namespace, ledger_factory: LedgerFactory = postgres
         print(f"설정 검사 실패: {BUDGET_CHECK} ({settings.index_budget} + {settings.query_reserve}"
               f" <= {settings.daily_allowance})")  # fmt: skip
         return EXIT_SETTINGS
+    pruning = getattr(args, "usage_command", None) == "prune"
+    if pruning:
+        target = _target(source)
+        print(f"target={target}")
+        if target != "local" and not args.allow_remote:
+            print("로컬이 아닌 DB의 사용량 기록을 지우려면 --allow-remote를 붙인다")
+            return EXIT_REMOTE
     try:
         ledger = ledger_factory(settings, source)
         try:
-            if getattr(args, "usage_command", None) == "prune":
+            if pruning:
                 result = ledger.prune(args.retention_days)
                 print(f"days_rolled_up={result.days_rolled_up} rows_deleted={result.rows_deleted}")
             else:

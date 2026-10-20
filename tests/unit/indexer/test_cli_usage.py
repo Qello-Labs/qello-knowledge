@@ -62,9 +62,25 @@ def test_usage_json(env, ledgers, capsys) -> None:
     }  # fmt: skip
 
 
-def test_prune(env, ledgers, capsys) -> None:
+def test_prune_on_local_db(env, ledgers, capsys, monkeypatch) -> None:
+    monkeypatch.delenv("DATABASE_URL", raising=False)
     assert main(["usage", *env, "prune", "--retention-days", "30"], ledger_factory=ledgers) == 0
-    assert capsys.readouterr().out.strip() == "days_rolled_up=0 rows_deleted=0"
+    assert capsys.readouterr().out.splitlines() == ["target=local", "days_rolled_up=0 rows_deleted=0"]
+
+
+def test_prune_on_remote_db_needs_flag(env, ledgers, capsys, monkeypatch) -> None:
+    monkeypatch.setenv("DATABASE_URL", "postgresql://u@db.example.invalid:5432/app")
+    assert main(["usage", *env, "prune"], ledger_factory=ledgers) == 3
+    assert ledgers.made == []  # 연결도 하지 않는다
+    assert "target=remote" in capsys.readouterr().out
+    assert main(["usage", *env, "prune", "--allow-remote"], ledger_factory=ledgers) == 0
+
+
+@pytest.mark.parametrize("days", ["0", "-1", "x"])
+def test_prune_rejects_retention_below_one(env, ledgers, days) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        main(["usage", *env, "prune", "--retention-days", days], ledger_factory=ledgers)
+    assert excinfo.value.code == 2 and ledgers.made == []
 
 
 def test_budget_cross_check_failure_exits_one(env, ledgers, capsys, monkeypatch) -> None:

@@ -51,7 +51,8 @@ uv run qk-index usage --json
 uv run qk-index usage prune    # 90일 지난 호출별 기록을 일 합계로 옮기고 지운다. 다시 실행하면 0건
 ```
 
-`usage`는 저장소 기록만 읽고 외부 호출을 하지 않는다. 종료 코드는 0 정상, 1 설정 검사 실패, 2 저장소 사용 불가다.
+`usage`는 저장소 기록만 읽고 외부 호출을 하지 않는다. `usage prune`은 대상 DB(`target=local|remote`)를 먼저 출력하고,
+로컬이 아닌 DB에서는 `--allow-remote`가 있어야 지운다. 종료 코드는 0 정상, 1 설정 검사 실패, 2 저장소 사용 불가, 3 원격 확인 필요다.
 
 ## 로드맵 진행 상황 보기
 
