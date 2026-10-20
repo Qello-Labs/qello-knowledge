@@ -17,9 +17,12 @@ def env(monkeypatch, tmp_path):
     return apply
 
 
-def test_run_with_valid_settings_reports_and_exits_zero(env, capsys) -> None:
+def test_run_with_valid_settings_reports_and_exits_zero(env, capsys, tmp_path) -> None:
+    # 저장소의 config/sources.toml은 활성 자료원을 가질 수 있으므로, 활성 자료원이 없는 설정을 따로 쓴다.
+    sources = tmp_path / "sources.toml"
+    sources.write_text('[[source]]\nname = "old-docs"\nkind = "fake"\nenabled = false\n', encoding="utf-8")
     extra = env(valid_environ())
-    assert main(["run", *extra]) == 0
+    assert main(["run", *extra, "--sources", str(sources)]) == 0
     out = capsys.readouterr().out
     assert "결과: 통과" in out
     assert "수집할 자료원 없음" in out
