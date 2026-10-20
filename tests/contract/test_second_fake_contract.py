@@ -7,7 +7,7 @@ from qello_knowledge.adapters.replay import ReplayTransport
 from qello_knowledge.domain.source import ChangeKeyKind, OriginState
 from qello_knowledge.domain.source_config import SourceConfig, SourceScope
 from tests.contract.second_fake import SecondFakeSourceAdapter
-from tests.contract.source_adapter_contract import SourceAdapterContract
+from tests.contract.source_adapter_contract import ContractExpectations, SourceAdapterContract
 
 
 class TestSecondFakeContract(SourceAdapterContract):
@@ -41,3 +41,18 @@ class TestSecondFakeContract(SourceAdapterContract):
             "https://second.invalid/records?offset=0&limit=3",
             "https://second.invalid/documents/doc-1",
         ]
+
+    @pytest.fixture
+    def expected(self):
+        return ContractExpectations(
+            5,
+            "v1",
+            (("visibility", "public"),),
+            "MARKDOWN",
+            "https://second.invalid/records",
+            {
+                name: Path("tests/fixtures/responses/fake") / f"second_{name}.json"
+                for name in ("no_modified_at", "no_access", "page_overlap", "invalid_shape")
+            },
+            12,
+        )

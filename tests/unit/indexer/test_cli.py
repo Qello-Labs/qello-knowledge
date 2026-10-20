@@ -2,6 +2,7 @@ import pytest
 
 from qello_knowledge.indexer.cli import main
 from tests.unit.fakes import valid_environ
+from tests.unit.review_records import review_args
 
 
 @pytest.fixture
@@ -43,14 +44,15 @@ def test_usage_error_exits_two() -> None:
 
 
 @pytest.mark.parametrize(("name", "code"), [("valid", 0), ("missing_fields", 1), ("unknown_kind", 1)])
-def test_sources_check_never_sends_requests(name, code, capsys, monkeypatch):
+def test_sources_check_never_sends_requests(name, code, capsys, monkeypatch, tmp_path):
     from qello_knowledge.adapters.replay import ReplayTransport
 
     def unexpected_send(self, request):
         pytest.fail("설정 점검 중 전송을 부르면 안 된다")
 
     monkeypatch.setattr(ReplayTransport, "send", unexpected_send)
-    assert main(["sources", "check", "--sources", f"tests/fixtures/sources/{name}.toml"]) == code
+    reviews = review_args(f"tests/fixtures/sources/{name}.toml", tmp_path / "reviews")
+    assert main(["sources", "check", "--sources", f"tests/fixtures/sources/{name}.toml", *reviews]) == code
     if name == "unknown_kind":
         assert "결정 기록이 필요하다(AGENTS.md 3.1)" in capsys.readouterr().out
 
@@ -62,19 +64,42 @@ def test_sources_file_missing_and_bad_toml_fail(tmp_path):
     assert main(["sources", "check", "--sources", str(path)]) == 1
 
 
-def test_run_validates_sources_and_reports_each_source(env, capsys):
+def test_run_validates_sources_and_reports_each_source(env, capsys, tmp_path):
     extra = env(valid_environ())
     assert main(["run", *extra, "--sources", "tests/fixtures/sources/invalid.toml"]) == 1
     assert "수집할 자료원 없음" not in capsys.readouterr().out
-    assert main(["run", *extra, "--sources", "tests/fixtures/sources/valid.toml"]) == 0
+    assert (
+        main(
+            [
+                "run",
+                *extra,
+                "--sources",
+                "tests/fixtures/sources/valid.toml",
+                *review_args("tests/fixtures/sources/valid.toml", tmp_path / "reviews"),
+            ]
+        )
+        == 0
+    )
     out = capsys.readouterr().out
     assert "수집 대기" in out and "비활성" in out
 
 
-def test_sources_check_json_and_default_empty_config(capsys):
+def test_sources_check_json_and_default_empty_config(capsys, tmp_path):
     import json
 
-    assert main(["sources", "check", "--sources", "tests/fixtures/sources/valid.toml", "--json"]) == 0
+    assert (
+        main(
+            [
+                "sources",
+                "check",
+                "--sources",
+                "tests/fixtures/sources/valid.toml",
+                "--json",
+                *review_args("tests/fixtures/sources/valid.toml", tmp_path / "reviews"),
+            ]
+        )
+        == 0
+    )
     output = capsys.readouterr().out
     assert len(output.splitlines()) == 1 and json.loads(output)["ok"]
     assert main(["sources", "check"]) == 0
@@ -134,11 +159,12 @@ def test_security_check_with_bad_sources_reports_like_sources_check(capsys):
     assert "자료원 설정 점검" in capsys.readouterr().out
 
 
-def test_run_stops_on_bad_exceptions_without_requests(env, capsys, monkeypatch):
+def test_run_stops_on_bad_exceptions_without_requests(env, capsys, monkeypatch, tmp_path):
     from qello_knowledge.adapters.replay import ReplayTransport
 
     monkeypatch.setattr(ReplayTransport, "send", lambda self, request: pytest.fail("원본 호출 금지"))
     extra = env(valid_environ())
+    extra += review_args("tests/fixtures/security/sources.toml", tmp_path / "reviews")
     bad = ["--exceptions", "tests/fixtures/security/invalid_exceptions.toml"]
     assert main(["run", *extra, *SEC, *bad]) == 1
     out = capsys.readouterr().out
@@ -148,3 +174,62 @@ def test_run_stops_on_bad_exceptions_without_requests(env, capsys, monkeypatch):
 
 def test_default_security_check_passes(capsys):
     assert main(["security", "check"]) == 0
+
+
+@pytest.mark.parametrize("json_output", [False, True])
+def test_reviews_missing_fail_before_transport(env, capsys, monkeypatch, tmp_path, json_output):
+    from qello_knowledge.adapters.http import HttpsTransport
+
+    monkeypatch.setattr(HttpsTransport, "__init__", lambda *a, **kw: pytest.fail("전송 생성 금지"))
+    extra = env(valid_environ())
+    for command in (["sources", "check"], ["run", *extra]):
+        args = [*command, "--sources", "tests/fixtures/sources/valid.toml", "--reviews", str(tmp_path)]
+        if json_output:
+            args.append("--json")
+        assert main(args) == 1
+        assert "REVIEW_MISSING" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_extension_failure_reaches_cli_including_disabled(env, capsys, tmp_path, enabled):
+    path = tmp_path / "sources.toml"
+    path.write_text(
+        '[[source]]\nname = "docs"\nkind = "fake"\nenabled = '
+        + str(enabled).lower()
+        + '\n[source.scope]\ninclude = ["**/*.org"]\n'
+    )
+    for command in (["sources", "check"], ["run", *env(valid_environ())]):
+        assert main([*command, "--sources", str(path), "--reviews", str(tmp_path), "--json"]) == 1
+        output = capsys.readouterr().out
+        assert "UNKNOWN_EXTENSION" in output and "**/*.org" not in output
+
+
+def test_mismatched_review_uses_source_report(env, capsys, tmp_path):
+    sources = "tests/fixtures/sources/valid.toml"
+    reviews = review_args(sources, tmp_path / "reviews")
+    path = tmp_path / "reviews/docs.toml"
+    path.write_text(path.read_text().replace('"**/*.md"', '"other/**"'))
+    for command in (["sources", "check"], ["run", *env(valid_environ())]):
+        assert main([*command, "--sources", sources, *reviews]) == 1
+        output = capsys.readouterr().out
+        assert "REVIEW_SCOPE_MISMATCH" in output and "other/**" not in output
+
+
+def test_invalid_disabled_name_does_not_crash_scope_wrapper(tmp_path, capsys):
+    path = tmp_path / "sources.toml"
+    path.write_text("""[[source]]
+name = "valid-disabled"
+kind = "fake"
+enabled = false
+[source.scope]
+include = ["**/*.md"]
+[[source]]
+name = ["invalid-name-value"]
+kind = "fake"
+enabled = false
+[source.scope]
+include = ["**/*.md"]
+""")
+    assert main(["sources", "check", "--sources", str(path)]) == 1
+    output = capsys.readouterr().out
+    assert "INVALID name" in output and "invalid-name-value" not in output

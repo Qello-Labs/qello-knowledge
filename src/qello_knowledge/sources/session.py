@@ -2,7 +2,6 @@
 
 from dataclasses import replace
 from datetime import timedelta
-from hashlib import sha256
 from urllib.parse import urljoin, urlsplit
 
 from qello_knowledge.domain.source import (
@@ -19,6 +18,7 @@ from qello_knowledge.domain.source import (
     StopInfo,
     StopReason,
     TransportError,
+    content_hash,
     default_classify,
 )
 from qello_knowledge.domain.source_config import SourceConfig
@@ -146,6 +146,6 @@ class DefaultSourceSession:
     def finalize_content(self, content: SourceContent) -> SourceContent:
         return replace(
             content,
-            content_hash="sha256:" + sha256(content.body.encode("utf-8")).hexdigest(),
+            content_hash=content_hash(content.body),
             fetched_at=self.clock.now(),
         )

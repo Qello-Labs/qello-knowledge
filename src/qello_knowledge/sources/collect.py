@@ -46,6 +46,8 @@ def list_all(adapter: SourceAdapter, config: SourceConfig, session: SourceSessio
                 excluded += 1
                 continue
             items.append(item)
+        if not page.complete:
+            return Listing(tuple(items), duplicates, False, excluded)
         cursor = page.next_cursor
         if cursor is None:
             return Listing(tuple(items), duplicates, True, excluded)

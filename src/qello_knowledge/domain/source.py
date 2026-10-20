@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from enum import StrEnum
+from hashlib import sha256
 from types import MappingProxyType
 from urllib.parse import urlsplit
 
@@ -131,6 +132,7 @@ class SourceContent:
 class ListPage:
     items: tuple[SourceItem, ...]
     next_cursor: str | None
+    complete: bool = True
 
 
 @dataclass(frozen=True)
@@ -318,3 +320,7 @@ def default_classify(response_or_error: SourceResponse | TransportError) -> Resp
         status, FailureType.INVALID_RESPONSE
     )
     return ResponseClass(ResponseOutcome.PERMANENT, failure)
+
+
+def content_hash(body: str) -> str:
+    return "sha256:" + sha256(body.encode("utf-8")).hexdigest()

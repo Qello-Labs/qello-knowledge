@@ -22,8 +22,8 @@
 
 | 단계 | 목표 | 핵심 산출물 | 완료 조건 요약 | 작업량(인일, 추정) | 진행 |
 | --- | --- | --- | --- | --- | --- |
-| Phase 0 | 준비·결정 | 결정된 ADR, 토큰, 자료 인벤토리, 골든셋 질문, 생산성 기준선 | 확인 필요 결정이 모두 닫힘 | 약 13~15 | ✅ 6 · 🔄 1 / 12 |
-| Phase 1 | 얇은 전 구간 | 저장소 문서로 Discord `/ask` 답변 | Discord에서 출처가 붙은 답변 | 약 21~30 | 0 / 13 |
+| Phase 0 | 준비·결정 | 결정된 ADR, 토큰, 자료 인벤토리, 골든셋 질문, 생산성 기준선 | 확인 필요 결정이 모두 닫힘 | 약 13~15 | ✅ 8 / 12 |
+| Phase 1 | 얇은 전 구간 | 저장소 문서로 Discord `/ask` 답변 | Discord에서 출처가 붙은 답변 | 약 21~30 | ✅ 4 · 🔄 1 / 13 |
 | Phase 2 | MVP 자료 확장·파일럿 | 인덱스 버전 게이트, 코드·ClickUp Docs 색인, 로그·피드백, 답변 평가, 1주 파일럿 | 팀 전원이 1주 사용, 첫 품질 리포트 | 약 15~20 | 0 / 7 |
 | Phase 3 | 진행 상황·변경 맥락 | ClickUp Tasks·GitHub PR 수집, `/status`, 스레드 대화 | 회의에서 `/status`로 진행 공유 | 약 15~22 | 0 / 9 |
 | Phase 4 | 명세 자료 확장 | OpenAPI·DB·Figma·Terraform, 교차 관계, 구현 여부 판정 | UC-02·09·10·11 평가 통과 | 약 10~14 | 0 / 7 |
@@ -48,9 +48,9 @@
 | 0.6 | ✅ [#14](https://github.com/Qello-Labs/qello-knowledge/issues/14) | Workers AI 확인: embeddinggemma 입력 한도·Neurons 단가·질의/문서 접두 형식, 무료 할당 초과 시 동작, 생성 후보 모델로 한국어 질문 5개 답변 비교 | 0.5 | S | `docs/sdd/research/spike-workers-ai.md` | ADR-002, 009 |
 | 0.7 | ⬜ | 골든셋 v0 질문 수집(팀원당 10개 이상, 합계 50문항 이상) | — | S | `eval/golden/v0.jsonl`(질문·유형만, 라벨은 Phase 1) | evaluation.md 1절 |
 | 0.8 | ⬜ | 생산성 과제 세트 A·B 작성, 기준선 측정. 봇을 쓰기 시작하면 다시 잴 수 없으므로 Phase 1 전에 끝낸다 | 0.7 | M | `eval/productivity/baseline-<날짜>.md`(팀원은 P1~Pn으로 표기) | evaluation.md 4절 |
-| 0.9 | 🔄 [#18](https://github.com/Qello-Labs/qello-knowledge/issues/18) | 열린 결정 확정: `확인 필요` ADR(ADR-008 실행 환경·비용 상한, ADR-009 생성 모델, ADR-016 질의 원문 저장) 결정 | 0.1, 0.2, 0.6 | S | 결정 기록(`templates/decision-record.md` 양식) | ADR-008, 009, 016 |
+| 0.9 | ✅ [#18](https://github.com/Qello-Labs/qello-knowledge/issues/18) | 열린 결정 확정: `확인 필요` ADR(ADR-008 실행 환경·비용 상한, ADR-009 생성 모델, ADR-016 질의 원문 저장) 결정 | 0.1, 0.2, 0.6 | S | 결정 기록(`templates/decision-record.md` 양식) | ADR-008, 009, 016 |
 | 0.10 | ✅ [#5](https://github.com/Qello-Labs/qello-knowledge/issues/5) | AGENTS.md 3.1 색인 대상 목록 수정(Notion→ClickUp). AGENTS.md는 사람 승인 후에만 고친다 | 0.1 | S | AGENTS.md 변경 PR | AGENTS.md 4절 |
-| 0.11 | ⬜ | Phase 1 첫 명세 작성·승인: QK-FND-001, QK-STO-001, QK-ING-001 | 0.9 | M | `specs/<ID>/spec.md` |  |
+| 0.11 | ✅ [#24](https://github.com/Qello-Labs/qello-knowledge/issues/24) | Phase 1 첫 명세 작성·승인: QK-FND-001, QK-STO-001, QK-ING-001 | 0.9 | M | `specs/<ID>/spec.md` |  |
 | 0.G | ⬜ | Phase 0 완료 리뷰: 아래 완료 조건 확인 | 0.4, 0.8, 0.10, 0.11 | — | 리뷰 결과, WBS 보드 `0.G` 완료 체크 |  |
 
 **완료 조건** (`0.G`에서 확인)
@@ -91,11 +91,11 @@ flowchart LR
 
 | WBS | 상태 | 명세 | 내용 |
 | --- | --- | --- | --- |
-| 1.1 | ⬜ | QK-FND-001 | 프로젝트 골격·설정 로딩·docker compose·CI(테스트·린트·비밀값 검사) |
-| 1.2 | ⬜ | QK-STO-001 | 저장 스키마·마이그레이션·검색 SQL |
-| 1.3 | ⬜ | QK-ING-001 | 자료원 어댑터 계약·자료원 설정·호출 한도·재시도 |
-| 1.4 | ⬜ | QK-SEC-001 | 색인 제외 경로·비밀값 차단·접근 범위(`access_scope`) |
-| 1.5 | ⬜ | QK-ING-002 | GitHub 저장소 파일 수집(트리 비교, 포함·제외 패턴) |
+| 1.1 | ✅ [#28](https://github.com/Qello-Labs/qello-knowledge/issues/28) | QK-FND-001 | 프로젝트 골격·설정 로딩·docker compose·CI(테스트·린트·비밀값 검사) |
+| 1.2 | ✅ [#33](https://github.com/Qello-Labs/qello-knowledge/issues/33) | QK-STO-001 | 저장 스키마·마이그레이션·검색 SQL |
+| 1.3 | ✅ [#34](https://github.com/Qello-Labs/qello-knowledge/issues/34) | QK-ING-001 | 자료원 어댑터 계약·자료원 설정·호출 한도·재시도 |
+| 1.4 | ✅ [#37](https://github.com/Qello-Labs/qello-knowledge/issues/37) | QK-SEC-001 | 색인 제외 경로·비밀값 차단·접근 범위(`access_scope`) |
+| 1.5 | 🔄 [#41](https://github.com/Qello-Labs/qello-knowledge/issues/41) | QK-ING-002 | GitHub 저장소 파일 수집(트리 비교, 포함·제외 패턴) |
 | 1.6 | ⬜ | QK-CHK-002 | Markdown 청커(저장소 문서·ClickUp 페이지 공용), 검색 헤더 |
 | 1.7 | ⬜ | QK-EMB-001 | 임베딩 Provider(Workers AI), 캐시, 사용량 기록, 일일 예산, 실행 전 사용량 미리 보기 |
 | 1.8 | ⬜ | QK-SYN-001 | 증분 동기화, 문서 단위 원자적 교체, 실행 기록, 스케줄러, CLI |
