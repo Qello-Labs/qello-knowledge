@@ -122,3 +122,5 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
   SEC-001 때처럼 tasks 승인 뒤에 반영한다. 4) 헤더 없이 본문으로만 오는 GitHub 2차 한도 응답을 영구 실패로 남기는 한계를 받아들인다.
   5) 활성화 단계(결정 기록, 포함 패턴 확정, 확인 기록, 활성화, 측정)는 사람이 한다는 절차를 확인했다. 설계를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
   `/speckit-tasks`로 작업 목록을 만든다.
+- 2026-10-20 사실: `tasks.md`(48개 작업, Phase 1~7과 사람 단계 6개)를 이 세션이 썼다. tasks 승인 대기. 설계와 다르게 둔 세 곳(재생 응답을 JSON 파일 대신 시험 도우미가 코드로 만듦,
+  겹치는 시험 파일 이름 변경, 확인 기록 시험 자료를 `tmp_path`에 복사해 씀)을 tasks.md 머리에 적었다. 승인되면 구현 범위를 Scope·Ownership·제외 범위에 반영한다.
