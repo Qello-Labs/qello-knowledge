@@ -107,3 +107,5 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   `time.sleep`과 1·2·4초…(최대 60초)로 바꿨다. 반영 뒤 `QK_REQUIRE_LOCALDB=1 uv run pytest` 718 passed.
 - 2026-10-20 사실: 0003 파일이 바뀌어, 이 세션 앞부분에서 0003을 적용한 로컬 개발 DB(`postgres`)는 `qk-migrate`가 체크섬 불일치(종료 코드 2)로 멈춘다.
   시험은 세션 전용 임시 DB를 써서 영향이 없다. 로컬 개발 DB 정리는 사람이 정한다.
+- 2026-10-20 사실: 같은 검토자의 재검토 판정은 승인이다. 남은 낮은 문제 3건(저장 실패 시 예약 미정산, Retry-After 상한 없음, CLI 종료 코드 2 중복)도 반영했다.
+  정산은 `finally`로 보장하고, 대기 상한은 60초, 종료 코드 2의 중복은 `contracts/cli.md`에 적었다. 반영 뒤 pytest 719 passed.

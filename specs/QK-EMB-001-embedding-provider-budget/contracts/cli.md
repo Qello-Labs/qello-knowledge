@@ -18,7 +18,7 @@ total=312.92 allowance=10000 estimated_share=3%
 ```
 
 - `--json`이면 `qk.embedding_usage_today` 결과를 그대로 낸다.
-- 종료 코드: 0 정상, 1 설정 검사 실패(FR-017 교차 검사 포함), 2 저장소 사용 불가.
+- 종료 코드: 0 정상, 1 설정 검사 실패(FR-017 교차 검사 포함), 2 저장소 사용 불가. 인자 형식 오류도 argparse 규칙대로 2로 끝난다.
 
 ## qk-index usage prune
 
