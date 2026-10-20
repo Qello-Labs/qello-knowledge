@@ -52,6 +52,7 @@ NO_SPACE_50 = _pattern(r"\S{50,}", "공백 없는 50자 이상")
 HEX_32 = _pattern(r"[0-9a-fA-F]{32}", "32자리 16진수")
 HEX_64 = _pattern(r"[0-9a-fA-F]{64}", "64자리 16진수")
 DIGITS_17_20 = _pattern(r"[0-9]{17,20}", "숫자 17~20자리")
+POSITIVE_INT = _pattern(r"[1-9][0-9]{0,8}", "양의 정수")
 LOG_LEVEL = _pattern(r"DEBUG|INFO|WARNING|ERROR", "`DEBUG`, `INFO`, `WARNING`, `ERROR` 중 하나")
 
 
@@ -143,6 +144,33 @@ SETTINGS: tuple[SettingSpec, ...] = (
         secret=False,
         rule=LOG_LEVEL,
         default="INFO",
+    ),
+    SettingSpec(
+        name="QK_EMBED_DAILY_ALLOWANCE",
+        description="Workers AI 하루 무료 할당(Neurons). 하루 경계는 00:00 UTC다",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=POSITIVE_INT,
+        default="10000",
+    ),
+    SettingSpec(
+        name="QK_EMBED_INDEX_BUDGET",
+        description="색인 임베딩이 하루에 쓸 수 있는 Neurons. 색인 예산 + 질의응답 예비분은 하루 할당 이하여야 한다",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=POSITIVE_INT,
+        default="5000",
+    ),
+    SettingSpec(
+        name="QK_EMBED_QUERY_RESERVE",
+        description="질의응답 몫으로 남겨 두는 하루 Neurons. 넘으면 경고만 하고 질의는 막지 않는다",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=POSITIVE_INT,
+        default="3000",
     ),
 )
 

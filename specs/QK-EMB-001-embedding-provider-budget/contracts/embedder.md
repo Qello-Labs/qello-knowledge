@@ -21,8 +21,9 @@ preview(request: EmbedRequest) -> EmbedPreview
 7. 요청마다:
    - 색인용: `UsageLedger.reserve` → 거부면 그 요청과 이후 요청 전부 `index_budget`(부분 실행일 때 이미 끝난 결과는 유지).
    - `EmbeddingProvider.embed_texts` 호출, 실패 분류(research R-09), 3030이면 반으로 나눠 다시.
-   - 색인용: `UsageLedger.settle`, 질의용: `UsageLedger.record`. 기록 실패면 `EmbedError(usage_unavailable)`.
    - (색인용) 성공 벡터를 `Store.put_embedding`으로 저장(FR-011).
+   - 색인용: `UsageLedger.settle`, 질의용: `UsageLedger.record`. 기록이 실패하면 그 호출의 결과는 돌려주고 경고 `usage_unavailable`을 남긴다.
+     색인용이면 이후 요청을 보내지 않고 남은 항목을 `usage_unavailable`로 끝낸다(spec Edge Cases). 예약 자체가 실패해도 같다.
    - `provider_quota`면 남은 요청을 보내지 않는다(FR-020).
 8. 입력 순서대로 `EmbedItem`을 채우고 `RunSummary`를 붙인다.
 

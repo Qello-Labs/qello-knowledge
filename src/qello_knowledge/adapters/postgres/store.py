@@ -245,6 +245,20 @@ class PostgresStore:
             ).fetchone()
         return _parse_vector(row[0]) if row else None
 
+    def find_embeddings(self, refs: Sequence[EmbeddingRef]) -> dict[EmbeddingRef, tuple[float, ...]]:
+        """`(input_hash, model_version)` 목록을 한 질의로 조회한다(QK-EMB-001 research R-07)."""
+        unique = list(dict.fromkeys(refs))
+        if not unique:
+            return {}
+        with self._db() as conn:
+            rows = conn.execute(
+                "SELECT e.input_hash, e.model_version, e.vector::text"
+                " FROM unnest(%s::text[], %s::text[]) AS k(input_hash, model_version)"
+                " JOIN qk.embedding e USING (input_hash, model_version)",
+                ([r.input_hash for r in unique], [r.model_version for r in unique]),
+            ).fetchall()
+        return {EmbeddingRef(row[0], row[1]): _parse_vector(row[2]) for row in rows}
+
     def search_vector(self, query: Sequence[float], top_n: int, filters: SearchFilter = NO_FILTER) -> SearchResult:
         validate_vector(query)
         with self._db() as conn:

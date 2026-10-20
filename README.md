@@ -32,6 +32,28 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 전체 검증 절차는 [QK-FND-001 quickstart](specs/QK-FND-001-project-skeleton-ci/quickstart.md)와
   [QK-STO-001 quickstart](specs/QK-STO-001-storage-schema-search/quickstart.md)에 있다.
 
+### 임베딩 사용량과 일일 예산
+
+Workers AI 무료 할당은 하루 10,000 Neurons이고 00:00 UTC(한국 시간 09:00)에 초기화된다. 색인 임베딩은 하루 예산 안에서만 호출하고,
+질의응답 몫은 남겨 둔다(QK-EMB-001).
+
+| 설정 | 기본값 | 뜻 |
+| --- | --- | --- |
+| `QK_EMBED_DAILY_ALLOWANCE` | 10000 | 하루 무료 할당 |
+| `QK_EMBED_INDEX_BUDGET` | 5000 | 색인 임베딩이 하루에 쓸 수 있는 양. 넘을 요청은 보내지 않는다 |
+| `QK_EMBED_QUERY_RESERVE` | 3000 | 질의응답 몫. 넘으면 경고만 하고 질의는 막지 않는다 |
+
+색인 예산 + 질의응답 예비분이 하루 할당보다 크면 `uv run qk-index check`가 실패한다.
+
+```bash
+uv run qk-index usage          # 오늘(UTC) 사용량과 남은 색인 예산
+uv run qk-index usage --json
+uv run qk-index usage prune    # 90일 지난 호출별 기록을 일 합계로 옮기고 지운다. 다시 실행하면 0건
+```
+
+`usage`는 저장소 기록만 읽고 외부 호출을 하지 않는다. `usage prune`은 대상 DB(`target=local|remote`)를 먼저 출력하고,
+로컬이 아닌 DB에서는 `--allow-remote`가 있어야 지운다. 종료 코드는 0 정상, 1 설정 검사 실패, 2 저장소 사용 불가, 3 원격 확인 필요다.
+
 ## 로드맵 진행 상황 보기
 
 - 진행 상태는 [로드맵](docs/sdd/roadmap.md) 표의 `상태` 열에 있다. ✅ 완료(Issue 닫힘), 🔄 진행 중(Issue 열림), ⬜ 시작 전.

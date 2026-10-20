@@ -65,20 +65,21 @@ def _records(url: str) -> list[tuple]:
 
 
 def test_full_apply_then_reapply_changes_nothing(empty_db: str) -> None:
+    total = len(list(MIGRATIONS_DIR.glob("*.sql")))  # 마이그레이션이 늘어도 같은 검사를 한다
     code, out = _apply(empty_db, MIGRATIONS_DIR)
     assert code == EXIT_OK
-    assert "applied=2 skipped=0" in out
+    assert f"applied={total} skipped=0" in out
     schema = _schema(empty_db)
     assert {row[0] for row in schema} >= {"artifact", "chunk", "embedding", "index_version", "schema_migration"}
     with psycopg.connect(empty_db) as conn:
         applied_at = conn.execute("SELECT count(*) FROM qk.schema_migration WHERE applied_at IS NOT NULL").fetchone()
-    assert applied_at == (2,)
+    assert applied_at == (total,)
 
     code, out = _apply(empty_db, MIGRATIONS_DIR)
     assert code == EXIT_OK
-    assert "applied=0 skipped=2" in out
+    assert f"applied=0 skipped={total}" in out
     assert _schema(empty_db) == schema
-    assert _records(empty_db) == [(1, "success"), (2, "success")]
+    assert _records(empty_db) == [(version, "success") for version in range(1, total + 1)]
 
 
 def test_failed_migration_leaves_no_partial_change(empty_db: str, tmp_path: Path) -> None:

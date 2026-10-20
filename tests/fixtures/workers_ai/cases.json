@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "source_api": "workers-ai-rest",
+    "saved_at": "2026-10-20",
+    "note": "합성 응답이다. 실제 응답·토큰·계정 ID를 넣지 않는다(research R-14). {{VECTORS:N:D}}는 시험이 N개 D차원 벡터로 바꾼다",
+    "redactions": []
+  },
+  "cases": {
+    "ok_two": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json", "cf-ai-neurons": "0.01"},
+      "body": {"result": {"shape": [2, 1024], "data": "{{VECTORS:2:1024}}"}, "success": true, "errors": [], "messages": []}
+    },
+    "ok_no_header": {
+      "status": 200,
+      "headers": {"Content-Type": "application/json"},
+      "body": {"result": {"shape": [2, 1024], "data": "{{VECTORS:2:1024}}"}, "success": true, "errors": [], "messages": []}
+    },
+    "ok_wrong_dimension": {
+      "status": 200,
+      "headers": {"cf-ai-neurons": "0.01"},
+      "body": {"result": {"shape": [2, 1023], "data": "{{VECTORS:2:1023}}"}, "success": true, "errors": [], "messages": []}
+    },
+    "too_long": {
+      "status": 400,
+      "headers": {},
+      "body": {"result": null, "success": false, "errors": [{"code": 3030, "message": "Sequence too long"}], "messages": []}
+    },
+    "quota": {
+      "status": 429,
+      "headers": {},
+      "body": {"result": null, "success": false, "errors": [{"code": 3036, "message": "Account limited"}], "messages": []}
+    },
+    "rate_limited": {
+      "status": 429,
+      "headers": {"Retry-After": "2"},
+      "body": {"result": null, "success": false, "errors": [{"code": 3040, "message": "Capacity temporarily exceeded"}], "messages": []}
+    },
+    "server_error": {
+      "status": 500,
+      "headers": {},
+      "body": {"result": null, "success": false, "errors": [{"code": 3043, "message": "Internal server error"}], "messages": []}
+    },
+    "unauthorized": {
+      "status": 401,
+      "headers": {},
+      "body": {"result": null, "success": false, "errors": [{"code": 10000, "message": "Authentication error"}], "messages": []}
+    }
+  }
+}

@@ -32,8 +32,10 @@
 
 ### EmbedFailureKind
 
-`empty_input`, `no_origin`, `secret_blocked`, `input_too_long`, `transient`, `provider_quota`, `index_budget`, `bad_response`. 묶음 전체를 멈추는 `auth_config`, `no_active_index`,
-`usage_unavailable`(사용량 기록 실패, R-08)은 `EmbedError(kind)` 예외로 던진다. 이미 만든 벡터는 예외 전에 저장된다(FR-011).
+`empty_input`, `no_origin`, `secret_blocked`, `input_too_long`, `transient`, `provider_quota`, `index_budget`, `bad_response`, `usage_unavailable`. 묶음 전체를 멈추는 `auth_config`, `no_active_index`,
+`usage_unavailable`(첫 외부 호출 전 사용량 조회 실패, R-08)은 `EmbedError(kind)` 예외로 던진다. 이미 만든 벡터는 예외 전에 저장된다(FR-011).
+외부 호출 뒤 사용량 기록(예약·정산·질의 기록)이 실패하면 예외를 던지지 않는다. 그 호출의 결과는 돌려주고 `RunSummary.warnings`에
+`usage_unavailable`을 남기며, 색인용이면 보내지 않은 항목을 `usage_unavailable` 실패로 끝낸다(spec Edge Cases, 2026-10-20 결정).
 
 ### EmbedPreview (FR-022)
 
@@ -71,8 +73,8 @@
 | `model_version` | text | NOT NULL |
 | `input_count` | int | ≥ 0 |
 | `input_bytes` | int | ≥ 0. 텍스트 원문은 저장하지 않는다(FR-013) |
-| `estimated_neurons` | numeric(12,2) | NOT NULL, ≥ 0 |
-| `neurons` | numeric(12,2) | 정산 전 NULL. 정산 뒤 ≥ 0 |
+| `estimated_neurons` | numeric(14,6) | NOT NULL, ≥ 0 |
+| `neurons` | numeric(14,6) | 정산 전 NULL. 정산 뒤 ≥ 0. 소수 여섯째 자리: 작은 호출의 반올림 누락 방지(2026-10-20 결정) |
 | `measured` | boolean | 정산 전 NULL. 제공자 값이면 true, 추정이면 false(FR-014) |
 | `state` | text | `reserved`(예약만, 색인용) 또는 `settled` |
 | `outcome` | text | 정산 전 NULL. `ok`, `input_too_long`, `transient`, `provider_quota`, `bad_response`, `auth_config` |
@@ -88,7 +90,7 @@
 | `usage_day` | date | PK 일부 |
 | `purpose` | text | PK 일부 |
 | `model_version` | text | PK 일부 |
-| `neurons` | numeric(14,2) | 그날 합계(예약은 예상량으로) |
+| `neurons` | numeric(16,6) | 그날 합계(예약은 예상량으로) |
 | `calls` | int | 호출 수 |
 | `estimated_calls` | int | `measured = false` 또는 미정산 호출 수 |
 
@@ -100,7 +102,7 @@
 | `qk.embedding_settle` | `reservation_id, neurons, measured, outcome` | void | `reserved` 행만 `settled`로. 이미 정산된 행이면 아무것도 안 한다(재실행 안전) |
 | `qk.embedding_record` | `run_id, model_version, input_count, input_bytes, estimated, neurons, measured, outcome` | `jsonb {query_used, query_reserve_exceeded}` | 질의용. `query_reserve`는 인자로 받는다(FR-019) |
 | `qk.embedding_usage_today` | `index_budget, query_reserve` | `jsonb {usage_day, total, index_used, query_used, index_remaining, estimated_share}` | 조회 전용(FR-016) |
-| `qk.embedding_usage_prune` | `retention_days DEFAULT 90` | `jsonb {days_rolled_up, rows_deleted}` | 날짜 단위로 일 합계 upsert 후 삭제. 한 트랜잭션. 두 번째 실행은 0건 |
+| `qk.embedding_usage_prune` | `retention_days DEFAULT 90` | `jsonb {days_rolled_up, rows_deleted}` | 날짜 단위로 일 합계 upsert 후 삭제. 한 트랜잭션. 두 번째 실행은 0건. `retention_days < 1`이면 거부 |
 
 ## 4. 상태 전이
 
