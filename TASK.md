@@ -11,7 +11,7 @@
 - 팀 스프린트 ID: `QELLO-S2026-W43`
 - GitHub Issue: `#37`
 - Branch: `feat/SCRUM-99-gh-37-security-filter`
-- Base branch: `feat/SCRUM-98-gh-34-source-adapter-contract`(PR #35). #35 병합 후 `main`으로 rebase한다. 아래 Decisions 참조
+- Base branch: `main`. PR #35가 2026-10-19 병합(`808d08d`)되어 `origin/main` 위로 rebase한다. 아래 Decisions 참조
 
 ## Objective
 
@@ -163,4 +163,13 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-SEC-001-security-filter/*.md specs/QK-SE
   숫자가 든 IP의 추가 누락은 없었다. 남은 P1 1건(코드 예외가 숫자 없는 IPv6 노출), P2 1건(숫자 버전 내부를 IP로 오인)을 냈다.
 - 2026-10-20 사실(설계 판단, 리뷰에서 확인): T072의 코드 예외를 없앴다. FR-023을 완화하지 않는 쪽이라 사람 승인 없이 고쳤고, 대가(글 필드 `std::map` 가림,
   경로에 `::`가 든 자료 차단)를 tasks.md Phase 13에 적었다. 2건을 Phase 13(T075~T078)으로 고쳤고 AGENTS.md 7절 검증 재실행 통과(pytest 509 passed).
-- 확인 필요: 요약·버전·오류 격리 시험이 구현 뒤에 쓰여 처음부터 통과한 "시험 먼저 원칙 예외"를 사람이 받아들일지(Codex 리뷰 required_human_decisions).
+- 2026-10-20 사실: 수정을 `7234c45`, `309c0ea`로 커밋했다. 같은 Codex 세션의 5차 재리뷰(필드 39,987조합, 식별자 조립 12,168조합)에서 이전 2건이 해소되고
+  새 변경 요청 없이 코드 승인 권고가 나왔다. Codex 직접 실행: pytest 509 passed(로컬 DB 포함), ruff·format·diff 검사 통과. Codex가 못 돌린 전체 preflight는
+  이 세션이 깨끗한 작업 트리의 `309c0ea`에서 `python3 scripts/preflight.py`, `python3 -I scripts/preflight.py`로 실행해 통과했다(283개 파일).
+- 2026-10-20 사실(받아들인 한계, PR 본문에 적는다): 1) 다른 숫자에 붙어 숫자 덩어리 전체가 IP가 아니게 된 값(`9192.0.2.17`, `10.0.0.5.6`)은 가리지 않는다.
+  숫자 버전(`1.2.3.456`) 보존과 맞바꾼 것이다. 2) 콜론이 많은 10만 자 비주소 문자열은 가림에 3~6초가 걸린다. 판정 기록의 짧은 필드에만 쓰이고 SC-008은 0.087초다.
+  3) 글 필드의 `std::map`도 가려지고, 경로에 `::`가 든 자료는 식별자 주소로 막힌다(Phase 13).
+- 2026-10-20 사용자 결정: 현재 상태를 기록하고 PR을 올린다(T057).
+- 2026-10-20 사실: PR #35는 리뷰 승인 후 2026-10-19 merge commit `808d08d`(부모 `baa59b8`)로 병합됐고, 이후 #36(QK-STO-001), #38이 main에 병합됐다.
+  처음의 "#35 병합 가정"이 실제가 되었으므로, 브랜치를 `origin/main` 위로 rebase하고 PR base를 `main`으로 한다(2026-10-19 결정의 후속 절차).
+- 확인 필요(미결): 요약·버전·오류 격리 시험이 구현 뒤에 쓰여 처음부터 통과한 "시험 먼저 원칙 예외"를 사람이 받아들일지(Codex 리뷰 required_human_decisions).
