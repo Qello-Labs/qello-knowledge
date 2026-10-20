@@ -109,3 +109,6 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   시험은 세션 전용 임시 DB를 써서 영향이 없다. 로컬 개발 DB 정리는 사람이 정한다.
 - 2026-10-20 사실: 같은 검토자의 재검토 판정은 승인이다. 남은 낮은 문제 3건(저장 실패 시 예약 미정산, Retry-After 상한 없음, CLI 종료 코드 2 중복)도 반영했다.
   정산은 `finally`로 보장하고, 대기 상한은 60초, 종료 코드 2의 중복은 `contracts/cli.md`에 적었다. 반영 뒤 pytest 719 passed.
+- 2026-10-20 사용자 실행(T046 승인·실행): `uv run pytest -m external tests/external/test_workers_ai_embedding.py -s` 1 passed.
+  합성 텍스트 20개(한국어 10, 영어·코드 10), UTF-8 21,620바이트, 예상 6.65 Neurons, 측정 6.49 Neurons(`cf-ai-neurons` 합), 차이 +2.5%,
+  모델 `@cf/baai/bge-m3`, 실행일 2026-10-20, 차원 1,024·순서 확인. SC-005(±20%) 충족, `bytes_per_token_estimate` 3.5 유지. 완료 조건 4 충족.

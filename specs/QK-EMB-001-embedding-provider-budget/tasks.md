@@ -162,7 +162,7 @@ description: "QK-EMB-001 구현 작업 목록"
 - [X] T043 `src/qello_knowledge/adapters/postgres/migrations/0003_embedding_usage.sql`·`src/qello_knowledge/adapters/postgres/usage.py`·`src/qello_knowledge/indexer/cli.py`: `qk.embedding_usage_prune(retention_days int DEFAULT 90)`(날짜 단위 upsert 후 삭제, 한 트랜잭션, R-13), `UsageLedger.prune`, `qk-index usage prune [--retention-days 90]`
 - [X] T044 [P] `tests/unit/indexer/test_cli_usage.py`: `qk-index usage`·`usage --json`·`usage prune`이 메모리 장부로 contracts/cli.md 형식과 종료 코드를 지킨다
 - [X] T045 [P] `tests/external/test_workers_ai_embedding.py`(`@pytest.mark.external`): 합성 텍스트 20개(한국어 10, 영어·코드 10)를 실제 bge-m3로 임베딩해 차원·순서를 확인하고, 미리 보기 예상 Neurons와 `cf-ai-neurons` 합의 차이를 출력한다. 실행 전 예상 사용량(약 6 Neurons)을 파일 머리 주석에 적는다. 기본 검증에서 돌리지 않는다
-- [ ] T046 사람 승인 뒤 T045를 한 번 실행하고 결과(텍스트 수, 언어 비중, 바이트 합, 예상·측정 Neurons, 차이 %, 모델, 실행일)를 PR 본문 또는 `docs/sdd/research/` 아래 기록에 남긴다(SC-005, C-13). 차이가 ±20%를 넘으면 `bytes_per_token_estimate` 수정은 별도 커밋으로 한다. 승인이 없으면 `BLOCKED`로 보고한다
+- [X] T046 사람 승인 뒤 T045를 한 번 실행하고 결과(텍스트 수, 언어 비중, 바이트 합, 예상·측정 Neurons, 차이 %, 모델, 실행일)를 PR 본문 또는 `docs/sdd/research/` 아래 기록에 남긴다(SC-005, C-13). 차이가 ±20%를 넘으면 `bytes_per_token_estimate` 수정은 별도 커밋으로 한다. 승인이 없으면 `BLOCKED`로 보고한다
 - [X] T047 [P] `README.md` 또는 `docs/` 운영 안내: `qk-index usage`·`usage prune`, `QK_EMBED_*` 설정 3개, 하루 경계(00:00 UTC = 한국 시간 09:00)
 - [X] T048 quickstart.md 1~3절과 AGENTS.md 7절 기본 검증 전체 실행: `python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-migrate`(두 번째 `applied=0`), `QK_REQUIRE_LOCALDB=1 uv run pytest`
 
