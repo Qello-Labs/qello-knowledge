@@ -1,4 +1,4 @@
-# 첫 실제 자료원은 QK-ING-002가 추가한다.
+# 활성화는 결정 기록·개인 정보 확인 기록과 함께 사람이 한다(QK-ING-002 research R-13).
 # [[source]]
 # name = "qello-knowledge-docs"
 # kind = "github_repo_files"
@@ -20,3 +20,21 @@
 # max_retries = 3
 # initial_backoff_seconds = 1
 # max_backoff_seconds = 60
+
+[[source]]
+name = "dnd-backend-docs"
+kind = "github_repo_files"
+enabled = false
+auth = "GITHUB_API_TOKEN"
+[source.scope]
+repo = "dnd-side-project/dnd-15th-2-backend"
+ref = "main"
+include = [
+  "README.md", "AGENTS.md", "CLAUDE.md", "CODEX.md", "TASK.md",
+  "docs/adr/**/*.md", "docs/product/**/*.md", "docs/harness/**/*.md",
+  "docs/api-response.md", "docs/error-codes.md", "docs/filtering-production-gate.md",
+  "docs/push-production-setup.md", "docs/api/OPENAPI_WRITING_GUIDE.md",
+  "docs/superpowers/plans/**/*.md", "docs/superpowers/specs/**/*.md",
+  "infra/**/*.md", "**/AGENTS.md", ".github/PULL_REQUEST_TEMPLATE.md", "scripts/repo-map/README.md",
+]
+exclude = [".claude/**", ".agents/**", ".codex/**", "agents/**", "templates/**", "docs/experiments/**"]
