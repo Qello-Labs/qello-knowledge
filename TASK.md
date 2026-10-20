@@ -17,14 +17,23 @@
 
 - 완료: QK-ING-002 명세(`spec.md`)를 작성하고 사람 승인을 받았다(2026-10-20, `0ab2931` 기준).
 - 완료: `/speckit-plan` 설계 산출물을 만들고 사람 승인을 받았다(2026-10-20, `361a9b1` 기준).
-- 이번 단계: `/speckit-tasks`로 작업 목록을 만들고 사람 리뷰를 받는다. 구현은 작업 목록 승인 뒤에 한다.
+- 완료: `/speckit-tasks` 작업 목록(49개)을 만들고 사람 승인을 받았다(2026-10-20, `89ce3e1` 기준).
+- 이번 단계: `tasks.md`대로 구현한다(Codex 세션). 첫 자료원은 비활성 등록까지이고, 활성화·실제 측정은 사람 단계다(tasks.md "사람 단계").
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
 - `specs/QK-ING-002-github-repo-source/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
 - 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`(승인됨, 바꾸려면 다시 승인)
-- 작업 목록: 같은 디렉터리의 `tasks.md`
+- 작업 목록: 같은 디렉터리의 `tasks.md`(승인됨). 구현 중 체크 표시와 진행 기록은 고친다.
+- 구현(tasks.md, plan.md Project Structure):
+  - 새 파일: `src/qello_knowledge/adapters/{github,http}.py`, `src/qello_knowledge/sources/scope_review.py`, `src/qello_knowledge/devtools/measure.py`,
+    `config/source_reviews/README.md`, `tests/unit/adapters/`, `tests/unit/review_records.py`, `tests/unit/domain/test_content_hash.py`, `tests/unit/sources/test_scope_review.py`,
+    `tests/unit/devtools/test_measure.py`, `tests/contract/test_github_adapter_contract.py`, `tests/external/`, `tests/fixtures/source_reviews/`
+  - 고치는 파일(QK-ING-001, 2026-10-20 사용자 허용): `src/qello_knowledge/domain/source.py`(`ListPage.complete`, `content_hash()`), `src/qello_knowledge/sources/collect.py`,
+    `src/qello_knowledge/sources/session.py`, `src/qello_knowledge/adapters/fake.py`, `tests/contract/source_adapter_contract.py`, `tests/contract/test_fake_adapter_contract.py`,
+    `tests/contract/test_second_fake_contract.py`, `tests/unit/sources/test_list_all.py`
+  - 고치는 파일(그 밖): `src/qello_knowledge/indexer/cli.py`, `src/qello_knowledge/devtools/db.py`, `tests/unit/indexer/test_cli.py`, `config/sources.toml`(첫 자료원 비활성 등록)
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `TASK.md`
@@ -38,9 +47,10 @@
 
 ## Explicit exclusions
 
-- 구현, `config/sources.toml` 실제 자료원 등록, 실제 원본 호출(설계·작업 목록 승인 전).
+- 첫 자료원 활성화(`enabled = true`), 개인 정보 확인 기록(`config/source_reviews/*.toml`) 작성, 결정 기록 작성, 실제 원본 호출·외부 호출 시험 실행. 사람 단계다(tasks.md).
 - 청킹(QK-CHK-002), 임베딩(QK-EMB-001), 동기화·변경 판정·삭제 반영(QK-SYN-001).
-- QK-ING-001·QK-SEC-001 코드와 승인된 명세 수정.
+- 위 구현 목록 밖의 QK-ING-001 코드, QK-SEC-001 코드(`src/qello_knowledge/security/`, `domain/{security,secret_rules,redact,exclusions}.py`), 승인된 명세·설계 산출물 내용 변경.
+- 런타임 의존성 추가(`pyproject.toml`의 `dependencies`).
 - 로드맵 `상태`·`진행` 열 외의 `docs/sdd/roadmap.md` 내용, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
 - 원본 자료원(GitHub 대상 저장소 포함)에 쓰기.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
@@ -60,6 +70,8 @@
 | `specs/QK-ING-002-github-repo-source/` | Byuntil | 사람 리뷰 |
 | `docs/sdd/roadmap.md` 상태 열 | Byuntil | 사람 리뷰 |
 | `TASK.md` | Byuntil | 사람 리뷰 |
+| `src/qello_knowledge/adapters/`, `sources/`, `domain/source.py`, `indexer/cli.py`, `devtools/` 변경, `config/sources.toml`, `config/source_reviews/README.md` | Byuntil | 사람 리뷰 |
+| `tests/` GitHub 수집기·계약·CLI 시험 | Byuntil | 사람 리뷰 |
 
 ## Existing user-owned changes
 
@@ -70,7 +82,11 @@
 ```bash
 python3 scripts/preflight.py
 git diff --check
-python3 scripts/roadmap_status.py   # "최신" 결과여야 한다
+python3 -I scripts/preflight.py
+uv run ruff check .
+uv run ruff format --check .
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
 grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결과가 없어야 한다
 ```
 
@@ -132,3 +148,8 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
   4) 기존 CLI 성공 사례를 `tmp_path` 확인 기록과 `--reviews`로 바꾸는 작업(T033)을 더했다(저장소 `config/source_reviews/`에는 기록을 만들지 않음). 작업 수는 49개다.
 - 2026-10-20 사실: 같은 Codex 세션의 `tasks.md` 재검토에서 이전 4건 중 3건 해소, 1건 일부 해소(기존 CLI 시험 전환 대상에서 `tests/fixtures/security/sources.toml`로 `run`을 부르는
   보안 예외 시험이 빠짐). 재번호의 교차 참조 오류는 없었다. T033에 그 시험의 두 호출과 전환 누락 확인 방법을 더했다.
+- 2026-10-20 사실: 같은 Codex 세션의 `tasks.md` 세 번째 검토에서 남은 P2가 해소되고 PASS가 나왔다(남은 P1·P2 없음).
+- 2026-10-20 사용자 결정: 사람 리뷰어 Byuntil이 `tasks.md`(`89ce3e1` 기준)와 설계 조정 세 곳을 승인했다. 작업 목록을 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
+  이미 허용한 구현 범위(QK-ING-001 네 곳 포함)를 Scope·Ownership·제외 범위에 반영했다. push와 PR 본문 갱신도 승인했다.
+- 2026-10-20 사용자 결정: 구현은 오른쪽 Codex 패널 세션(명세·설계·작업 목록 검토를 맡은 세션)이 맡고, 검증·코드 리뷰는 명세·설계·작업 목록을 쓴 이 Claude 세션이 맡는다.
+  Claude 세션은 구현을 쓰지 않았으므로 구현 리뷰는 독립이다. 다만 설계를 쓴 세션이 그 설계의 구현을 검토한다는 한계가 있다.
