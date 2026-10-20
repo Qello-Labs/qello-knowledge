@@ -193,6 +193,9 @@ ING-001 공통 형식 변경과 실제 전송은 모든 스토리가 기대므�
   `security check`는 확인 기록을 검사하지 않는다(contracts/cli.md)
 - [ ] T033 [US4] `tests/unit/indexer/test_cli.py` 기존 성공 사례 전환(T032와 같은 파일, T032 뒤): `tests/fixtures/sources/valid.toml`의 활성 자료원 `docs`(가짜 종류)로 `sources check`·`run`이 0을 기대하던 사례는
   새 계약에서 `REVIEW_MISSING`이 되므로, 시험 도우미 `tests/unit/review_records.py`(시험 파일 아님)가 `SourceConfig`와 같은 범위의 확인 기록을 `tmp_path`에 써서 `--reviews`로 넘긴다.
+  같은 방식으로 `tests/fixtures/security/sources.toml`(활성 가짜 자료원)로 `run`을 부르는 `test_run_stops_on_bad_exceptions_without_requests`의 두 호출에도 맞는 기록과 `--reviews`를 넘겨,
+  틀린 예외 파일이면 `보안 규칙 점검` 보고와 1, 올바른 예외 파일이면 0이라는 기존 검증을 그대로 유지한다(확인 기록 검사가 보안 예외 검사보다 먼저 막지 않게 한다).
+  전환 대상은 `run`·`sources check`로 활성 자료원 설정을 읽는 기존 사례 전부이고, 전환 뒤 `grep -n '"run"\|"sources"' tests/unit/indexer/test_cli.py`로 빠진 호출이 없는지 확인한다.
   같은 호출을 기록 없이 부르는 사례는 실패(1, `REVIEW_MISSING`) 사례로 따로 남긴다. 저장소의 `config/source_reviews/`에는 기록 파일을 만들지 않는다
 - [ ] T034 [P] [US4] `tests/unit/devtools/test_measure.py`(SC-009 자동 부분, research R-14, data-model.md 9절): 사전 검증 `prepare_source`가 확인 기록 없음·범위 불일치·확장자 오류·보안 예외 파일 오류·자료원 설정 오류에서
   `PreparedSource`가 아닌 오류 목록을 돌려주고, 이때 전송 생성 함수(대역)가 한 번도 불리지 않으며 요청이 0건이다(FR-020, 호출 전 검사). `measure_source`는 `PreparedSource`만 받는다.
