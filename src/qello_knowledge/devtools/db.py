@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import socket
 import subprocess
@@ -15,7 +16,13 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from qello_knowledge.config.loader import merge_sources, read_env_file
+from qello_knowledge.adapters.http import HttpsTransport
+from qello_knowledge.config.check import build_report
+from qello_knowledge.config.cli import add_check_options
+from qello_knowledge.config.loader import SecretValue, load, merge_sources, read_env_file
+from qello_knowledge.config.registry import Entrypoint
+from qello_knowledge.devtools.measure import PreparedSource, measure_source, prepare_source, render_measurement
+from qello_knowledge.sources.clock import SystemClock
 
 DEFAULT_PORT = 54322
 EXTENSIONS = ("vector", "pgroonga")
@@ -106,6 +113,15 @@ def reset(source: Mapping[str, str]) -> int:
     return up(source)
 
 
+def _source_failure(errors: Sequence[dict[str, str]], json_output: bool) -> int:
+    print(
+        json.dumps({"ok": False, "issues": errors}, ensure_ascii=False)
+        if json_output
+        else "자료원 수집 점검: 실패\n" + "\n".join(f"  {i['code']} {i['field']}" for i in errors)
+    )
+    return 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="qk-dev", description="로컬 개발 도구")
     sub = parser.add_subparsers(dest="group", required=True)
@@ -118,7 +134,32 @@ def main(argv: list[str] | None = None) -> int:
     store.add_argument("--text-bytes", type=int, default=1_100_000)
     store.add_argument("--repeat", type=int, default=100)
     store.add_argument("--top-n", type=int, default=20)
+    source_command = sub.add_parser("source", help="자료원 수집 측정")
+    source_sub = source_command.add_subparsers(dest="source_action", required=True)
+    measure = source_sub.add_parser("measure", help="사전 검증 뒤 원본을 읽어 측정한다")
+    add_check_options(measure)
+    measure.add_argument("--name", required=True)
+    measure.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
+    measure.add_argument("--reviews", type=Path, default=Path("config/source_reviews"))
+    measure.add_argument("--exceptions", type=Path, default=Path("config/security_exceptions.toml"))
     args = parser.parse_args(argv)
+    if args.group == "source":
+        settings = load(Entrypoint.INDEX, env_file=args.env_file)
+        report = build_report(settings)
+        if not report.ok:
+            print(report.to_json() if args.json else report.to_text())
+            return 1
+        prepared = prepare_source(args.name, args.sources, args.reviews, args.exceptions)
+        if not isinstance(prepared, PreparedSource):
+            errors = [{"field": issue.field, "code": issue.code} for issue in prepared]
+            return _source_failure(errors, args.json)
+        token = settings.get(prepared.config.auth)
+        if not isinstance(token, SecretValue):
+            return _source_failure([{"field": "auth", "code": "MISSING"}], args.json)
+        transport = HttpsTransport(prepared.config.allowed_hosts, token)
+        measurement = measure_source(prepared, transport, SystemClock())
+        print(render_measurement(measurement, args.json))
+        return 0 if measurement.ok else 1
 
     source = merge_sources(os.environ, read_env_file(args.env_file))
     if args.group == "store":
