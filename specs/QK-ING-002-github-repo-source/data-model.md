@@ -109,7 +109,7 @@
 | `measured_at`, `environment` | 실행 시각(UTC), `platform.platform()`과 Python 버전 |
 | `requests`, `elapsed_seconds` | `FetchResult.requests_made`, `finished_at - started_at` |
 | `listing_complete`, `stop` | `FetchResult` |
-| `files` | 범위 안 목록 항목 수(판정 기록 수 + 통과 수) |
+| `files` | 범위 안 목록 항목 수 = `len(ScreenResult.verdicts)`. SEC-001은 통과 자료에도 `PASSED` 판정을 남겨 자료마다 판정이 정확히 하나다(통과 수를 더하지 않는다) |
 | `bodies_fetched`, `total_bytes`, `max_file_bytes` | `CountingTransport`가 센 blob 응답의 건수, 바이트 합, 최댓값. 본문 단계에서 막힌 자료도 들어간다 |
 | `by_verdict`, `by_rule` | SEC-001 `FilterSummary` |
 | `blocked` | `SECRET_BLOCKED`·`ERROR` 판정과 `identifier-address` 규칙 판정의 `SecurityVerdict.to_dict(context)` 목록(가림 거친 값) |

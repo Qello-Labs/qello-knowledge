@@ -50,7 +50,8 @@ uv run qk-index sources check                 # 저장소의 config/sources.toml
 ## 3.5 측정 명령 (`tests/unit/devtools/test_measure.py`, 재생 응답)
 
 정상, 본문 비밀값 차단(SEC-001 `SECRET_BLOCKED`), 범위 안 항목 0개 세 사례에서 측정 출력이 FR-022 항목을 모두 채우는지 본다.
-본문 차단 사례도 `bodies_fetched`·`total_bytes`에 들어가고, 항목 0개 사례도 `commit`이 나온다. 실제 패턴 목록이 그대로 나오고, 출력에 본문·토큰이 없다.
+본문 차단 사례도 `bodies_fetched`·`total_bytes`에 들어가고, 항목 0개 사례도 `commit`이 나온다. 세 사례 모두 `files`가 범위 안 고유 목록 항목 수와 정확히 같다
+(통과 자료를 두 번 세지 않는다). 실제 패턴 목록이 그대로 나오고, 출력에 본문·토큰이 없다.
 
 ## 4. 첫 실제 수집 측정 (사람, 외부 호출)
 
