@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import urllib.error
 import urllib.request
@@ -50,11 +51,13 @@ class UrllibTransport:
     def post(self, url: str, headers: Mapping[str, str], body: bytes) -> HttpResult:
         request = urllib.request.Request(url, data=body, headers=dict(headers), method="POST")  # noqa: S310 - 고정 https 주소
         try:
-            with urllib.request.urlopen(request, timeout=self._timeout) as response:  # noqa: S310 - 고정 https 주소
-                return HttpResult(response.status, dict(response.headers.items()), response.read())
-        except urllib.error.HTTPError as error:
-            return HttpResult(error.code, dict(error.headers.items()), error.read())
-        except (urllib.error.URLError, TimeoutError, OSError) as error:
+            try:
+                with urllib.request.urlopen(request, timeout=self._timeout) as response:  # noqa: S310 - 고정 https 주소
+                    return HttpResult(response.status, dict(response.headers.items()), response.read())
+            except urllib.error.HTTPError as error:
+                return HttpResult(error.code, dict(error.headers.items()), error.read())
+        except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError) as error:
+            # 연결·시간 초과·본문을 다 읽지 못함(IncompleteRead 등). 원인 문구에 주소를 넣지 않는다.
             raise NetworkError(type(error).__name__) from None
 
 
