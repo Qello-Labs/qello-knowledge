@@ -21,7 +21,7 @@
 | `target_tokens` | int | 512 (research R-04) | 1 이상, `limit_tokens` 이하 |
 | `limit_tokens` | int | 2,800 (research R-03) | `limit_tokens × bytes_per_token_estimate ÷ WORST_BYTES_PER_TOKEN ≤ max_input_tokens` |
 
-- `WORST_BYTES_PER_TOKEN = 1.2`(상수, research R-03). 검증 실패는 `ValueError`로, 청킹을 시작하기 전에 멈춘다.
+- `WORST_BYTES_PER_TOKEN = 1.2`(상수, research R-03). 검증은 생성 시(`__post_init__`) 하고 실패는 `ValueError`다. 그래서 어느 진입점이든 청킹을 시작하기 전에 멈춘다.
 - 예상 토큰은 `embedding.estimate.estimated_tokens(text, MODELS[model_version])`와 같은 계산이다(spec FR-013).
 
 ## 상태 값
@@ -46,10 +46,12 @@
 | `chunk` | `ChunkInput` | QK-STO-001 그대로. `ordinal`(0부터 연속), `locator`, `body`, `search_text`, `chunking_version`, `heading_path` |
 | `search_header` | str | 두 줄(research R-09) |
 | `embedding_text` | str | 검색 헤더 + 빈 줄 + (반복 머리글) + 본문. 저장하지 않는다(spec FR-019) |
+| `estimated_tokens` | int | `embedding_text`의 예상 토큰(`embedding.estimate`와 같은 계산). 요약 분포와 상한 검사에 쓴다 |
 
 - `locator = {"path": <본문 조회 위치>, "lines": [시작, 끝]}`(양 끝 포함, QK-STO-001 data-model 예시와 같은 모양).
 - `body`는 줄 범위 원문 그대로. `search_text` = `search_header + "\n\n" + body`. `embedding` 필드는 비운다(QK-SYN-001이 채운다).
-- 불변식: `estimated_tokens(embedding_text) ≤ limit_tokens`. 같은 절에서 나온 청크는 `heading_path`가 같다.
+- 불변식: `estimated_tokens == embedding.estimate.estimated_tokens(embedding_text, MODELS[model_version])`이고 그 값이 `≤ limit_tokens`.
+  `chunk`·`search_header`·`embedding_text`는 `repr=False`다(`ChunkInput`의 기본 `repr`에 본문이 들어가므로, spec FR-006). 같은 절에서 나온 청크는 `heading_path`가 같다.
 
 ## ChunkedContent (자료 하나의 결과)
 
@@ -99,5 +101,6 @@
 | --- | --- |
 | `Block` | `start`, `end`(0부터, 끝 제외), `kind`(heading·paragraph·list·list_item·blockquote·table·fence·code·html·hr·raw·front_matter), 제목이면 `level`, `text`, 표면 머리글 두 줄·펜스면 여는 줄(반복 머리글), `children`(바로 아래 자식 `Block`들의 나무. 목록 → 항목, 항목·인용 → 안쪽 블록. research R-05) |
 | `Section` | `heading_path`, `blocks` |
+| `ParsedDocument` | `blocks`(최상위 블록 나무), `front_matter_title`, `fences`(`FenceInfo(start, end, content_newlines)`), `tables`(`TableInfo(start, end, container_depth)`) |
 
-이 둘은 공개 계약이 아니다. 시험은 공개 진입점(contracts/chunker.md)으로 한다.
+이것들은 공개 계약이 아니다. 시험은 공개 진입점(contracts/chunker.md)으로 한다.
