@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from hashlib import sha256
 from urllib.parse import quote
 
 from qello_knowledge.domain.source import (
@@ -21,6 +20,7 @@ from qello_knowledge.domain.source import (
     SourceItem,
     SourceRequest,
     SourceResponse,
+    content_hash,
     default_classify,
     default_rate_limit_hint,
 )
@@ -87,7 +87,7 @@ class FakeSourceAdapter:
             change_key, key_kind = modified.isoformat(), ChangeKeyKind.MODIFIED_AT
         else:
             content = self._fetch(session, identity)
-            change_key = "sha256:" + sha256(content.body.encode("utf-8")).hexdigest()
+            change_key = content_hash(content.body)
             key_kind = ChangeKeyKind.CONTENT_HASH
         size = row.get("size_bytes")
         if size is not None and (type(size) is not int or size < 0):
