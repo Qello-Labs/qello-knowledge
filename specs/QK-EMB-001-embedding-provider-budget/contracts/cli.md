@@ -23,11 +23,14 @@ total=312.92 allowance=10000 estimated_share=3%
 ## qk-index usage prune
 
 ```text
-qk-index usage prune [--retention-days 90]
+qk-index usage prune [--retention-days 90] [--allow-remote]
 ```
 
-90일 지난 호출별 기록을 일 합계로 옮기고 지운다(FR-025). 출력 `days_rolled_up=N rows_deleted=M`. 두 번째 실행은 `0`, `0`이다.
-지우는 대상은 사용량 기록뿐이고 청크·벡터는 건드리지 않는다.
+90일 지난 호출별 기록을 일 합계로 옮기고 지운다(FR-025). 출력은 `target=local|remote` 다음 줄에 `days_rolled_up=N rows_deleted=M`.
+두 번째 실행은 `0`, `0`이다. 지우는 대상은 사용량 기록뿐이고 청크·벡터는 건드리지 않는다.
+
+- `--retention-days`는 1 이상이다. 0이나 음수는 오늘 기록을 지워 그날 예산을 초기화하므로 거부한다(SQL 함수도 거부한다).
+- 대상이 로컬 DB가 아니면 `--allow-remote` 없이는 지우지 않고 종료 코드 3으로 끝낸다(2026-10-20 결정, `qk-migrate`의 파괴 차단과 같은 방식).
 
 ## qk-index check (기존 명령에 검사 추가)
 

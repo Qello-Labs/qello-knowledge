@@ -97,3 +97,13 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-20 검증: preflight, `git diff --check`, ruff check·format --check 통과, `qk-migrate` 두 번째 `applied=0 skipped=3`,
   `QK_REQUIRE_LOCALDB=1 uv run pytest` 706 passed, quickstart 3절 CLI 종료 코드 계약대로(0, 0, 0, 1). 같은 세션의 자기 검증이라 독립 검증이 아니다.
 - 2026-10-20 BLOCKED: T046(실제 Workers AI 실측, 예상 6.65 Neurons)은 사람 승인 전이라 실행하지 않았다. 완료 조건 4(SC-005)는 미충족이다.
+- 2026-10-20 사실: 구현에 관여하지 않은 별도 에이전트가 `/harness-review` 절차로 검토해 변경 요청을 냈다. 직접 재현 3건(prune 음수 보관 일수로 예산 초기화,
+  기록 실패 시 비용을 낸 결과 폐기, `numeric(12,2)` 반올림), 추정 2건(제공자 원시 예외 시 예약 미정산, 재시도 대기 기본값 no-op).
+- 2026-10-20 사용자 결정(리뷰 반영): 1) 기록 실패는 spec Edge Cases를 따른다. 결과를 먼저 저장하고 돌려주며, 색인용이면 이후 호출을 멈춘다.
+  `contracts/embedder.md` 7단계와 `data-model.md`를 같이 고치고 항목 실패 종류 `usage_unavailable`을 더한다. 2) Neurons 칼럼을 `numeric(14,6)`
+  (일 합계 `numeric(16,6)`)으로 넓힌다. `data-model.md`도 고친다. 3) prune은 보관 일수 1 이상을 CLI·SQL 양쪽에서 강제하고, `target=local|remote`를
+  출력하며, 원격 DB는 `--allow-remote`가 있을 때만 지운다(종료 코드 3). `contracts/cli.md`도 고친다.
+- 2026-10-20 사실: 4) 전송 계층의 읽기 오류를 `NetworkError`로 감싸고, 서비스는 예상 밖 제공자 예외에도 예약을 정산한 뒤 올린다. 5) 재시도 대기 기본값을
+  `time.sleep`과 1·2·4초…(최대 60초)로 바꿨다. 반영 뒤 `QK_REQUIRE_LOCALDB=1 uv run pytest` 718 passed.
+- 2026-10-20 사실: 0003 파일이 바뀌어, 이 세션 앞부분에서 0003을 적용한 로컬 개발 DB(`postgres`)는 `qk-migrate`가 체크섬 불일치(종료 코드 2)로 멈춘다.
+  시험은 세션 전용 임시 DB를 써서 영향이 없다. 로컬 개발 DB 정리는 사람이 정한다.
