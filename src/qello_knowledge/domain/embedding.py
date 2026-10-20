@@ -51,6 +51,7 @@ class EmbedFailureKind(StrEnum):
     PROVIDER_QUOTA = "provider_quota"
     INDEX_BUDGET = "index_budget"
     BAD_RESPONSE = "bad_response"
+    USAGE_UNAVAILABLE = "usage_unavailable"  # 사용량 기록이 실패해 보내지 않은 항목(spec Edge Cases)
 
 
 class EmbedErrorKind(StrEnum):

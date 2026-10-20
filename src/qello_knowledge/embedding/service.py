@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
@@ -64,10 +65,14 @@ _ITEM_FAILURE = {
 
 QUOTA_MISMATCH_WARNING = "provider_quota_with_index_budget_left"
 QUERY_RESERVE_WARNING = "query_reserve_exceeded"
+USAGE_UNAVAILABLE_WARNING = "usage_unavailable"
 
 
-def no_retry_delay(attempt: int, retry_after_seconds: float | None) -> float:
-    return retry_after_seconds or 0.0
+def default_retry_delay(attempt: int, retry_after_seconds: float | None) -> float:
+    """조립 코드가 재시도 규칙을 넘기지 않을 때의 기본값: 제공자 대기 시간, 없으면 1·2·4초…(최대 60초)."""
+    if retry_after_seconds is not None:
+        return max(0.0, retry_after_seconds)
+    return float(min(60, 2**attempt))
 
 
 @dataclass
@@ -112,7 +117,7 @@ class EmbeddingService:
         outgoing_check: OutgoingCheck,
         *,
         retry_policy: RetryPolicy | None = None,
-        retry_delay: RetryDelay = no_retry_delay,
+        retry_delay: RetryDelay = default_retry_delay,
         sleep: Callable[[float], None] | None = None,
         max_items: int = MAX_ITEMS,
         max_tokens: int = MAX_TOKENS,
@@ -124,7 +129,7 @@ class EmbeddingService:
         self._check = outgoing_check
         self._retry = retry_policy or RetryPolicy()
         self._retry_delay = retry_delay
-        self._sleep = sleep or (lambda seconds: None)
+        self._sleep = sleep or time.sleep
         self._max_items = max_items
         self._max_tokens = max_tokens
 
@@ -255,9 +260,14 @@ class EmbeddingService:
         while True:
             reservation: Reservation | None = None
             if indexing:
-                reservation = self._guard(
-                    lambda: self._ledger.reserve(request.run_id, plan.model.model_version, len(texts), size, estimated)
-                )
+                try:
+                    reservation = self._ledger.reserve(
+                        request.run_id, plan.model.model_version, len(texts), size, estimated
+                    )
+                except Exception:
+                    self._usage_failed(run, indexing)
+                    self._fail(plan, batch, EmbedFailureKind.USAGE_UNAVAILABLE)
+                    return None
                 if reservation is None:
                     run.stop = EmbedFailureKind.INDEX_BUDGET
                     self._fail(plan, batch, run.stop)
@@ -271,6 +281,9 @@ class EmbeddingService:
                 if failure.kind is ProviderFailureKind.AUTH_CONFIG:
                     raise EmbedError(EmbedErrorKind.AUTH_CONFIG, "제공자 인증·설정 오류") from None
                 if failure.kind is ProviderFailureKind.TRANSIENT and attempt < self._retry.max_retries:
+                    if run.stop is not None:  # 사용량 기록이 실패했으면 다시 보내지 않는다
+                        self._fail(plan, batch, EmbedFailureKind.TRANSIENT)
+                        return None
                     self._sleep(self._retry_delay(attempt, failure.retry_after_seconds))
                     attempt += 1
                     continue
@@ -278,10 +291,17 @@ class EmbeddingService:
                     return split_half(batch)
                 if failure.kind is ProviderFailureKind.PROVIDER_QUOTA:
                     run.stop = EmbedFailureKind.PROVIDER_QUOTA
-                    if indexing and self._today().index_remaining > 0:
+                    if indexing and self._budget_left():
                         run.warnings.append(QUOTA_MISMATCH_WARNING)
                 self._fail(plan, batch, _ITEM_FAILURE[failure.kind])
                 return None
+            except Exception:
+                # 경계 밖 예외: 호출이 나갔을 수 있으므로 예상량으로 정산하고 그대로 올린다(예약을 남기지 않는다).
+                self._account(
+                    request, plan, run, reservation, texts, size, estimated, estimated, False,
+                    ProviderFailureKind.TRANSIENT,
+                )  # fmt: skip
+                raise
             self._accept(request, plan, run, reservation, batch, texts, size, estimated, result)
             return None
 
@@ -297,21 +317,22 @@ class EmbeddingService:
         estimated: float,
         result: ProviderBatch,
     ) -> None:
+        """결과를 먼저 저장하고 정산한다. 정산이 실패해도 이미 비용을 낸 결과는 돌려준다(spec Edge Cases)."""
         measured = result.neurons is not None
         neurons = result.neurons if result.neurons is not None else estimated
         valid = len(result.vectors) == len(texts) and all(len(v) == plan.model.dimension for v in result.vectors)
-        kind = None if valid else ProviderFailureKind.BAD_RESPONSE
-        self._account(request, plan, run, reservation, texts, size, estimated, neurons, measured, kind)
         if not valid:
             logger.info("embed_bad_response items=%s", len(batch))
             self._fail(plan, batch, EmbedFailureKind.BAD_RESPONSE)
-            return
-        for unique_index, vector in zip(batch, result.vectors, strict=True):
-            unique = plan.uniques[unique_index]
-            if request.purpose is EmbedPurpose.INDEX:
-                self._store.put_embedding(self._ref(unique.text, plan.model), vector)
-            for position in unique.positions:
-                plan.items[position] = EmbedItem(position, vector=tuple(vector))
+        else:
+            for unique_index, vector in zip(batch, result.vectors, strict=True):
+                unique = plan.uniques[unique_index]
+                if request.purpose is EmbedPurpose.INDEX:
+                    self._store.put_embedding(self._ref(unique.text, plan.model), vector)
+                for position in unique.positions:
+                    plan.items[position] = EmbedItem(position, vector=tuple(vector))
+        kind = None if valid else ProviderFailureKind.BAD_RESPONSE
+        self._account(request, plan, run, reservation, texts, size, estimated, neurons, measured, kind)
 
     def _account(
         self,
@@ -326,18 +347,34 @@ class EmbeddingService:
         measured: bool,
         failure: ProviderFailureKind | None,
     ) -> None:
+        """사용량을 기록한다. 기록이 실패하면 경고를 남기고, 색인용이면 다음 외부 호출을 멈춘다."""
         outcome = UsageOutcome.OK if failure is None else _FAILURE_OUTCOME[failure]
         run.neurons += neurons
-        if reservation is not None:
-            self._guard(lambda: self._ledger.settle(reservation, neurons, measured, outcome))
-            return
-        usage = self._guard(
-            lambda: self._ledger.record(
+        try:
+            if reservation is not None:
+                self._ledger.settle(reservation, neurons, measured, outcome)
+                return
+            usage = self._ledger.record(
                 request.run_id, plan.model.model_version, len(texts), size, estimated, neurons, measured, outcome
             )
-        )
+        except Exception:
+            self._usage_failed(run, request.purpose is EmbedPurpose.INDEX)
+            return
         if usage.query_reserve_exceeded:
             run.warnings.append(QUERY_RESERVE_WARNING)
+
+    @staticmethod
+    def _usage_failed(run: _Run, indexing: bool) -> None:
+        logger.warning("embed_usage_unavailable")
+        run.warnings.append(USAGE_UNAVAILABLE_WARNING)
+        if indexing:
+            run.stop = EmbedFailureKind.USAGE_UNAVAILABLE
+
+    def _budget_left(self) -> bool:
+        try:
+            return self._ledger.today().index_remaining > 0
+        except Exception:
+            return False
 
     # ---- 도우미 ----------------------------------------------------------------------------------
 

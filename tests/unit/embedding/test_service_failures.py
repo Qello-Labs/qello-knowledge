@@ -62,3 +62,10 @@ def test_wrong_dimension_is_bad_response_and_not_stored(make_harness) -> None:
     result = harness.embedder.embed(index_request(["하나", "둘"]))
     assert [item.failure for item in result.items] == [EmbedFailureKind.BAD_RESPONSE] * 2
     assert harness.store.vectors == {}
+
+
+def test_default_retry_delay_uses_retry_after_then_backoff() -> None:
+    from qello_knowledge.embedding.service import default_retry_delay
+
+    assert default_retry_delay(0, 2.5) == 2.5
+    assert [default_retry_delay(n, None) for n in range(8)] == [1, 2, 4, 8, 16, 32, 60, 60]

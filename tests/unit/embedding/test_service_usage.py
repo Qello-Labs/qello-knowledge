@@ -2,8 +2,9 @@
 
 import pytest
 
-from qello_knowledge.domain.embedding import EmbedError, EmbedErrorKind
+from qello_knowledge.domain.embedding import EmbedError, EmbedErrorKind, EmbedFailureKind
 from qello_knowledge.embedding.fake import FakeEmbeddingProvider
+from qello_knowledge.embedding.service import USAGE_UNAVAILABLE_WARNING
 from tests.unit.embedding.helpers import index_request, query_request
 
 
@@ -40,23 +41,62 @@ def test_query_usage_is_recorded_without_reservation(make_harness) -> None:
     assert (row["purpose"], row["state"], row["outcome"]) == ("query", "settled", "ok")
 
 
-def test_ledger_failure_stops_and_keeps_earlier_vectors(make_harness) -> None:
-    harness = make_harness(max_items=1)
-    original = harness.ledger.settle
+def _fail_on_call(harness, method: str, number: int) -> None:
+    original = getattr(harness.ledger, method)
     calls = []
 
     def flaky(*args):
         calls.append(args)
-        if len(calls) == 2:
+        if len(calls) == number:
             raise RuntimeError("db down")
         return original(*args)
 
-    harness.ledger.settle = flaky
-    with pytest.raises(EmbedError) as excinfo:
-        harness.embedder.embed(index_request(["하나", "둘", "셋"]))
-    assert excinfo.value.kind is EmbedErrorKind.USAGE_UNAVAILABLE
+    setattr(harness.ledger, method, flaky)
+
+
+def test_settle_failure_returns_paid_result_and_stops_next_calls(make_harness) -> None:
+    harness = make_harness(max_items=1)
+    _fail_on_call(harness, "settle", 2)
+    result = harness.embedder.embed(index_request(["하나", "둘", "셋"]))
     assert len(harness.provider.calls) == 2  # 기록 실패 뒤 다음 외부 호출 없음
-    assert len(harness.store.vectors) == 1
+    assert [item.vector is not None for item in result.items] == [True, True, False]
+    assert result.items[2].failure is EmbedFailureKind.USAGE_UNAVAILABLE
+    assert len(harness.store.vectors) == 2  # 비용을 낸 결과는 저장된다
+    assert USAGE_UNAVAILABLE_WARNING in result.summary.warnings
+
+
+def test_reserve_failure_sends_nothing(make_harness) -> None:
+    harness = make_harness()
+    _fail_on_call(harness, "reserve", 1)
+    result = harness.embedder.embed(index_request(["하나", "둘"]))
+    assert harness.provider.calls == []
+    assert {item.failure for item in result.items} == {EmbedFailureKind.USAGE_UNAVAILABLE}
+
+
+def test_query_record_failure_still_returns_vector(make_harness) -> None:
+    harness = make_harness()
+    _fail_on_call(harness, "record", 1)
+    result = harness.embedder.embed(query_request(["질문"]))
+    assert result.items[0].vector is not None
+    assert USAGE_UNAVAILABLE_WARNING in result.summary.warnings
+
+
+def test_unexpected_provider_error_settles_reservation(make_harness) -> None:
+    harness = make_harness(FakeEmbeddingProvider(fail_calls={1: RuntimeError("boom")}))  # type: ignore[dict-item]
+    with pytest.raises(RuntimeError):
+        harness.embedder.embed(index_request(["하나"]))
+    [row] = harness.ledger.rows
+    assert (row["state"], row["outcome"], row["measured"]) == ("settled", "transient", False)
+    assert row["neurons"] == row["estimated_neurons"]
+
+
+def test_today_failure_before_any_call_raises(make_harness) -> None:
+    harness = make_harness()
+    _fail_on_call(harness, "today", 1)
+    with pytest.raises(EmbedError) as excinfo:
+        harness.embedder.embed(index_request(["하나"]))
+    assert excinfo.value.kind is EmbedErrorKind.USAGE_UNAVAILABLE
+    assert harness.provider.calls == []
 
 
 def test_usage_rows_hold_no_text(make_harness) -> None:
