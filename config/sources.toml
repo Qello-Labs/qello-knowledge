@@ -24,7 +24,7 @@
 [[source]]
 name = "dnd-backend-docs"
 kind = "github_repo_files"
-enabled = false
+enabled = true
 auth = "GITHUB_API_TOKEN"
 [source.scope]
 repo = "dnd-side-project/dnd-15th-2-backend"
@@ -37,4 +37,4 @@ include = [
   "docs/superpowers/plans/**/*.md", "docs/superpowers/specs/**/*.md",
   "infra/**/*.md", "**/AGENTS.md", ".github/PULL_REQUEST_TEMPLATE.md", "scripts/repo-map/README.md",
 ]
-exclude = [".claude/**", ".agents/**", ".codex/**", "agents/**", "templates/**", "docs/experiments/**"]
+exclude = [".claude/**", ".agents/**", ".codex/**", "agents/**", "templates/**", "docs/experiments/**", "docs/harness/ARCHITECTURE.md"]
