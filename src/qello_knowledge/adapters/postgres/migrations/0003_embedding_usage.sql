@@ -11,8 +11,9 @@ CREATE TABLE qk.embedding_usage (
     model_version text NOT NULL,
     input_count int NOT NULL CHECK (input_count >= 0),
     input_bytes int NOT NULL CHECK (input_bytes >= 0),
-    estimated_neurons numeric(12, 2) NOT NULL CHECK (estimated_neurons >= 0),
-    neurons numeric(12, 2) CHECK (neurons >= 0),  -- 정산 전 NULL
+    -- 작은 호출(0.01 Neurons 미만)도 합계에 남도록 소수 여섯째 자리까지 둔다(2026-10-20 사용자 결정).
+    estimated_neurons numeric(14, 6) NOT NULL CHECK (estimated_neurons >= 0),
+    neurons numeric(14, 6) CHECK (neurons >= 0),  -- 정산 전 NULL
     measured boolean,  -- 정산 전 NULL. 제공자 값이면 true, 추정이면 false(FR-014)
     state text NOT NULL CHECK (state IN ('reserved', 'settled')),
     outcome text CHECK (
@@ -30,7 +31,7 @@ CREATE TABLE qk.embedding_usage_daily (
     usage_day date NOT NULL,
     purpose text NOT NULL CHECK (purpose IN ('index', 'query')),
     model_version text NOT NULL,
-    neurons numeric(14, 2) NOT NULL CHECK (neurons >= 0),
+    neurons numeric(16, 6) NOT NULL CHECK (neurons >= 0),
     calls int NOT NULL CHECK (calls >= 0),
     estimated_calls int NOT NULL CHECK (estimated_calls >= 0),
     PRIMARY KEY (usage_day, purpose, model_version)
@@ -158,10 +159,15 @@ $$;
 CREATE FUNCTION qk.embedding_usage_prune(retention_days int DEFAULT 90) RETURNS jsonb
 LANGUAGE plpgsql AS $$
 DECLARE
-    cutoff date := qk.embedding_utc_day() - retention_days;
+    cutoff date;
     days int;
     deleted int;
 BEGIN
+    -- 오늘 기록을 지우면 그날 예산이 초기화된다. 1일 미만은 거부한다(FR-018, 리뷰 반영).
+    IF retention_days IS NULL OR retention_days < 1 THEN
+        RAISE EXCEPTION 'retention_days must be >= 1' USING ERRCODE = '22023';
+    END IF;
+    cutoff := qk.embedding_utc_day() - retention_days;
     INSERT INTO qk.embedding_usage_daily (usage_day, purpose, model_version, neurons, calls, estimated_calls)
     SELECT
         u.usage_day, u.purpose, u.model_version,

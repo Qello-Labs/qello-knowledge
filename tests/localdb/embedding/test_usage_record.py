@@ -87,3 +87,13 @@ def test_no_column_holds_input_text(make_ledger, db_url) -> None:
 def test_check_constraints(db_url, sql) -> None:
     with psycopg.connect(db_url, autocommit=True) as conn, pytest.raises(psycopg.errors.CheckViolation):
         conn.execute(sql)
+
+
+def test_small_amounts_are_not_rounded_away(make_ledger) -> None:
+    ledger = make_ledger(BudgetSettings(10000, 1, 3000))
+    for _ in range(100):
+        ledger.record("q", MODEL, 1, 10, 0.0097, 0.0097, True, UsageOutcome.OK)
+    granted = sum(ledger.reserve("r", MODEL, 1, 10, 0.004) is not None for _ in range(300))
+    today = ledger.today()
+    assert today.query_used == pytest.approx(0.97)  # SC-003: 제공자 합과 같다
+    assert granted == 250 and today.index_used == pytest.approx(1.0)  # 0.004 × 250 = 1

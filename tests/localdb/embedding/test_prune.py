@@ -33,3 +33,15 @@ def test_old_days_roll_up_and_recent_days_stay(make_ledger, store, db_url) -> No
         vectors = conn.execute("SELECT count(*) FROM qk.embedding").fetchone()
     assert [(float(n), c, e) for n, c, e in daily] == [(5.0, 2, 1)]
     assert remaining == (1,) and vectors == (1,)
+
+
+@pytest.mark.parametrize("days", [0, -1])
+def test_sql_rejects_retention_below_one(make_ledger, db_url, days) -> None:
+    from qello_knowledge.domain.embedding import EmbedError
+
+    with psycopg.connect(db_url, autocommit=True) as conn:
+        conn.execute(INSERT, (0, MODEL, 1, True, "settled", "ok"))
+    with pytest.raises(EmbedError):
+        make_ledger().prune(days)
+    with psycopg.connect(db_url) as conn:
+        assert conn.execute("SELECT count(*) FROM qk.embedding_usage").fetchone() == (1,)
