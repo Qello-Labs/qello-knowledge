@@ -4,9 +4,10 @@
 from __future__ import annotations
 
 import argparse
-import re
+import importlib.util
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 
@@ -55,42 +56,38 @@ TEXT_SUFFIXES = {
     ".yml",
     ".zsh",
 }
-SECRET_NAME = (
-    r"[A-Za-z0-9_]*(?:password|passwd|api[_-]?key|api[_-]?token|auth[_-]?token"
-    r"|secret[_-]?key|access[_-]?token|client[_-]?secret)"
-)
-PLACEHOLDER = r"(?!\$\{|<|example|redacted|masked|changeme|dummy)"
-RULES = (
-    ("private-key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
-    ("aws-access-key", re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b")),
-    ("github-token", re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
-    ("slack-token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,}\b")),
-    ("anthropic-key", re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}")),
-    ("openai-key", re.compile(r"\bsk-(?!ant-)(?:proj-)?[A-Za-z0-9_-]{32,}")),
-    ("notion-token", re.compile(r"\b(?:secret|ntn)_[A-Za-z0-9]{40,}\b")),
-    ("figma-token", re.compile(r"\bfigd_[A-Za-z0-9_-]{30,}")),
-    ("atlassian-token", re.compile(r"\bATATT[A-Za-z0-9_=-]{20,}")),
-    (
-        "db-url-with-password",
-        re.compile(r"(?i)\bpostgres(?:ql)?(?:\+\w+)?://[^:/\s@]+:(?!<|\$\{)[^@\s]{3,}@"),
-    ),
-    # 코드의 `api_key = settings.api_key` 같은 참조는 잡지 않도록 따옴표로 감싼 값만 본다.
-    (
-        "assigned-secret",
-        re.compile(
-            rf"(?i)\b{SECRET_NAME}[\"']?\s*(?::\s*[\w\[\]|. ]+?\s*)?[:=]\s*[\"']"
-            rf"{PLACEHOLDER}[^\s\"']{{12,}}[\"']"
-        ),
-    ),
-    (
-        "env-assigned-secret",
-        re.compile(
-            r"^\s*(?:export\s+)?[A-Z0-9_]*(?:PASSWORD|PASSWD|API_KEY|API_TOKEN|AUTH_TOKEN"
-            r"|SECRET|ACCESS_TOKEN|PRIVATE_KEY)[A-Z0-9_]*\s*=\s*"
-            r"(?!\$\{|<|example|redacted|masked|changeme|dummy)[^\s#\"']{12,}"
-        ),
-    ),
-)
+# 규칙은 색인 필터와 한 벌이다(QK-SEC-001 FR-009). 패키지 설치 없이 경로로 불러온다.
+RULES_RELATIVE = "src/qello_knowledge/domain/secret_rules.py"
+RULES_MODULE = ROOT / RULES_RELATIVE
+
+
+def load_rules(staged: bool) -> tuple | None:
+    """`--staged`면 index에 있는 규칙으로 검사한다. index에 없으면 `None`."""
+    if staged:
+        result = subprocess.run(
+            ["git", "show", f":{RULES_RELATIVE}"],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            return None
+        module = types.ModuleType("qk_secret_rules")
+        sys.modules[module.__name__] = module
+        exec(compile(result.stdout.decode("utf-8"), RULES_RELATIVE, "exec"), module.__dict__)
+        return module.RULES
+    spec = importlib.util.spec_from_file_location("qk_secret_rules", RULES_MODULE)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module.RULES
+
+
+def __getattr__(name: str):
+    """다른 시험이 읽는 `preflight.RULES`. 읽을 때만 작업 트리 규칙을 불러와 `--staged` 실행에는 끼어들지 않는다."""
+    if name == "RULES":
+        return load_rules(staged=False)
+    raise AttributeError(name)
 
 
 def git_paths(*arguments: str) -> list[Path]:
@@ -140,7 +137,7 @@ def candidate_paths(staged: bool) -> list[Path]:
             path
             for path in paths
             if path.is_file()
-            and path.resolve() != Path(__file__).resolve()
+            and path.resolve() not in {Path(__file__).resolve(), RULES_MODULE.resolve()}
             and not SKIP_PARTS.intersection(path.relative_to(ROOT).parts)
             and path.suffix.lower() in TEXT_SUFFIXES
         }
@@ -199,6 +196,11 @@ def main() -> int:
         help="inspect only the exact staged blobs",
     )
     args = parser.parse_args()
+    rules = load_rules(args.staged)
+    if rules is None:
+        print("Secret preflight failed. Matched values are intentionally hidden.")
+        print(f"- {RULES_RELATIVE}: rules-module-not-staged")
+        return 1
     allowed, findings = load_allowlist()
     paths = candidate_paths(args.staged)
     for path in tracked_environment_files(args.staged):
@@ -210,7 +212,7 @@ def main() -> int:
         except (UnicodeDecodeError, OSError):
             continue
         for line_number, line in enumerate(lines, start=1):
-            for rule_name, pattern in RULES:
+            for rule_name, pattern in rules:
                 if (path.relative_to(ROOT).as_posix(), rule_name) in allowed:
                     continue
                 if pattern.search(line):

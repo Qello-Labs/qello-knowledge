@@ -237,3 +237,19 @@ def test_token_prefix_detection_remains_anchored_at_start(tmp_path, location):
     configs, issues = load_sources(path)
     assert not issues
     assert configs[0].scope.include == (value,)
+
+
+@pytest.mark.parametrize(
+    ("top", "scope", "field"),
+    [
+        ("include_secrets = true\n", "", "include_secrets"),
+        ("", "disable_default_exclusions = true\n", "scope.disable_default_exclusions"),
+    ],
+)
+def test_default_exclusions_cannot_be_disabled_by_config(tmp_path, top, scope, field):
+    # QK-SEC-001 FR-007: 기본 제외를 끄는 키는 없고, 그런 키는 실행 전에 실패한다.
+    text = f'[[source]]\nname = "docs"\nkind = "fake"\nenabled = true\n{top}[source.scope]\ninclude = ["**"]\n{scope}'
+    path = tmp_path / "sources.toml"
+    path.write_text(text)
+    _, issues = load_sources(path)
+    assert any(issue.code == "UNKNOWN_KEY" and issue.field == field for issue in issues)

@@ -1,0 +1,9 @@
+# 색인 필터 비밀값 오탐 예외(QK-SEC-001 FR-012). 형식: specs/QK-SEC-001-security-filter/contracts/security-exceptions.md
+# 커밋 검사 예외(scripts/preflight_allowlist.txt)와 별개다. 이 파일의 변경은 PR 리뷰 대상이다.
+# 값(비밀값처럼 보이는 문자열)은 적지 않는다. 경로에 와일드카드를 쓰지 않는다.
+#
+# [[exception]]
+# source = "qello-knowledge-docs"   # config/sources.toml의 자료원 이름
+# path = "docs/guide/setup.md"      # 저장소 안 경로
+# rule = "assigned-secret"          # src/qello_knowledge/domain/secret_rules.py의 규칙 이름
+# reason = "설정 예시의 자리표시 값이 길어 규칙에 걸린다"

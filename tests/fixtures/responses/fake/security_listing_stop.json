@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-20",
+    "redactions": [],
+    "note": "목록 첫 페이지가 429, 다시 시도 3600초. 목록 멈춤 보존 시험"
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 429,
+            "headers": {
+              "retry-after": "3600"
+            },
+            "body": {
+              "message": "slow down"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

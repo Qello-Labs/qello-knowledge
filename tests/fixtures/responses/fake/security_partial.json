@@ -1,0 +1,72 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-20",
+    "redactions": [],
+    "note": "두 번째 목록 페이지가 404. 목록 불완전 표시 보존 시험"
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "1",
+                  "url": "https://fake.invalid/view/1",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 1",
+                  "location": "docs/a.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                }
+              ],
+              "next_cursor": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=p2",
+        "responses": [
+          {
+            "status": 404,
+            "headers": {},
+            "body": {
+              "items": [],
+              "next_cursor": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/1",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# A",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/a.md",
+              "title": "Doc 1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-20",
+    "redactions": [],
+    "note": "본문 비밀값 한 건. 시험이 TARGET을 종류별 합성값으로 바꾼다"
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "1",
+                  "url": "https://fake.invalid/view/1",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 1",
+                  "location": "docs/one.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                }
+              ],
+              "next_cursor": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/1",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# One\n\n{{SECRET:TARGET}}\n",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/one.md",
+              "title": "Doc 1"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
