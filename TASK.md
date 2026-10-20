@@ -112,3 +112,5 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
   고치지 않고 다음 요청도 기다리게 함(R-07). 3) 측정은 `CountingTransport`(blob 응답 바이트), 어댑터 `last_snapshot`(커밋·공개 범위·잘림), 실제 패턴 목록으로 모음(R-14).
   4) 확장자 실패 예시를 `**/*.org`로, `adoc`은 통과 사례로. 5) 커밋 확정 요청의 404·422만 `NOT_FOUND`로 바꾸고 상태 코드 뜻은 일반화하지 않음(R-07).
 - 2026-10-20 사실(사람 재승인 대상): 위 4)·커밋 없는 저장소 해석 때문에 승인된 `spec.md` 예시 두 곳(US4 시나리오 1, Edge Cases 빈 저장소)을 고쳤다. FR·SC 문구는 그대로다.
+- 2026-10-20 사실: 같은 Codex 세션의 설계 재검토에서 이전 5건은 해소, 새 P2 1건(측정 `files`를 "판정 수 + 통과 수"로 정의해 통과 자료를 두 번 셈)을 냈다.
+  SEC-001은 통과 자료에도 `PASSED` 판정을 남기므로 `files = len(verdicts)`로 고치고, 세 측정 사례에서 고유 항목 수와 같은지 보는 시험을 quickstart에 더했다.
