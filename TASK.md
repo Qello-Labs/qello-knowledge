@@ -17,14 +17,21 @@
 
 - 완료: QK-CHK-002 명세(`spec.md`)를 `/speckit-specify`로 작성하고 Codex 독립 검토 3회를 거쳐 사람 승인을 받았다(2026-10-21).
 - 완료: `/speckit-plan` 설계 산출물을 만들고 Codex 독립 검토 4회를 거쳐 사람 승인을 받았다(2026-10-21).
-- 다음 단계: `/speckit-tasks`. 작업 목록 승인 전에는 구현하지 않는다(로드맵 1절 원칙 4).
-- 이후 단계(승인마다 이 파일의 Scope를 갱신): `/speckit-plan` → `/speckit-tasks` → 구현.
+- 완료: `/speckit-tasks` 작업 목록(`tasks.md`, 작업 38개 + 사람 단계 2개)을 Codex 독립 검토 2회를 거쳐 사람 승인을 받았다(2026-10-21).
+- 이번 단계: `tasks.md` T001~T038 구현(우측 패널 Codex 세션, 2026-10-21 사용자 결정). 사람 단계 H01·H02는 구현 뒤 사람이 한다.
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
 - `specs/QK-CHK-002-markdown-chunker/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
 - 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`, `measurement/measure_inputs.py`(측정 재현용, 원문 출력 없음). 승인됨, 바꾸려면 다시 승인
+- 작업 목록: 같은 디렉터리의 `tasks.md`(승인됨). 구현 중 체크 표시와 진행 기록은 고친다.
+- 구현(tasks.md, plan.md Project Structure):
+  - 새 파일: `src/qello_knowledge/domain/chunking.py`, `src/qello_knowledge/chunking/`(`__init__`, `blocks`, `sections`, `header`, `split`, `warnings`, `version`, `service`),
+    `tests/unit/chunking/`, `tests/fixtures/chunking/`
+  - 고치는 파일: `pyproject.toml`(선택 의존성 `index`와 `dev` 그룹에 `markdown-it-py==4.2.0`만), `uv.lock`, `tests/unit/test_boundaries.py`,
+    `src/qello_knowledge/devtools/measure.py`·`db.py`(`--chunk`), `tests/unit/devtools/test_measure.py`,
+    `specs/QK-CHK-002-markdown-chunker/measurement/measure_inputs.py`(T036, 계약과 다를 때만)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `TASK.md`
@@ -40,7 +47,8 @@
 
 ## Explicit exclusions
 
-- 구현(`src/`, `tests/`). 명세 승인 뒤 이 파일의 Scope를 갱신하고 시작한다.
+- 위 구현 목록 밖의 `src/`·`tests/` 변경. 런타임 `dependencies` 추가, `markdown-it-py` 밖의 새 의존성.
+- `tests/fixtures/chunking/` 기대값 JSON을 구현 결과로 덮어쓰기, 시험 삭제·`skip`·`xfail`(AGENTS.md 9절).
 - 코드 청킹(QK-CHK-001), 키워드 검색 텍스트 규칙(FR-CHK-07, ADR-010, QK-RET-001), ClickUp 수집(QK-ING-003),
   임베딩·저장·동기화 실행(QK-EMB-001, QK-SYN-001).
 - QK-ING-001·QK-SEC-001·QK-STO-001 코드와 승인된 명세 변경. 저장 스키마 변경.
@@ -54,7 +62,7 @@
 - 새로 읽는 자료원: 해당 없음. plan 측정(research R-02·R-03)은 이미 활성화된 `dnd-backend-docs`의 로컬 사본(커밋 `6aeccd0`)을 읽었다(GitHub API 0회)
 - 외부 API로 보내는 데이터: 해당 없음(청커는 외부 호출이 없다). plan 측정용으로 Hugging Face에서 `BAAI/bge-m3` 토크나이저 파일을 내려받았다(GET만, 문서 데이터 전송 없음, 프로젝트 의존성 아님)
 - 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
-- 인덱스 버전 변경: 이번 단계 없음(명세만). 첫 `chunking_version`의 형식과 값은 `plan.md`에서 정한다(명세 FR-012). 이미 색인된 청크가 없어 재임베딩 대상이 없다(추론, QK-SYN-001 미구현)
+- 인덱스 버전 변경: 없음. 첫 `chunking_version`은 `chk-md-20d966f730bb`(research R-07)이고 저장된 청크가 아직 없다. 이미 색인된 청크가 없어 재임베딩 대상이 없다(추론, QK-SYN-001 미구현)
 
 ## Ownership
 
@@ -63,6 +71,8 @@
 | `specs/QK-CHK-002-markdown-chunker/` | Byuntil | 사람 리뷰(명세 승인) |
 | `docs/sdd/roadmap.md` 상태 열 | Byuntil | 사람 리뷰 |
 | `TASK.md` | Byuntil | 사람 리뷰 |
+| `src/qello_knowledge/chunking/`, `domain/chunking.py`, `devtools/` 변경, `pyproject.toml`·`uv.lock` | Byuntil | 사람 리뷰 |
+| `tests/unit/chunking/`, `tests/fixtures/chunking/`, `tests/unit/devtools/test_measure.py`, `tests/unit/test_boundaries.py` | Byuntil | 사람 리뷰 |
 
 ## Existing user-owned changes
 
@@ -73,6 +83,10 @@
 ```bash
 python scripts/preflight.py
 git diff --check
+uv run ruff check .
+uv run ruff format --check .
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
 ## Completion criteria
@@ -103,3 +117,7 @@ git diff --check
 - 2026-10-21 사실: Codex plan 2차 검토 "변경 요청"(1차 7건 해소·3건 일부, 새 지적 높음 2·중간 3) 반영. 블록을 나무 구조로 재귀 분할하고 자식 사이 줄 덮기 규칙을 두었다(R-05·R-08). 펜스 닫힘은 토큰 내용 줄 수로 판정한다(12사례 확인, R-11). SC-011 완료 판정 입력을 커밋 `6aeccd0` 79개로 고정했다(R-12).
 - 2026-10-21 사실: Codex plan 3차 검토 "변경 요청"(높음 해소, 중간 3·낮음 2) 반영. 펜스 닫힘은 LF 개수 기준 + 해석 입력을 LF로 끝냄(16사례), 표 셀 수는 컨테이너 표지를 N번까지 제거(6사례), SC-011 통과 조건에 CHUNKED 79·청크 수 추가.
 - 2026-10-21 사용자 결정: QK-CHK-002 plan 승인(Codex 4차 검토 "승인" 권고 뒤).
+- 2026-10-21 사실: `tasks.md` 작성(작업 38개 + 사람 단계 2개). 작성 중 data-model `ChunkDraft`에 `estimated_tokens` 필드를 더했다(요약이 `domain` 밖 `embedding`을 가져오지 않게). 승인된 plan 산출물의 보완이라 tasks 승인 때 함께 확인받는다.
+- 2026-10-21 사실: Codex tasks 1차 검토 "변경 요청"(높음 1, 중간 5, 낮음 2) 반영. T006→T008 의존성과 TDD 순서 명시, 경고 판정 버전 불변 시험을 US4로, `ParsedDocument` 계약(앞머리 제목·펜스·표 정보), 기대 JSON `input`/`expected` 분리와 최종 필수 키 검사(T037), 설정 생성 시 검증, `ChunkDraft` 민감 필드 `repr=False`, `estimated_tokens` 실제 텍스트 대조 불변식.
+- 2026-10-21 사실: Codex tasks 2차 검토 "수정 후 승인"(낮음 3건: T016 `parse_document`·설정 검증 표기, T030 `content_newlines`) 반영.
+- 2026-10-21 사용자 결정: `tasks.md`와 data-model 보완 승인. 구현은 우측 패널 Codex 세션이 한다. 이 Claude 세션은 Scope 갱신·커밋·검토 조율을 맡는다(구현을 같은 세션이 승인하지 않는다, AGENTS.md 2절).
