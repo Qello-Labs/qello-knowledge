@@ -16,13 +16,15 @@
 ## Objective
 
 - 완료: QK-CHK-002 명세(`spec.md`)를 `/speckit-specify`로 작성하고 Codex 독립 검토 3회를 거쳐 사람 승인을 받았다(2026-10-21).
-- 다음 단계: `/speckit-plan`. 승인 전에는 구현하지 않는다(로드맵 1절 원칙 4).
+- 완료: `/speckit-plan` 설계 산출물을 만들고 Codex 독립 검토 4회를 거쳐 사람 승인을 받았다(2026-10-21).
+- 다음 단계: `/speckit-tasks`. 작업 목록 승인 전에는 구현하지 않는다(로드맵 1절 원칙 4).
 - 이후 단계(승인마다 이 파일의 Scope를 갱신): `/speckit-plan` → `/speckit-tasks` → 구현.
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
-- `specs/QK-CHK-002-markdown-chunker/spec.md`, `checklists/requirements.md`
+- `specs/QK-CHK-002-markdown-chunker/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
+- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`, `measurement/measure_inputs.py`(측정 재현용, 원문 출력 없음). 승인됨, 바꾸려면 다시 승인
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `TASK.md`
@@ -49,8 +51,8 @@
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음
-- 외부 API로 보내는 데이터: 해당 없음(청커는 외부 호출이 없다)
+- 새로 읽는 자료원: 해당 없음. plan 측정(research R-02·R-03)은 이미 활성화된 `dnd-backend-docs`의 로컬 사본(커밋 `6aeccd0`)을 읽었다(GitHub API 0회)
+- 외부 API로 보내는 데이터: 해당 없음(청커는 외부 호출이 없다). plan 측정용으로 Hugging Face에서 `BAAI/bge-m3` 토크나이저 파일을 내려받았다(GET만, 문서 데이터 전송 없음, 프로젝트 의존성 아님)
 - 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
 - 인덱스 버전 변경: 이번 단계 없음(명세만). 첫 `chunking_version`의 형식과 값은 `plan.md`에서 정한다(명세 FR-012). 이미 색인된 청크가 없어 재임베딩 대상이 없다(추론, QK-SYN-001 미구현)
 
@@ -93,3 +95,11 @@ git diff --check
 - 2026-10-21 사실: 2차 검토 반영으로 완료 조건의 상한을 "예상 토큰 기준 상한"으로, 첫 `chunking_version` 결정 시점을 `plan.md`로 바꿨다(명세 FR-012·FR-013).
   Jira SCRUM-101·GitHub #46 본문의 같은 문장("임베딩 입력 한도를 넘지 않고")은 아직 그대로다.
 - 2026-10-21 사용자 결정: QK-CHK-002 명세 승인(Codex 3차 검토 "승인" 권고 뒤). 저장소 관례대로 `spec.md`의 Status 표기는 바꾸지 않고 이 기록으로 승인을 남긴다.
+- 2026-10-21 사실: Jira SCRUM-101·GitHub #46 본문을 명세에 맞춰 고쳤다(명세 링크 "승인", 상한 문장 2곳을 "예상 토큰 기준 상한"으로). 앞의 "아직 그대로다" 기록은 해소됐다.
+- 2026-10-21 사용자 결정: Markdown 해석기는 `markdown-it-py==4.2.0`을 색인 전용 선택 의존성(`index`)과 `dev` 그룹으로 둔다(research R-01). 런타임 `dependencies`는 비워 둔다.
+- 2026-10-21 사용자 결정: 상한 근거 측정은 로컬 bge-m3 토크나이저로 한다(research R-03). 결과: 표에서 실제 토큰이 예상의 최대 2.30배, 상한 예상 2,800·목표 512로 정했다.
+- 2026-10-21 사실: plan 산출물(plan·research·data-model·contracts·quickstart) 작성. 사람 승인 전이다.
+- 2026-10-21 사실: Codex 패널 plan 1차 검토 "변경 요청"(높음 2, 중간 7, 낮음 1). 해석기 동작 지적 5건을 직접 재실행해 확인하고 모두 반영했다. 첫 청킹 규칙 버전 `chk-md-20d966f730bb`.
+- 2026-10-21 사실: Codex plan 2차 검토 "변경 요청"(1차 7건 해소·3건 일부, 새 지적 높음 2·중간 3) 반영. 블록을 나무 구조로 재귀 분할하고 자식 사이 줄 덮기 규칙을 두었다(R-05·R-08). 펜스 닫힘은 토큰 내용 줄 수로 판정한다(12사례 확인, R-11). SC-011 완료 판정 입력을 커밋 `6aeccd0` 79개로 고정했다(R-12).
+- 2026-10-21 사실: Codex plan 3차 검토 "변경 요청"(높음 해소, 중간 3·낮음 2) 반영. 펜스 닫힘은 LF 개수 기준 + 해석 입력을 LF로 끝냄(16사례), 표 셀 수는 컨테이너 표지를 N번까지 제거(6사례), SC-011 통과 조건에 CHUNKED 79·청크 수 추가.
+- 2026-10-21 사용자 결정: QK-CHK-002 plan 승인(Codex 4차 검토 "승인" 권고 뒤).
