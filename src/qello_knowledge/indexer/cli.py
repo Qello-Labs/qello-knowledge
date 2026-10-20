@@ -7,6 +7,7 @@ from pathlib import Path
 
 from qello_knowledge.config.cli import add_check_options, run_check
 from qello_knowledge.config.registry import Entrypoint
+from qello_knowledge.indexer.usage import LedgerFactory, add_usage_parser, postgres_ledger, run_usage
 from qello_knowledge.security.policy import load_policy
 from qello_knowledge.security.report import render_security_report, security_report
 from qello_knowledge.sources.config import load_sources
@@ -15,7 +16,7 @@ from qello_knowledge.sources.report import render_report, source_report
 EXCEPTIONS = Path("config/security_exceptions.toml")
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *, ledger_factory: LedgerFactory = postgres_ledger) -> int:
     parser = argparse.ArgumentParser(prog="qk-index", description="색인 진입점")
     sub = parser.add_subparsers(dest="command", required=True)
     add_check_options(sub.add_parser("check", help="설정만 점검한다. 외부 호출 없음"))
@@ -34,7 +35,11 @@ def main(argv: list[str] | None = None) -> int:
     security_check.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
     security_check.add_argument("--exceptions", type=Path, default=EXCEPTIONS)
     security_check.add_argument("--json", action="store_true")
+    add_usage_parser(sub)
     args = parser.parse_args(argv)
+
+    if args.command == "usage":
+        return run_usage(args, ledger_factory)
 
     if args.command not in {"sources", "security"}:
         code, _ = run_check(Entrypoint.INDEX, args)
