@@ -7,20 +7,22 @@
 ## Work gate
 
 - Jira 이슈: `SCRUM-100` / https://tkv123.atlassian.net/browse/SCRUM-100 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: QK-ING-002 / `specs/QK-ING-002-github-repo-source/spec.md`(작성 예정)
+- 기능명세서 ID / 링크: QK-ING-002 / `specs/QK-ING-002-github-repo-source/spec.md`(2026-10-20 승인)
 - 팀 스프린트 ID: `QELLO-S2026-W43`
 - GitHub Issue: `#41`
 - Branch: `feat/SCRUM-100-gh-41-github-repo-source`
-- Base branch: `main`(`origin/main` `40fe214`에서 분기)
+- Base branch: `main`. `40fe214`에서 분기했고 2026-10-20 `origin/main` `0b8d5d5`(#40 병합) 위로 rebase했다
 
 ## Objective
 
-- 이번 단계: QK-ING-002 명세(`spec.md`)를 작성하고 사람 리뷰를 받는다. plan·tasks·구현은 명세 승인 뒤에 한다.
+- 완료: QK-ING-002 명세(`spec.md`)를 작성하고 사람 승인을 받았다(2026-10-20, `0ab2931` 기준).
+- 이번 단계: `/speckit-plan` 설계 산출물을 만들고 사람 리뷰를 받는다. tasks·구현은 설계 승인 뒤에 한다.
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
-- `specs/QK-ING-002-github-repo-source/spec.md`, `checklists/requirements.md`
+- `specs/QK-ING-002-github-repo-source/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
+- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `TASK.md`
@@ -34,7 +36,7 @@
 
 ## Explicit exclusions
 
-- 구현, `config/sources.toml` 실제 자료원 등록, 실제 원본 호출(명세 승인 전).
+- 구현, `config/sources.toml` 실제 자료원 등록, 실제 원본 호출(설계·작업 목록 승인 전).
 - 청킹(QK-CHK-002), 임베딩(QK-EMB-001), 동기화·변경 판정·삭제 반영(QK-SYN-001).
 - QK-ING-001·QK-SEC-001 코드와 승인된 명세 수정.
 - 로드맵 `상태`·`진행` 열 외의 `docs/sdd/roadmap.md` 내용, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
@@ -97,3 +99,9 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
   FR-020 안 A는 일치로 판정했다. Codex 실행: preflight 318개 파일, `git diff --check`, 확인 필요 표시 검사 통과.
 - 2026-10-20 사실: P2를 명세 Edge Cases에서 고쳤다. 검토 중 `roadmap_status.py`가 다른 작업의 Issue #42(1.7 QK-EMB-001)로 1.7 상태가 최신이 아니라고 했다.
   이 작업의 범위가 아니어서 반영하지 않았다.
+- 2026-10-20 사실: 같은 Codex 세션이 P2 반영분(`3bf585b`, `0ab2931`)을 재검토해 PASS를 냈다. 남은 P1·P2 없음. PR #43(리뷰어 tkv00)을 열었고 CI가 통과했다.
+- 2026-10-20 사용자 결정: 사람 리뷰어 Byuntil이 `spec.md`(`0ab2931` 기준)를 승인했다. PR #43에는 아직 GitHub 리뷰 기록이 없어 대화로 전달받은 결정을 적는다.
+  명세를 쓴 세션은 승인하지 않았다(AGENTS.md 2절). `/speckit-plan`으로 설계를 진행한다.
+- 2026-10-20 사실: 설계 산출물(`plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/` 3개)을 이 세션이 썼다. 설계 승인 대기.
+  plan.md "사람 확인이 필요한 것"에 QK-ING-001 코드·시험 변경 네 곳(TASK 제외 범위 조정), 첫 자료원 활성화는 사람이 한다는 점, 결정 기록 필요 여부,
+  포함 패턴 초안, 빈 저장소 해석의 명세 문구 보완 제안, 2차 한도 한계를 남겼다.
