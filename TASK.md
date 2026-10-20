@@ -121,3 +121,14 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-21 사실: Codex tasks 1차 검토 "변경 요청"(높음 1, 중간 5, 낮음 2) 반영. T006→T008 의존성과 TDD 순서 명시, 경고 판정 버전 불변 시험을 US4로, `ParsedDocument` 계약(앞머리 제목·펜스·표 정보), 기대 JSON `input`/`expected` 분리와 최종 필수 키 검사(T037), 설정 생성 시 검증, `ChunkDraft` 민감 필드 `repr=False`, `estimated_tokens` 실제 텍스트 대조 불변식.
 - 2026-10-21 사실: Codex tasks 2차 검토 "수정 후 승인"(낮음 3건: T016 `parse_document`·설정 검증 표기, T030 `content_newlines`) 반영.
 - 2026-10-21 사용자 결정: `tasks.md`와 data-model 보완 승인. 구현은 우측 패널 Codex 세션이 한다. 이 Claude 세션은 Scope 갱신·커밋·검토 조율을 맡는다(구현을 같은 세션이 승인하지 않는다, AGENTS.md 2절).
+
+## Execution handoff (2026-10-21)
+
+- 실행 범위: QK-CHK-002 T001~T038 구현·시험 완료. 각 Phase의 RED/GREEN·판단 기록은 `specs/QK-CHK-002-markdown-chunker/tasks.md` 끝에 남겼다.
+- 현재 상태: `PASS`(실행 에이전트 범위 T001~T038) — 사용자 결정으로 T033의 S311 한 줄 예외를 적용하고 필수 검증을 다시 실행해 통과했다. 이전 BLOCKED 사유는 해소됐다. 다른 suppress·린트 설정 변경 없음.
+- 검증: 로컬 DB 포함 전체 1099 passed / 외부 2 deselected(9.05초). preflight(490파일)·diff 공백·ruff check·ruff format(325파일)·로컬 DB 준비·`uv lock --check` 모두 통과. 실제 `.env`를 읽지 않도록 DB 명령은 `--env-file /dev/null`, Docker는 `COMPOSE_DISABLE_ENV_FILE=1` 사용. 자세한 명령·환경 제약은 tasks 실행 기록 참조.
+- H01·H02 및 독립 검증·승인은 별도 세션/사람에게 남긴다. 이 세션의 시험 실행은 독립 승인 증거로 쓰지 않는다. 외부 호출·스테이징·커밋·push·브랜치 변경 0건.
+- 인덱스 생성·활성화 없음, embedding model `@cf/baai/bge-m3`(추정만), chunking version `chk-md-20d966f730bb`, 검색 품질 평가 세트 해당 없음. 합성 입력 79개·1,447,811바이트 성능 회귀 시험 약 0.41초, 0 Neurons.
+- 2026-10-21 사용자 결정: `tests/unit/chunking/test_perf.py`의 시드 고정 합성 데이터 `random.Random(20261021)`에 저장소 관례(`tests/localdb/store/builders.py:56`, `devtools/bench.py:149`)와 같은 한 줄 예외 `# noqa: S311 - 재현 가능한 합성 데이터용이다`를 허용한다. 암호 용도가 아닌 오탐이고 규칙 전체를 끄지 않는다.
+- 2026-10-21 사실: Claude 세션이 구현을 독립 리뷰했다(`/harness-review`, 권고 승인, 낮음 4건). 사용자 결정으로 Codex가 낮음 항목(설정 오류 메시지·주석 한국어화, import 위치)을 고쳤다. 재검증: ruff·format·preflight·diff 통과, `QK_REQUIRE_LOCALDB=1 uv run pytest` 1099 passed.
+- 2026-10-21 사실: 사용자 요청으로 Claude 세션이 H01(SC-011 완료 판정)을 대신 실행했다. 79개 모두 `CHUNKED`, 청크 1,291개, 0.182초로 통과. 외부 호출 0건. H02(실제 `main` 관찰, GitHub 약 83회)는 미실행이다.
