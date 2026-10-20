@@ -124,3 +124,9 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
   `/speckit-tasks`로 작업 목록을 만든다.
 - 2026-10-20 사실: `tasks.md`(48개 작업, Phase 1~7과 사람 단계 6개)를 이 세션이 썼다. tasks 승인 대기. 설계와 다르게 둔 세 곳(재생 응답을 JSON 파일 대신 시험 도우미가 코드로 만듦,
   겹치는 시험 파일 이름 변경, 확인 기록 시험 자료를 `tmp_path`에 복사해 씀)을 tasks.md 머리에 적었다. 승인되면 구현 범위를 Scope·Ownership·제외 범위에 반영한다.
+- 2026-10-20 사실: 같은 Codex 세션이 `tasks.md`(`c492b8d..dc45f9f`)를 검토해 변경 요청(FAIL)을 냈다. P1 1건(외부 호출 시험이 `measure_source`를 직접 불러 확인 기록 검사를 우회할 수 있음),
+  P2 3건(세션이 정상 응답에도 부르는 `classify`·`rate_limit_hint` 구현이 US3에 있어 US1을 끝낼 수 없음, 같은 파일·선행 의존 작업에 `[P]` 표시, 기존 CLI 성공 시험이 새 확인 기록 검사로
+  실패하게 되는데 전환 작업이 없음). 설계와 다르게 둔 세 곳은 타당하다고 판정했다. Codex 실행: preflight 335개 파일, ruff, 기존 계약·경계·CLI·개발 도구 시험 48 passed.
+- 2026-10-20 사실: 4건을 `tasks.md`에서 고쳤다. 1) CLI와 외부 호출 시험이 함께 쓰는 사전 검증 `prepare_source`를 두고 `measure_source`는 그 결과(`PreparedSource`)만 받게 했다.
+  검사 실패 시 전송 생성·요청 0건 시험을 더했다. 2) US1(T018)에서 두 메서드를 ING-001 기본 함수에 위임하고 US3(T028)에서 넓힌다. 3) 같은 파일·선행 의존 작업의 `[P]`를 지우고 의존 순서를 적었다.
+  4) 기존 CLI 성공 사례를 `tmp_path` 확인 기록과 `--reviews`로 바꾸는 작업(T033)을 더했다(저장소 `config/source_reviews/`에는 기록을 만들지 않음). 작업 수는 49개다.
