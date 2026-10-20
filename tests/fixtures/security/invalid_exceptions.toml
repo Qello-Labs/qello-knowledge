@@ -1,0 +1,49 @@
+extra = 1
+
+[[exception]]
+source = "docs"
+path = "docs/a.md"
+rule = "assigned-secret"
+reason = "정상"
+note = "모르는 키"
+
+[[exception]]
+source = "docs"
+rule = "assigned-secret"
+reason = "path 없음"
+
+[[exception]]
+source = "docs"
+path = ""
+rule = "assigned-secret"
+reason = "빈 path"
+
+[[exception]]
+source = "nope"
+path = "docs/b.md"
+rule = "assigned-secret"
+reason = "없는 자료원"
+
+[[exception]]
+source = "docs"
+path = "docs/c.md"
+rule = "no-such-rule"
+reason = "없는 규칙"
+
+[[exception]]
+source = "docs"
+path = "docs/*.md"
+rule = "assigned-secret"
+reason = "와일드카드"
+
+[[exception]]
+source = "docs"
+path = "../outside.md"
+rule = "assigned-secret"
+reason = "저장소 밖"
+
+[[exception]]
+source = "docs"
+path = "./docs/a.md"
+rule = "assigned-secret"
+reason = "정규화하면 첫 항목과 같다"

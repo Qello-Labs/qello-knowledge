@@ -1,0 +1,11 @@
+[[exception]]
+source = "docs"
+path = "./docs/guide/../setup.md"
+rule = "assigned-secret"
+reason = "설정 예시의 자리표시 값이 길어 규칙에 걸린다"
+
+[[exception]]
+source = "old-wiki"
+path = "Docs/Setup.md"
+rule = "assigned-secret"
+reason = "비활성 자료원 예외도 받는다"

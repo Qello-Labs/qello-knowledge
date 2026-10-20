@@ -1,0 +1,137 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-20",
+    "redactions": [],
+    "note": "자료 1이 503 네 번(재시도 소진). 공개 권한"
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "1",
+                  "url": "https://fake.invalid/view/1",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 1",
+                  "location": "docs/1.md",
+                  "size_bytes": null,
+                  "access": {
+                    "visibility": "public"
+                  },
+                  "origin_state": "ACTIVE"
+                },
+                {
+                  "id": "2",
+                  "url": "https://fake.invalid/view/2",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 2",
+                  "location": "docs/2.md",
+                  "size_bytes": null,
+                  "access": {
+                    "visibility": "public"
+                  },
+                  "origin_state": "ACTIVE"
+                },
+                {
+                  "id": "3",
+                  "url": "https://fake.invalid/view/3",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 3",
+                  "location": "docs/3.md",
+                  "size_bytes": null,
+                  "access": {
+                    "visibility": "public"
+                  },
+                  "origin_state": "ACTIVE"
+                }
+              ],
+              "next_cursor": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/1",
+        "responses": [
+          {
+            "status": 503,
+            "headers": {},
+            "body": {
+              "m": "x"
+            }
+          },
+          {
+            "status": 503,
+            "headers": {},
+            "body": {
+              "m": "x"
+            }
+          },
+          {
+            "status": 503,
+            "headers": {},
+            "body": {
+              "m": "x"
+            }
+          },
+          {
+            "status": 503,
+            "headers": {},
+            "body": {
+              "m": "x"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/2",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# ok",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/2.md",
+              "title": "Doc 2"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/3",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# ok",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/3.md",
+              "title": "Doc 3"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

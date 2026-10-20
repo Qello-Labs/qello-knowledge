@@ -1,0 +1,330 @@
+{
+  "_meta": {
+    "source_api": "fake",
+    "saved_at": "2026-10-20",
+    "redactions": [],
+    "note": "기본 제외 범주와 사람 지정 제외 경로 시나리오"
+  },
+  "body": {
+    "exchanges": [
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items?cursor=",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "items": [
+                {
+                  "id": "1",
+                  "url": "https://fake.invalid/view/1",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 1",
+                  "location": ".env",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "2",
+                  "url": "https://fake.invalid/view/2",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 2",
+                  "location": "config/.env.production",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "3",
+                  "url": "https://fake.invalid/view/3",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 3",
+                  "location": "deploy/id_rsa",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "4",
+                  "url": "https://fake.invalid/view/4",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 4",
+                  "location": "certs/server.pem",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "5",
+                  "url": "https://fake.invalid/view/5",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 5",
+                  "location": "secrets/db.txt",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "6",
+                  "url": "https://fake.invalid/view/6",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 6",
+                  "location": "infra/terraform.tfstate",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "7",
+                  "url": "https://fake.invalid/view/7",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 7",
+                  "location": "infra/terraform.tfstate.backup",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "8",
+                  "url": "https://fake.invalid/view/8",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 8",
+                  "location": "infra/terraform.tfstate.example",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "9",
+                  "url": "https://fake.invalid/view/9",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 9",
+                  "location": "infra/prod.tfvars",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "10",
+                  "url": "https://fake.invalid/view/10",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 10",
+                  "location": "infra/.terraform/config.sample",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "11",
+                  "url": "https://fake.invalid/view/11",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 11",
+                  "location": "web/node_modules/a.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "12",
+                  "url": "https://fake.invalid/view/12",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 12",
+                  "location": "app/build/x.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "13",
+                  "url": "https://fake.invalid/view/13",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 13",
+                  "location": ".git/config",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "14",
+                  "url": "https://fake.invalid/view/14",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 14",
+                  "location": "docs/people/contacts.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "15",
+                  "url": "https://fake.invalid/view/15",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc 15",
+                  "location": "DOCS/People/x.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "e1",
+                  "url": "https://fake.invalid/view/e1",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc e1",
+                  "location": ".env.example",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "e2",
+                  "url": "https://fake.invalid/view/e2",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc e2",
+                  "location": "infra/prod.tfvars.example",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                },
+                {
+                  "id": "ok",
+                  "url": "https://fake.invalid/view/ok",
+                  "version": "v1",
+                  "modified_at": null,
+                  "item_type": "markdown_file",
+                  "title": "Doc ok",
+                  "location": "docs/ok.md",
+                  "size_bytes": null,
+                  "origin_state": "ACTIVE",
+                  "access": {
+                    "visibility": "public"
+                  }
+                }
+              ],
+              "next_cursor": null
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/e1",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "GITHUB_TOKEN=<github-token>\n",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": ".env.example",
+              "title": "Doc e1"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/e2",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "region = \"ap-northeast-2\"\n",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "infra/prod.tfvars.example",
+              "title": "Doc e2"
+            }
+          }
+        ]
+      },
+      {
+        "method": "GET",
+        "url": "https://fake.invalid/items/ok",
+        "responses": [
+          {
+            "status": 200,
+            "headers": {},
+            "body": {
+              "body": "# OK",
+              "content_format": "MARKDOWN",
+              "version": "v1",
+              "location": "docs/ok.md",
+              "title": "Doc ok"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

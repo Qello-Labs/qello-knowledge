@@ -8,6 +8,8 @@ from pathlib import Path
 import pytest
 
 SOURCE = Path(__file__).resolve().parents[2] / "scripts" / "preflight.py"
+# preflight.py는 규칙을 이 파일에서 경로로 불러온다(QK-SEC-001 R-02).
+RULES_MODULE = Path("src/qello_knowledge/domain/secret_rules.py")
 # 형식만 맞춘 가짜 토큰. 파일에 그대로 남지 않게 이어 붙인다.
 FAKE_TOKEN = "gh" + "p_" + "A" * 36
 
@@ -16,6 +18,8 @@ FAKE_TOKEN = "gh" + "p_" + "A" * 36
 def repo(tmp_path: Path) -> Path:
     (tmp_path / "scripts").mkdir()
     shutil.copy(SOURCE, tmp_path / "scripts" / "preflight.py")
+    (tmp_path / RULES_MODULE).parent.mkdir(parents=True)
+    shutil.copy(SOURCE.parents[1] / RULES_MODULE, tmp_path / RULES_MODULE)
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)  # noqa: S607
     (tmp_path / "sample.md").write_text(f"token: {FAKE_TOKEN}\n", encoding="utf-8")
     return tmp_path
