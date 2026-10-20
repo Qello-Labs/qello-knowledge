@@ -1,0 +1,25 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          16
+        ],
+        "heading_path": [
+          "A"
+        ],
+        "search_header": "docs/sample.md\nA",
+        "search_text": "docs/sample.md\nA\n\n# A\n> a | b\n> --- | ---\n> | x | y |\n\n- a | b\n  --- | ---\n  x | y\n\n1. a | b\n   --- | ---\n   x | y\n\n- > a | b\n  > --- | ---\n  > | x | y |",
+        "embedding_text": "docs/sample.md\nA\n\n# A\n> a | b\n> --- | ---\n> | x | y |\n\n- a | b\n  --- | ---\n  x | y\n\n1. a | b\n   --- | ---\n   x | y\n\n- > a | b\n  > --- | ---\n  > | x | y |"
+      }
+    ]
+  }
+}

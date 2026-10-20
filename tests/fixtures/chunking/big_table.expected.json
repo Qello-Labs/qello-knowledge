@@ -1,0 +1,49 @@
+{
+  "input": {
+    "location": "a.md",
+    "source_title": "T",
+    "settings": {
+      "target_tokens": 40,
+      "limit_tokens": 60
+    }
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          5
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n| a | b |\n| - | - |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |",
+        "embedding_text": "a.md\nT\n\n| a | b |\n| - | - |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |"
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          6,
+          8
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |",
+        "embedding_text": "a.md\nT\n\n| a | b |\n| - | - |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |"
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          9,
+          9
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |",
+        "embedding_text": "a.md\nT\n\n| a | b |\n| - | - |\n| xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx | y |"
+      }
+    ]
+  }
+}

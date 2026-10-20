@@ -1,0 +1,39 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          4
+        ],
+        "heading_path": [
+          "A"
+        ],
+        "search_header": "docs/sample.md\nA",
+        "search_text": "docs/sample.md\nA\n\n# A\n```py\n# comment\n```",
+        "embedding_text": "docs/sample.md\nA\n\n# A\n```py\n# comment\n```"
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          5,
+          6
+        ],
+        "heading_path": [
+          "A",
+          "B"
+        ],
+        "search_header": "docs/sample.md\nA > B",
+        "search_text": "docs/sample.md\nA > B\n\n## B\nbody",
+        "embedding_text": "docs/sample.md\nA > B\n\n## B\nbody"
+      }
+    ]
+  }
+}

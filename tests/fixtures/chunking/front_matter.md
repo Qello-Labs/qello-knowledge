@@ -1,0 +1,5 @@
+---
+kind: synthetic
+---
+# A
+text
