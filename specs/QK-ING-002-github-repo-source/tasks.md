@@ -42,7 +42,7 @@ ING-001 공통 형식 변경과 실제 전송은 모든 스토리가 기대므�
   저장소·커밋·트리·blob 네 종류 요청 URL은 contracts/github-adapter.md 그대로 만들고, blob SHA는 `sha1(b"blob " + 길이 + b"\0" + 바이트)`로 계산한다.
   응답 하나를 상태 코드·헤더로 바꿔 넣는 함수(`override(url, status, headers, body)`)와, 같은 URL에 응답을 여러 개 쌓는 함수를 둔다.
   `tests/unit/sources/conftest.py`의 `FakeClock`을 가져다 쓰는 `session(adapter, transport, config, clock, jitter)` 도우미를 둔다
-- [ ] T003 [P] `tests/unit/adapters/github/conftest.py`: 기본 설정 fixture(`SourceConfig("docs", "github_repo_files", True, auth="GITHUB_API_TOKEN", scope=SourceScope(("docs/**/*.md", "README.md"), ("docs/private/**",), (("repo", "octo/docs"), ("ref", "main"))), allowed_hosts=("api.github.com",))`),
+- [ ] T003 `tests/unit/adapters/github/conftest.py`(T002 뒤): 기본 설정 fixture(`SourceConfig("docs", "github_repo_files", True, auth="GITHUB_API_TOKEN", scope=SourceScope(("docs/**/*.md", "README.md"), ("docs/private/**",), (("repo", "octo/docs"), ("ref", "main"))), allowed_hosts=("api.github.com",))`),
   `clock`·`jitter` fixture(값은 `tests/unit/sources/conftest.py`와 같게), `basic` 합성 저장소(일반 Markdown 5개, `100755` 파일 1개, 제외 경로 1개, 범위 밖 `.java` 1개, 하위 모듈 1개, 심볼릭 링크 1개, 디렉터리 항목 2개)
 
 ---
@@ -93,22 +93,24 @@ ING-001 공통 형식 변경과 실제 전송은 모든 스토리가 기대므�
 
 - [ ] T013 [P] [US1] `tests/unit/adapters/github/test_github_listing.py`(SC-001): `basic`으로 `list_all`을 돌리면 경로 목록이 기대 목록(범위 안 Markdown 5개와 `100755` 파일 중 범위 안 것)과 정확히 같고,
   하위 모듈·심볼릭 링크·디렉터리·제외 경로·범위 밖 파일이 0건, 경로순 정렬, 요청은 저장소·커밋·트리 세 건(contracts/github-adapter.md 표 순서·URL·`Accept: application/vnd.github+json`)뿐이다
-- [ ] T014 [P] [US1] 같은 파일(SC-001, R-04 필드 표): 항목마다 `source_kind == "github_repo_files"`, `source_id == location == path`, `change_key == blob SHA`, `change_key_kind == VERSION`,
+- [ ] T014 [US1] 같은 파일(SC-001, R-04 필드 표): 항목마다 `source_kind == "github_repo_files"`, `source_id == location == path`, `change_key == blob SHA`, `change_key_kind == VERSION`,
   `version == commit_sha`, `modified_at is None`, `item_type == "repo_file"`, `title is None`, `size_bytes ==` 트리 `size`, `url == "https://github.com/octo/docs/blob/<commit>/<경로>"`.
   공백·한글·`#`·`?`가 든 경로는 `url`에서 퍼센트 인코딩되고 `/`는 남으며 `source_id`는 원래 경로 그대로다. 대소문자만 다른 두 경로는 서로 다른 항목이다
-- [ ] T015 [P] [US1] 같은 파일(SC-002, FR-002·006): 같은 시나리오로 두 번 돌린 `Listing`이 항목·순서·값까지 같다. `ref`에 `/`가 든 경우(`release/1`) 커밋 요청 URL에서 `%2F`로 인코딩된다.
+- [ ] T015 [US1] 같은 파일(SC-002, FR-002·006): 같은 시나리오로 두 번 돌린 `Listing`이 항목·순서·값까지 같다. `ref`에 `/`가 든 경우(`release/1`) 커밋 요청 URL에서 `%2F`로 인코딩된다.
   모든 항목의 `version`이 커밋 응답의 `sha`다
-- [ ] T016 [P] [US1] 같은 파일(SC-003, FR-005·014, research R-07): (a) 트리 `truncated: true`이면 받은 항목을 담고 `Listing.complete`가 거짓, (b) 커밋 조회 422·404와 저장소 조회 404는
+- [ ] T016 [US1] 같은 파일(SC-003, FR-005·014, research R-07): (a) 트리 `truncated: true`이면 받은 항목을 담고 `Listing.complete`가 거짓, (b) 커밋 조회 422·404와 저장소 조회 404는
   `adapter.list_page`를 직접 부르면 `SourceFailure`의 `failure == NOT_FOUND`(원래 상태 코드 보존), `list_all`은 불완전·항목 0개, 재시도 0회, (c) 커밋 조회 409는 `INVALID_RESPONSE`이고 불완전,
   (d) 커밋이 있고 트리가 비거나 범위 안 파일이 0개면 `complete`가 참·항목 0개, (e) 응답 형식 오류(트리 항목 `sha` 누락, `truncated`가 불린 아님, `path`에 `..` 조각, 커밋 SHA가 40자 16진수 아님)는 `InvalidResponse`로 불완전
-- [ ] T017 [P] [US1] 같은 파일(research R-14 `last_snapshot`): 목록 조회 성공 뒤 `adapter.last_snapshot == ListSnapshot(commit_sha, visibility, truncated)`, 트리 조회 실패 시 `truncated is None`,
+- [ ] T017 [US1] 같은 파일(research R-14 `last_snapshot`): 목록 조회 성공 뒤 `adapter.last_snapshot == ListSnapshot(commit_sha, visibility, truncated)`, 트리 조회 실패 시 `truncated is None`,
   저장소·커밋 조회 실패 시 `None`, 새 목록 조회를 시작하면 이전 값이 지워진다
 
 ### Implementation (US1)
 
 - [ ] T018 [US1] `src/qello_knowledge/adapters/github.py`: `GitHubRepoFilesAdapter.kind = "github_repo_files"`, `scope.extra`에서 `repo`·`ref` 읽기, `list_page`의 세 요청과 data-model.md 2절 응답 검증
   (`RepoInfo`: "`visibility`가 문자열이 아니면 `None`(미확인). `archived`가 불린이 아니면 오류" / `CommitRef`: "둘 다 40자 소문자 16진수" / `TreeEntry`: "`path`는 빈 문자열·앞 `/`·`..` 조각 금지. `blob`이면 `sha`는 40자 16진수, `size`는 0 이상 정수" / `TreeListing`: "`truncated`가 불린이 아니면 오류"),
-  일반 파일 선별(`type == "blob"`이고 `mode`가 `100644` 또는 `100755`), R-04 필드 매핑, 경로순 정렬, `ListPage(items, None, complete=not truncated)`. T013~T015 통과
+  일반 파일 선별(`type == "blob"`이고 `mode`가 `100644` 또는 `100755`), R-04 필드 매핑, 경로순 정렬, `ListPage(items, None, complete=not truncated)`.
+  ING-001 세션은 정상 응답에서도 `classify`·`rate_limit_hint`를 부르므로(`sources/session.py`) 이 단계에서 `classify`는 `default_classify`, `rate_limit_hint`는 `default_rate_limit_hint`에 위임한다.
+  GitHub 규칙은 US3 T028에서 이 두 메서드를 넓힌다. T013~T015 통과
 - [ ] T019 [US1] `src/qello_knowledge/adapters/github.py`: 커밋 확정 요청의 `SourceFailure`(HTTP 404·422)를 `SourceFailure(NOT_FOUND, 원래 상태 코드)`로 바꿔 올리고, 그 밖 실패는 그대로 올린다.
   `ListSnapshot`과 `last_snapshot`(목록 조회 시작 때 `None`, 커밋 확정 뒤 갱신). T016·T017 통과
 
@@ -154,7 +156,7 @@ ING-001 공통 형식 변경과 실제 전송은 모든 스토리가 기대므�
 
 - [ ] T025 [P] [US3] `tests/unit/adapters/github/test_github_classify.py`(SC-006, contracts/github-adapter.md `classify` 표): 403·429에 `x-ratelimit-remaining: 0` → `TRANSIENT/RATE_LIMITED`,
   403·429에 `retry-after` → `TRANSIENT/RATE_LIMITED`, 그 밖 403 → `PERMANENT/ACCESS_DENIED`, 401 → 인증 실패, 200·404·500은 `default_classify`와 같다
-- [ ] T026 [P] [US3] 같은 파일(`rate_limit_hint` 표): `retry-after: 60`과 `x-ratelimit-remaining: 100` → `remaining=0`, `retry_after_seconds=60`; `retry-after`와 `x-ratelimit-remaining: 0`·`x-ratelimit-reset` →
+- [ ] T026 [US3] 같은 파일(`rate_limit_hint` 표): `retry-after: 60`과 `x-ratelimit-remaining: 100` → `remaining=0`, `retry_after_seconds=60`; `retry-after`와 `x-ratelimit-remaining: 0`·`x-ratelimit-reset` →
   `remaining=0`, 늦은 쪽 시각; `retry-after` 없이 남은 수 0과 `reset` → `retry_at`이 그 유닉스 초(UTC); 남은 수 양수만 → `remaining`만, `retry_at is None`; 헤더 없음 → `None`;
   숫자가 아닌 헤더 값은 없는 것으로 본다
 - [ ] T027 [P] [US3] `tests/unit/adapters/github/test_github_rate_limit.py`(SC-006, FR-013): 세션으로 끝까지 돌린다. (a) 1차 한도(403, 남은 수 0, `reset`이 지금+30초) 뒤 성공 → 그 자료 성공, 가짜 시계 대기 ≥ 30초,
@@ -164,7 +166,7 @@ ING-001 공통 형식 변경과 실제 전송은 모든 스토리가 기대므�
 
 ### Implementation (US3)
 
-- [ ] T028 [US3] `src/qello_knowledge/adapters/github.py`: `classify`, `rate_limit_hint`(contracts/github-adapter.md 표 그대로. `retry-after` 읽기는 `default_rate_limit_hint`를 쓴다). T025~T027 통과
+- [ ] T028 [US3] `src/qello_knowledge/adapters/github.py`: US1의 위임 구현을 넓혀 `classify`, `rate_limit_hint`를 contracts/github-adapter.md 표대로 만든다( `retry-after` 읽기는 `default_rate_limit_hint`를 쓴다). T025~T027 통과
 
 **Checkpoint**: 모든 어댑터 동작 완료. US1~US3 시험과 공통 계약 시험 통과
 
@@ -180,43 +182,51 @@ ING-001 공통 형식 변경과 실제 전송은 모든 스토리가 기대므�
 
 - [ ] T029 [P] [US4] `tests/fixtures/source_reviews/`: 올바른 기록 `valid.toml`(contracts/source-reviews.md 형식, `result = "개인 정보 없음"`), `excluded.toml`(`result = "개인 정보 경로 제외함"`과 `moved_to_exclude` 1개).
   값은 합성(`source = "docs"`, `reviewer_role = "시험용 역할"`). 이름·연락처 없음
-- [ ] T030 [P] [US4] `tests/unit/sources/test_scope_review.py`(SC-008, R-11): 확장자 검사 — `**/*.org`, `docs/*.m?`, `docs/*.[mM]d` → `UNKNOWN_EXTENSION scope.include[<번호>]`;
+- [ ] T030 [P] [US4] `tests/unit/sources/test_scope_review.py`(SC-008, R-11, T029 뒤): 확장자 검사 — `**/*.org`, `docs/*.m?`, `docs/*.[mM]d` → `UNKNOWN_EXTENSION scope.include[<번호>]`;
   `**/*.adoc`, `**/*.MD`, `docs/**`, `README*`, `README.md` → 통과. 비활성 자료원에도 적용된다
-- [ ] T031 [P] [US4] 같은 파일(SC-008, R-12, contracts/source-reviews.md 검사 표): 활성 자료원에 대해 기록 없음 → `REVIEW_MISSING review`; TOML 문법 오류, 필수 항목 누락(항목마다), 모르는 키,
+- [ ] T031 [US4] 같은 파일(SC-008, R-12, contracts/source-reviews.md 검사 표): 활성 자료원에 대해 기록 없음 → `REVIEW_MISSING review`; TOML 문법 오류, 필수 항목 누락(항목마다), 모르는 키,
   `source`와 파일 이름 다름, `result`가 두 값 밖, `result = "개인 정보 경로 제외함"`인데 `moved_to_exclude` 없음 → `REVIEW_INVALID`; `repo`·`ref`·`include`·`exclude` 하나라도 다름,
   패턴 순서만 다름, `moved_to_exclude.pattern`이 설정 `exclude`에 없음 → `REVIEW_SCOPE_MISMATCH`; 비활성 자료원은 기록이 없어도 통과; 가짜 종류 자료원의 기록 `scope`에 `repo`·`ref`가 없어도 통과.
   모든 오류 문자열에 기록 내용 값·설정 값이 없다(SC-010)
 - [ ] T032 [P] [US4] `tests/unit/indexer/test_cli.py`에 사례 추가(contracts/cli.md): `sources check --reviews <dir>`가 확장자·기록 오류를 ING-001 보고 형식(표·`--json`)으로 보이고 종료 코드 1,
   `run --reviews <dir>`도 같은 오류에서 1이고 원본 호출이 없다(전송이 만들어지지 않는다), 저장소의 `config/sources.toml`과 기본 `--reviews`로 `sources check`와 `run`이 통과한다(첫 자료원 비활성).
-  기존 사례는 그대로 통과
-- [ ] T033 [P] [US4] `tests/unit/devtools/test_measure.py`(SC-009 자동 부분, research R-14, data-model.md 9절): 재생 전송으로 `measure_source`를 세 사례에서 돌린다 — 정상, 본문 비밀값 차단(합성 토큰을 본문에 심음),
+  `security check`는 확인 기록을 검사하지 않는다(contracts/cli.md)
+- [ ] T033 [US4] `tests/unit/indexer/test_cli.py` 기존 성공 사례 전환(T032와 같은 파일, T032 뒤): `tests/fixtures/sources/valid.toml`의 활성 자료원 `docs`(가짜 종류)로 `sources check`·`run`이 0을 기대하던 사례는
+  새 계약에서 `REVIEW_MISSING`이 되므로, 시험 도우미 `tests/unit/review_records.py`(시험 파일 아님)가 `SourceConfig`와 같은 범위의 확인 기록을 `tmp_path`에 써서 `--reviews`로 넘긴다.
+  같은 호출을 기록 없이 부르는 사례는 실패(1, `REVIEW_MISSING`) 사례로 따로 남긴다. 저장소의 `config/source_reviews/`에는 기록 파일을 만들지 않는다
+- [ ] T034 [P] [US4] `tests/unit/devtools/test_measure.py`(SC-009 자동 부분, research R-14, data-model.md 9절): 사전 검증 `prepare_source`가 확인 기록 없음·범위 불일치·확장자 오류·보안 예외 파일 오류·자료원 설정 오류에서
+  `PreparedSource`가 아닌 오류 목록을 돌려주고, 이때 전송 생성 함수(대역)가 한 번도 불리지 않으며 요청이 0건이다(FR-020, 호출 전 검사). `measure_source`는 `PreparedSource`만 받는다.
+  이어서 통과한 `PreparedSource`와 재생 전송으로 `measure_source`를 세 사례에서 돌린다 — 정상, 본문 비밀값 차단(합성 토큰을 본문에 심음),
   범위 안 항목 0개. 세 사례 모두 FR-022 항목(`commit`, `visibility`, `tree_truncated`, `include`·`exclude` 실제 목록, `measured_at`, `environment`, `requests`, `elapsed_seconds`, `listing_complete`, `stop`,
   `files`, `bodies_fetched`, `total_bytes`, `max_file_bytes`, `by_verdict`, `by_rule`, `blocked`, `limits`)이 있다. `files`는 범위 안 고유 목록 항목 수와 같다(통과 자료를 두 번 세지 않는다).
   본문 차단 사례도 `bodies_fetched`·`total_bytes`에 들어간다. 항목 0개 사례도 `commit`이 나온다. 출력(표·JSON)에 본문·토큰 문자열이 없다. `CountingTransport`는 blob 2xx 응답 길이만 세고 응답을 바꾸지 않는다
-- [ ] T034 [P] [US4] `tests/unit/devtools/test_measure.py`에 명령 사례 추가(contracts/cli.md `qk-dev source measure`): 설정 점검 실패·확인 기록 오류·없는 이름·비활성 자료원·지원하지 않는 종류면 전송을 만들지 않고 1.
+- [ ] T035 [US4] `tests/unit/devtools/test_measure.py`에 명령 사례 추가(contracts/cli.md `qk-dev source measure`): 설정 점검 실패·확인 기록 오류·없는 이름·비활성 자료원·지원하지 않는 종류면 전송을 만들지 않고 1.
   목록 불완전이나 판정 실패가 있으면 출력하고 1. 실제 전송 생성 함수를 대역으로 바꿔 재생 전송으로 정상 사례 0
-- [ ] T035 [P] [US4] `tests/external/test_github_repo_source.py`(SC-009, `@pytest.mark.external`): `require_env("GITHUB_API_TOKEN")`로 토큰을 받고, `config/sources.toml`의 첫 활성 `github_repo_files` 자료원으로
-  `measure_source`를 실제 전송으로 돌려 요청 수 ≤ 실행당 한도, 목록 완전, `ERROR` 판정 0건을 확인한다. 활성 자료원이 없으면 "활성화 절차(research R-13) 뒤 실행" 메시지로 실패한다(건너뛰지 않는다).
+- [ ] T036 [P] [US4] `tests/external/test_github_repo_source.py`(SC-009, `@pytest.mark.external`): `require_env("GITHUB_API_TOKEN")`로 토큰을 받고, `config/sources.toml`의 첫 활성 `github_repo_files` 자료원을
+  CLI와 같은 사전 검증 `prepare_source`(기본 `config/source_reviews`, `config/security_exceptions.toml`)로 통과시킨 뒤에만 실제 전송을 만든다. 오류가 있으면 전송을 만들지 않고 오류 코드로 실패한다.
+  통과하면 `measure_source`를 실제 전송으로 돌려 요청 수 ≤ 실행당 한도, 목록 완전, `ERROR` 판정 0건을 확인한다. 활성 자료원이 없으면 "활성화 절차(research R-13) 뒤 실행" 메시지로 실패한다(건너뛰지 않는다).
   기본 실행(`-m 'not external'`)에서 빠지는지 `uv run pytest --collect-only -q tests/external`로 확인한다
 
 ### Implementation (US4)
 
-- [ ] T036 [US4] `src/qello_knowledge/sources/scope_review.py`: `extension_issues(config) -> tuple[ConfigIssue, ...]`(research R-11 규칙, `qello_knowledge.domain.redact.FILE_EXTENSIONS` 사용),
+- [ ] T037 [US4] `src/qello_knowledge/sources/scope_review.py`: `extension_issues(config) -> tuple[ConfigIssue, ...]`(research R-11 규칙, `qello_knowledge.domain.redact.FILE_EXTENSIONS` 사용),
   `ScopeReview` 값 객체(data-model.md 8절: "`source`는 파일 이름(확장자 제외)과 같다", "`reviewed_on`은 TOML 날짜", "`reviewer_role`·`method`는 비어 있지 않다",
   "`result`는 `개인 정보 없음` 또는 `개인 정보 경로 제외함`", "`scope`는 현재 자료원 설정과 같다(패턴 순서 포함)", "`moved_to_exclude`는 `result`가 `개인 정보 경로 제외함`이면 1개 이상, `pattern`은 현재 `exclude`에 있다"),
   `load_review(path)`, `check_scope(configs, reviews_dir)`(contracts/source-reviews.md 검사 표 순서, 경로가 없으면 빈 디렉터리와 같음). ING-001 `sources/config.py`·SEC-001 `security/`는 고치지 않는다. T030·T031 통과
-- [ ] T037 [US4] `src/qello_knowledge/indexer/cli.py`: `sources check`와 `run`에 `--reviews`(기본 `config/source_reviews`)를 더하고, `load_sources` 오류에 `check_scope` 오류를 합쳐 기존 보고 함수로 보인다.
-  오류가 있으면 원본 호출 없이 1. 그 밖 동작은 바꾸지 않는다. T032 통과
-- [ ] T038 [P] [US4] `config/sources.toml`: research R-13의 `dnd-backend-docs` 항목을 `enabled = false`로 더한다. 기존 형식 안내 주석은 남기고 첫 줄 주석("첫 실제 자료원은 QK-ING-002가 추가한다")을
+- [ ] T038 [US4] `src/qello_knowledge/indexer/cli.py`: `sources check`와 `run`에 `--reviews`(기본 `config/source_reviews`)를 더하고, `load_sources` 오류에 `check_scope` 오류를 합쳐 기존 보고 함수로 보인다.
+  오류가 있으면 원본 호출 없이 1. 그 밖 동작은 바꾸지 않는다. T032·T033 통과
+- [ ] T039 [P] [US4] `config/sources.toml`: research R-13의 `dnd-backend-docs` 항목을 `enabled = false`로 더한다. 기존 형식 안내 주석은 남기고 첫 줄 주석("첫 실제 자료원은 QK-ING-002가 추가한다")을
   "활성화는 결정 기록·개인 정보 확인 기록과 함께 사람이 한다(QK-ING-002 research R-13)"로 바꾼다. `uv run qk-index sources check`가 통과한다
-- [ ] T039 [P] [US4] `config/source_reviews/README.md`: contracts/source-reviews.md의 파일 형식·검사·"에이전트는 이 파일을 대신 만들지 않는다"·이름과 연락처 금지를 요약하고, 활성화 절차(research R-13 1~6단계)를 적는다.
+- [ ] T040 [P] [US4] `config/source_reviews/README.md`: contracts/source-reviews.md의 파일 형식·검사·"에이전트는 이 파일을 대신 만들지 않는다"·이름과 연락처 금지를 요약하고, 활성화 절차(research R-13 1~6단계)를 적는다.
   `.toml` 기록 파일은 만들지 않는다
-- [ ] T040 [US4] `src/qello_knowledge/devtools/measure.py`: `CountingTransport(inner)`(URL 경로에 `/git/blobs/`가 있는 2xx 응답의 본문 길이만 셈), `SourceMeasurement`(data-model.md 9절 필드),
-  `measure_source(config, policy, transport, clock) -> SourceMeasurement`(GitHub 어댑터·ING-001 세션·SEC-001 `screen_source`, `files = len(ScreenResult.verdicts)`, `blocked`는 `SECRET_BLOCKED`·`ERROR`·`identifier-address` 판정의 `to_dict(context)`),
-  표·한 줄 JSON 출력 함수(contracts/cli.md 형식). 저장·임베딩 없음. T033 통과
-- [ ] T041 [US4] `src/qello_knowledge/devtools/db.py`: `qk-dev source measure --name [--sources] [--reviews] [--exceptions] [--env-file] [--json]` 하위 명령을 연결한다.
-  순서는 contracts/cli.md 1~5(설정 점검 → 자료원 확인 → `github_repo_files`만 → `CountingTransport(HttpsTransport(allowed_hosts, GITHUB_API_TOKEN))` → 출력·종료 코드). 토큰은 QK-FND-001 설정 로딩으로 읽는다. T034 통과
-- [ ] T042 [US4] T035 외부 호출 시험 파일을 완성하고, 기본 실행에서 수집되지만 실행되지 않는지(`deselected`) 확인한다. 이 작업에서는 외부 호출 시험을 실행하지 않는다(첫 자료원이 비활성)
+- [ ] T041 [US4] `src/qello_knowledge/devtools/measure.py`: `prepare_source(name, sources_path, reviews_dir, exceptions_path) -> PreparedSource | tuple[이슈, ...]`(색인 진입점 설정 점검을 뺀
+  `qk-index run`의 설정 검사 순서: `load_sources` → `check_scope` → `load_policy` → 이름·활성·종류 확인. 원본 호출 없음. `PreparedSource(config, policy)`는 이 함수로만 만든다),
+  `CountingTransport(inner)`(URL 경로에 `/git/blobs/`가 있는 2xx 응답의 본문 길이만 셈), `SourceMeasurement`(data-model.md 9절 필드),
+  `measure_source(prepared: PreparedSource, transport, clock) -> SourceMeasurement`(GitHub 어댑터·ING-001 세션·SEC-001 `screen_source`, `files = len(ScreenResult.verdicts)`, `blocked`는 `SECRET_BLOCKED`·`ERROR`·`identifier-address` 판정의 `to_dict(context)`),
+  표·한 줄 JSON 출력 함수(contracts/cli.md 형식). 저장·임베딩 없음. T034 통과
+- [ ] T042 [US4] `src/qello_knowledge/devtools/db.py`: `qk-dev source measure --name [--sources] [--reviews] [--exceptions] [--env-file] [--json]` 하위 명령을 연결한다.
+  순서는 contracts/cli.md 1~5. 색인 진입점 설정 점검 뒤 `prepare_source`를 부르고, 통과했을 때만 `CountingTransport(HttpsTransport(allowed_hosts, GITHUB_API_TOKEN))`을 만든다 → 출력·종료 코드. 토큰은 QK-FND-001 설정 로딩으로 읽는다. T035 통과
+- [ ] T043 [US4] T036 외부 호출 시험 파일을 완성하고, 기본 실행에서 수집되지만 실행되지 않는지(`deselected`) 확인한다. 이 작업에서는 외부 호출 시험을 실행하지 않는다(첫 자료원이 비활성)
 
 **Checkpoint**: 모든 스토리 완료. 첫 자료원은 비활성이고, 활성화·측정은 사람 단계로 남는다
 
@@ -224,14 +234,14 @@ ING-001 공통 형식 변경과 실제 전송은 모든 스토리가 기대므�
 
 ## Phase 7: Polish & Cross-Cutting
 
-- [ ] T043 [P] `tests/unit/adapters/github/test_github_no_secret_leak.py`(SC-010): 합성 토큰으로 만든 `HttpsTransport`와 GitHub 어댑터로 재생 시나리오(정상·실패·한도)를 돌린 뒤
+- [ ] T044 [P] `tests/unit/adapters/github/test_github_no_secret_leak.py`(SC-010): 합성 토큰으로 만든 `HttpsTransport`와 GitHub 어댑터로 재생 시나리오(정상·실패·한도)를 돌린 뒤
   `FetchResult.to_dict()`, `caplog` 전체, 예외 문자열, `last_snapshot` `repr`에 토큰·`Authorization` 문자열이 없다
-- [ ] T044 [P] `tests/unit/test_boundaries.py`가 통과하는지 확인한다(`domain` 변경이 표준 라이브러리만 쓰는지). 새 모듈 `adapters/github.py`·`adapters/http.py`가 `qello_knowledge.security`를 가져오지 않는다
-- [ ] T045 [P] `uv run ruff format .`와 `uv run ruff check .`로 정리
-- [ ] T046 AGENTS.md 7절 기본 검증 전체 실행: `python3 scripts/preflight.py`, `python3 -I scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`,
+- [ ] T045 [P] `tests/unit/test_boundaries.py`가 통과하는지 확인한다(`domain` 변경이 표준 라이브러리만 쓰는지). 새 모듈 `adapters/github.py`·`adapters/http.py`가 `qello_knowledge.security`를 가져오지 않는다
+- [ ] T046 다른 파일 수정이 모두 끝난 뒤 `uv run ruff format .`와 `uv run ruff check .`로 정리
+- [ ] T047 AGENTS.md 7절 기본 검증 전체 실행: `python3 scripts/preflight.py`, `python3 -I scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`,
   `uv run qk-dev db up`, `QK_REQUIRE_LOCALDB=1 uv run pytest`. 결과를 PR 본문용으로 기록
-- [ ] T047 quickstart.md 1~3.5절 명령을 차례로 실행하고 SC별 결과를 기록한다(SC-001~008, SC-010, SC-009 자동 부분). 4절(실제 측정)은 사람 단계로 남긴다
-- [ ] T048 PR 본문에 사람 확인 항목을 적는다(plan.md "사람 확인이 필요한 것"): QK-ING-001 변경 네 곳과 기존 동작 유지 증빙, 첫 자료원 비활성 등록과 활성화 절차(결정 기록 필수),
+- [ ] T048 quickstart.md 1~3.5절 명령을 차례로 실행하고 SC별 결과를 기록한다(SC-001~008, SC-010, SC-009 자동 부분). 4절(실제 측정)은 사람 단계로 남긴다
+- [ ] T049 PR 본문에 사람 확인 항목을 적는다(plan.md "사람 확인이 필요한 것"): QK-ING-001 변경 네 곳과 기존 동작 유지 증빙, 첫 자료원 비활성 등록과 활성화 절차(결정 기록 필수),
   포함 패턴 초안, 명세 예시 정정 재승인(`87f98a3`), 2차 한도 한계, 이 tasks.md의 설계 조정 세 곳
 
 ---
@@ -254,26 +264,28 @@ research R-13 활성화 절차. 이 작업 목록의 완료 조건이 아니며,
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: 바로 시작
+- **Setup (Phase 1)**: 바로 시작. T003은 T002 뒤
 - **Foundational (Phase 2)**: Setup 뒤. 모든 스토리를 막는다. T007 → T008·T009, T010 → T011. T006·T012(실제 전송)는 나머지와 병렬
 - **US1 (Phase 3)**: Foundational 뒤. 어댑터 목록 조회
 - **US2 (Phase 4)**: US1 뒤(같은 파일 `adapters/github.py`, 계약 시험이 목록·본문을 함께 씀)
 - **US3 (Phase 5)**: US1 뒤. US2와는 시험 파일이 달라 시험 작성은 병렬로 할 수 있지만, 구현 T028은 같은 파일이라 T024 뒤에 한다
-- **US4 (Phase 6)**: Foundational 뒤 시작할 수 있다(T029~T032, T036~T039는 어댑터와 무관). 측정 T033·T034·T040·T041은 US1~US3 뒤
+- **US4 (Phase 6)**: Foundational 뒤 시작할 수 있다(T029~T033, T037~T040은 어댑터와 무관). 측정 T034~T036·T041~T043은 US1~US3 뒤
 - **Polish (Phase 7)**: 모든 스토리 뒤
 
 ### Within Each User Story
 
 - 시험을 먼저 쓰고 실패를 확인한 뒤 구현한다
 - `adapters/github.py`를 고치는 작업(T018, T019, T023, T024, T028)은 순서대로 한다
+- 같은 시험 파일을 쓰는 작업(T013~T017, T025·T026, T030·T031, T032·T033, T034·T035)은 [P] 없이 차례로 쓴다
+- 시험 자료 T029는 T030~T033보다 먼저, 시험 도우미 T002는 T003보다 먼저다
 
 ### Parallel Opportunities
 
-- Phase 1: T002, T003
+- Phase 1: T001 뒤 T002(T003은 T002 뒤)
 - Phase 2: T004, T005, T006 시험 / T009, T011, T012 구현
-- US1 시험 T013~T017 (같은 파일이면 한 사람이 이어서 쓴다)
-- US2 시험 T020~T022, US3 시험 T025~T027
-- US4: T029~T035 시험, T038·T039 설정 문서
+- US1 시험 T013(같은 파일의 T014~T017은 이어서)
+- US2 시험 T020, T021, T022(파일이 서로 다름), US3 시험 T025(T026은 이어서)와 T027
+- US4: T030, T032, T034, T036 시험(파일이 서로 다름, T029 뒤), T039·T040 설정 문서
 
 ---
 
@@ -282,8 +294,8 @@ research R-13 활성화 절차. 이 작업 목록의 완료 조건이 아니며,
 ```text
 Task: "T030 [US4] tests/unit/sources/test_scope_review.py 확장자 검사"
 Task: "T032 [US4] tests/unit/indexer/test_cli.py --reviews 사례"
-Task: "T038 [US4] config/sources.toml 첫 자료원 비활성 등록"
-Task: "T039 [US4] config/source_reviews/README.md"
+Task: "T039 [US4] config/sources.toml 첫 자료원 비활성 등록"
+Task: "T040 [US4] config/source_reviews/README.md"
 ```
 
 ---
