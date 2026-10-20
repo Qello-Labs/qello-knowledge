@@ -2,3 +2,4 @@
 # 사유가 없는 줄은 검사 실패로 처리한다. 값은 적지 않는다. 이 파일의 변경은 PR 리뷰 대상이다.
 src/qello_knowledge/domain/security.py:assigned-secret # 판정 이름 열거형(SECRET_BLOCKED 등)의 값이 이름과 같아 이름 규칙에 걸리는 오탐. QK-SEC-001 T021
 src/qello_knowledge/domain/security.py:env-assigned-secret # 판정 이름 열거형(SECRET_BLOCKED 등)의 값이 이름과 같아 이름 규칙에 걸리는 오탐. QK-SEC-001 T021
+src/qello_knowledge/domain/embedding.py:env-assigned-secret # 실패 종류 열거형 SECRET_BLOCKED의 값이 이름과 같아 이름 규칙에 걸리는 오탐. QK-EMB-001 T003

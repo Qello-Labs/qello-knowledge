@@ -48,6 +48,10 @@ class Store(Protocol):
         """저장된 벡터를 돌려준다. 없으면 `None`(US5)."""
         ...
 
+    def find_embeddings(self, refs: Sequence[EmbeddingRef]) -> dict[EmbeddingRef, tuple[float, ...]]:
+        """여러 키를 한 번에 조회한다. 없는 키는 결과에 없다(QK-EMB-001 research R-07)."""
+        ...
+
     def search_vector(self, query: Sequence[float], top_n: int, filters: SearchFilter = NO_FILTER) -> SearchResult:
         """거리 순 상위 N(최대 50) 청크(FR-006)."""
         ...
