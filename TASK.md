@@ -18,7 +18,8 @@
 - 완료: QK-ING-002 명세(`spec.md`)를 작성하고 사람 승인을 받았다(2026-10-20, `0ab2931` 기준).
 - 완료: `/speckit-plan` 설계 산출물을 만들고 사람 승인을 받았다(2026-10-20, `361a9b1` 기준).
 - 완료: `/speckit-tasks` 작업 목록(49개)을 만들고 사람 승인을 받았다(2026-10-20, `89ce3e1` 기준).
-- 이번 단계: `tasks.md`대로 구현한다(Codex 세션). 첫 자료원은 비활성 등록까지이고, 활성화·실제 측정은 사람 단계다(tasks.md "사람 단계").
+- 완료: `tasks.md` T001~T048과 리뷰 반영 Phase 8(T050~T055)을 구현했다(Codex 세션, 2026-10-20). T049(PR 본문)는 이 세션이 한다.
+- 남은 것: 사람 단계(결정 기록, 개인 정보 확인, 확인 기록, 활성화, 실제 측정. tasks.md "사람 단계").
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
@@ -153,3 +154,11 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
   이미 허용한 구현 범위(QK-ING-001 네 곳 포함)를 Scope·Ownership·제외 범위에 반영했다. push와 PR 본문 갱신도 승인했다.
 - 2026-10-20 사용자 결정: 구현은 오른쪽 Codex 패널 세션(명세·설계·작업 목록 검토를 맡은 세션)이 맡고, 검증·코드 리뷰는 명세·설계·작업 목록을 쓴 이 Claude 세션이 맡는다.
   Claude 세션은 구현을 쓰지 않았으므로 구현 리뷰는 독립이다. 다만 설계를 쓴 세션이 그 설계의 구현을 검토한다는 한계가 있다.
+- 2026-10-20 사실: Codex 세션이 T001~T048을 구현했다(커밋·push 없음). 보고: AGENTS.md 7절 검증 통과, pytest 782 passed·1 deselected(외부 호출 시험), quickstart 1~3.5절 통과.
+  `uv run` 캐시 권한 문제로 `.venv/bin`으로 실행했다. 설계와 다르게 둔 곳 하나를 더했다(비활성 자료원의 포함 패턴을 원본 TOML에서 다시 읽는 `load_checked_sources`, tasks.md 머리).
+- 2026-10-20 사실: 이 Claude 세션이 구현 diff를 리뷰해 변경 요청을 냈다. P2 1건(`http.client.HTTPException`이 `TransportError`로 바뀌지 않아 응답이 끊기면 실행 전체가 멈춤, 직접 재현),
+  P3 4건(연결 단계 시간 초과가 `connection`으로 분류, 측정 명령의 토큰 누락 출력이 `--json`을 무시, 타입 표기 누락, 저장소 이름 URL 인코딩). 범위·안전 경계(확인 기록 미작성, 비활성 유지,
+  외부 호출 미실행, SEC-001·명세·하네스 파일 무변경)는 지켜졌다. 이 세션은 명세·설계를 쓴 세션이라 구현 리뷰에 그 한계가 있다.
+- 2026-10-20 사용자 결정: P3까지 모두 고친다. Codex 세션이 tasks.md Phase 8(T050~T055)로 고쳤다.
+- 2026-10-20 사실: 이 세션이 재검증했다. 재현 사례 네 개가 계약대로 분류되고, preflight(일반·`-I`, 357개 파일), `git diff --check`, ruff 검사·서식, 로컬 DB,
+  `QK_REQUIRE_LOCALDB=1 uv run pytest`(792 passed, 1 deselected), `qk-index sources check` 통과. 실제 GitHub 호출과 외부 호출 시험은 실행하지 않았다(사람 단계).
