@@ -1,0 +1,15 @@
+source = "docs"
+reviewed_on = 2026-10-20
+reviewer_role = "시험용 역할"
+method = "합성 문서 전체 확인"
+result = "개인 정보 경로 제외함"
+
+[scope]
+repo = "octo/docs"
+ref = "main"
+include = ["docs/**/*.md", "README.md"]
+exclude = ["docs/private/**"]
+
+[[moved_to_exclude]]
+pattern = "docs/private/**"
+reason = "합성 개인 정보 경로"

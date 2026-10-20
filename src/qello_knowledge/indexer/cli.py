@@ -11,7 +11,9 @@ from qello_knowledge.security.policy import load_policy
 from qello_knowledge.security.report import render_security_report, security_report
 from qello_knowledge.sources.config import load_sources
 from qello_knowledge.sources.report import render_report, source_report
+from qello_knowledge.sources.scope_review import load_checked_sources
 
+REVIEWS = Path("config/source_reviews")
 EXCEPTIONS = Path("config/security_exceptions.toml")
 
 
@@ -22,11 +24,13 @@ def main(argv: list[str] | None = None) -> int:
     run = sub.add_parser("run", help="설정을 점검하고 색인을 실행한다")
     add_check_options(run)
     run.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
+    run.add_argument("--reviews", type=Path, default=REVIEWS)
     run.add_argument("--exceptions", type=Path, default=EXCEPTIONS)
     sources = sub.add_parser("sources", help="자료원 설정을 검사한다")
     source_commands = sources.add_subparsers(dest="source_command", required=True)
     check = source_commands.add_parser("check", help="원본 호출 없이 자료원 설정만 검사한다")
     check.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
+    check.add_argument("--reviews", type=Path, default=REVIEWS)
     check.add_argument("--json", action="store_true")
     security = sub.add_parser("security", help="보안 필터 규칙을 검사한다")
     security_commands = security.add_subparsers(dest="security_command", required=True)
@@ -40,7 +44,9 @@ def main(argv: list[str] | None = None) -> int:
         code, _ = run_check(Entrypoint.INDEX, args)
         if code != 0 or args.command == "check":
             return code
-    configs, issues = load_sources(args.sources)
+    configs, issues = (
+        load_sources(args.sources) if args.command == "security" else load_checked_sources(args.sources, args.reviews)
+    )
     report = source_report(args.sources, configs, issues)
     if args.command == "sources" or issues:
         print(render_report(report, json_output=getattr(args, "json", False)))
