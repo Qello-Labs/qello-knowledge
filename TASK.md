@@ -1,103 +1,95 @@
-# Task Contract: QK-ING-002 첫 자료원 dnd-backend-docs 활성화 (WBS 1.5)
+# Task Contract: QK-CHK-002 Markdown 청커·검색 헤더 (WBS 1.6)
 
-> Generated at: `2026-10-20`
+> Generated at: `2026-10-21`
 >
 > 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-100` / https://tkv123.atlassian.net/browse/SCRUM-100 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: QK-ING-002 / `specs/QK-ING-002-github-repo-source/spec.md`(승인됨). 이 브랜치는 `tasks.md` "사람 단계"를 맡는다
+- Jira 이슈: `SCRUM-101` / https://tkv123.atlassian.net/browse/SCRUM-101 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: QK-CHK-002 / `specs/QK-CHK-002-markdown-chunker/spec.md`(2026-10-21 승인)
 - 팀 스프린트 ID: `QELLO-S2026-W43`
-- GitHub Issue: `#41`
-- Branch: `chore/SCRUM-100-gh-41-activate-backend-docs`
-- Base branch: PR #43 브랜치 `feat/SCRUM-100-gh-41-github-repo-source`(`c761221`) 위에 쌓았다. 아래 Decisions 참조
+- GitHub Issue: `#46`
+- Branch: `feat/SCRUM-101-gh-46-markdown-chunker`
+- Base branch: `main`. 2026-10-21 `origin/main` `53945e8`(#45 병합)에서 분기했다
 
 ## Objective
 
-- 첫 자료원 `dnd-backend-docs`를 활성화하고 첫 실제 수집을 측정해, QK-ING-002의 마지막 요구(FR-022, FR-023, SC-009)를 채운다.
-- 순서(`specs/QK-ING-002-github-repo-source/research.md` R-13): 1) 결정 기록 작성·승인 → 2) 개인 정보 확인 → 3) 확인 기록 작성 → 4) 활성화 → 5) `qk-index sources check` → 6) 측정·기록.
+- 완료: QK-CHK-002 명세(`spec.md`)를 `/speckit-specify`로 작성하고 Codex 독립 검토 3회를 거쳐 사람 승인을 받았다(2026-10-21).
+- 다음 단계: `/speckit-plan`. 승인 전에는 구현하지 않는다(로드맵 1절 원칙 4).
+- 이후 단계(승인마다 이 파일의 Scope를 갱신): `/speckit-plan` → `/speckit-tasks` → 구현.
+- 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
-- `docs/sdd/decisions/ADR-019-github-backend-docs-source.md`(결정 기록. 에이전트가 초안을 쓰고 사람이 사실 확인·승인)
-- `config/source_reviews/dnd-backend-docs.toml`(개인 정보 확인 기록. **사람이 확인하고 쓴다.** 에이전트는 대신 쓰지 않는다)
-- `config/sources.toml`의 `dnd-backend-docs` 항목: `enabled = true`, 확인 결과로 제외 패턴 추가, 측정 결과로 한도값 조정(FR-023)
-- `docs/sdd/research/github-source-measurement.md`(측정 기록. 사람이 실행한 `qk-dev source measure` 결과와 측정 조건, 한도값 판단)
-- `tests/unit/indexer/test_cli.py`의 `test_run_with_valid_settings_reports_and_exits_zero` 한 건(저장소 설정 대신 시험용 설정 파일을 쓰게 바꿈, 2026-10-20 사용자 허용)
+- `specs/QK-CHK-002-markdown-chunker/spec.md`, `checklists/requirements.md`
+- `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
+- `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `TASK.md`
+- 명세가 다룰 동작:
+  - 입력: QK-SEC-001 필터를 통과한 Markdown 자료(저장소 문서. ClickUp 페이지도 같은 청커를 쓸 수 있게 자료원에 묶이지 않는 경계)
+  - 출력: 저장 스키마의 청크 입력(`ChunkInput`: `ordinal`, `locator`, `body`, `search_text`, `heading_path`, `chunking_version`)
+  - 제목 경로로 만든 검색 헤더. 원본이 제목을 주지 않으면 본문에서 채우는 규칙(QK-ING-001 research)
+  - 재현성: 같은 원본·같은 설정이면 같은 청크 경계와 해시, 모든 청크에 경로·줄 범위(constitution C-07)
+  - 청크 크기 상한: bge-m3 입력 한도 8,192토큰에서 안전 여유를 뺀 예상 토큰 상한(ADR-002, 스파이크 W-02, `embedding/estimate.py`와 같은 계산)
+  - Markdown 구조 규칙: 코드 펜스 안의 `#`는 제목이 아님, 상한 이하인 표·코드 블록은 가르지 않음, 코드 블록 언어 표시를 판정 근거로 쓰지 않음
+    (`clickup-migration-check.md` 2절·F-03·F-04, `clickup-writing-rules.md`)
+  - `search_text` 기본값과 QK-RET-001(FR-CHK-07, ADR-010)의 경계, `chunking_version`이 바뀌는 조건(형식과 첫 값은 `plan.md`에서 정한다)
 
 ## Explicit exclusions
 
-- 위 시험 한 건 밖의 코드·시험 변경(`src/`, `tests/`). 필요하면 PR #43 쪽에서 다룬다.
-- 승인된 명세·설계·작업 목록 내용 변경, `docs/sdd/roadmap.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
-- 포함 범위를 인벤토리 "결정 필요"·"제외" 범주로 넓히기. 넓히려면 확인 기록을 새로 쓰고 결정 기록을 고친다.
-- 임베딩·저장·동기화 실행(QK-EMB-001, QK-SYN-001). 이 브랜치는 수집과 측정까지다.
-- 원본 자료원(대상 저장소 포함)에 쓰기.
+- 구현(`src/`, `tests/`). 명세 승인 뒤 이 파일의 Scope를 갱신하고 시작한다.
+- 코드 청킹(QK-CHK-001), 키워드 검색 텍스트 규칙(FR-CHK-07, ADR-010, QK-RET-001), ClickUp 수집(QK-ING-003),
+  임베딩·저장·동기화 실행(QK-EMB-001, QK-SYN-001).
+- QK-ING-001·QK-SEC-001·QK-STO-001 코드와 승인된 명세 변경. 저장 스키마 변경.
+- 로드맵 `상태`·`진행` 열 외의 `docs/sdd/roadmap.md` 내용, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
+- 원본 자료원에 쓰기.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문, 사람 이름·연락처는 기록하지 않는다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다. 명세 예시는 합성 문서로 쓴다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: GitHub 공개 저장소 `dnd-side-project/dnd-15th-2-backend`의 `main`(읽기 전용 세분화 토큰, `tokens.md` 2절)
-- 외부 API로 보내는 데이터: GitHub REST API `GET` 요청만(토큰, 요청 경로). 임베딩·생성 API 전송 없음
-- 예상 호출량: 측정 1회에 GitHub 약 84회(추론, 토큰 한도 시간당 5,000회 안). 임베딩·생성 0 Neurons
-- 인덱스 버전 변경: 없음
-- 데이터 스키마: 마이그레이션 `0003_embedding_usage.sql` 추가. 로컬 DB에만 적용한다. 병합 뒤 체크섬이 바뀌지 않게 이 브랜치에서 파일을 확정한다
+- 새로 읽는 자료원: 해당 없음
+- 외부 API로 보내는 데이터: 해당 없음(청커는 외부 호출이 없다)
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
+- 인덱스 버전 변경: 이번 단계 없음(명세만). 첫 `chunking_version`의 형식과 값은 `plan.md`에서 정한다(명세 FR-012). 이미 색인된 청크가 없어 재임베딩 대상이 없다(추론, QK-SYN-001 미구현)
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `docs/sdd/decisions/ADR-019-github-backend-docs-source.md` | Byuntil | 사람 리뷰(결정 승인) |
-| `config/source_reviews/dnd-backend-docs.toml` | Byuntil | 사람 리뷰(확인한 사람이 작성) |
-| `config/sources.toml` | Byuntil | 사람 리뷰 |
-| `docs/sdd/research/github-source-measurement.md` | Byuntil | 사람 리뷰 |
+| `specs/QK-CHK-002-markdown-chunker/` | Byuntil | 사람 리뷰(명세 승인) |
+| `docs/sdd/roadmap.md` 상태 열 | Byuntil | 사람 리뷰 |
 | `TASK.md` | Byuntil | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-20 `feat/SCRUM-100-gh-41-github-repo-source`(`c761221`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-21 `origin/main`(`53945e8`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
-python3 scripts/preflight.py
+python scripts/preflight.py
 git diff --check
-uv run qk-index sources check                                   # 활성화 뒤 통과해야 한다
-uv run qk-dev source measure --name dnd-backend-docs            # 사람 실행. 목록 완전, 판정 실패 0건
-uv run pytest -m external tests/external/test_github_repo_source.py   # 사람 실행
-QK_REQUIRE_LOCALDB=1 uv run pytest                              # 설정 변경 뒤 기본 시험이 깨지지 않는지
 ```
 
 ## Completion criteria
 
-- 결정 기록 ADR-019가 사람 승인을 받는다.
-- 확인 기록이 있고 `qk-index sources check`가 활성 `dnd-backend-docs`로 통과한다(FR-020).
-- 첫 실제 수집 측정 기록이 FR-022 항목을 모두 갖고, 요청 수가 실행당 한도 이하이며, 막힌 자료마다 이유가 있다(SC-009). 한도값 판단이 기록된다(FR-023).
+- `spec.md`가 사람 리뷰로 승인된다 — 리뷰 기록
+- (구현 단계) 같은 입력을 두 번 청킹하면 경계와 해시가 같고, 모든 청크에 경로·줄 범위가 있다 — 단위 시험
+- (구현 단계) 어떤 청크도 예상 토큰 기준 상한(임베딩 입력 한도 - 안전 여유)을 넘지 않고, 코드 펜스 안의 `#`은 제목으로 나뉘지 않는다 — 단위 시험.
+  실제 한도 대비 안전 여유는 `plan.md`의 대상 문서 측정으로 정한다(명세 FR-013)
 
 ## Decisions
 
-- 2026-10-20 사용자 결정: 활성화 작업을 PR #43 브랜치 위에 쌓는 브랜치로 시작한다. AGENTS.md 1절 3항(최신 `origin/main`에서 분기)의 예외다.
-  PR을 열면 base를 #43 브랜치로 하고, #43이 병합되면 `main`으로 rebase한 뒤 base를 `main`으로 바꾼다(QK-SEC-001 때와 같은 절차).
-- 2026-10-20 사실: 결정 기록 초안을 이 Claude 세션이 썼다. ID는 저장소에 원문이 없는 번호(001, 004, 005, 011, 013, 014)와 겹치지 않게 ADR-019로 두었다. 사람 확인 필요.
-  초안의 확인 필요 항목: Workers AI 입력 보존 기간, 저장소 제공자(Supabase) 데이터 처리 정책(ADR-008 미확인 항목), 다시 볼 기준값(제안 값), 승인자.
-- 2026-10-20 사실: 범위 안 파일은 대상 커밋 `6aeccd0`에서 81개, 1,087,120바이트다(트리 잘림 없음). 에이전트가 메일·전화번호·`@` 표기 후보를 자동 검사해(값은 출력하지 않음)
-  `docs/harness/ARCHITECTURE.md` 흐름도의 `@` 표기 1건을 사람 확인 대상으로 올렸다. 나머지 후보는 코드·버전 표기·표 머리였다.
-- 2026-10-20 사용자 결정: 그 표기는 팀원 GitHub 핸들이다. AGENTS.md 3.1(계정 정보 색인 금지)에 따라 A안으로 그 파일을 제외 패턴에 넣는다. 색인 범위는 80개가 된다.
-- 2026-10-20 사실: 사람이 확인 기록 초안(에이전트가 형식만 만들고 날짜를 비워 둔 것)을 고쳐 저장했고, 에이전트가 `config/source_reviews/dnd-backend-docs.toml`로 옮겼다.
-  옮길 때 `reviewed_on`의 따옴표만 빼 TOML 날짜로 바꿨다(값은 그대로). 형식 검사 통과. 자료원은 아직 비활성이다(4단계 전).
-- 2026-10-20 사용자 결정: ADR-019 — 번호 019 확정, 다시 볼 기준값은 측정 뒤 정함, 승인은 기존처럼 PR 리뷰로 받음, Supabase 데이터 처리 정책은 QK-SYN-001 첫 저장 전에 확인,
-  결정 내용 승인(Status Accepted, 대화로 전달받은 승인을 PR 리뷰로 확정).
-- 2026-10-20 사실: 4단계 활성화(`enabled = true`, 제외 패턴에 `docs/harness/ARCHITECTURE.md` 추가), 5단계 `qk-index sources check` 통과(활성 1, 포함 19, 제외 7).
-- 2026-10-20 사실: 활성화 뒤 `test_run_with_valid_settings_reports_and_exits_zero`가 실패했다. 저장소 `config/sources.toml`에 활성 자료원이 없다고 가정한 시험이다.
-  사용자 결정으로 이 브랜치에서 고쳤다. 시험이 활성 자료원 없는 시험용 설정을 `--sources`로 넘긴다(검증 내용은 같음). `QK_REQUIRE_LOCALDB=1 uv run pytest` 792 passed.
-- 2026-10-20 사실: 6단계 측정 명령이 색인 진입점 설정 점검에서 멈췄다(작업 폴더에 `.env` 없음, 필수 항목 4개 누락). 원본 호출 0건.
-  사용자 결정으로 Codex 패널이 `.env.example`을 바탕으로 `.env`를 만들고 사용자가 값을 직접 채우도록 안내한다. `.env`는 커밋하지 않는다. 이 Claude 세션은 `.env`에 접근하지 않는다.
-- 2026-10-20 사실: 사용자가 `.env`를 채운 뒤 `qk-index check` 통과(누락·형식 오류 0). 에이전트가 6단계 측정을 1회 실행했다. 종료 코드 0, 요청 83회, 73.3초, 목록 완전,
-  파일 80개 1,083,278바이트, `PASSED` 79·`SECRET_BLOCKED` 1(계획 문서 1개, `env-assigned-secret`, 셸 변수 참조 오탐으로 추정). 0 Neurons.
-  기록은 `docs/sdd/research/github-source-measurement.md`. 한도값은 네 개 모두 유지를 제안했다(PR 리뷰에서 확정).
-- 2026-10-20 사실: 외부 호출 시험은 토큰을 환경 변수에서만 읽어 이 세션에서 `토큰 없음`으로 실패했다(원본 호출 0건).
-  사람이 `uv run --env-file .env pytest -m external tests/external/test_github_repo_source.py -q`로 실행해 통과했다.
-- 2026-10-20 사용자 결정: ADR-019 다시 볼 기준값은 권장안 A — 요청 1,000회(실행당 한도의 50%) 초과, 막힌 자료 범위의 10% 초과.
-- 2026-10-20 사용자 결정: 측정에서 막힌 계획 문서 1개(`env-assigned-secret` 오탐 추정)는 그대로 둔다(예외·규칙 수정 없음). 한도값 유지 제안은 PR 리뷰에서 확정한다.
+- 2026-10-21 사용자 결정: WBS 1.6 진행. 에이전트가 Jira `SCRUM-101`(SCRUM-42 하위 작업, 자동 생성 Secret이 없어 직접 생성)과 GitHub `#46`을 만들었다.
+- 2026-10-21 사실: 요구사항 FR-CHK-01~05, 08은 저장소에 원문이 없다. QK-SEC-001처럼 백로그 제목·constitution·관련 조사에서 요구를 끌어내고 명세 Assumptions에 적는다.
+- 2026-10-20 사용자 결정(이어받음): 단계 게이트 0.G 미완료 상태로 Phase 1을 계속 진행한다.
+- 2026-10-21 사용자 결정: TASK.md 초안 승인, 명세 작성 시작.
+- 2026-10-21 사실: `spec.md`·`checklists/requirements.md` 초안 작성(확인 필요 표시 0건, 기본값을 고른 결정은 Assumptions에 기록). 사람 검토 전이다.
+- 2026-10-21 사실: `roadmap_status.py --write`로 상태 열 갱신(1.5 ✅, 1.6 🔄 #46, 1.7 ✅ #42, Phase 1 ✅ 6 · 🔄 1 / 13).
+- 2026-10-21 사실: Codex 패널이 명세를 두 번 검토했다(1차 변경 요청 11건, 2차 1차 지적 8건 해소·3건 일부 + 새 지적 5건). 모두 반영했다.
+- 2026-10-21 사용자 결정: 1차 검토 권장안 승인. 본문 없는 절도 제목 줄 청크를 만들고, 같은 제목 경로의 상위 절 조회 한계는 기록만 하고 QK-RET-001로 넘긴다.
+- 2026-10-21 사실: 2차 검토 반영으로 완료 조건의 상한을 "예상 토큰 기준 상한"으로, 첫 `chunking_version` 결정 시점을 `plan.md`로 바꿨다(명세 FR-012·FR-013).
+  Jira SCRUM-101·GitHub #46 본문의 같은 문장("임베딩 입력 한도를 넘지 않고")은 아직 그대로다.
+- 2026-10-21 사용자 결정: QK-CHK-002 명세 승인(Codex 3차 검토 "승인" 권고 뒤). 저장소 관례대로 `spec.md`의 Status 표기는 바꾸지 않고 이 기록으로 승인을 남긴다.
