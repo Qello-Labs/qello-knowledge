@@ -21,7 +21,7 @@ uv run pytest tests/unit/embedding tests/contract -v
 
 | 테스트 | 확인 | 성공 기준 |
 | --- | --- | --- |
-| `test_service_basic.py` | 순서·차원·모델 버전, 빈 입력, 미검사 입력 거부 | US1 AS1·5, FR-005, SC-006 |
+| `test_service_basic.py` | 순서·차원·모델 버전, 빈 입력, 출처 없는 색인 입력 거부, 비밀값 전송 직전 차단 | US1 AS1·5, FR-005, SC-006 |
 | `test_service_limits.py` | 한도 초과 단독 처리·쪼개기, 나머지 정상 | US1 AS2, FR-003, SC-004 |
 | `test_service_failures.py` | 일시 오류 재시도, 할당 소진 즉시 중단, 인증 오류 | US1 AS3·4, FR-004·020 |
 | `test_service_cache.py` | 두 번째 실행 호출 0건, 바뀐 1개만 전송, 모델 다르면 미적중, 묶음 중복 1회, 질의 미저장 | US2 AS1~5, SC-001 |

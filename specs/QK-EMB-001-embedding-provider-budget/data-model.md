@@ -19,7 +19,7 @@
 
 | 타입 | 필드 | 규칙 |
 | --- | --- | --- |
-| `EmbedInput` | `text: str`, `screened_by: str \| None` | `text.strip()`이 비면 `empty_input`. 색인용인데 `screened_by`가 비면 `unscreened`(FR-005) |
+| `EmbedInput` | `text: str`, `origin: tuple[str, str] \| None` | `text.strip()`이 비면 `empty_input`. 색인용인데 `origin`이 없으면 `no_origin`. 전송 직전 검사에 걸리면 `secret_blocked`(FR-005, research R-13). 질의용은 `origin=None` |
 | `EmbedRequest` | `inputs: tuple[EmbedInput, ...]`, `purpose: EmbedPurpose`, `model_version: str`, `run_id: str`, `allow_partial: bool = False` | `model_version`이 `MODELS`에 없으면 `EmbedError(auth_config)`. `allow_partial`은 색인용에서만 뜻이 있다(FR-024) |
 
 ### EmbedItem / EmbedResult
@@ -32,7 +32,7 @@
 
 ### EmbedFailureKind
 
-`empty_input`, `unscreened`, `input_too_long`, `transient`, `provider_quota`, `index_budget`, `bad_response`. 묶음 전체를 멈추는 `auth_config`, `no_active_index`,
+`empty_input`, `no_origin`, `secret_blocked`, `input_too_long`, `transient`, `provider_quota`, `index_budget`, `bad_response`. 묶음 전체를 멈추는 `auth_config`, `no_active_index`,
 `usage_unavailable`(사용량 기록 실패, R-08)은 `EmbedError(kind)` 예외로 던진다. 이미 만든 벡터는 예외 전에 저장된다(FR-011).
 
 ### EmbedPreview (FR-022)

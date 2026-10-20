@@ -12,9 +12,10 @@ preview(request: EmbedRequest) -> EmbedPreview
 ### embed 처리 순서
 
 1. 활성 또는 지정 인덱스 버전의 모델이 `MODELS`에 없으면 `EmbedError(no_active_index | auth_config)`.
-2. 항목별 사전 검사: `empty_input`, (색인용) `unscreened`. 외부 호출 없음.
+2. 항목별 사전 검사: `empty_input`, (색인용) `no_origin`. 외부 호출 없음.
 3. (색인용) 캐시 조회 `Store.find_embeddings`. 적중 항목은 `cached=true`.
 4. 남은 항목의 같은 텍스트를 하나로 묶는다(FR-010).
+   - 전송 직전 검사: 보낼 텍스트마다 `check_outgoing([OutgoingPiece(text, origin)], policy)`. 걸리면 `secret_blocked`로 끝내고 이후 단계에서 뺀다(FR-005, research R-13).
 5. (색인용) 미리 보기 계산. `runnable=false`이고 `allow_partial=false`면 남은 항목 전부 `index_budget`으로 끝낸다. 외부 호출 0건(FR-024).
 6. 묶음 나누기(최대 32개·32,768 예상 토큰, 큰 텍스트는 단독, R-05·R-06).
 7. 요청마다:
@@ -32,7 +33,7 @@ preview(request: EmbedRequest) -> EmbedPreview
 | 결과 길이 = 입력 길이, 순서 같음 | FR-001 |
 | 결과·오류에 제공자 고유 타입·HTTP 상태·오류 코드가 없다 | FR-001, SC-007 |
 | 자른 입력으로 만든 벡터가 없다 | FR-003, SC-004 |
-| `screened_by` 없는 색인용 텍스트는 외부로 나가지 않는다 | FR-005, SC-006 |
+| 비밀값 규칙에 걸린 텍스트와 출처 없는 색인용 텍스트는 외부로 나가지 않는다. 기록에는 항목 번호·규칙 이름·줄 번호만 남는다 | FR-005, SC-006, QK-SEC-001 FR-013 |
 | 질의 벡터는 저장하지 않는다 | FR-012 |
 | 사용량 기록에 원문이 없다 | FR-013, SC-003 |
 | 색인 사용량 초과 폭 ≤ 요청 하나의 (실제 − 예상) | FR-021, SC-002 |

@@ -19,8 +19,8 @@ Workers AI를 새로 호출하지 않았다(0 Neurons). 확인하지 못한 사�
 
 - **Decision**: `domain/embedding.py`에 표준 라이브러리 dataclass로 둔다. 경계 검사(`tests/unit/test_boundaries.py`)를 그대로 통과한다.
   - `EmbedPurpose`(`index`, `query`), `EmbedFailureKind`(spec FR-004의 7종: `empty_input`, `input_too_long`, `transient`, `provider_quota`,
-    `index_budget`, `auth_config`, `bad_response`. 그 밖에 `unscreened`(FR-005), `no_active_index`)
-  - `EmbedInput(text, screened_by)`: `screened_by`는 비밀값 검사 규칙 버전 문자열이다. 색인용은 비어 있으면 거부한다.
+    `index_budget`, `auth_config`, `bad_response`. 그 밖에 `secret_blocked`·`no_origin`(FR-005), `no_active_index`)
+  - `EmbedInput(text, origin)`: `origin`은 (자료원 이름, 경로)이고 색인용은 반드시 있다. 질의용은 `None`이다. 전송 직전 검사(R-13)에 그대로 넘긴다.
   - `EmbedRequest(inputs, purpose, model_version, run_id, allow_partial)`, `EmbedItem`(벡터 또는 실패, `cached`), `EmbedResult`(항목 목록 + `RunSummary`)
   - `ModelSpec`, `BudgetSettings`, `UsageRecord`, `DailyUsage`, `EmbedPreview`
 - **Rationale**: 실패를 예외가 아니라 항목별 값으로 돌려주면 한 텍스트의 실패가 묶음 전체를 막지 않는다(FR-003). 묶음 전체를 멈추는 실패
@@ -153,3 +153,16 @@ Workers AI를 새로 호출하지 않았다(0 Neurons). 확인하지 못한 사�
   - 로컬 DB(`tests/localdb/embedding/`): 예약·정산·동시 예약(스레드 2개)·질의 기록·하루 경계·정리 멱등.
   - 외부(`-m external`, 기본 제외): 실제 bge-m3로 텍스트 몇 개를 임베딩해 측정값과 예상값 차이를 기록(SC-005). 실행 전 예상 사용량(수 Neurons 이하)을 적고 사람 승인 뒤 돌린다.
 - **Rationale**: AGENTS.md 7절(외부 API 테스트는 기본 검증 밖), 3.5절(실행 전 사용량 적기).
+
+## R-13 비밀값 전송 직전 검사 연결
+
+- **Decision**: `EmbeddingService`는 생성할 때 QK-SEC-001의 `SecurityPolicy`(`security.policy.load_policy`로 읽은 예외 목록)를 받는다.
+  캐시 조회와 중복 제거 뒤, 묶음을 나누기 전에 보낼 텍스트마다 `security.send_gate.check_outgoing([OutgoingPiece(text, origin)], policy)`를 부른다.
+  걸린 항목은 `secret_blocked`로 끝내고 묶음에 넣지 않는다. 그래서 제공자로 가는 요청에는 검사를 통과한 텍스트만 담긴다.
+  색인용인데 `origin`이 없으면 검사 전에 `no_origin`으로 끝낸다.
+- **Rationale**: QK-SEC-001이 `screened_by` 같은 통과 표시를 만들지 않고, 대신 보내기 직전 검사 함수를 두고 "실제 호출에 잇는 일은 QK-EMB-001이 한다"고 정했다
+  (`send_gate.py`, QK-SEC-001 FR-013). 표시를 믿는 방식보다 보내기 직전에 같은 규칙으로 다시 보는 쪽이 AGENTS.md 3.1을 직접 지킨다.
+  항목 단위로 검사하면 한 텍스트가 걸려도 같은 묶음의 다른 텍스트는 보낼 수 있고, 걸린 텍스트가 든 요청은 만들어지지 않는다.
+- **Alternatives considered**: 묶음 단위로 한 번 검사하고 걸리면 묶음 전체를 막기(무관한 텍스트까지 실패한다), 통과 표시(`screened_by`)를 새로 만들어
+  QK-SEC-001에 요구하기(이미 병합된 구현과 계약을 바꿔야 하고, 표시가 붙은 뒤 텍스트가 바뀌면 지키지 못한다).
+- 로그·`RunSummary`에는 항목 번호·규칙 이름·줄 번호와 `secret_blocked` 건수만 남긴다. 텍스트와 맞은 문자열은 남기지 않는다(QK-SEC-001 계약).
