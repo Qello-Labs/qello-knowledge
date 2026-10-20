@@ -27,6 +27,9 @@
 
 목록에 쓰는 항목: `type == "blob"`이고 `mode`가 `100644` 또는 `100755`(R-04).
 
+`ListSnapshot(commit_sha: str, visibility: str | None, truncated: bool | None)`: 어댑터의 읽기 전용 속성 `last_snapshot`. 마지막 목록 조회에서 커밋을 확정한 뒤의
+값이고, 커밋 확정 전에 실패하면 `None`이다. 측정 명령만 읽는다(R-14).
+
 ## 3. 목록 항목과 본문 (QK-ING-001 형식 채우기)
 
 필드 대응은 [research.md R-04](research.md#r-04-목록-항목-필드)다. 요약:
@@ -46,7 +49,8 @@
 | 함수 | 입력 | 출력 |
 | --- | --- | --- |
 | `classify(response)` | `SourceResponse` | `ResponseClass`. 403·429 한도 응답은 `TRANSIENT/RATE_LIMITED`, 그 밖 403은 `PERMANENT/ACCESS_DENIED`, 나머지는 `default_classify` |
-| `rate_limit_hint(response)` | `SourceResponse` | `RateLimitHint(remaining, retry_after_seconds, retry_at)` 또는 `None`. `x-ratelimit-reset`은 남은 수가 0일 때만 `retry_at`으로 쓴다 |
+| `rate_limit_hint(response)` | `SourceResponse` | `RateLimitHint(remaining, retry_after_seconds, retry_at)` 또는 `None`. `retry-after`가 있으면 `remaining=0`으로 정규화한다. 표는 [contracts/github-adapter.md](contracts/github-adapter.md#rate_limit_hintresponse---ratelimithint--none) |
+| `list_page`의 커밋 확정 실패 | 2번 요청의 `SourceFailure`(404·422) | `SourceFailure(NOT_FOUND)`로 바꿔 올림(FR-014) |
 
 ## 5. 실제 전송 `HttpsTransport` (`adapters/http.py`)
 
@@ -99,14 +103,19 @@
 
 | 필드 | 출처 |
 | --- | --- |
-| `source_name`, `repo`, `ref`, `commit` | 설정, 항목의 `version` |
-| `include_count`, `exclude_count` | 설정 |
+| `source_name`, `repo`, `ref` | 설정 |
+| `commit`, `tree_truncated`, `visibility` | 어댑터 `last_snapshot`. 커밋 확정 전에 실패했으면 `None` |
+| `include`, `exclude` | 설정의 실제 패턴 목록(순서 그대로) |
 | `measured_at`, `environment` | 실행 시각(UTC), `platform.platform()`과 Python 버전 |
 | `requests`, `elapsed_seconds` | `FetchResult.requests_made`, `finished_at - started_at` |
 | `listing_complete`, `stop` | `FetchResult` |
-| `files`, `total_bytes`, `max_file_bytes` | 목록 항목 수, 받은 본문 UTF-8 바이트 합·최댓값 |
+| `files` | 범위 안 목록 항목 수(판정 기록 수 + 통과 수) |
+| `bodies_fetched`, `total_bytes`, `max_file_bytes` | `CountingTransport`가 센 blob 응답의 건수, 바이트 합, 최댓값. 본문 단계에서 막힌 자료도 들어간다 |
 | `by_verdict`, `by_rule` | SEC-001 `FilterSummary` |
 | `blocked` | `SECRET_BLOCKED`·`ERROR` 판정과 `identifier-address` 규칙 판정의 `SecurityVerdict.to_dict(context)` 목록(가림 거친 값) |
 | `limits` | 적용한 `RateLimits`, `max_content_bytes` |
 
 본문, 토큰, 요청 헤더는 담지 않는다.
+
+`CountingTransport(inner)`: 측정 전용 `SourceTransport` 감싸개. 요청 URL 경로에 `/git/blobs/`가 있는 2xx 응답의 본문 길이만 센다. 본문·헤더는 보관하지 않고 응답은
+그대로 돌려준다.

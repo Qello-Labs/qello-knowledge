@@ -5,7 +5,7 @@ QK-ING-001 [contracts/source-adapter.md](../../QK-ING-001-source-adapter-contrac
 
 ## `GitHubRepoFilesAdapter` (`adapters/github.py`)
 
-`kind = "github_repo_files"`. 상태를 갖지 않는다. 자료원 설정의 `scope.extra`에서 `repo`(`소유자/이름`)와 `ref`를 읽는다.
+`kind = "github_repo_files"`. 진단용 `last_snapshot` 하나 말고는 상태를 갖지 않는다. 자료원 설정의 `scope.extra`에서 `repo`(`소유자/이름`)와 `ref`를 읽는다.
 
 ### `list_page(session, config, cursor) -> ListPage`
 
@@ -18,7 +18,11 @@ QK-ING-001 [contracts/source-adapter.md](../../QK-ING-001-source-adapter-contrac
 | 3 | `https://api.github.com/repos/{owner}/{repo}/git/trees/{tree_sha}?recursive=1` | 같음 | 같음 |
 
 - 응답 형식이 [data-model.md 2절](../data-model.md#2-github-응답에서-읽는-값-어댑터-내부)과 다르면 `InvalidResponse`.
+- 2번(커밋 확정) 요청이 `SourceFailure`(HTTP 404 또는 422)로 끝나면 `SourceFailure(NOT_FOUND, 원래 상태 코드)`로 바꿔 올린다. 1번의 404는 이미 `NOT_FOUND`다.
+  그 밖 실패(409 포함)는 그대로 올린다(research R-07).
 - 돌려주는 값: `ListPage(items=경로순 정렬한 일반 파일 항목, next_cursor=None, complete=not truncated)`.
+- 부수 기록: 2번이 성공하면 `last_snapshot = ListSnapshot(commit_sha, visibility 원값, truncated)`을 갱신한다(3번 전이면 `truncated=None`).
+  목록 조회를 시작할 때 `None`으로 비운다. 측정 명령만 읽는다(research R-14). 다른 메서드의 동작은 이 값에 기대지 않는다.
 - 범위(포함·제외 패턴) 적용과 중복 제거는 하지 않는다. `list_all`이 한다.
 
 ### `fetch_content(session, config, item) -> SourceContent`
@@ -44,9 +48,15 @@ QK-ING-001 [contracts/source-adapter.md](../../QK-ING-001-source-adapter-contrac
 
 ### `rate_limit_hint(response) -> RateLimitHint | None`
 
-- `remaining`: `x-ratelimit-remaining`이 0 이상 정수면 그 값.
-- `retry_at`: `remaining == 0`이고 `x-ratelimit-reset`이 정수면 그 유닉스 초(UTC). `retry-after`가 있으면 `default_rate_limit_hint` 결과와 비교해 늦은 시각.
-- 셋 다 없으면 `None`.
+| 헤더 | `remaining` | `retry_at` |
+| --- | --- | --- |
+| `retry-after` 있음(2차 한도 포함) | 0 (`x-ratelimit-remaining` 무시) | `retry-after` 시각. `x-ratelimit-remaining == 0`이면 `x-ratelimit-reset`과 비교해 늦은 시각 |
+| `retry-after` 없음, `x-ratelimit-remaining == 0` | 0 | `x-ratelimit-reset`(유닉스 초, UTC). 없으면 `None` |
+| `retry-after` 없음, `x-ratelimit-remaining > 0` | 그 값 | `None` |
+| 셋 다 없음 | — | 힌트 `None` |
+
+ING-001 요청 관문은 `remaining == 0`이고 `retry_at`이 있을 때만 다음 요청을 늦춘다. 위 정규화로 2차 한도의 대기 시각이 같은 자료의 재시도뿐 아니라
+다음 자료의 요청에도 적용된다(research R-07).
 
 ### 보장
 

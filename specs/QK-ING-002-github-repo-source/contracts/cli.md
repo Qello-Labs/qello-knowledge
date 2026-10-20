@@ -26,14 +26,16 @@ ING-001·SEC-001 순서에서 자료원 설정 검사 단계에 확인 기록·�
 1. `qk-index run`과 같은 설정 점검(색인 진입점 설정, 자료원 설정, 확인 기록·확장자, 보안 예외 파일). 하나라도 실패하면 원본 호출 없이 1.
 2. `--name` 자료원이 없거나 비활성이면 1.
 3. 그 자료원 종류의 어댑터를 고른다. 지금은 `github_repo_files`만 지원하고, 그 밖 종류는 1.
-4. `HttpsTransport`(토큰은 자료원 `auth` 설정 항목) → ING-001 세션 → SEC-001 `screen_source`. 저장·임베딩은 하지 않는다.
-5. [data-model.md 9절](../data-model.md#9-수집-측정-기록-sourcemeasurement-devtoolsmeasurepy) 항목을 출력한다. 목록이 불완전하거나 판정 실패가 있으면 출력하고 1, 아니면 0.
+4. `CountingTransport(HttpsTransport)`(토큰은 자료원 `auth` 설정 항목) → ING-001 세션 → SEC-001 `screen_source`. 저장·임베딩은 하지 않는다.
+5. [data-model.md 9절](../data-model.md#9-수집-측정-기록-sourcemeasurement-devtoolsmeasurepy) 항목을 출력한다. 커밋·공개 범위는 어댑터 `last_snapshot`, 본문 크기는
+   `CountingTransport`에서 온다. 목록이 불완전하거나 판정 실패가 있으면 출력하고 1, 아니면 0.
 
 ```text
-수집 측정: dnd-backend-docs (dnd-side-project/dnd-15th-2-backend@main, 커밋 <40자>)
+수집 측정: dnd-backend-docs (dnd-side-project/dnd-15th-2-backend@main, 커밋 <40자>, visibility=public, 트리 잘림 없음)
+  범위      include=["README.md", "docs/adr/**/*.md", ...] exclude=[".claude/**", ...]
   환경      macOS-15 / Python 3.13.x, 2026-10-21T01:23:45Z
   요청      84회 (실행당 한도 2000), 소요 92.4초, 목록 완전
-  파일      81개, 1,083,512바이트, 최대 61,204바이트 (본문 상한 1,000,000)
+  파일      범위 안 81개, 본문 받음 80건, 1,083,512바이트, 최대 61,204바이트 (본문 상한 1,000,000)
   판정      PASSED 79, SECRET_BLOCKED 1, PATH_EXCLUDED 1
   막힌 자료  docs/x/y.md  SECRET_BLOCKED  github-token
 ```
