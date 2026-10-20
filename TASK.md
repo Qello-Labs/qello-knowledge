@@ -92,3 +92,8 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
   현재 자료원 설정을 대조해 없거나 다르면 원본 호출 없이 실패한다(안 A).
 - 2026-10-20 사실: `spec.md`와 `checklists/requirements.md` 초안을 이 세션이 썼다. 이 세션은 명세를 승인하지 않는다(AGENTS.md 2절). 독립 검토와 사람 리뷰 대기.
   FR-009·FR-017은 QK-ING-001 코드·시험 수정이 필요해 plan에서 제외 범위 조정 승인을 받는다.
+- 2026-10-20 사실: 명세를 쓰지 않은 Codex 세션이 `$harness-review`로 `40fe214..1208461`을 검토해 변경 요청(FAIL)을 냈다. P1 0건, P2 1건
+  (Edge Cases의 크기 초과를 "건너뜀"으로 써 QK-ING-001 R-08·`collect.py`의 "영구 실패, `SIZE_EXCEEDED`"와 다름). 나머지 인계 항목, FR-024 경계,
+  FR-020 안 A는 일치로 판정했다. Codex 실행: preflight 318개 파일, `git diff --check`, 확인 필요 표시 검사 통과.
+- 2026-10-20 사실: P2를 명세 Edge Cases에서 고쳤다. 검토 중 `roadmap_status.py`가 다른 작업의 Issue #42(1.7 QK-EMB-001)로 1.7 상태가 최신이 아니라고 했다.
+  이 작업의 범위가 아니어서 반영하지 않았다.
