@@ -87,3 +87,13 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-20 사실: 명세 PR #40이 사람 리뷰어 Byuntil의 승인(APPROVED)을 받고 `main`에 병합됐다.
 - 2026-10-20 사용자 결정: GitHub Issue #42를 만들고, Jira는 하위 작업 없이 상위 이슈 `SCRUM-42`로 추적한다. 자동 생성은 Jira Secret이 없어 동작하지 않는다.
 - 2026-10-20 사용자 결정: 이 TASK.md를 승인했다. `/speckit-implement`로 `tasks.md` 순서대로 구현하고 스토리 단위로 커밋한다.
+- 2026-10-20 사용자 결정(설계 빈틈): T002(`embedding/`은 표준 라이브러리·`domain`·`ports`·자기 자신만 가져온다)와 T020(서비스가 `security.send_gate`·
+  `sources/retry.py`를 직접 쓴다)이 충돌한다. 생성자 주입으로 닫는다. `embedding/`은 `domain`·`ports`만 가져오고, 전송 직전 검사와 재시도 대기 계산은
+  `EmbeddingService` 생성 인자(callable)로 받는다. QK-SEC-001·QK-ING-001 함수를 잇는 조립 코드는 `embedding/` 밖에 둔다. T002 경계 시험은 글자 그대로 지킨다.
+- 2026-10-20 사실(구현): T001의 시험 디렉터리 `__init__.py`(`tests/unit/embedding`, `tests/localdb/embedding`, `tests/external`)는 만들지 않았다.
+  저장소 시험 디렉터리는 `tests/contract` 말고는 `__init__.py`가 없고, 두 `embedding` 디렉터리에 만들면 같은 최상위 패키지 이름이 겹친다.
+- 2026-10-20 사실(구현): 기존 `tests/localdb/store/test_migrate.py`가 마이그레이션 개수 2를 고정해 `0003` 추가로 실패했다. 파일 개수에서 세도록 고쳤다(검사 내용은 같다).
+  `scripts/preflight_allowlist.txt`에 `domain/embedding.py`의 `SECRET_BLOCKED` 오탐 한 줄을 QK-SEC-001과 같은 사유로 더했다.
+- 2026-10-20 검증: preflight, `git diff --check`, ruff check·format --check 통과, `qk-migrate` 두 번째 `applied=0 skipped=3`,
+  `QK_REQUIRE_LOCALDB=1 uv run pytest` 706 passed, quickstart 3절 CLI 종료 코드 계약대로(0, 0, 0, 1). 같은 세션의 자기 검증이라 독립 검증이 아니다.
+- 2026-10-20 BLOCKED: T046(실제 Workers AI 실측, 예상 6.65 Neurons)은 사람 승인 전이라 실행하지 않았다. 완료 조건 4(SC-005)는 미충족이다.
