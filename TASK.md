@@ -16,13 +16,15 @@
 ## Objective
 
 - 완료: QK-ING-002 명세(`spec.md`)를 작성하고 사람 승인을 받았다(2026-10-20, `0ab2931` 기준).
-- 이번 단계: `/speckit-plan` 설계 산출물을 만들고 사람 리뷰를 받는다. tasks·구현은 설계 승인 뒤에 한다.
+- 완료: `/speckit-plan` 설계 산출물을 만들고 사람 승인을 받았다(2026-10-20, `361a9b1` 기준).
+- 이번 단계: `/speckit-tasks`로 작업 목록을 만들고 사람 리뷰를 받는다. 구현은 작업 목록 승인 뒤에 한다.
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
 - `specs/QK-ING-002-github-repo-source/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
-- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`
+- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`(승인됨, 바꾸려면 다시 승인)
+- 작업 목록: 같은 디렉터리의 `tasks.md`
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `TASK.md`
@@ -114,3 +116,9 @@ grep -rn "NEEDS CLARIFICATION" specs/QK-ING-002-github-repo-source/*.md   # 결�
 - 2026-10-20 사실(사람 재승인 대상): 위 4)·커밋 없는 저장소 해석 때문에 승인된 `spec.md` 예시 두 곳(US4 시나리오 1, Edge Cases 빈 저장소)을 고쳤다. FR·SC 문구는 그대로다.
 - 2026-10-20 사실: 같은 Codex 세션의 설계 재검토에서 이전 5건은 해소, 새 P2 1건(측정 `files`를 "판정 수 + 통과 수"로 정의해 통과 자료를 두 번 셈)을 냈다.
   SEC-001은 통과 자료에도 `PASSED` 판정을 남기므로 `files = len(verdicts)`로 고치고, 세 측정 사례에서 고유 항목 수와 같은지 보는 시험을 quickstart에 더했다.
+- 2026-10-20 사실: 같은 Codex 세션의 두 번째 설계 재검토에서 남은 P2가 해소되고 PASS가 나왔다(남은 P1·P2 없음).
+- 2026-10-20 사용자 결정: 사람 리뷰어 Byuntil이 다음을 모두 승인했다. 1) `spec.md` 예시 두 곳 정정(`87f98a3`) 재승인. 2) 설계(`361a9b1` 기준) 승인.
+  3) QK-ING-001 코드·시험 변경 네 곳(`ListPage.complete`·`list_all`, `content_hash()`와 호출처, 공통 계약 시험 기대값 주입) 허용. 구현 범위(Scope·Ownership·제외 범위 조정)는
+  SEC-001 때처럼 tasks 승인 뒤에 반영한다. 4) 헤더 없이 본문으로만 오는 GitHub 2차 한도 응답을 영구 실패로 남기는 한계를 받아들인다.
+  5) 활성화 단계(결정 기록, 포함 패턴 확정, 확인 기록, 활성화, 측정)는 사람이 한다는 절차를 확인했다. 설계를 쓴 세션은 승인하지 않았다(AGENTS.md 2절).
+  `/speckit-tasks`로 작업 목록을 만든다.
