@@ -96,6 +96,8 @@ src/qello_knowledge/
 │   ├── plan.py                   # plan_source: 수집·필터·청킹 + 판단(쓰기 없음, R-07)
 │   ├── identity.py               # 설정상·수집 뒤 정체성 판정(R-10)
 │   ├── execute.py                # 쓰기 단계: 보안 내림 → 일반 내림 → 대기 삭제 → 임베딩·반영 → mark_seen
+│   ├── preview.py                # preview: 미리 보기(쓰기 없음, R-07)
+│   ├── activate.py               # activate_first_index(R-09)
 │   ├── run.py                    # run_sync: 점검 → 잠금 → 기록 → 자료원별 실행 → 마감(R-06·R-16)
 │   └── report.py                 # 요약·JSON·사람용 출력(FR-028)
 ├── security/screen.py            # screen_source가 ScreenResult.listing을 채움(R-18)
