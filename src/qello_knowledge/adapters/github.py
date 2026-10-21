@@ -23,6 +23,7 @@ from qello_knowledge.domain.source import (
     SourceContent,
     SourceFailure,
     SourceItem,
+    SourceOrigin,
     SourceRequest,
     SourceResponse,
     default_classify,
@@ -146,7 +147,17 @@ class GitHubRepoFilesAdapter:
                             )
                         )
             self._last_snapshot = ListSnapshot(commit_sha, visibility, tree["truncated"])
-            return ListPage(tuple(sorted(items, key=lambda item: item.location)), None, not tree["truncated"])
+            identity, name = repo.get("id"), repo.get("full_name")
+            origin = None
+            if (
+                isinstance(identity, (int, str))
+                and not isinstance(identity, bool)
+                and str(identity).strip()
+                and isinstance(name, str)
+                and name.strip()
+            ):
+                origin = SourceOrigin(str(identity), name, commit_sha)
+            return ListPage(tuple(sorted(items, key=lambda item: item.location)), None, not tree["truncated"], origin)
         except (KeyError, TypeError, ValueError):
             raise InvalidResponse() from None
 

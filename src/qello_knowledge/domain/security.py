@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 from qello_knowledge.domain.redact import FieldKind, OutputContext, safe_text
-from qello_knowledge.domain.source import FetchResult, SourceContent, SourceItem
+from qello_knowledge.domain.source import FetchResult, Listing, SourceContent, SourceItem
 
 
 class AccessScope(StrEnum):
@@ -130,3 +130,4 @@ class ScreenResult:
     verdicts: tuple[SecurityVerdict, ...]
     summary: FilterSummary
     fetch: FetchResult
+    listing: Listing | None = field(default=None, repr=False)

@@ -172,33 +172,7 @@ class PostgresStore:
                 raise InvalidRecord(f"원본 자료가 없다: {artifact_id}")
             if row[0] == new_hash:
                 return "unchanged"
-            embedding_ids = self._embedding_ids(conn, chunks)
-            conn.execute(
-                "DELETE FROM qk.chunk WHERE artifact_id = %s AND index_version = %s", (artifact_id, index_version)
-            )
-            with conn.cursor() as cur:
-                cur.executemany(
-                    """
-                    INSERT INTO qk.chunk (artifact_id, index_version, source_version, locator, heading_path, ordinal,
-                                          body, search_text, chunking_version, embedding_id)
-                    VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s)
-                    """,
-                    [
-                        (
-                            artifact_id,
-                            index_version,
-                            source_version,
-                            json.dumps(dict(c.locator), ensure_ascii=False),
-                            list(c.heading_path),
-                            c.ordinal,
-                            c.body,
-                            c.search_text,
-                            c.chunking_version,
-                            embedding_ids.get(c.ordinal),
-                        )
-                        for c in chunks
-                    ],
-                )
+            _replace_chunk_rows(conn, artifact_id, index_version, source_version, chunks)
             conn.execute(
                 "UPDATE qk.artifact SET source_version = %s, chunk_set_hash = %s, updated_at = now() WHERE id = %s",
                 (source_version, new_hash, artifact_id),
@@ -332,3 +306,32 @@ class PostgresStore:
             ).fetchone()
         assert row is not None  # noqa: S101
         return StoreUsage(total_bytes=int(row[0]), chunk_count=int(row[1]), embedding_count=int(row[2]))
+
+
+def _replace_chunk_rows(conn, artifact_id, index_version, source_version, chunks):
+    """같은 트랜잭션의 연결에서 청크 행만 교체한다."""
+    embedding_ids = PostgresStore._embedding_ids(conn, chunks)
+    conn.execute("DELETE FROM qk.chunk WHERE artifact_id = %s AND index_version = %s", (artifact_id, index_version))
+    with conn.cursor() as cur:
+        cur.executemany(
+            """
+            INSERT INTO qk.chunk (artifact_id, index_version, source_version, locator, heading_path, ordinal,
+                                  body, search_text, chunking_version, embedding_id)
+            VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s)
+            """,
+            [
+                (
+                    artifact_id,
+                    index_version,
+                    source_version,
+                    json.dumps(dict(c.locator), ensure_ascii=False),
+                    list(c.heading_path),
+                    c.ordinal,
+                    c.body,
+                    c.search_text,
+                    c.chunking_version,
+                    embedding_ids.get(c.ordinal),
+                )
+                for c in chunks
+            ],
+        )

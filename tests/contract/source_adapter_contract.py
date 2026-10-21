@@ -112,3 +112,9 @@ class SourceAdapterContract:
         with pytest.raises(InvalidResponse):
             adapter.fetch_content(session, config, listing.items[1])
         assert adapter.fetch_content(session, config, listing.items[2]).source_id == listing.items[2].source_id
+
+    def test_optional_origin_has_valid_identity(self, adapter, transport, config):
+        page = adapter.list_page(self.session(adapter, transport, config), config, None)
+        if page.origin is not None:
+            assert isinstance(page.origin.origin_id, str) and page.origin.origin_id.strip()
+            assert isinstance(page.origin.origin_name, str) and page.origin.origin_name.strip()

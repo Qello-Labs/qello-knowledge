@@ -65,3 +65,11 @@ class TestGitHubAdapterContract(SourceAdapterContract):
             request.method == "GET" and urlsplit(request.url).hostname == "api.github.com"
             for request in transport.requests
         )
+
+    def test_origin_uses_repo_response_and_commit_without_more_requests(self, adapter, config):
+        sample = scenario()
+        sample.exchanges[0]["responses"][0]["body"].update(id=42, full_name="octo/docs")
+        transport = sample.transport()
+        page = adapter.list_page(self.session(adapter, transport, config), config, None)
+        assert (page.origin.origin_id, page.origin.origin_name, page.origin.version) == ("42", "octo/docs", COMMIT)
+        assert len(transport.requests) == 3

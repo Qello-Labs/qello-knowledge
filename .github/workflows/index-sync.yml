@@ -1,0 +1,32 @@
+name: Incremental index sync
+on:
+  schedule:
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: index-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    # 변수가 없으면 건너뛴다. Secret·변수 등록은 사람 단계 H07이다.
+    if: vars.QK_SYNC_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      GITHUB_API_TOKEN: ${{ secrets.QK_GITHUB_API_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked --extra index --extra postgres
+      - run: uv run qk-index run --allow-remote --trigger schedule --json
+      - if: always()
+        run: uv run qk-index usage prune --allow-remote
+      - if: always()
+        run: uv run qk-index runs prune --allow-remote

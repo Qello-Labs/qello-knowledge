@@ -3,6 +3,7 @@ import pytest
 from qello_knowledge.indexer.cli import main
 from tests.unit.fakes import valid_environ
 from tests.unit.review_records import review_args
+from tests.unit.sync.helpers import cli_factory
 
 
 @pytest.fixture
@@ -22,7 +23,7 @@ def test_run_with_valid_settings_reports_and_exits_zero(env, capsys, tmp_path) -
     sources = tmp_path / "sources.toml"
     sources.write_text('[[source]]\nname = "old-docs"\nkind = "fake"\nenabled = false\n', encoding="utf-8")
     extra = env(valid_environ())
-    assert main(["run", *extra, "--sources", str(sources)]) == 0
+    assert main(["run", *extra, "--sources", str(sources)], sync_factory=cli_factory) == 0
     out = capsys.readouterr().out
     assert "결과: 통과" in out
     assert "수집할 자료원 없음" in out
@@ -79,12 +80,15 @@ def test_run_validates_sources_and_reports_each_source(env, capsys, tmp_path):
                 "--sources",
                 "tests/fixtures/sources/valid.toml",
                 *review_args("tests/fixtures/sources/valid.toml", tmp_path / "reviews"),
-            ]
+            ],
+            sync_factory=cli_factory,
         )
         == 0
     )
     out = capsys.readouterr().out
-    assert "수집 대기" in out and "비활성" in out
+    assert "결과: 통과" in out and "status=succeeded" in out
+    assert "docs: status=succeeded mode=FULL PROCESS=5" in out
+    assert "old-docs: 비활성" in out
 
 
 def test_sources_check_json_and_default_empty_config(capsys, tmp_path):
@@ -172,7 +176,13 @@ def test_run_stops_on_bad_exceptions_without_requests(env, capsys, monkeypatch, 
     assert main(["run", *extra, *SEC, *bad]) == 1
     out = capsys.readouterr().out
     assert "보안 규칙 점검" in out and "수집 대기" not in out
-    assert main(["run", *extra, *SEC, "--exceptions", "tests/fixtures/security/valid_exceptions.toml"]) == 0
+    assert (
+        main(
+            ["run", *extra, *SEC, "--exceptions", "tests/fixtures/security/valid_exceptions.toml"],
+            sync_factory=cli_factory,
+        )
+        == 0
+    )
 
 
 def test_default_security_check_passes(capsys):

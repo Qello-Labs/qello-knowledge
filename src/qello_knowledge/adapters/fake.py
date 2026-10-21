@@ -18,6 +18,7 @@ from qello_knowledge.domain.source import (
     ResponseClass,
     SourceContent,
     SourceItem,
+    SourceOrigin,
     SourceRequest,
     SourceResponse,
     content_hash,
@@ -56,7 +57,9 @@ class FakeSourceAdapter:
             ):
                 raise ValueError
             items = tuple(self._item(session, config, row) for row in data["items"])
-            return ListPage(items, data["next_cursor"])
+            raw = data.get("origin")
+            origin = SourceOrigin(raw["origin_id"], raw["origin_name"], raw.get("version")) if raw else None
+            return ListPage(items, data["next_cursor"], origin=origin)
         except (KeyError, TypeError, ValueError):
             raise InvalidResponse() from None
 

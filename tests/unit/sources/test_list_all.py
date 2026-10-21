@@ -66,3 +66,32 @@ def test_incomplete_page_keeps_filtered_deduplicated_items_and_stops(clock):
         assert listing.excluded == 1
         assert listing.duplicates_dropped == (0 if first_incomplete else 1)
         assert pages.calls == (1 if first_incomplete else 2)
+
+
+def test_first_origin_survives_empty_incomplete_and_stopped_listing(clock):
+    from qello_knowledge.domain.source import ListPage, RunStopped, SourceOrigin, StopInfo, StopReason
+
+    config = SourceConfig("docs", "fake", True, scope=SourceScope(("**/*.md",)), allowed_hosts=("fake.invalid",))
+    origin = SourceOrigin("repo-1", "owner/docs", "commit-1")
+    for ending in ("empty", "incomplete", "stopped"):
+
+        class Pages:
+            def list_page(self, session, config, cursor, ending=ending):
+                if cursor is None:
+                    return ListPage((), None if ending == "empty" else "next", ending != "incomplete", origin)
+                raise RunStopped(StopInfo(StopReason.REQUEST_BUDGET))
+
+        result = list_all(Pages(), config, None)
+        assert result.origin == origin
+        assert result.complete == (ending == "empty")
+        assert (result.stop is not None) == (ending == "stopped")
+
+
+def test_source_origin_requires_nonempty_identity():
+    import pytest
+
+    from qello_knowledge.domain.source import SourceOrigin
+
+    for identity, name in (("", "name"), ("id", ""), (" ", "name"), (None, "name")):
+        with pytest.raises(ValueError):
+            SourceOrigin(identity, name, None)

@@ -64,6 +64,10 @@ def _evidence(item: SourceItem) -> dict:
 
 
 def _source_excluded(location: str, config: SourceConfig) -> bool:
+    return source_excluded(location, config)
+
+
+def source_excluded(location: str, config: SourceConfig) -> bool:
     """ING-001 `list_all`이 거른 자료원 제외 패턴을 대소문자 무시로 다시 확인한다(방어선)."""
     path = PurePosixPath(normalize_location(location))
     return any(path.full_match(pattern, case_sensitive=False) for pattern in config.scope.exclude)
@@ -247,4 +251,4 @@ def screen_source(
             record["source_id"],
         )
     logger.info("summary=%s", summary.to_dict())
-    return ScreenResult(passed, verdicts, summary, replace(fetch, contents=()))
+    return ScreenResult(passed, verdicts, summary, replace(fetch, contents=()), listing)

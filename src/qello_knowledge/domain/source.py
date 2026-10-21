@@ -129,10 +129,22 @@ class SourceContent:
 
 
 @dataclass(frozen=True)
+class SourceOrigin:
+    origin_id: str
+    origin_name: str
+    version: str | None
+
+    def __post_init__(self) -> None:
+        if any(not isinstance(value, str) or not value.strip() for value in (self.origin_id, self.origin_name)):
+            raise ValueError("source origin requires identity and name")
+
+
+@dataclass(frozen=True)
 class ListPage:
     items: tuple[SourceItem, ...]
     next_cursor: str | None
     complete: bool = True
+    origin: SourceOrigin | None = None
 
 
 @dataclass(frozen=True)
@@ -151,6 +163,7 @@ class Listing:
     complete: bool = True
     excluded: int = 0
     stop: StopInfo | None = None
+    origin: SourceOrigin | None = None
 
 
 @dataclass(frozen=True)
