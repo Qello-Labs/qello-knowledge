@@ -30,13 +30,18 @@ def list_all(adapter: SourceAdapter, config: SourceConfig, session: SourceSessio
     seen = set()
     duplicates = excluded = 0
     cursor = None
+    origin = None
+    first = True
     while True:
         try:
             page = adapter.list_page(session, config, cursor)
         except RunStopped as stopped:
-            return Listing(tuple(items), duplicates, False, excluded, stopped.stop)
+            return Listing(tuple(items), duplicates, False, excluded, stopped.stop, origin)
         except SourceFailure:
-            return Listing(tuple(items), duplicates, False, excluded)
+            return Listing(tuple(items), duplicates, False, excluded, origin=origin)
+        if first:
+            origin = page.origin
+            first = False
         for item in page.items:
             if item.source_id in seen:
                 duplicates += 1
@@ -47,10 +52,10 @@ def list_all(adapter: SourceAdapter, config: SourceConfig, session: SourceSessio
                 continue
             items.append(item)
         if not page.complete:
-            return Listing(tuple(items), duplicates, False, excluded)
+            return Listing(tuple(items), duplicates, False, excluded, origin=origin)
         cursor = page.next_cursor
         if cursor is None:
-            return Listing(tuple(items), duplicates, True, excluded)
+            return Listing(tuple(items), duplicates, True, excluded, origin=origin)
 
 
 def fetch_contents(
