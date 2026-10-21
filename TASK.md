@@ -15,13 +15,15 @@
 
 ## Objective
 
-- 이번 단계: QK-SYN-001 명세(`spec.md`)를 `/speckit-specify`로 작성하고 사람 리뷰로 승인받는다.
+- 완료: QK-SYN-001 명세(`spec.md`)를 `/speckit-specify`로 작성하고 Codex 독립 검토 5회를 거쳐 사람 승인을 받았다(2026-10-21).
+- 이번 단계: `/speckit-plan` 설계 산출물을 만들고 독립 검토와 사람 승인을 받는다.
 - 승인 뒤 `/speckit-plan`·`/speckit-tasks`와 구현을 이어 간다. 각 단계 시작 전에 이 파일의 Scope를 갱신해 승인받는다.
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
-- `specs/QK-SYN-001-incremental-sync/spec.md`, `checklists/requirements.md`
+- `specs/QK-SYN-001-incremental-sync/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
+- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`(문서만. 코드·마이그레이션 파일은 만들지 않는다)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `TASK.md`
@@ -35,7 +37,7 @@
 
 ## Explicit exclusions
 
-- 이번 단계(명세)에서 `src/`·`tests/`·`pyproject.toml`·`uv.lock` 변경. 구현은 plan·tasks 승인 뒤 Scope를 갱신하고 한다.
+- 이번 단계(명세·plan)에서 `src/`·`tests/`·`pyproject.toml`·`uv.lock`·마이그레이션·워크플로 파일 변경. 구현은 plan·tasks 승인 뒤 Scope를 갱신하고 한다.
 - Discord `/reindex`·실패 문서 재시도(QK-SYN-002), 인덱스 버전 평가 게이트·활성화(QK-STO-002), 전체 대조 삭제·백업·복구(QK-SYN-003).
 - 새 자료원(QK-ING-003 이후), 검색·생성.
 - QK-ING-002·QK-SEC-001·QK-CHK-002·QK-EMB-001·QK-STO-001의 승인된 명세 변경.
@@ -106,3 +108,15 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-21 사실: Codex 명세 4차 검토 "변경 요청"(중간 2: 정체성 기준값 등록 시점 불일치, FR-017 "확인 옵션 없는 삭제 금지" 문장 범위). 사용자 결정으로 두 건만 고치고 5차 검토 없이 사람이 직접 검토한다.
 - 2026-10-21 사실: Codex 명세 5차 검토 "승인" 권고(4차 지적 2건과 정체성·체크리스트 이전 지적 모두 해소, 새 지적 0건). 명세 수준 판정이며 구현 검증은 아니다. 사람 승인 전이다.
 - 2026-10-21 사용자 결정: QK-SYN-001 명세 승인(Codex 5차 검토 "승인" 권고 뒤, 커밋과 plan 진행 지시). 저장소 관례대로 `spec.md`의 Status 표기는 바꾸지 않고 이 기록으로 승인을 남긴다.
+- 2026-10-21 사용자 결정: 명세 커밋 뒤 plan 단계 진행. Scope에 plan 설계 산출물(문서)을 더했다.
+- 2026-10-21 사실: plan 산출물(plan·research R-01~R-16·data-model·contracts/sync.md·contracts/cli.md·quickstart) 작성. 사람 승인 전이다.
+  구현 Scope에 걸리는 변경(수집 경계 origin, store.py 내부 함수 분리, 마이그레이션 0004, 주기 실행 워크플로)은 plan.md "구현 Scope 승인이 필요한 것"에 모았다.
+- 2026-10-21 사실: Codex plan 1차 검토 "변경 요청"(높음 5, 중간 7). 모두 코드와 대조해 맞다고 확인하고 사용자 승인으로 반영했다.
+  구현 Scope 표에 QK-SEC-001 코드(`ScreenResult.listing`)가 더해졌고, `qk.sync_source(source_kind)` 유일 제약으로 종류마다 자료원 하나를 DB가 강제한다.
+- 2026-10-21 사실: Codex plan 2차 검토 "변경 요청"(1차 7건 해소·5건 일부, 새 지적 높음 3·중간 4. N2·N4는 Codex 메모리 재현). 모두 확인하고 기존 결정 안에서 반영했다.
+  바뀐 문서만 청킹, 실행 소진 상태와 캐시 완비 문서 직접 반영(QK-EMB-001 경계 변경 없음), 설정 제외는 보안 필터 규칙(`source_excluded` 공개 이름 추가, Scope 표 반영),
+  같은 종류 자료원 교체는 첫 쓰기 전 거부(교체 절차는 같은 종류 자료원을 더하는 명세로), 보류 사유별 작업 허용표, 남은 청크 없는 삭제 보류는 대기 비움.
+- 2026-10-21 사실: Codex plan 3차 검토 "변경 요청"(2차 4건 해소·3건 일부, 새 지적 높음 2·중간 2. M2는 Codex 메모리 재현). 모두 확인하고 반영했다.
+  버전 불일치에서 일반 내림 막음(spec SC-011과 맞춤), 사용량 장부 오류(예약 실패 항목·정산 실패 경고)도 실행 소진 신호, 청킹 대상은 변경 조건 전체, 캐시 직접 반영 문서의 임베딩 요약.
+- 2026-10-21 사실: Codex plan 4차 검토 "승인" 권고(3차 M1~M4와 이전 일부 해소 항목 모두 해소, 새 지적 0건. 설계 수준 판정). 사람 승인 전이다.
+- 2026-10-21 사용자 결정: QK-SYN-001 plan 승인(Codex 4차 검토 "승인" 권고 뒤). 같은 종류 자료원 교체 거부(research R-10, 교체 절차는 같은 종류 자료원을 더하는 명세로)도 승인.
