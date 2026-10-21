@@ -10,6 +10,8 @@ import ast
 import sys
 from pathlib import Path
 
+import pytest
+
 PACKAGE = Path(__file__).resolve().parents[2] / "src" / "qello_knowledge"
 RESTRICTED = ("domain", "ports", "embedding")
 ALLOWED_INTERNAL = ("qello_knowledge.domain", "qello_knowledge.ports", "qello_knowledge.embedding")
@@ -105,4 +107,69 @@ def chunking_violations(root: Path) -> list[str]:
                     parser and path.relative_to(root).as_posix() != "chunking/blocks.py"
                 ):
                     problems.append(f"{path.relative_to(root.parent)}:{line}: {module}")
+    return problems
+
+
+def test_sync_dependencies_are_isolated():
+    assert sync_violations(PACKAGE) == []
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "import psycopg",
+        "from markdown_it import MarkdownIt",
+        "from qello_knowledge.adapters import github",
+        "from qello_knowledge import adapters",
+        "from ..adapters import github",
+        "from .. import adapters",
+        "import qello_knowledge.config",
+    ],
+)
+def test_sync_violations_are_detected(tmp_path, statement):
+    root = tmp_path / "qello_knowledge"
+    (root / "sync").mkdir(parents=True)
+    (root / "sync" / "bad.py").write_text(statement)
+    assert len(sync_violations(root)) == 1
+
+
+def test_sync_allowed_imports(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    (root / "sync").mkdir(parents=True)
+    (root / "sync" / "good.py").write_text(
+        "import dataclasses\nfrom ..domain import sync\nfrom . import keys\n"
+        "from qello_knowledge import sources\nfrom qello_knowledge.security import screen\n"
+        "from qello_knowledge.chunking.service import chunk_screened\n"
+    )
+    assert sync_violations(root) == []
+
+
+def sync_violations(root: Path) -> list[str]:
+    prefixes = (
+        *ALLOWED_INTERNAL,
+        "qello_knowledge.sync",
+        "qello_knowledge.chunking",
+        "qello_knowledge.security",
+        "qello_knowledge.sources",
+    )
+    problems = []
+    for path in sorted((root / "sync").rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
+            modules = []
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                base = ["qello_knowledge", *path.relative_to(root).parts[:-1]]
+                module = node.module or ""
+                if node.level:
+                    module = ".".join([*base[: len(base) - node.level + 1], *([module] if module else [])])
+                modules = (
+                    [module + "." + alias.name for alias in node.names] if module == "qello_knowledge" else [module]
+                )
+            for module in modules:
+                if module.split(".")[0] in sys.stdlib_module_names or any(
+                    module == prefix or module.startswith(prefix + ".") for prefix in prefixes
+                ):
+                    continue
+                problems.append(f"{path.relative_to(root.parent)}:{node.lineno}: {module}")
     return problems
