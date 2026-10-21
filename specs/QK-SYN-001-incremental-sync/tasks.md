@@ -236,9 +236,9 @@ description: "QK-SYN-001 구현 작업 목록"
 
 각 단계는 사람의 승인 뒤에만 한다(AGENTS.md 3.5, spec FR-033·FR-036). H01~H03은 이 작업의 완료 판정(spec SC-012)에 쓴다.
 
-- [ ] H01 로컬 DB에 실제 자료원 미리 보기: `uv run qk-index run --preview --json`(GitHub 약 83회, 0 Neurons). 처리 예정 문서 수와 예상 Neurons를 기록하고 실행 승인을 받는다
-- [ ] H02 로컬 DB에 첫 실제 색인과 재실행: `uv run qk-index run --json` 두 번(예상 약 325 Neurons, H01 값으로 확인). 두 번째 `embedding.provider_calls == 0`. spec SC-012 측정 조건(대상 커밋, 보안·청킹 규칙 버전, 인덱스 버전, 실행 환경, 날짜)과 원본 요청 수, 소요 시간, 처리 문서 수, 청크 수, 소비 Neurons를 기록
-- [ ] H03 로컬 DB에서 `qk-index index status` → `qk-index index activate <버전>` → 검색 확인(질의 임베딩 소량). 활성화 요약과 검색 결과 출처 기록
+- [X] H01 로컬 DB에 실제 자료원 미리 보기: `uv run qk-index run --preview --json`(GitHub 약 83회, 0 Neurons). 처리 예정 문서 수와 예상 Neurons를 기록하고 실행 승인을 받는다
+- [X] H02 로컬 DB에 첫 실제 색인과 재실행: `uv run qk-index run --json` 두 번(예상 약 325 Neurons, H01 값으로 확인). 두 번째 `embedding.provider_calls == 0`. spec SC-012 측정 조건(대상 커밋, 보안·청킹 규칙 버전, 인덱스 버전, 실행 환경, 날짜)과 원본 요청 수, 소요 시간, 처리 문서 수, 청크 수, 소비 Neurons를 기록
+- [X] H03 로컬 DB에서 `qk-index index status` → `qk-index index activate <버전>` → 검색 확인(질의 임베딩 소량). 활성화 요약과 검색 결과 출처 기록
 - [ ] H04 운영 저장소 제공자 데이터 처리 정책 확인(ADR-008·ADR-019에 출처·조회일)과 `config/store_policy.toml` PR
 - [ ] H05 운영 저장소 연결이 세션 advisory lock을 유지하는 직접 연결인지 확인(research R-06 남는 위험)
 - [ ] H06 운영 저장소 첫 실제 색인(`--allow-remote`)과 활성화(H02와 같은 Neurons, spec SC-012)
@@ -591,3 +591,38 @@ H04~H07은 운영 저장소가 정해진 뒤 1.G 완료 리뷰 전까지 한다.
 - risks=이번 수정의 독립 재리뷰 대기; 실제 자료원·모델·운영 저장소 검증은 제외 범위. 같은 세션의 자체 승인 없음.
 - required_human_decisions=추가 정책 결정 없음. 독립 재리뷰·커밋은 Claude 세션이 담당한다.
   H01~H07·외부 GitHub 조회가 필요한 로드맵 동기화는 실행하지 않았다. 브랜치·HEAD는 시작값 그대로이며 스테이징·커밋·push 없음.
+
+### H01 결과 (2026-10-21, Claude 세션, 사용자 지시)
+
+- 사전 작업: 로컬 DB(`target=local`)에 미적용이던 마이그레이션 0003·0004를 `uv run qk-migrate`로 적용(`applied=2 skipped=2`, 재실행 `applied=0 skipped=4`). 더하기만 하는 마이그레이션이다.
+- 명령: `uv run qk-index run --preview --json`(실제 `.env` 사용은 명령이 읽음, 값은 출력·기록하지 않음). 시작 2026-10-21T09:01:31Z, 종료 코드 0, 소요 약 218초.
+- 측정 조건: 자료원 `dnd-backend-docs`, 원본 정체성 `origin_id=1310010471`·`dnd-side-project/dnd-15th-2-backend`, 확정 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`, 보안 규칙 `sec-7222e5dd1d6e`,
+  청킹 규칙 `chk-md-20d966f730bb`, 인덱스 버전 `iv-4c0bc4fcc642`(활성 버전 없음, 준비 버전 없음), 로컬 개발 환경(macOS arm64).
+- 결과: 원본 요청 84회(목록 완전, 실패 0, 중단 없음), 보안 필터 통과 79·비밀값 차단 1(`env-assigned-secret`, 측정 기록 2.1절의 알려진 문서), 처리 예정 79·건너뜀 1, 내림 0,
+  청크 1,291개(예상 토큰 최소 16·중앙값 224·최대 2,776, 나뉜 블록 2), 임베딩 미리 보기 1,291개·캐시 적중 0·한도 초과 예상 0·**예상 368.93 Neurons**(입력 1,199,214바이트, 3.5바이트/토큰, 1,075 Neurons/백만 토큰),
+  오늘 색인 예산 5,000 중 남은 5,000, 실행 가능.
+- 쓰기 없음 확인: `qk-index runs list` 빈 목록, `index status` 활성·준비 버전 없음, `qk-index usage` 사용량 0.
+- 관찰: 요청 수가 2026-10-20 측정(83회, 73초)보다 1회 많고 소요가 길다. 실행당 한도(2,000회, 1,800초) 안이다. 재시도 여부는 요약에 없어 확인하지 못했다.
+- 외부 임베딩 호출 0, 0 Neurons.
+
+### H02 결과 (2026-10-21, Claude 세션, 사용자 승인) — spec SC-012 측정
+
+- 명령: `uv run qk-index run --json` 두 번(로컬 DB, `target=local`). 측정 조건은 H01과 같다(커밋 `6aeccd0`, `sec-7222e5dd1d6e`, `chk-md-20d966f730bb`, `iv-4c0bc4fcc642`, 로컬 개발 환경 macOS arm64, 2026-10-21).
+- 1회차 `sync-20261021T091615-e8441b58`: `succeeded`, 종료 코드 0, 소요 222초(수집 73초). 원본 요청 83회, 처리 79(`PROCESS`)·건너뜀 1(비밀값 차단), 실패 0, 청크 1,291개,
+  임베딩 요청 1,291·캐시 적중 0·제공자 호출 95회·**소비 894.50 Neurons(제공자 측정값, 추정 비율 0%)**. 준비 버전 `iv-4c0bc4fcc642` 생성, 활성 버전 없음.
+- 2회차 `sync-20261021T091956-37508b00`: `succeeded`, 종료 코드 0, 소요 73초. 원본 요청 83회, 변경 없음 79·건너뜀 1, 청킹 0, **제공자 호출 0·0 Neurons**(로드맵 1.G 조건).
+- SC-012 수치 목표: 첫 실행 소비 894.50 Neurons ≤ 색인 예산 5,000 — 충족. 오늘 색인 사용 894.50, 남은 4,105.50.
+- 관찰(QK-EMB-001 범위): 미리 보기 예상 368.93 Neurons 대비 실제 894.50(약 2.42배, +142%)로 QK-EMB-001 SC-005 목표(±20%)를 벗어났다. 예상식(UTF-8 바이트 ÷ 3.5, 1,075 Neurons/백만 토큰)이
+  영어·코드·표가 섞인 실제 문서의 토큰 수를 작게 잡는 것으로 보인다(QK-CHK-002 research R-03: 표에서 실제 토큰이 예상의 최대 2.30배) `(추론)`. 예산 판정은 정산된 실제 값으로 누적하므로
+  초과를 막는 장치는 동작하지만, 실행 전 미리 보기와 예산 사전 판정은 실제보다 낙관적이다. 보정은 이 작업 범위 밖이며 사람 결정이 필요하다.
+- H01의 요청 84회·218초와 달리 이번 두 회차는 83회·73초로 2026-10-20 측정과 같았다. H01의 차이는 일시적 재시도로 보인다 `(추론)`.
+
+### H03 결과 (2026-10-21, Claude 세션, 사용자 지시)
+
+- `uv run qk-index index activate iv-4c0bc4fcc642 --json` → 종료 코드 0, 활성화 전 요약: 검색될 문서 79, 청크 1,291, 벡터 없는 청크 0, 마지막 실행 `succeeded`, 실패 조건 없음.
+  이후 `index status`: 활성 `iv-4c0bc4fcc642`, 준비 버전 없음, 현재 설정과 일치. 첫 버전 활성화는 AGENTS.md 3.3 평가 조건의 사용자 승인 예외다(spec FR-021).
+- 검색 확인(검색 CLI는 QK-RET-001 범위라 `PostgresStore` 검색 질의를 직접 부른 읽기 전용 스크립트, 본문 미출력):
+  키워드 `OpenAPI` → 5건(1위 `docs/api/OPENAPI_WRITING_GUIDE.md`), 키워드 `에러 코드` → 1건(`docs/product/AUTH_DESIGN.md`),
+  벡터 "API 응답 형식 규칙은 어떻게 되나요?" → 5건(1~3위 `docs/api-response.md`의 절들, 점수 0.68·0.67·0.67). 모든 결과가 활성 버전 `iv-4c0bc4fcc642`에서 나왔다.
+  질의 임베딩 1건, 제공자 호출 1회, 0.01 Neurons.
+- 관찰(QK-RET-001 범위): 키워드 `에러 코드`가 `docs/error-codes.md`를 찾지 못했다. 한국어 키워드 분해·검색 텍스트 규칙(ADR-010)은 QK-RET-001에서 다룬다.
