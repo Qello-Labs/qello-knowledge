@@ -23,7 +23,7 @@ Postgres 구현은 `adapters/postgres/sync_store.py`에 둔다. QK-STO-001 `Stor
 **결정**: 마이그레이션 하나로 아래를 더한다. 기존 열·제약·함수는 바꾸지 않고 더하기만 한다(QK-STO-001 FR-016~019, 지우는 마이그레이션 아님).
 
 - `qk.artifact`에 열 추가(모두 NULL 허용, 기존 행 영향 없음):
-  `source_name`(자료원 이름), `chunk_input_hash`(R-03), `processed_chunking_version`, `processed_index_version`, `processed_outcome`(`chunked`·`empty`),
+  `source_name`(자료원 이름), `location`(처리한 본문의 위치. 저장된 문서의 설정 제외 판정에 쓴다, R-18), `chunk_input_hash`(R-03), `processed_chunking_version`, `processed_index_version`, `processed_outcome`(`chunked`·`empty`),
   `last_seen_version`, `last_seen_at`, `takedown_reason`, `takedown_at`, `purge_pending text[] NOT NULL DEFAULT '{}'`(보안 대상 본문이 남은 인덱스 버전 목록, spec FR-015),
   `purge_reason`(삭제 대기를 만든 보안 사유. 다시 처리돼 `active`로 돌아와도 대기 목록이 남는 동안 유지).
 - `qk.sync_source`: 자료원 정체성(spec FR-002). 기본 키 `source_name`, `source_kind`에 유일 제약(종류마다 자료원 하나, spec FR-002 제한을 DB가 한 번 더 강제).
@@ -67,7 +67,7 @@ Postgres 구현은 `adapters/postgres/sync_store.py`에 둔다. QK-STO-001 `Stor
 
 | 연산 | 한 트랜잭션 안에서 하는 일 |
 | --- | --- |
-| `apply_document` | 원본 자료 행 넣기·갱신(출처, 지문, 처리 버전, 접근 범위 `team`, `status='active'`, 내림 해제), 이번 인덱스 버전 청크 지우고 넣기, `purge_pending`에서 이번 버전 빼기(비면 `purge_reason`도 비움), 결과 기록 |
+| `apply_document` | 원본 자료 행 넣기·갱신(출처, 위치, 지문, 처리 버전, 접근 범위 `team`, `status='active'`, 내림 해제), 이번 인덱스 버전 청크 지우고 넣기, `purge_pending`에서 이번 버전 빼기(비면 `purge_reason`도 비움), 결과 기록 |
 | `take_down`(일반) | `status='deleted'`, `takedown_reason`, 결과 기록. 청크는 그대로 |
 | `take_down`(보안, 삭제 허용) | `status='deleted'`, 접근 범위를 판정값으로(`restricted`·NULL), `takedown_reason`, 모든 인덱스 버전의 그 문서 청크 행 삭제, `purge_pending='{}'`, `purge_reason` NULL, 결과 기록 |
 | `take_down`(보안, 삭제 보류) | 위와 같되 청크를 지우지 않고 `purge_pending`에 청크가 남은 인덱스 버전 목록, `purge_reason`에 사유를 넣는다. 남은 청크가 없으면(빈 문서, 이미 지운 문서) 목록과 사유 모두 비운다 |
@@ -132,7 +132,8 @@ Postgres 구현은 `adapters/postgres/sync_store.py`에 둔다. QK-STO-001 `Stor
 ## R-09 첫 인덱스 버전 활성화 조건 확인
 
 **결정**: `qk-index index activate <version>`은 전역 배타 잠금(R-06)을 잡은 트랜잭션 안에서 다음을 확인하고, 모두 맞을 때만 `status='active'`, `activated_at=now()`로 바꾼다.
-(1) 활성 버전 없음, (2) `<version>`이 현재 설정에서 계산한 값(R-08), (3) 그 버전으로 쓴 가장 최근 실행이 `succeeded`이고 `running`·`unfinished` 실행이 없음,
+(1) 활성 버전 없음, (2) `<version>`이 현재 설정에서 계산한 값(R-08), (3) 그 버전으로 쓴 가장 최근 실행이 `succeeded`이고 지금 `running`인 실행이 없음(이미 `unfinished`로 닫힌 이력은 보지 않는다. spec FR-021의 "끝나지 않은 실행"은
+아직 돌고 있는 실행으로 읽는다, 2026-10-21 사용자 결정. 그 버전의 마지막 실행이 `unfinished`면 첫 조건에서 이미 거부된다),
 (4) `status='active' AND access_scope='team'`이고 그 버전 청크가 1개 이상인 문서 수 ≥ 1, (5) 그 버전 청크 중 `embedding_id IS NULL`인 행 0개.
 못 채운 조건은 이름으로 모두 보여 주고 종료 코드 1로 끝난다. 활성화 전 요약(문서 수, 청크 수, 벡터 없는 청크 수, 마지막 실행 상태)을 항상 출력한다.
 
@@ -249,7 +250,7 @@ QK-EMB-001 경계는 바꾸지 않는다. 캐시 확인은 `Store.find_embedding
 (spec FR-009, Codex plan 2차 지적 N1, 3차 지적 M3).
 그 밖에 저장된 문서마다 다음을 판정한다.
 
-- 설정 제외 패턴: 저장된 위치에 보안 필터와 같은 제외 판정(`security/screen.py`의 자료원 제외 확인. 경로 정규화 뒤 대소문자 무시)을 적용한다. 지금은 비공개 함수
+- 설정 제외 패턴: 저장된 위치(`qk.artifact.location`. 저장 행이 있는 문서는 모두 `apply_document`를 거쳤으므로 항상 있다)에 보안 필터와 같은 제외 판정(`security/screen.py`의 자료원 제외 확인. 경로 정규화 뒤 대소문자 무시)을 적용한다. 지금은 비공개 함수
   `_source_excluded`라서 같은 동작의 공개 이름 `source_excluded`를 더한다(QK-SEC-001 코드, 동작 변경 없음). 걸리면 목록 완전 여부와 상관없이 보안 내림(`config_excluded`)이다.
 - 포함 범위: 제외에 걸리지 않고 `in_scope(location, include, ())`(목록 조회와 같은 대소문자 구분)가 거짓이면 포함 패턴에서 빠진 것이다. 목록이 완전할 때 일반 내림(`source_missing`).
   `in_scope`는 두 사유를 구분하지 않고 거짓만 돌려주므로(`domain/scope.py:6-12`) 제외 판정을 먼저 따로 한다(2차 지적 N3). 두 조건이 겹치면 보안 내림이 이긴다.

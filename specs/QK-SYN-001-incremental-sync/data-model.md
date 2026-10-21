@@ -12,6 +12,7 @@
 | 열 | 타입 | 제약 | 뜻 |
 | --- | --- | --- | --- |
 | `source_name` | text | NULL 허용 | 문서를 저장한 자료원 이름(spec FR-016 (5)) |
+| `location` | text | NULL 허용(동기화가 쓴 행은 항상 채움) | 처리한 본문의 위치(QK-ING-001 `SourceContent.location`). 저장된 문서의 설정 제외 판정(research R-18) |
 | `chunk_input_hash` | text | NULL 허용 | 청킹 입력 지문(research R-03) |
 | `processed_chunking_version` | text | NULL 허용 | 마지막 성공 처리의 청킹 규칙 버전 |
 | `processed_index_version` | text | NULL 허용, `qk.index_version(id)` 참조 | 마지막 성공 처리의 인덱스 버전 |
