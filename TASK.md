@@ -34,6 +34,7 @@
     `src/qello_knowledge/domain/security.py`·`security/screen.py`(QK-SEC-001 `ScreenResult.listing`, `source_excluded`), `src/qello_knowledge/adapters/postgres/store.py`(QK-STO-001 내부 함수 분리, 동작 그대로),
     `src/qello_knowledge/indexer/cli.py`, `tests/unit/test_boundaries.py`, `tests/contract/source_adapter_contract.py`·GitHub 재생 시험, `tests/unit/sources/test_list_all.py`,
     `tests/unit/chunking/test_perf.py`(합성 문서 생성기 재사용이 필요할 때 도우미로 옮기는 것만)
+    `tests/unit/indexer/test_cli.py`(`run` 성공 경로 사례 3개에 가짜 의존성 주입과 새 출력 기대값만. 실패 경로·다른 하위 명령 사례는 그대로, 2026-10-21 사용자 결정)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `TASK.md`
@@ -142,3 +143,11 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   승인된 plan 산출물의 보완이라 tasks 승인 때 함께 확인받는다.
 - 2026-10-21 사용자 결정: `tasks.md` 승인(Codex 독립 검토 없이). plan.md 구조도 보완(`sync/preview.py`·`sync/activate.py`)과 구현 Scope(위 Scope·제외 범위·Ownership)를 함께 열었다.
 - 2026-10-21 사용자 결정: 구현은 우측 패널 Codex 세션이 한다. 이 Claude 세션은 커밋·검토 조율과 독립 리뷰를 맡는다(구현을 같은 세션이 승인하지 않는다, AGENTS.md 2절).
+- 2026-10-21 사실: Codex 구현 BLOCKED(T002 완료·T001 일부). 승인된 저장 스키마에 저장된 문서의 위치가 없어 research R-18의 설정 제외 판정을 할 수 없다(청크가 없는 문서는 locator로도 복구 불가).
+- 2026-10-21 사용자 결정: `qk.artifact`에 `location` 열을 더한다(0004, 더하기만, 인덱스 버전 변경 아님). data-model 1.1, research R-02·R-04·R-18, tasks T012·T013·T017을 보완했다.
+- 2026-10-21 사실: Codex 구현 2차 BLOCKED(완료 체크 28개, 전체 pytest 1198 passed). `run`을 실제 동기화로 바꾸면 기존 `test_cli.py`의 성공 경로 사례 3개가 점검 전용 출력을 기대해 충돌한다. T024 통합 시험은 구현 뒤 작성됐다.
+- 2026-10-21 사용자 결정: `test_cli.py`의 `run` 성공 경로 사례 3개에만 가짜 의존성을 주입하고 출력 기대값을 새 동작에 맞춘다(T041 예외, 점검 통과 검증은 유지). T024는 구현을 임시로 깨뜨려 RED를 증명하고 원복한 뒤 완료한다.
+- 2026-10-21 사실: Claude 세션 독립 리뷰(`/harness-review`) "변경 요청". 높음 1(이미 내려진 보안 문서를 매 실행 다시 내려 확인 옵션 뒤에도 내림 비율로 계속 멈춤, 메모리 재현), 중간 1, 낮음 2. 기본 검증은 재실행해 통과(1251 passed).
+- 2026-10-21 사용자 결정: 첫 버전 활성화 조건의 "끝나지 않은 실행이 없다"는 지금 `running`인 실행이 없음으로 읽는다(이미 `unfinished`로 닫힌 이력은 보지 않음). research R-09를 보완했다. 리뷰 지적 1~4는 Codex가 고친다.
+- 2026-10-21 사실: Codex가 독립 리뷰 지적 1~4를 반영했다. Claude 세션 재확인: 재현 스크립트 2건 모두 확인 뒤 실행 `succeeded`(종료 코드 0), 이미 내려진 보안 문서 재내림 0, 활성화 조건·정체성 등록 오류·CLI 시험 보완 확인.
+  기본 검증 재실행 통과(preflight 543, ruff, format 372, 로컬 DB, `QK_REQUIRE_LOCALDB=1 pytest` 1263 passed). 재리뷰 권고: 승인. 사람 단계 H01~H07은 남아 있다.
