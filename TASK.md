@@ -16,14 +16,24 @@
 ## Objective
 
 - 완료: QK-SYN-001 명세(`spec.md`)를 `/speckit-specify`로 작성하고 Codex 독립 검토 5회를 거쳐 사람 승인을 받았다(2026-10-21).
-- 이번 단계: `/speckit-plan` 설계 산출물을 만들고 독립 검토와 사람 승인을 받는다.
-- 승인 뒤 `/speckit-plan`·`/speckit-tasks`와 구현을 이어 간다. 각 단계 시작 전에 이 파일의 Scope를 갱신해 승인받는다.
+- 완료: `/speckit-plan` 설계 산출물을 만들고 Codex 독립 검토 4회를 거쳐 사람 승인을 받았다(2026-10-21).
+- 완료: `/speckit-tasks` 작업 목록(`tasks.md`, 작업 50개 + 사람 단계 7개)을 만들고 사람 승인을 받았다(2026-10-21, 독립 검토 없이 승인).
+- 이번 단계: `tasks.md` T001~T050 구현. 사람 단계 H01~H07은 구현 뒤 사람이 한다(H01~H03은 사람 승인 뒤 실행 가능).
 - 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
 
 ## Scope
 
 - `specs/QK-SYN-001-incremental-sync/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
-- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`(문서만. 코드·마이그레이션 파일은 만들지 않는다)
+- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`(승인됨, 바꾸려면 다시 승인)
+- 작업 목록: 같은 디렉터리의 `tasks.md`(승인됨). 구현 중 체크 표시와 실행 기록은 고친다.
+- 구현(tasks.md, plan.md Project Structure·"구현 Scope 승인이 필요한 것"):
+  - 새 파일: `src/qello_knowledge/domain/sync.py`, `src/qello_knowledge/ports/sync.py`, `src/qello_knowledge/sync/`(`__init__`, `keys`, `decide`, `plan`, `identity`, `execute`, `preview`, `activate`, `run`, `report`),
+    `src/qello_knowledge/adapters/postgres/sync_store.py`, `src/qello_knowledge/adapters/postgres/migrations/0004_sync.sql`, `src/qello_knowledge/indexer/sync_cli.py`, `.github/workflows/index-sync.yml`,
+    `tests/unit/sync/`, `tests/localdb/sync/`, `tests/fixtures/sync/`, `tests/unit/indexer/test_run_cli.py`, `tests/unit/indexer/test_schedule_workflow.py`, `tests/unit/security/test_screen_listing.py`
+  - 고치는 파일(Scope 표의 변경만): `src/qello_knowledge/domain/source.py`·`sources/collect.py`·`adapters/github.py`·`adapters/fake.py`(QK-ING-001·002 `origin`),
+    `src/qello_knowledge/domain/security.py`·`security/screen.py`(QK-SEC-001 `ScreenResult.listing`, `source_excluded`), `src/qello_knowledge/adapters/postgres/store.py`(QK-STO-001 내부 함수 분리, 동작 그대로),
+    `src/qello_knowledge/indexer/cli.py`, `tests/unit/test_boundaries.py`, `tests/contract/source_adapter_contract.py`·GitHub 재생 시험, `tests/unit/sources/test_list_all.py`,
+    `tests/unit/chunking/test_perf.py`(합성 문서 생성기 재사용이 필요할 때 도우미로 옮기는 것만)
 - `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
 - `TASK.md`
@@ -37,12 +47,15 @@
 
 ## Explicit exclusions
 
-- 이번 단계(명세·plan)에서 `src/`·`tests/`·`pyproject.toml`·`uv.lock`·마이그레이션·워크플로 파일 변경. 구현은 plan·tasks 승인 뒤 Scope를 갱신하고 한다.
+- 위 구현 목록 밖의 `src/`·`tests/` 변경. 새 의존성 추가, `pyproject.toml`·`uv.lock` 변경.
+- 기존 시험 삭제·수정으로 통과시키기, `skip`·`xfail`, 경고 suppress(AGENTS.md 9절). 계약 시험은 항목을 더하기만 한다.
+- 승인된 spec·plan 산출물 변경(구현과 다르면 먼저 사람 승인, tasks T049).
+- 저장소 Secret·변수 등록, 워크플로 켜기(`QK_SYNC_ENABLED`), `config/store_policy.toml` 작성(사람 단계 H04·H07).
 - Discord `/reindex`·실패 문서 재시도(QK-SYN-002), 인덱스 버전 평가 게이트·활성화(QK-STO-002), 전체 대조 삭제·백업·복구(QK-SYN-003).
 - 새 자료원(QK-ING-003 이후), 검색·생성.
 - QK-ING-002·QK-SEC-001·QK-CHK-002·QK-EMB-001·QK-STO-001의 승인된 명세 변경.
 - 로드맵 `상태`·`진행` 열 외의 `docs/sdd/roadmap.md` 내용, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
-- 실제 색인 실행(Workers AI 호출, 운영 DB 저장). 첫 실제 색인은 구현 뒤 미리 보기 사용량 보고와 사람 승인 뒤에만 한다.
+- 실제 색인 실행(실제 원본 수집, Workers AI 호출, 운영 DB 저장). 사람 단계 H01~H07로만 하고, 각 단계는 미리 보기 사용량 보고와 사람 승인 뒤에만 한다.
 - 원본 자료원에 쓰기.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
 - 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다. 명세 예시는 합성 문서로 쓴다.
@@ -61,6 +74,10 @@
 | `specs/QK-SYN-001-incremental-sync/` | Byuntil | 사람 리뷰(명세 승인) |
 | `docs/sdd/roadmap.md` 상태 열 | Byuntil | 사람 리뷰 |
 | `TASK.md` | Byuntil | 사람 리뷰 |
+| `src/qello_knowledge/sync/`, `domain/sync.py`, `ports/sync.py`, `adapters/postgres/sync_store.py`, `migrations/0004_sync.sql`, `indexer/` | Byuntil | 사람 리뷰 |
+| QK-ING-001·002·QK-SEC-001·QK-STO-001 코드의 Scope 표 변경 | Byuntil | 사람 리뷰(선행 명세 동작 불변 확인) |
+| `.github/workflows/index-sync.yml` | Byuntil | 사람 리뷰 |
+| `tests/unit/sync/`, `tests/localdb/sync/`, `tests/fixtures/sync/`, 그 밖에 고치는 시험 | Byuntil | 사람 리뷰 |
 
 ## Existing user-owned changes
 
@@ -120,3 +137,8 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   버전 불일치에서 일반 내림 막음(spec SC-011과 맞춤), 사용량 장부 오류(예약 실패 항목·정산 실패 경고)도 실행 소진 신호, 청킹 대상은 변경 조건 전체, 캐시 직접 반영 문서의 임베딩 요약.
 - 2026-10-21 사실: Codex plan 4차 검토 "승인" 권고(3차 M1~M4와 이전 일부 해소 항목 모두 해소, 새 지적 0건. 설계 수준 판정). 사람 승인 전이다.
 - 2026-10-21 사용자 결정: QK-SYN-001 plan 승인(Codex 4차 검토 "승인" 권고 뒤). 같은 종류 자료원 교체 거부(research R-10, 교체 절차는 같은 종류 자료원을 더하는 명세로)도 승인.
+- 2026-10-21 사용자 결정: plan 커밋 뒤 tasks 단계 진행.
+- 2026-10-21 사실: `tasks.md` 작성(작업 50개 + 사람 단계 7개). 작성 중 plan.md Project Structure에 `sync/preview.py`·`sync/activate.py`를 더했다(미리 보기·활성화를 `run.py`와 나눔).
+  승인된 plan 산출물의 보완이라 tasks 승인 때 함께 확인받는다.
+- 2026-10-21 사용자 결정: `tasks.md` 승인(Codex 독립 검토 없이). plan.md 구조도 보완(`sync/preview.py`·`sync/activate.py`)과 구현 Scope(위 Scope·제외 범위·Ownership)를 함께 열었다.
+- 2026-10-21 사용자 결정: 구현은 우측 패널 Codex 세션이 한다. 이 Claude 세션은 커밋·검토 조율과 독립 리뷰를 맡는다(구현을 같은 세션이 승인하지 않는다, AGENTS.md 2절).
