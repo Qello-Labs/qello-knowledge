@@ -1,0 +1,8 @@
+source = "docs"
+reviewed_on = 2026-10-21
+reviewer_role = "시험용 역할"
+method = "합성 범위 전체 확인"
+result = "개인 정보 없음"
+[scope]
+include = ["**/*.md"]
+exclude = []
