@@ -285,12 +285,16 @@ version = "0.1.0"
 source = { editable = "." }
 
 [package.optional-dependencies]
+index = [
+    { name = "markdown-it-py" },
+]
 postgres = [
     { name = "psycopg", extra = ["binary"] },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "markdown-it-py" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pytest" },
     { name = "ruff" },
@@ -298,11 +302,12 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2" }]
-provides-extras = ["postgres"]
+requires-dist = [{ name = "markdown-it-py", marker = "extra == 'index'", specifier = "==4.2.0" }, { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2" }]
+provides-extras = ["index", "postgres"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "markdown-it-py", specifier = "==4.2.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
     { name = "pytest", specifier = ">=8" },
     { name = "ruff", specifier = ">=0.13" },

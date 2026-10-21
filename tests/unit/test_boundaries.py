@@ -64,3 +64,45 @@ def test_violation_is_detected(tmp_path: Path) -> None:
         "qello_knowledge/embedding/bad.py:1: qello_knowledge.adapters.workers_ai.rest",
         "qello_knowledge/embedding/bad.py:2: qello_knowledge.security.send_gate",
     ]
+
+
+def test_chunking_dependencies_are_isolated():
+    assert chunking_violations(PACKAGE) == []
+
+
+def test_chunking_violations_are_detected(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    for part in (*RESTRICTED, "query", "chunking"):
+        (root / part).mkdir(parents=True, exist_ok=True)
+    (root / "query" / "bad.py").write_text("from qello_knowledge import chunking\nimport markdown_it\n")
+    (root / "chunking" / "bad.py").write_text("from markdown_it import MarkdownIt\n")
+    (root / "chunking" / "blocks.py").write_text("import markdown_it\n")
+    problems = chunking_violations(root)
+    assert len(problems) == 3
+    assert any("query/bad.py:1" in p for p in problems)
+    assert any("query/bad.py:2" in p for p in problems)
+    assert any("chunking/bad.py:1" in p for p in problems)
+
+
+def chunking_violations(root: Path) -> list[str]:
+    problems = []
+    for path in sorted(root.rglob("*.py")):
+        part = path.relative_to(root).parts[0]
+        for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
+            modules = _imported_modules(node) if isinstance(node, (ast.Import, ast.ImportFrom)) else []
+            if isinstance(node, ast.ImportFrom) and node.module == "qello_knowledge":
+                modules += [(node.lineno, "qello_knowledge." + alias.name) for alias in node.names]
+            # Resolve relative imports too, so the check cannot be bypassed by spelling.
+            if isinstance(node, ast.ImportFrom) and node.level:
+                base = ["qello_knowledge", *path.relative_to(root).parts[:-1]]
+                base = base[: len(base) - node.level + 1]
+                module = ".".join([*base, *([node.module] if node.module else [])])
+                modules += [(node.lineno, module + "." + a.name) for a in node.names]
+            for line, module in modules:
+                parser = module == "markdown_it" or module.startswith("markdown_it.")
+                chunker = module == "qello_knowledge.chunking" or module.startswith("qello_knowledge.chunking.")
+                if (part in (*RESTRICTED, "query") and (parser or chunker)) or (
+                    parser and path.relative_to(root).as_posix() != "chunking/blocks.py"
+                ):
+                    problems.append(f"{path.relative_to(root.parent)}:{line}: {module}")
+    return problems

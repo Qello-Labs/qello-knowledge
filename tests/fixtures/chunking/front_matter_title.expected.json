@@ -1,0 +1,36 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "docs/sample.md\nMetadata",
+        "search_text": "docs/sample.md\nMetadata\n\n---\ntitle: \"Metadata\"\n---",
+        "embedding_text": "docs/sample.md\nMetadata\n\n---\ntitle: \"Metadata\"\n---"
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          4,
+          5
+        ],
+        "heading_path": [
+          "A"
+        ],
+        "search_header": "docs/sample.md\nMetadata > A",
+        "search_text": "docs/sample.md\nMetadata > A\n\n# A\nbody",
+        "embedding_text": "docs/sample.md\nMetadata > A\n\n# A\nbody"
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [
+      {
+        "kind": "TABLE_CELL_MISMATCH",
+        "line": 4
+      },
+      {
+        "kind": "TABLE_CELL_MISMATCH",
+        "line": 5
+      }
+    ],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          5
+        ],
+        "heading_path": [
+          "A"
+        ],
+        "search_header": "docs/sample.md\nA",
+        "search_text": "docs/sample.md\nA\n\n# A\n| a | b |\n| - | - |\n| x |\nonecell",
+        "embedding_text": "docs/sample.md\nA\n\n# A\n| a | b |\n| - | - |\n| x |\nonecell"
+      }
+    ]
+  }
+}

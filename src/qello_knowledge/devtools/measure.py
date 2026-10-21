@@ -2,6 +2,7 @@
 
 import json
 import platform
+import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -87,6 +88,7 @@ class SourceMeasurement:
     by_rule: dict
     blocked: tuple[dict, ...]
     limits: dict
+    chunking: dict | None = None
 
     @property
     def ok(self):
@@ -96,10 +98,12 @@ class SourceMeasurement:
         data = asdict(self)
         for key in ("include", "exclude", "blocked"):
             data[key] = list(data[key])
+        if self.chunking is None:
+            data.pop("chunking")
         return data
 
 
-def measure_source(prepared: PreparedSource, transport, clock) -> SourceMeasurement:
+def measure_source(prepared: PreparedSource, transport, clock, *, chunk: bool = False) -> SourceMeasurement:
     if not isinstance(prepared, PreparedSource):
         raise TypeError("사전 검증된 자료원이 필요하다")
     config, policy = prepared.config, prepared.policy
@@ -114,6 +118,46 @@ def measure_source(prepared: PreparedSource, transport, clock) -> SourceMeasurem
     def text(value):
         return None if value is None else safe_text(value, FieldKind.TEXT, context)
 
+    chunking = None
+    if chunk:
+        # 색인 전용 선택 의존성: 일반 수집 측정에서는 해석기를 가져오지 않는다.
+        from qello_knowledge.chunking import chunk_screened, chunking_version
+        from qello_knowledge.domain.chunking import ChunkingSettings
+
+        settings = ChunkingSettings()
+        start = time.perf_counter()
+        chunked = chunk_screened(result.passed, settings)
+        elapsed = time.perf_counter() - start
+        chunk_summary = chunked.summary
+        chunking = {
+            "chunking_version": chunking_version(settings),
+            "settings": asdict(settings),
+            "elapsed_seconds": elapsed,
+            "summary": {
+                "by_outcome": dict(chunk_summary.by_outcome),
+                "chunk_count": chunk_summary.chunk_count,
+                "by_failure": dict(chunk_summary.by_failure),
+                "by_warning": dict(chunk_summary.by_warning),
+                "tokens_min": chunk_summary.tokens_min,
+                "tokens_median": chunk_summary.tokens_median,
+                "tokens_max": chunk_summary.tokens_max,
+                "split_blocks": chunk_summary.split_blocks,
+            },
+            "failures": [
+                {"path": safe_text(r.screened.content.location, FieldKind.PATH, context), "failure": r.failure.value}
+                for r in chunked.results
+                if r.failure is not None
+            ],
+            "warnings": [
+                {
+                    "path": safe_text(r.screened.content.location, FieldKind.PATH, context),
+                    "line": w.line,
+                    "kind": w.kind.value,
+                }
+                for r in chunked.results
+                for w in r.warnings
+            ],
+        }
     scope = dict(config.scope.extra)
     return SourceMeasurement(
         config.name,
@@ -142,6 +186,7 @@ def measure_source(prepared: PreparedSource, transport, clock) -> SourceMeasurem
             if v.verdict in {Verdict.SECRET_BLOCKED, Verdict.ERROR} or v.rule == "identifier-address"
         ),
         {**asdict(config.limits), "max_content_bytes": config.max_content_bytes},
+        chunking,
     )
 
 
@@ -164,4 +209,16 @@ def render_measurement(measurement: SourceMeasurement, json_output=False) -> str
         f"  한도      {json.dumps(data['limits'], ensure_ascii=False)}",
     ]
     lines += [f"  막힌 자료  {item['source_id']}  {item['verdict']}  {item['rule']}" for item in data["blocked"]]
+    if measurement.chunking is not None:
+        chunking = measurement.chunking
+        settings, summary = chunking["settings"], chunking["summary"]
+        lines += [
+            f"  청킹      {chunking['chunking_version']} target={settings['target_tokens']} "
+            f"limit={settings['limit_tokens']}, 소요 {chunking['elapsed_seconds']:.3f}초",
+            f"  청킹 결과 {json.dumps(summary['by_outcome'], ensure_ascii=False)} 청크 {summary['chunk_count']}개, "
+            f"예상 토큰 min={summary['tokens_min']} median={summary['tokens_median']} max={summary['tokens_max']}, "
+            f"줄 단위로 나뉜 블록 {summary['split_blocks']}개",
+        ]
+        lines += [f"  청킹 실패 {item['path']}  {item['failure']}" for item in chunking["failures"]]
+        lines += [f"  구조 경고 {item['path']}:{item['line']}  {item['kind']}" for item in chunking["warnings"]]
     return "\n".join(lines)

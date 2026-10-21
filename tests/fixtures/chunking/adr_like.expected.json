@@ -1,0 +1,54 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [
+          "결정 기록 A"
+        ],
+        "search_header": "docs/sample.md\n결정 기록 A",
+        "search_text": "docs/sample.md\n결정 기록 A\n\n# 결정 기록 A",
+        "embedding_text": "docs/sample.md\n결정 기록 A\n\n# 결정 기록 A"
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          2,
+          3
+        ],
+        "heading_path": [
+          "결정 기록 A",
+          "결정"
+        ],
+        "search_header": "docs/sample.md\n결정 기록 A > 결정",
+        "search_text": "docs/sample.md\n결정 기록 A > 결정\n\n## 결정\n수용",
+        "embedding_text": "docs/sample.md\n결정 기록 A > 결정\n\n## 결정\n수용"
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          4,
+          5
+        ],
+        "heading_path": [
+          "결정 기록 A",
+          "결정",
+          "근거"
+        ],
+        "search_header": "docs/sample.md\n결정 기록 A > 결정 > 근거",
+        "search_text": "docs/sample.md\n결정 기록 A > 결정 > 근거\n\n### 근거\n합성 근거",
+        "embedding_text": "docs/sample.md\n결정 기록 A > 결정 > 근거\n\n### 근거\n합성 근거"
+      }
+    ]
+  }
+}

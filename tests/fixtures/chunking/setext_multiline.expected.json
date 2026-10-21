@@ -1,0 +1,25 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          4
+        ],
+        "heading_path": [
+          "first second"
+        ],
+        "search_header": "docs/sample.md\nfirst second",
+        "search_text": "docs/sample.md\nfirst second\n\nfirst\nsecond\n===\nbody",
+        "embedding_text": "docs/sample.md\nfirst second\n\nfirst\nsecond\n===\nbody"
+      }
+    ]
+  }
+}

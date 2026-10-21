@@ -1,0 +1,27 @@
+{
+  "input": {
+    "location": "a.md",
+    "source_title": "T",
+    "settings": {
+      "target_tokens": 40,
+      "limit_tokens": 80
+    }
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "embedding_text": "a.md\nT\n\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ]
+  }
+}

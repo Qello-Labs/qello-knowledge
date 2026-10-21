@@ -139,6 +139,7 @@ def main(argv: list[str] | None = None) -> int:
     measure = source_sub.add_parser("measure", help="사전 검증 뒤 원본을 읽어 측정한다")
     add_check_options(measure)
     measure.add_argument("--name", required=True)
+    measure.add_argument("--chunk", action="store_true", help="필터 통과 Markdown의 청킹 결과를 함께 측정한다")
     measure.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
     measure.add_argument("--reviews", type=Path, default=Path("config/source_reviews"))
     measure.add_argument("--exceptions", type=Path, default=Path("config/security_exceptions.toml"))
@@ -157,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
         if not isinstance(token, SecretValue):
             return _source_failure([{"field": "auth", "code": "MISSING"}], args.json)
         transport = HttpsTransport(prepared.config.allowed_hosts, token)
-        measurement = measure_source(prepared, transport, SystemClock())
+        measurement = measure_source(prepared, transport, SystemClock(), chunk=args.chunk)
         print(render_measurement(measurement, args.json))
         return 0 if measurement.ok else 1
 

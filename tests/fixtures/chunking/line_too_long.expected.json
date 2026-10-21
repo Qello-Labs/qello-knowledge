@@ -1,0 +1,16 @@
+{
+  "input": {
+    "location": "a.md",
+    "source_title": "T",
+    "settings": {
+      "target_tokens": 40,
+      "limit_tokens": 80
+    }
+  },
+  "expected": {
+    "outcome": "FAILED",
+    "warnings": [],
+    "chunks": [],
+    "failure": "LINE_TOO_LONG"
+  }
+}

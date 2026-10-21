@@ -1,0 +1,104 @@
+{
+  "input": {
+    "location": "a.md",
+    "source_title": "T",
+    "settings": {
+      "target_tokens": 40,
+      "limit_tokens": 80
+    }
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "embedding_text": "a.md\nT\n\n- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          2,
+          2
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "embedding_text": "a.md\nT\n\n- bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "embedding_text": "a.md\nT\n\n- cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          4
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "embedding_text": "a.md\nT\n\n- dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          5,
+          5
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "embedding_text": "a.md\nT\n\n- eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          6,
+          6
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "embedding_text": "a.md\nT\n\n- ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          7,
+          7
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+        "embedding_text": "a.md\nT\n\n- gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"
+      },
+      {
+        "ordinal": 7,
+        "lines": [
+          8,
+          8
+        ],
+        "heading_path": [],
+        "search_header": "a.md\nT",
+        "search_text": "a.md\nT\n\n- hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+        "embedding_text": "a.md\nT\n\n- hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+      }
+    ]
+  }
+}

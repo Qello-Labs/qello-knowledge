@@ -1,0 +1,36 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "docs/sample.md\nA",
+        "search_text": "docs/sample.md\nA\n\n---\nkind: synthetic\n---",
+        "embedding_text": "docs/sample.md\nA\n\n---\nkind: synthetic\n---"
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          4,
+          5
+        ],
+        "heading_path": [
+          "A"
+        ],
+        "search_header": "docs/sample.md\nA",
+        "search_text": "docs/sample.md\nA\n\n# A\ntext",
+        "embedding_text": "docs/sample.md\nA\n\n# A\ntext"
+      }
+    ]
+  }
+}

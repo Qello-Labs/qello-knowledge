@@ -226,3 +226,101 @@ def test_measure_cli_missing_token_matches_selected_output_format(
         assert json.loads(output) == {"ok": False, "issues": [{"field": "auth", "code": "MISSING"}]}
     else:
         assert output == "자료원 수집 점검: 실패\n  MISSING auth\n"
+
+
+@pytest.mark.parametrize("json_output", [False, True])
+def test_chunk_measure_cli(paths, tmp_path, monkeypatch, index_env, capsys, json_output):
+    marker = "QK-CHK-002-LEAK-MARKER"
+    files = [
+        {"path": "README.md", "body": ("# A\n```\n" + marker).encode()},
+        {"path": "docs/long.md", "body": ("x" * 11000).encode()},
+    ]
+    baseline = measure_source(prepare_source("docs", *paths), Scenario(files=files).transport(), FakeClock())
+    assert "chunking" not in baseline.to_dict()
+    monkeypatch.setattr(db, "HttpsTransport", lambda *a: Scenario(files=files).transport())
+    args = cli_args(paths, tmp_path) + ["--chunk"]
+    if not json_output:
+        args.remove("--json")
+    assert db.main(args) == 0
+    output = capsys.readouterr().out
+    assert marker not in output and "# A" not in output and "```" not in output
+    if json_output:
+        data = json.loads(output)
+        c = data["chunking"]
+        assert data["requests"] == baseline.requests
+        assert c["chunking_version"] == "chk-md-20d966f730bb"
+        assert c["settings"] == {"model_version": "@cf/baai/bge-m3", "target_tokens": 512, "limit_tokens": 2800}
+        assert c["elapsed_seconds"] >= 0
+        assert c["summary"]["by_outcome"] == {"CHUNKED": 1, "FAILED": 1}
+        assert c["failures"] == [{"path": "docs/long.md", "failure": "LINE_TOO_LONG"}]
+        assert c["warnings"] == [{"path": "README.md", "line": 2, "kind": "UNCLOSED_FENCE"}]
+        assert not any(key in output for key in ("embedding_text", "search_header", "search_text"))
+    else:
+        assert "청킹 결과" in output and "청킹 실패 docs/long.md" in output and "구조 경고 README.md:2" in output
+
+
+def test_chunk_measure_times_only_chunking(paths, monkeypatch):
+    from qello_knowledge.devtools import measure
+
+    times = iter([100.0, 100.25])
+    monkeypatch.setattr(measure.time, "perf_counter", lambda: next(times))
+    measurement = measure_source(
+        prepare_source("docs", *paths), Scenario(files=[]).transport(), FakeClock(), chunk=True
+    )
+    data = measurement.to_dict()["chunking"]
+    assert data["elapsed_seconds"] == 0.25
+    assert data["summary"]["chunk_count"] == 0
+    assert data["chunking_version"] == "chk-md-20d966f730bb"
+
+
+def test_chunk_measure_paths_redacted(paths, monkeypatch):
+    from qello_knowledge.devtools import measure
+    from qello_knowledge.domain.redact import FieldKind
+
+    calls = []
+    real = measure.safe_text
+
+    def safe(value, kind, context):
+        if value == marker:
+            calls.append(kind)
+            return "[synthetic-safe-path]"
+        return real(value, kind, context)
+
+    monkeypatch.setattr(measure, "safe_text", safe)
+    marker = "docs/person@example.invalid.md"
+    measurement = measure_source(
+        prepare_source("docs", *paths),
+        Scenario(files=[{"path": marker, "body": b"```\nunclosed"}]).transport(),
+        FakeClock(),
+        chunk=True,
+    )
+    output = render_measurement(measurement, True)
+    assert "person@example.invalid" not in output
+    assert calls == [FieldKind.PATH]
+    assert measurement.to_dict()["chunking"]["warnings"][0]["path"] == "[synthetic-safe-path]"
+
+
+@pytest.mark.parametrize("case", ["empty", "header", "processing"])
+def test_chunk_measure_remaining_outcomes_hide_payload(paths, monkeypatch, case, caplog):
+    from qello_knowledge.chunking import service
+
+    marker = "QK-CHK-002-LEAK-MARKER"
+    path = "docs/" + ("a" * 10000 if case == "header" else "sample") + ".md"
+    body = b"" if case == "empty" else marker.encode()
+    if case == "processing":
+
+        def broken(*a, **kw):
+            raise ValueError(marker)
+
+        monkeypatch.setattr(service, "parse_document", broken)
+    measurement = measure_source(
+        prepare_source("docs", *paths),
+        Scenario(files=[{"path": path, "body": body}]).transport(),
+        FakeClock(),
+        chunk=True,
+    )
+    chunking = measurement.to_dict()["chunking"]
+    assert chunking["summary"]["by_outcome"] == {"EMPTY" if case == "empty" else "FAILED": 1}
+    for json_output in (False, True):
+        assert marker not in render_measurement(measurement, json_output)
+    assert marker not in repr(chunking) and marker not in caplog.text

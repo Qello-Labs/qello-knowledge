@@ -1,0 +1,25 @@
+{
+  "input": {
+    "location": "docs/sample.md",
+    "source_title": null
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [
+          "중요 링크 code"
+        ],
+        "search_header": "docs/sample.md\nsample.md > 중요 링크 code",
+        "search_text": "docs/sample.md\nsample.md > 중요 링크 code\n\n## **중요** [링크](x) `code`",
+        "embedding_text": "docs/sample.md\nsample.md > 중요 링크 code\n\n## **중요** [링크](x) `code`"
+      }
+    ]
+  }
+}
