@@ -158,13 +158,13 @@ description: "QK-RET-001 구현 작업 목록"
 
 **Independent Test**: 예상 토큰을 아는 합성 청크로 예산을 바꿔 가며 Context 합 ≤ 예산, 잘림 0, 중복 0, 담긴·건너뛴 청크가 기대값과 같다.
 
-- [ ] T031 [P] [US4] `tests/unit/retrieval/test_pack.py`(spec SC-003): contracts/retrieval.md 4절 알고리즘 기대값 표. 중심 하나가 예산보다 크면 `larger_than_budget`이고 다음 중심 계속(spec US4 시나리오 3),
+- [X] T031 [P] [US4] `tests/unit/retrieval/test_pack.py`(spec SC-003): contracts/retrieval.md 4절 알고리즘 기대값 표. 중심 하나가 예산보다 크면 `larger_than_budget`이고 다음 중심 계속(spec US4 시나리오 3),
   남은 예산 부족이면 `budget_exhausted`로 그 청크만 건너뜀, 중심이 모두 담긴 뒤에야 문맥(상위 절 → 앞 가까운 것부터 → 뒤 가까운 것부터), 이미 담긴 청크 건너뜀,
   같은 청크는 `skipped`에 한 번만(처음 역할·사유), 뒤에 담기면 `skipped`에서 빠짐, 예상 토큰은 `ceil(UTF-8 바이트 ÷ 3.5)`, 같은 입력 같은 결과, 요약의 사용 토큰·예산
-- [ ] T032 [P] [US4] `tests/unit/retrieval/test_pack_property.py`: 무작위 합성 청크(고정 시드 100개 경우)에서 합 ≤ 예산, 잘림 0, 중복 0, 담긴 중심의 순위가 담기지 않은 중심보다 항상 앞(예산이 허락하는 한)
-- [ ] T033 [US4] `src/qello_knowledge/retrieval/pack.py`: `pack(hits, context, settings)`에 예산 알고리즘을 넣는다. 예상 토큰은 `embedding/estimate.py`와 같은 식 `ceil(UTF-8 바이트 ÷ bytes_per_token)`을
+- [X] T032 [P] [US4] `tests/unit/retrieval/test_pack_property.py`: 무작위 합성 청크(고정 시드 100개 경우)에서 합 ≤ 예산, 잘림 0, 중복 0, 담긴 중심의 순위가 담기지 않은 중심보다 항상 앞(예산이 허락하는 한)
+- [X] T033 [US4] `src/qello_knowledge/retrieval/pack.py`: `pack(hits, context, settings)`에 예산 알고리즘을 넣는다. 예상 토큰은 `embedding/estimate.py`와 같은 식 `ceil(UTF-8 바이트 ÷ bytes_per_token)`을
   `retrieval/pack.py`의 도우미 `estimated_tokens(text, bytes_per_token: float) -> int`로 둔다(`embedding/estimate.estimated_tokens`는 `ModelSpec`을 받으므로 그대로 쓰지 않는다)
-- [ ] T034 [US4] `src/qello_knowledge/retrieval/service.py`: 요약의 `block_count`·`used_tokens`·`budget`·`skipped`를 채운다
+- [X] T034 [US4] `src/qello_knowledge/retrieval/service.py`: 요약의 `block_count`·`used_tokens`·`budget`·`skipped`를 채운다
 
 **Checkpoint**: P1 스토리(US1~US4) 전부 통과. 생성(QK-GEN-001)이 쓸 수 있는 Context
 
@@ -297,3 +297,4 @@ US6:     T046, T047, T048 (시험) → T049
 
 - 2026-10-22 T024: US1의 `service.py`가 이미 버전 판정(다시 검색 없음)과 저장소 결과만 쓰는 구조여서 코드 변경 없이 T022·T023이 통과했다.
 - 2026-10-22 T028: `retrieval/pack.py`를 contracts/retrieval.md 4절 알고리즘 전체(예산 검사 포함)로 한 번에 구현했다. US3 시험은 넉넉한 예산(8,000)으로 돌리고, 예산 동작은 US4 시험(T031·T032)이 확인한다. T033은 그 시험 통과 확인만 남는다.
+- 2026-10-22 T033·T034: T028 구현과 US3의 `service.py`가 이미 충족해 T031·T032가 코드 변경 없이 통과했다.
