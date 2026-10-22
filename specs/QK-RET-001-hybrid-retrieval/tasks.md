@@ -139,14 +139,14 @@ description: "QK-RET-001 구현 작업 목록"
 
 **Independent Test**: 청크 1~9인 문서에서 통합 상위가 2·3·8이면 묶음 하나, 원문 순서, gaps `(4~7 사이)`, 중복 0, Source ID와 문서 단위 출처.
 
-- [ ] T025 [P] [US3] `tests/unit/retrieval/test_context_blocks.py`: 메모리 `ContextResult`로 문서별 묶음 하나, `ordinal` 정렬, gaps 계산, 묶음 순위 = 중심의 가장 높은 통합 순위, 묶음 순서대로 `S1`, `S2`…,
+- [X] T025 [P] [US3] `tests/unit/retrieval/test_context_blocks.py`: 메모리 `ContextResult`로 문서별 묶음 하나, `ordinal` 정렬, gaps 계산, 묶음 순위 = 중심의 가장 높은 통합 순위, 묶음 순서대로 `S1`, `S2`…,
   같은 청크가 여러 중심의 이웃이어도 한 번, `section_first`가 이미 중심이면 다시 넣지 않음, 문서 단위 출처(원본 링크·버전·원본 수정 시각·수집 시각)와 청크별 위치·제목 경로
-- [ ] T026 [P] [US3] `tests/unit/retrieval/test_expand.py`: `chunk_context`를 통합 상위 `expand_top`개 식별자로 정확히 한 번 부름, 반환에 없는 중심은 `Skipped(not_visible)`이고 Context에 없음(spec FR-012 다시 확인),
+- [X] T026 [P] [US3] `tests/unit/retrieval/test_expand.py`: `chunk_context`를 통합 상위 `expand_top`개 식별자로 정확히 한 번 부름, 반환에 없는 중심은 `Skipped(not_visible)`이고 Context에 없음(spec FR-012 다시 확인),
   반환 `index_version`이 검색 버전과 다르면 `index_version_changed`, `want_context=False`면 부르지 않음
-- [ ] T027 [P] [US3] `tests/localdb/retrieval/test_context.py`: spec US3 수용 시나리오 1~5를 로컬 DB로(문서 첫·마지막 청크, 같은 제목 경로 두 번, 출처 필드)
-- [ ] T028 [US3] `src/qello_knowledge/retrieval/pack.py`: 담은 청크 목록 → `ContextBlock` 목록(문서별 묶기, 정렬, gaps, 순위, Source ID). 담기 순서는 contracts/retrieval.md 4절 알고리즘의 역할 순서를 따르되 예산 검사는 T033에서
-- [ ] T029 [US3] `src/qello_knowledge/retrieval/service.py`: 8~10단계(`want_context`, `chunk_context` 한 번, 다시 확인, `pack` 호출)
-- [ ] T030 [US3] `tests/localdb/retrieval/test_visibility.py`에 spec US2 시나리오 2·3(비활성 버전 이웃 제외, 결과 뒤 내림된 문서는 Context에 없음과 `not_visible`)을 더하고 통과시킨다
+- [X] T027 [P] [US3] `tests/localdb/retrieval/test_context.py`: spec US3 수용 시나리오 1~5를 로컬 DB로(문서 첫·마지막 청크, 같은 제목 경로 두 번, 출처 필드)
+- [X] T028 [US3] `src/qello_knowledge/retrieval/pack.py`: 담은 청크 목록 → `ContextBlock` 목록(문서별 묶기, 정렬, gaps, 순위, Source ID). 담기 순서는 contracts/retrieval.md 4절 알고리즘의 역할 순서를 따르되 예산 검사는 T033에서
+- [X] T029 [US3] `src/qello_knowledge/retrieval/service.py`: 8~10단계(`want_context`, `chunk_context` 한 번, 다시 확인, `pack` 호출)
+- [X] T030 [US3] `tests/localdb/retrieval/test_visibility.py`에 spec US2 시나리오 2·3(비활성 버전 이웃 제외, 결과 뒤 내림된 문서는 Context에 없음과 `not_visible`)을 더하고 통과시킨다
 
 **Checkpoint**: US1~US3 시험 통과. 순위 + 예산 없는 Context
 
@@ -296,3 +296,4 @@ US6:     T046, T047, T048 (시험) → T049
 ## 실행 기록
 
 - 2026-10-22 T024: US1의 `service.py`가 이미 버전 판정(다시 검색 없음)과 저장소 결과만 쓰는 구조여서 코드 변경 없이 T022·T023이 통과했다.
+- 2026-10-22 T028: `retrieval/pack.py`를 contracts/retrieval.md 4절 알고리즘 전체(예산 검사 포함)로 한 번에 구현했다. US3 시험은 넉넉한 예산(8,000)으로 돌리고, 예산 동작은 US4 시험(T031·T032)이 확인한다. T033은 그 시험 통과 확인만 남는다.

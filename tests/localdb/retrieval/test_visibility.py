@@ -55,3 +55,40 @@ def test_nearest_unknown_scope_chunk_is_absent(store: PostgresStore, query: list
     result = retrieve(RetrievalRequest(QUESTION), _deps(store))
     assert unknown not in _all_chunk_ids(result)
     assert far in {h.chunk_id for h in result.hits}
+
+
+def test_inactive_version_neighbors_are_not_attached(store: PostgresStore, query: list[float]) -> None:
+    _, current = seed_doc(store, "a.md", ["앞", "배포 승인 절차 본문", "뒤"], vector=query)
+    _, old = seed_doc(store, "a.md", ["옛0", "옛1", "옛2", "옛3"], vector=query, index_version=ARCHIVED)
+    result = retrieve(RetrievalRequest(QUESTION), _deps(store))
+    in_context = {c.chunk_id for b in result.context for c in b.chunks}
+    assert current[1] in in_context and in_context.isdisjoint(old)
+
+
+class TakedownBeforeExpansion:
+    """검색과 문맥 확장 사이에 문서가 내려지는 상황(spec US2 시나리오 3)."""
+
+    def __init__(self, store: PostgresStore, source_id: str) -> None:
+        self.store, self.source_id = store, source_id
+
+    def search_vector(self, *args):
+        return self.store.search_vector(*args)
+
+    def search_keyword_terms(self, *args):
+        return self.store.search_keyword_terms(*args)
+
+    def chunk_context(self, *args):
+        self.store.mark_deleted("github", self.source_id)
+        return self.store.chunk_context(*args)
+
+
+def test_document_taken_down_after_search_is_not_in_context(store: PostgresStore, query: list[float]) -> None:
+    _, [gone] = seed_doc(store, "gone.md", ["배포 승인 절차 곧 내림"], vector=query)
+    _, [kept] = seed_doc(store, "kept.md", ["배포 승인 절차 유지"], vector=query)
+    embedder, _, _ = query_embedder()
+    deps = RetrievalDeps(store=TakedownBeforeExpansion(store, "gone.md"), embedder=embedder)
+    result = retrieve(RetrievalRequest(QUESTION), deps)
+    assert gone in {h.chunk_id for h in result.hits}  # 검색 시점에는 노출 조건을 통과했다
+    in_context = {c.chunk_id for b in result.context for c in b.chunks}
+    assert gone not in in_context and kept in in_context
+    assert any(s.chunk_id == gone and s.reason.value == "not_visible" for s in result.summary.skipped)

@@ -14,6 +14,7 @@ from qello_knowledge.domain.embedding import EmbedInput, EmbedPurpose, EmbedRequ
 from qello_knowledge.domain.keyword_rules import index_rule_for
 from qello_knowledge.domain.retrieval import (
     DEFAULT_QUERY_MODEL,
+    ChunkRole,
     OmitReason,
     Omitted,
     RetrievalFailure,
@@ -22,12 +23,15 @@ from qello_knowledge.domain.retrieval import (
     RetrievalResult,
     RetrievalSettings,
     RetrievalSummary,
+    Skipped,
+    SkipReason,
 )
 from qello_knowledge.domain.store import SearchResult, StoreError
 from qello_knowledge.ports.embedder import Embedder
 from qello_knowledge.ports.retrieval import KeywordSearchResult, RetrievalStore
 from qello_knowledge.retrieval.fusion import fuse
 from qello_knowledge.retrieval.keyword import keyword_query
+from qello_knowledge.retrieval.pack import pack
 
 
 def _new_run_id() -> str:
@@ -64,10 +68,11 @@ class _Run:
     keyword: KeywordSearchResult | None = None
     terms: int = 0
 
+    def index_version(self) -> str | None:
+        return next((r.index_version for r in (self.vector, self.keyword) if r is not None and r.index_version), None)
+
     def summary(self, **extra: object) -> RetrievalSummary:
-        index_version = next(
-            (r.index_version for r in (self.vector, self.keyword) if r is not None and r.index_version), None
-        )
+        index_version = self.index_version()
         values: dict[str, object] = {
             "mode": self.request.mode,
             "candidates": self.settings.candidates,
@@ -148,4 +153,23 @@ def retrieve(
     hits = fuse(run.vector, run.keyword, settings.rrf_k)
     if not hits:
         return run.result("no_results")
-    return run.result("ok", hits=hits)
+    if not request.want_context:
+        return run.result("ok", hits=hits)
+
+    centers = [h.chunk_id for h in hits[: settings.expand_top]]
+    run.calls += 1
+    try:
+        context = deps.store.chunk_context(centers, settings.before, settings.after)
+    except StoreError:
+        return run.result(RetrievalFailure.STORE_UNAVAILABLE.value, hits=hits)
+    if context.index_version != run.index_version():
+        return run.result(RetrievalFailure.INDEX_VERSION_CHANGED.value)
+    returned = {item.center.chunk_id for item in context.items}
+    gone = tuple(Skipped(cid, ChunkRole.CENTER, SkipReason.NOT_VISIBLE) for cid in centers if cid not in returned)
+    blocks, skipped, used = pack(hits, context, settings)
+    return RetrievalResult(
+        status="ok",
+        hits=hits,
+        context=blocks,
+        summary=run.summary(block_count=len(blocks), used_tokens=used, skipped=gone + skipped),
+    )
