@@ -77,7 +77,7 @@ description: "QK-RET-001 구현 작업 목록"
   `qk.search_keyword_terms(terms text[], top_n int, source_kinds text[] DEFAULT NULL, artifact_kinds text[] DEFAULT NULL)`에 `SET pgroonga.match_escalation_threshold = -1`, `SET enable_seqscan = off`.
   낱말별 조회는 `unnest(terms[1:16]) WITH ORDINALITY`와 `search_text &@~ pgroonga_query_escape(낱말)`, 점수는 `pgroonga_query_escape`한 낱말들을 ` OR `로 이은 질의 한 번의 `pgroonga_score`(research R-03 실측 2).
   노출은 `qk.is_visible`·`qk.kind_matches`. 반환은 `qk.search_keyword`와 같은 형식 + `matched_terms`. `qk.chunk_context`는 `qk.hit_json` 키 + `ordinal`·`artifact_id`. 기존 함수는 건드리지 않는다
-- [ ] T011 0005·`keyword_text_rule` 추가로 깨지는 기존 시험의 기대값만 고친다(2026-10-22 사용자 결정): `tests/localdb/sync/test_migration.py`의 `"applied=0 skipped=4"`를 마이그레이션 파일 수에서 세게 하고
+- [X] T011 0005·`keyword_text_rule` 추가로 깨지는 기존 시험의 기대값만 고친다(2026-10-22 사용자 결정): `tests/localdb/sync/test_migration.py`의 `"applied=0 skipped=4"`를 마이그레이션 파일 수에서 세게 하고
   (`tests/localdb/store/test_migrate.py`와 같은 방식), `tests/unit/devtools/test_measure.py`의 `c["settings"]` 기대 dict에 `"keyword_text_rule": "kw-index-baseline-v1"`을 더한다(T037 뒤). 검사 내용은 바꾸지 않는다.
   `tests/localdb/store/test_migrate.py`는 이미 파일 수에서 세므로 그대로. `uv run qk-migrate` 두 번째 실행이 `applied=0`
 - [X] T012 `src/qello_knowledge/adapters/postgres/store.py`: `PostgresStore.search_keyword_terms`(빈 배열이면 빈 리스트를 넘김)·`chunk_context`·`source_revisions() -> Mapping[자료원 이름, 리비전]`
@@ -176,32 +176,32 @@ description: "QK-RET-001 구현 작업 목록"
 
 **Independent Test**: 기준선 해시가 그대로이고, 규칙별 로컬 DB에서 식별자 원형·일부·문장형 질문의 상위 20건 포함 비율을 잰다. 평가용 DB를 캐시 복사로 만들 때 임베딩 호출 0.
 
-- [ ] T035 [P] [US5] `tests/unit/chunking/test_keyword_rule_version.py`(spec SC-010, 기존 `test_version.py`는 바꾸지 않는다): `chunking_version(ChunkingSettings())`가 `"chk-md-20d966f730bb"`, `index_version_id("@cf/baai/bge-m3", 1024, 그 값)`이 `"iv-4c0bc4fcc642"`,
+- [X] T035 [P] [US5] `tests/unit/chunking/test_keyword_rule_version.py`(spec SC-010, 기존 `test_version.py`는 바꾸지 않는다): `chunking_version(ChunkingSettings())`가 `"chk-md-20d966f730bb"`, `index_version_id("@cf/baai/bge-m3", 1024, 그 값)`이 `"iv-4c0bc4fcc642"`,
   `keyword_text_rule="kw-index-idsplit-v1"`이면 다른 값, 알 수 없는 규칙은 `ValueError`
-- [ ] T036 [P] [US5] `tests/unit/chunking/test_keyword_text.py`: 기준선 `search_text`가 지금과 글자 하나 다르지 않음(기존 청커 시험 결과와 비교), 식별자 분해는 기준선 + 빈 줄 + camelCase·PascalCase·약어·숫자 경계로 나눈
+- [X] T036 [P] [US5] `tests/unit/chunking/test_keyword_text.py`: 기준선 `search_text`가 지금과 글자 하나 다르지 않음(기존 청커 시험 결과와 비교), 식별자 분해는 기준선 + 빈 줄 + camelCase·PascalCase·약어·숫자 경계로 나눈
   소문자 낱말(중복 없이 원문 순서, `HTTPClient` → `http client`, `retryPayment2` → `retry payment 2`), snake_case·kebab-case·경로는 덧붙이지 않음, 원형 유지, `embedding_text`는 두 규칙에서 같음(spec FR-019)
-- [ ] T037 [US5] `src/qello_knowledge/domain/chunking.py`: `ChunkingSettings.keyword_text_rule: str = "kw-index-baseline-v1"`, 알 수 없는 값은 `ValueError`(`domain/keyword_rules.INDEX_RULES`)
-- [ ] T038 [US5] `src/qello_knowledge/chunking/header.py`·`chunking/service.py`: `search_text(header, body, rule)`와 식별자 분해(research R-04). `src/qello_knowledge/chunking/version.py`: 규칙이 기준선이 아닐 때만
+- [X] T037 [US5] `src/qello_knowledge/domain/chunking.py`: `ChunkingSettings.keyword_text_rule: str = "kw-index-baseline-v1"`, 알 수 없는 값은 `ValueError`(`domain/keyword_rules.INDEX_RULES`)
+- [X] T038 [US5] `src/qello_knowledge/chunking/header.py`·`chunking/service.py`: `search_text(header, body, rule)`와 식별자 분해(research R-04). `src/qello_knowledge/chunking/version.py`: 규칙이 기준선이 아닐 때만
   재료에 `"keyword_text_rule"`을 넣는다. 기존 청커 시험이 그대로 통과해야 한다
-- [ ] T039 [US5] `src/qello_knowledge/domain/keyword_rules.py`: 식별자 분해 인덱스 버전을 계산해 `INDEX_KEYWORD_RULES`에 더하고, `tests/unit/chunking/test_keyword_rule_version.py`에 "표의 모든 항목이 계산값과 같다" 시험을 더한다
+- [X] T039 [US5] `src/qello_knowledge/domain/keyword_rules.py`: 식별자 분해 인덱스 버전을 계산해 `INDEX_KEYWORD_RULES`에 더하고, `tests/unit/chunking/test_keyword_rule_version.py`에 "표의 모든 항목이 계산값과 같다" 시험을 더한다
   (research R-05)
-- [ ] T040 [P] [US5] `tests/localdb/retrieval/test_keyword_rules.py`(spec SC-004·SC-005, US5 시나리오 1~6): 규칙마다 별도 `qk_test_*` 데이터베이스에 같은 합성 문서를 색인(가짜 임베딩)하고,
+- [X] T040 [P] [US5] `tests/localdb/retrieval/test_keyword_rules.py`(spec SC-004·SC-005, US5 시나리오 1~6): 규칙마다 별도 `qk_test_*` 데이터베이스에 같은 합성 문서를 색인(가짜 임베딩)하고,
   `retrieval.keyword_query` → `PostgresStore.search_keyword_terms`를 직접 불러 키워드 순위를 본다(US6 방식 분기에 기대지 않는다).
   식별자 원형(camelCase·snake_case·kebab-case·URL 경로 각 5개 이상)은 두 규칙 모두, 식별자 일부는 식별자 분해에서 상위 20건 안 100%. 문장형 질문 10개 이상에서 `kw-query-v1` 90% 이상, `kw-query-raw` 비율도 출력.
   각 DB의 활성 인덱스 버전에 `index_rule_for`가 그 규칙을 돌려줌. 측정 조건(문서 수, 질문 수, 일치 확장 꺼짐)을 시험 출력에 남김
-- [ ] T041 [P] [US5] `tests/unit/indexer/test_sync_cli_settings.py`: `indexer/sync_cli.py` 조립 함수가 `ChunkingSettings`를 인자로 받고, 인자 없이 부르면 지금과 같은 설정·현재 버전(기존 `qk-index run`·`index activate` 시험 그대로 통과)
-- [ ] T042 [US5] `src/qello_knowledge/indexer/sync_cli.py`: 의존성 조립(`build_runtime`)과 활성화의 현재 버전 계산이 `ChunkingSettings` 인자를 받게 하고, 키워드 인자 두 개를 더한다.
+- [X] T041 [P] [US5] `tests/unit/indexer/test_sync_cli_settings.py`: `indexer/sync_cli.py` 조립 함수가 `ChunkingSettings`를 인자로 받고, 인자 없이 부르면 지금과 같은 설정·현재 버전(기존 `qk-index run`·`index activate` 시험 그대로 통과)
+- [X] T042 [US5] `src/qello_knowledge/indexer/sync_cli.py`: 의존성 조립(`build_runtime`)과 활성화의 현재 버전 계산이 `ChunkingSettings` 인자를 받게 하고, 키워드 인자 두 개를 더한다.
   `targets_factory(configs, settings, clock) -> list[SyncTarget]`(기본은 지금 코드를 옮긴 함수: `github_repo_files`가 아닌 활성 자료원은 `unsupported_source_kind`로 거부하고 `GitHubRepoFilesAdapter`·`HttpsTransport`·
   `DefaultSourceSession`으로 대상을 만든다)와 `provider_factory(source, settings)`(기본 `WorkersAiRestProvider`). 종류 검사는 기본 `targets_factory` 안으로 옮기므로 인자 없이 부르면 동작이 같다(research R-09 6·7단계)
-- [ ] T043 [P] [US5] `tests/localdb/devtools/test_eval_index.py`(spec FR-029, SC-009, research R-09): T044의 `targets_factory`로 가짜 대상(`tests/unit/sync/helpers.py`가 `SyncTarget(config.name, config.kind, config=…, adapter=FakeSourceAdapter, session=…)`을
+- [X] T043 [P] [US5] `tests/localdb/devtools/test_eval_index.py`(spec FR-029, SC-009, research R-09): T044의 `targets_factory`로 가짜 대상(`tests/unit/sync/helpers.py`가 `SyncTarget(config.name, config.kind, config=…, adapter=FakeSourceAdapter, session=…)`을
   만드는 방식과 같은 가짜 어댑터·시험용 세션, 네트워크 없음)을, `provider_factory`로 `embedding/fake.py` 제공자를 넣고,
   합성 커밋 SHA(`"0" * 39 + "1"` 등 시험 전용 값)를 써서 H02 이름과 겹치지 않게 하며, 픽스처 정리 단계에서 그 시험이 만든 `qk_eval_*` 최종·준비용 DB를 지운다. 확인 내용: (1) 원본 DB의 임베딩을 복사한 평가용 DB에서 식별자 분해 동기화 임베딩 호출 0·원본 쓰기 0,
   (2) 최종 이름이 있으면 종료 코드 5, (3) `__preparing` 잔여물이 있으면 다시 만들고 성공, (4) 캐시로 처리되지 않는 문서가 있으면 예상 Neurons를 출력하고 종료 코드 4, `--allow-embed`면 진행,
   (5) 저장소의 `config/sources.toml`과 범위 검토 파일이 실행 전후 같음, (6) 짧은 SHA·브랜치 이름 거부, (7) 성공 출력에 이름·규칙·커밋·인덱스 버전·복사 벡터 수·임베딩 호출 수, (8) 지우는 대상이 `qk_eval_*__preparing`뿐
-- [ ] T044 [US5] `src/qello_knowledge/devtools/eval_index.py`와 `devtools/db.py`의 `eval-index prepare` 하위 명령: research R-09 1~8단계(로컬 컨테이너 주소로 대상 접속, 원본은 읽기 전용 트랜잭션, 임시 사본의 `ref`만 SHA,
+- [X] T044 [US5] `src/qello_knowledge/devtools/eval_index.py`와 `devtools/db.py`의 `eval-index prepare` 하위 명령: research R-09 1~8단계(로컬 컨테이너 주소로 대상 접속, 원본은 읽기 전용 트랜잭션, 임시 사본의 `ref`만 SHA,
   `load_checked_sources`, 미리 보기 게이트, 동기화, 같은 설정의 활성화, 연결을 모두 닫은 뒤 이름 변경). 종료 코드는 contracts/cli.md 2절.
   `prepare(..., targets_factory=None, provider_factory=None)`로 시험이 가짜를 넣을 수 있게 하고, 명령행에서는 T042의 기본값을 쓴다
-- [ ] T045 [US5] research R-04·R-11의 ADR-010 후보·비교 기준이 구현(T036 기대값)과 맞는지 확인하고 결과를 이 파일 "실행 기록"에 적는다. 어긋나면 research를 고치지 않고 멈춰 사람 확인을 받는다.
+- [X] T045 [US5] research R-04·R-11의 ADR-010 후보·비교 기준이 구현(T036 기대값)과 맞는지 확인하고 결과를 이 파일 "실행 기록"에 적는다. 어긋나면 research를 고치지 않고 멈춰 사람 확인을 받는다.
   ADR 파일은 만들지 않는다(TASK.md 제외 범위)
 
 **Checkpoint**: US5 시험 통과, 기준선 `chk-md-20d966f730bb`·`iv-4c0bc4fcc642` 불변
@@ -298,3 +298,11 @@ US6:     T046, T047, T048 (시험) → T049
 - 2026-10-22 T024: US1의 `service.py`가 이미 버전 판정(다시 검색 없음)과 저장소 결과만 쓰는 구조여서 코드 변경 없이 T022·T023이 통과했다.
 - 2026-10-22 T028: `retrieval/pack.py`를 contracts/retrieval.md 4절 알고리즘 전체(예산 검사 포함)로 한 번에 구현했다. US3 시험은 넉넉한 예산(8,000)으로 돌리고, 예산 동작은 US4 시험(T031·T032)이 확인한다. T033은 그 시험 통과 확인만 남는다.
 - 2026-10-22 T033·T034: T028 구현과 US3의 `service.py`가 이미 충족해 T031·T032가 코드 변경 없이 통과했다.
+- 2026-10-22 구현 중 발견(T040): `qk.search_keyword_terms`가 같은 질의를 3번째 호출부터 다른 결과로 돌려줬다(일치 확장이 켜진 것처럼 `payment`가 `retryPayment`를 찾음).
+  plpgsql이 몇 번 실행 뒤 일반 계획으로 바꾸면서 함수의 `SET pgroonga.match_escalation_threshold = -1`이 적용되지 않는 것으로 보인다 `(추론)`. 0005 함수에
+  `SET plan_cache_mode = force_custom_plan`을 더해 12회 반복에서 결과가 같음을 확인했고, 회귀 시험(`test_repeated_calls_keep_escalation_off`)을 더했다.
+  0005는 시험용 임시 DB에만 적용된 상태라 체크섬 문제가 없다. 기존 `qk.search_keyword`(0002)는 같은 조건 10회 반복에서 결과가 바뀌지 않았다.
+- 2026-10-22 T039: 식별자 분해 규칙의 청킹 규칙 버전 `chk-md-9621a10a386c`, 인덱스 버전 `iv-8b7e93b22051`. 기준선은 `chk-md-20d966f730bb`·`iv-4c0bc4fcc642` 그대로.
+- 2026-10-22 T040 측정(합성 문서 1개 70청크, 일치 확장 꺼짐, 가짜 임베딩): camelCase 일부 상위 20건 포함 식별자 분해 1.00·기준선 0.00(n=5), 원형 식별자 두 규칙 1.00(n=20),
+  문장형 질문 `kw-query-v1` 1.00·`kw-query-raw` 0.00(n=10). 합성 세트라 품질 판단에는 쓰지 않는다(QK-EVL-001 몫).
+- 2026-10-22 T045: research R-04(본문·헤더의 대소문자·숫자 경계 낱말을 소문자로 덧붙임, snake·kebab·경로는 덧붙이지 않음, 원형 유지, 임베딩 입력 불변)와 R-11 후보 A·B가 구현과 같다. research는 고치지 않았다.

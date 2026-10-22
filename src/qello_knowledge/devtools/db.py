@@ -1,4 +1,5 @@
 """`qk-dev db up|down|reset`: 로컬 개발 DB 관리(FR-010~013). `qk-dev store bench`: 저장소 측정(QK-STO-001).
+`qk-dev eval-index prepare`: 평가용 색인 준비(QK-RET-001 research R-09).
 
 - `up`은 재실행해도 안전하다. 떠 있으면 그대로 두고 볼륨을 지우지 않는다.
 - `reset`은 연결 대상이 로컬 compose DB일 때만 볼륨을 지운다. DB에 접속하지 않고 문자열로만 판단한다.
@@ -134,6 +135,17 @@ def main(argv: list[str] | None = None) -> int:
     store.add_argument("--text-bytes", type=int, default=1_100_000)
     store.add_argument("--repeat", type=int, default=100)
     store.add_argument("--top-n", type=int, default=20)
+    evaluation = sub.add_parser("eval-index", help="ADR-010 비교용 평가 색인(로컬 전용, QK-RET-001)")
+    evaluation.add_argument("action", choices=("prepare",))
+    evaluation.add_argument("--rule", required=True, choices=("kw-index-baseline-v1", "kw-index-idsplit-v1"))
+    evaluation.add_argument("--commit", required=True, help="40자 커밋 SHA")
+    evaluation.add_argument("--source", default="dnd-backend-docs")
+    evaluation.add_argument("--from-url-env", default="DATABASE_URL", help="임베딩 캐시 원본 접속 정보 환경 변수 이름")
+    evaluation.add_argument("--allow-embed", action="store_true")
+    evaluation.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
+    evaluation.add_argument("--reviews", type=Path, default=Path("config/source_reviews"))
+    evaluation.add_argument("--exceptions", type=Path, default=Path("config/security_exceptions.toml"))
+    evaluation.add_argument("--env-file", type=Path, default=Path(".env"))
     source_command = sub.add_parser("source", help="자료원 수집 측정")
     source_sub = source_command.add_subparsers(dest="source_action", required=True)
     measure = source_sub.add_parser("measure", help="사전 검증 뒤 원본을 읽어 측정한다")
@@ -163,6 +175,26 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if measurement.ok else 1
 
     source = merge_sources(os.environ, read_env_file(args.env_file))
+    if args.group == "eval-index":
+        from qello_knowledge.devtools.eval_index import prepare
+
+        settings = load(Entrypoint.INDEX, environ=source, env_file=None)
+        report = build_report(settings)
+        if not report.ok:
+            print(report.to_text())
+            return 1
+        return prepare(
+            rule=args.rule,
+            commit=args.commit,
+            source_env=source,
+            settings=settings,
+            source_name=args.source,
+            from_url_env=args.from_url_env,
+            sources_path=args.sources,
+            reviews_dir=args.reviews,
+            exceptions_path=args.exceptions,
+            allow_embed=args.allow_embed,
+        )
     if args.group == "store":
         # psycopg는 postgres 선택 의존성이라 이 명령에서만 가져온다.
         from qello_knowledge.devtools.bench import run_bench
