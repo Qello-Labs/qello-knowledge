@@ -38,6 +38,7 @@ from qello_knowledge.domain.store import (
     validate_chunks,
     validate_vector,
 )
+from qello_knowledge.ports.retrieval import ContextItem, ContextNeighbor, ContextResult, KeywordHit, KeywordSearchResult
 
 _INVALID = (errors.IntegrityError, errors.DataError)
 
@@ -86,6 +87,37 @@ def _search_result(data: Mapping[str, Any]) -> SearchResult:
 
 def _kinds(values: tuple[str, ...]) -> list[str] | None:
     return list(values) or None
+
+
+def _keyword_result(data: Mapping[str, Any]) -> KeywordSearchResult:
+    active = data["active_index_version"]
+    if active is None:
+        return KeywordSearchResult(status="no_active_index")
+    hits = tuple(KeywordHit(_hit(h), int(h["matched_terms"])) for h in data["hits"])
+    return KeywordSearchResult(status="ok", index_version=active, hits=hits)
+
+
+def _neighbor(data: Mapping[str, Any]) -> ContextNeighbor:
+    return ContextNeighbor(
+        chunk_id=int(data["chunk_id"]),
+        artifact_id=int(data["artifact_id"]),
+        ordinal=int(data["ordinal"]),
+        provenance=_provenance(data["provenance"]),
+        body=data["body"],
+    )
+
+
+def _context_result(data: Mapping[str, Any]) -> ContextResult:
+    items = tuple(
+        ContextItem(
+            center=_neighbor(item["center"]),
+            section_first=_neighbor(item["section_first"]) if item["section_first"] else None,
+            before=tuple(_neighbor(n) for n in item["before"]),
+            after=tuple(_neighbor(n) for n in item["after"]),
+        )
+        for item in data["items"]
+    )
+    return ContextResult(index_version=data["active_index_version"], items=items)
 
 
 class PostgresStore:
@@ -253,6 +285,41 @@ class PostgresStore:
             ).fetchone()
         assert row is not None  # noqa: S101
         return _search_result(row[0])
+
+    def search_keyword_terms(
+        self, terms: Sequence[str], top_n: int, filters: SearchFilter = NO_FILTER
+    ) -> KeywordSearchResult:
+        """QK-RET-001 낱말 배열 키워드 검색(0005 `qk.search_keyword_terms`). 빈 배열도 불러 활성 인덱스를 확인한다."""
+        with self._db() as conn:
+            row = conn.execute(
+                "SELECT qk.search_keyword_terms(%s::text[], %s, %s, %s)",
+                (list(terms), clamp_top_n(top_n), _kinds(filters.source_kinds), _kinds(filters.artifact_kinds)),
+            ).fetchone()
+        assert row is not None  # noqa: S101
+        return _keyword_result(row[0])
+
+    def chunk_context(self, center_ids: Sequence[int], before: int, after: int) -> ContextResult:
+        """QK-RET-001 주변 청크 일괄 조회(0005 `qk.chunk_context`). 노출 조건을 다시 판정한다."""
+        with self._db() as conn:
+            row = conn.execute(
+                "SELECT qk.chunk_context(%s::bigint[], %s, %s)", ([int(i) for i in center_ids], before, after)
+            ).fetchone()
+        assert row is not None  # noqa: S101
+        return _context_result(row[0])
+
+    def source_revisions(self) -> dict[str, str]:
+        """자료원별 가장 최근 `succeeded` 동기화 실행의 원본 리비전(QK-RET-001 research R-09).
+
+        검색 경로(`retrieve`)는 부르지 않는다. 확인 명령과 평가가 쓴다.
+        """
+        with self._db() as conn:
+            rows = conn.execute(
+                "SELECT DISTINCT ON (s.source_name) s.source_name, s.origin_version"
+                " FROM qk.sync_run_source s JOIN qk.sync_run r ON r.run_id = s.run_id"
+                " WHERE s.status = 'succeeded' AND s.origin_version IS NOT NULL"
+                " ORDER BY s.source_name, r.started_at DESC, r.run_id DESC"
+            ).fetchall()
+        return {str(name): str(version) for name, version in rows}
 
     def chunk_neighbors(self, chunk_id: int, before: int, after: int) -> NeighborResult | None:
         with self._db() as conn:

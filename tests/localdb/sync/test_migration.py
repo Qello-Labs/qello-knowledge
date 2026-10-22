@@ -45,7 +45,8 @@ def test_migration_reapplication_changes_nothing(db_url):
     with psycopg.connect(db_url, autocommit=True) as conn:
         out = io.StringIO()
         assert apply_migrations(conn, load_migrations(), is_local=True, out=out) == 0
-        assert "applied=0 skipped=4" in out.getvalue()
+        total = len(load_migrations())  # 마이그레이션이 늘어도 같은 검사를 한다(QK-RET-001 0005)
+        assert f"applied=0 skipped={total}" in out.getvalue()
 
 
 def test_0004_preserves_existing_artifact_values():
