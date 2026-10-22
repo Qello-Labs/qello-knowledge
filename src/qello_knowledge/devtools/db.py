@@ -135,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
     store.add_argument("--text-bytes", type=int, default=1_100_000)
     store.add_argument("--repeat", type=int, default=100)
     store.add_argument("--top-n", type=int, default=20)
+    store.add_argument("--retrieval", action="store_true", help="하이브리드 검색 + Context 측정(QK-RET-001 SC-006)")
     evaluation = sub.add_parser("eval-index", help="ADR-010 비교용 평가 색인(로컬 전용, QK-RET-001)")
     evaluation.add_argument("action", choices=("prepare",))
     evaluation.add_argument("--rule", required=True, choices=("kw-index-baseline-v1", "kw-index-idsplit-v1"))
@@ -197,8 +198,10 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.group == "store":
         # psycopg는 postgres 선택 의존성이라 이 명령에서만 가져온다.
-        from qello_knowledge.devtools.bench import run_bench
+        from qello_knowledge.devtools.bench import run_bench, run_retrieval_bench
 
+        if args.retrieval:
+            return run_retrieval_bench(source, text_bytes=args.text_bytes)
         return run_bench(source, text_bytes=args.text_bytes, repeat=args.repeat, top_n=args.top_n)
     if args.action == "up":
         return up(source)

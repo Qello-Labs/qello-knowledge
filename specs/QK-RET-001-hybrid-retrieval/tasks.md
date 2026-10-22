@@ -251,10 +251,10 @@ TDD 순서: T050과 T052(시험)를 먼저 쓰고 실패를 확인한 뒤 T051�
 
 ## Phase 10: Polish & Cross-Cutting
 
-- [ ] T053 `src/qello_knowledge/devtools/bench.py`와 `devtools/db.py`에 `qk-dev store bench --retrieval`을 더한다(research R-13, spec SC-006, quickstart 1절. 시험 마커는 만들지 않는다): 합성 1.1 MB를 넣은 로컬 DB에서 질문 50개 × 5회로 하이브리드 검색 + Context(가짜 임베딩) p50·p95, 순수 처리(규칙·RRF·담기)
+- [X] T053 `src/qello_knowledge/devtools/bench.py`와 `devtools/db.py`에 `qk-dev store bench --retrieval`을 더한다(research R-13, spec SC-006, quickstart 1절. 시험 마커는 만들지 않는다): 합성 1.1 MB를 넣은 로컬 DB에서 질문 50개 × 5회로 하이브리드 검색 + Context(가짜 임베딩) p50·p95, 순수 처리(규칙·RRF·담기)
   질의당 p95를 따로 출력. 결과와 조건(데이터 규모, 반복, 실행 환경)을 이 파일 "실행 기록"에 적는다. p95 1.5초를 넘거나 순수 처리 p95가 5 ms를 넘으면 사람에게 보고한다
-- [ ] T054 경계·회귀 확인: `uv run pytest tests/unit/test_boundaries.py`, 기존 QK-STO-001·QK-CHK-002·QK-SYN-001·QK-EMB-001 시험 전부 통과, `uv run qk-migrate` 두 번
-- [ ] T055 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`)과 2절 로컬 손 확인.
+- [X] T054 경계·회귀 확인: `uv run pytest tests/unit/test_boundaries.py`, 기존 QK-STO-001·QK-CHK-002·QK-SYN-001·QK-EMB-001 시험 전부 통과, `uv run qk-migrate` 두 번
+- [X] T055 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`)과 2절 로컬 손 확인.
   결과를 "실행 기록"에 적고 이 목록 체크 표시를 갱신한다
 - [ ] T056 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
 
@@ -306,3 +306,14 @@ US6:     T046, T047, T048 (시험) → T049
 - 2026-10-22 T040 측정(합성 문서 1개 70청크, 일치 확장 꺼짐, 가짜 임베딩): camelCase 일부 상위 20건 포함 식별자 분해 1.00·기준선 0.00(n=5), 원형 식별자 두 규칙 1.00(n=20),
   문장형 질문 `kw-query-v1` 1.00·`kw-query-raw` 0.00(n=10). 합성 세트라 품질 판단에는 쓰지 않는다(QK-EVL-001 몫).
 - 2026-10-22 T045: research R-04(본문·헤더의 대소문자·숫자 경계 낱말을 소문자로 덧붙임, snake·kebab·경로는 덧붙이지 않음, 원형 유지, 임베딩 입력 불변)와 R-11 후보 A·B가 구현과 같다. research는 고치지 않았다.
+- 2026-10-22 T053 SC-006 측정(`uv run qk-dev store bench --retrieval`): 이미지 supabase/postgres:17.11.0.004, arm64 Darwin, 합성 원문 1,106,800바이트·청크 920개·벡터 920개(1,024차원),
+  질문 50개 × 5회, 시드 20261022, 질의 임베딩은 고정 벡터(0 ms), 후보 20·확장 상위 8·예산 2,000. 하이브리드 검색 + Context p50 24.8 ms·p95 52.4 ms(목표 p95 1,500 ms 안),
+  저장소 호출을 뺀 순수 처리 p50 0.30 ms·p95 0.71 ms(보고 기준 5 ms 안). Workers CPU 자체는 재지 않았다(QK-BOT-001).
+- 2026-10-22 구현 중 발견(T055): 로컬 개발 DB(`postgres`)에 `qk-migrate`를 돌리자 0005가 `permission denied to set parameter "pgroonga.match_escalation_threshold"`로 실패했다.
+  로컬 역할은 슈퍼유저가 아니고, 앞 마이그레이션을 건너뛴 새 연결에서는 PGroonga 라이브러리가 로드되지 않아 함수 `SET` 절의 이름이 임시 자리 값이 되기 때문이다.
+  시험 DB는 같은 연결에서 `CREATE EXTENSION`이 먼저 돌아 통과했다. 0005 첫머리에서 PGroonga 함수를 한 번 불러 라이브러리를 로드하게 고쳤고, 회귀 시험
+  `tests/localdb/retrieval/test_migration_fresh_connection.py`를 더했다. 운영 저장소도 같은 조건(비슈퍼유저 역할)이면 고치기 전 0005가 실패했을 것이다.
+- 2026-10-22 T055: 검증 명령의 `qk-migrate`가 로컬 개발 DB(`postgres`)에 0004와 0005를 적용했다(0004는 이 DB에 처음 적용, 0005는 위 수정 뒤). 실패한 0005 시도 3건이
+  `qk.schema_migration`에 `failed`로 남아 있다(부분 반영 없음). 두 번째 실행 `applied=0 skipped=5`.
+- 2026-10-22 T055: preflight, `git diff --check`, ruff check·format --check 통과, `QK_REQUIRE_LOCALDB=1 uv run pytest` 1,506 passed(2 deselected는 `external`).
+  quickstart 2절은 `--mode keyword`만 실행했다(종료 코드 1, `no_active_index`, 출력에 질문 없음). 하이브리드 예시는 실제 Workers AI 호출이 생겨 사람 단계 H03으로 남겼다.

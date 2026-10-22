@@ -192,3 +192,105 @@ def run_bench(
         f" budget_share={estimate / STORAGE_BUDGET_BYTES:.1%}"
     )
     return 0
+
+
+class _BenchEmbedder:
+    """질의용 임베딩 대신 고정 시드 단위 벡터를 돌려준다(시간 0, 외부 호출 없음, QK-RET-001 research R-13)."""
+
+    def __init__(self, rng: random.Random) -> None:
+        self._rng = rng
+
+    def embed(self, request):
+        from qello_knowledge.domain.embedding import EmbedItem, EmbedResult, RunSummary
+
+        vector = tuple(_unit_vector(self._rng))
+        return EmbedResult((EmbedItem(0, vector=vector),), MODEL, EMBEDDING_DIMENSION, RunSummary(requested=1))
+
+    def preview(self, request):  # pragma: no cover - 측정에서 쓰지 않는다
+        raise NotImplementedError
+
+
+def run_retrieval_bench(
+    source: Mapping[str, str],
+    *,
+    text_bytes: int = 1_100_000,
+    chunk_bytes: int = 1_200,
+    chunks_per_doc: int = 8,
+    questions: int = 50,
+    repeat: int = 5,
+    seed: int = 20261022,
+    out: TextIO = sys.stdout,
+) -> int:
+    """하이브리드 검색 + Context(spec SC-006)와 저장소 호출을 뺀 순수 처리 시간(research R-13)을 잰다."""
+    from qello_knowledge.domain.retrieval import RetrievalRequest, RetrievalSettings
+    from qello_knowledge.retrieval import RetrievalDeps, fuse, keyword_query, pack, retrieve
+
+    def write(line: str) -> None:
+        print(line, file=out)
+
+    if not is_local(source):
+        write("DATABASE_URL이 로컬 개발 DB가 아니어서 측정을 거부한다.")
+        return 1
+    admin = database_url(source)
+    name = f"qk_bench_{secrets.token_hex(4)}"
+    with psycopg.connect(admin, autocommit=True) as conn:
+        conn.execute(f'CREATE DATABASE "{name}"')
+    url = with_database(admin, name)
+    settings = RetrievalSettings()
+    try:
+        with psycopg.connect(url, autocommit=True) as conn:
+            if apply_migrations(conn, load_migrations(), is_local=True, out=io.StringIO()) != 0:
+                write("마이그레이션 적용에 실패했다.")
+                return 1
+            conn.execute(
+                "INSERT INTO qk.index_version (id, embedding_model, dimension, chunking_version,"
+                " metadata_schema_version, status) VALUES ('bench', %s, 1024, 'bench', 'bench', 'active')",
+                (MODEL,),
+            )
+        rng = random.Random(seed)  # noqa: S311 - 재현 가능한 합성 데이터용이다
+        with PostgresStore(url) as store:
+            loaded = _load(store, rng, text_bytes, chunk_bytes, chunks_per_doc)
+            with psycopg.connect(url, autocommit=True) as conn:
+                conn.execute("ANALYZE")
+            asked = [
+                " ".join(rng.sample(WORDS, 3) + ([rng.choice(IDENTIFIERS)] if rng.random() < 0.3 else []))
+                for _ in range(questions)
+            ]
+            deps = RetrievalDeps(store=store, embedder=_BenchEmbedder(rng), model_version=MODEL)
+            retrieve(RetrievalRequest(asked[0]), deps, settings)  # 첫 호출 준비 비용을 뺀다
+            cycle = iter(asked * repeat).__next__
+            total_ms = _time(lambda: retrieve(RetrievalRequest(cycle()), deps, settings), questions * repeat)
+            prepared = []
+            for question in asked:
+                terms = keyword_query(question, settings.query_rule)
+                vector = store.search_vector(_unit_vector(rng), settings.candidates)
+                keyword = store.search_keyword_terms(terms, settings.candidates)
+                hits = fuse(vector, keyword, settings.rrf_k)
+                context = store.chunk_context([h.chunk_id for h in hits[: settings.expand_top]], 1, 1)
+                prepared.append((question, vector, keyword, context))
+            steps = iter(prepared * repeat).__next__
+
+            def pure() -> None:
+                question, vector, keyword, context = steps()
+                keyword_query(question, settings.query_rule)
+                pack(fuse(vector, keyword, settings.rrf_k), context, settings)
+
+            pure_ms = _time(pure, questions * repeat)
+            usage = store.usage()
+    finally:
+        with psycopg.connect(admin, autocommit=True) as conn:
+            conn.execute(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)')
+    t50, t95 = _percentiles(total_ms)
+    p50, p95 = _percentiles(pure_ms)
+    write(
+        f"conditions: image={IMAGE} machine={platform.machine()} system={platform.system()}"
+        f" questions={questions} repeat={repeat} seed={seed} measured_at={datetime.now(UTC):%Y-%m-%d}"
+        f" embedding=stub(0ms) candidates={settings.candidates} expand_top={settings.expand_top}"
+        f" budget={settings.context_budget}"
+    )
+    write(f"data: text_bytes={loaded} chunks={usage.chunk_count} vectors={usage.embedding_count} dim=1024")
+    write(f"retrieve_with_context_ms: p50={t50:.1f} p95={t95:.1f} target_p95=1500")
+    write(f"pure_processing_ms: p50={p50:.2f} p95={p95:.2f} report_over=5")
+    if t95 > 1500 or p95 > 5:
+        write("warning: 목표를 넘었다. 사람에게 보고한다(tasks T053).")
+    return 0
