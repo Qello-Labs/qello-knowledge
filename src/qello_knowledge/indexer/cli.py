@@ -7,6 +7,7 @@ from pathlib import Path
 
 from qello_knowledge.config.cli import add_check_options, run_check
 from qello_knowledge.config.registry import Entrypoint
+from qello_knowledge.indexer.search_cli import SearchFactory, add_search_parser, postgres_search, run_search
 from qello_knowledge.indexer.sync_cli import (
     add_sync_parsers,
     build_runtime,
@@ -32,6 +33,8 @@ def main(
     sync_factory=build_runtime,
     sync_store_factory=postgres_sync_store,
     store_policy_path=Path("config/store_policy.toml"),
+    search_factory: SearchFactory = postgres_search,
+    stdin=None,
 ) -> int:
     parser = argparse.ArgumentParser(prog="qk-index", description="색인 진입점")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -55,6 +58,7 @@ def main(
     security_check.add_argument("--json", action="store_true")
     add_usage_parser(sub)
     add_sync_parsers(sub, run)
+    add_search_parser(sub)
     args = parser.parse_args(argv)
 
     if args.command == "run":
@@ -65,6 +69,8 @@ def main(
         return query_command(args, sync_store_factory, store_policy_path)
     if args.command == "usage":
         return run_usage(args, ledger_factory)
+    if args.command == "search":
+        return run_search(args, search_factory, stdin)
 
     if args.command not in {"sources", "security"}:
         code, _ = run_check(Entrypoint.INDEX, args)

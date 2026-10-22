@@ -238,12 +238,12 @@ description: "QK-RET-001 구현 작업 목록"
 
 TDD 순서: T050과 T052(시험)를 먼저 쓰고 실패를 확인한 뒤 T051을 구현한다.
 
-- [ ] T050 [P] [US7] `tests/unit/indexer/test_search_cli.py`: 질문을 표준 입력에서만 읽음(명령행 인자 질문 옵션 없음), 출력·`--json`에 질문·낱말·본문 없음, 첫 줄 `target=local|remote …`, 원격 대상인데 `--allow-remote` 없으면 3,
+- [X] T050 [P] [US7] `tests/unit/indexer/test_search_cli.py`: 질문을 표준 입력에서만 읽음(명령행 인자 질문 옵션 없음), 출력·`--json`에 질문·낱말·본문 없음, 첫 줄 `target=local|remote …`, 원격 대상인데 `--allow-remote` 없으면 3,
   실패 종류면 1, 인자·설정 오류 2, 성공·`no_results` 0, `--candidates`·`--budget`·`--expand-top`·`--source-kind`·`--mode`·`--query-rule`·`--ranks-only` 전달과 범위 밖 값 2, `--sources`·`--exceptions`로 `load_policy` 조립, 출처 없는 전송 검사, `source_revisions` 출력, 질의 임베딩 재시도 1회와 대기 `min(Retry-After 또는 0.5초, 2초)`
-- [ ] T051 [US7] `src/qello_knowledge/indexer/search_cli.py`: 조립(research R-07: `EmbeddingService(retry_policy=RetryPolicy(max_retries=1), retry_delay=…)`, `indexer/embedding.py`의 `security_outgoing_check`),
+- [X] T051 [US7] `src/qello_knowledge/indexer/search_cli.py`: 조립(research R-07: `EmbeddingService(retry_policy=RetryPolicy(max_retries=1), retry_delay=…)`, `indexer/embedding.py`의 `security_outgoing_check`),
   `QK_RETRIEVAL_CONTEXT_BUDGET`을 `RetrievalSettings.context_budget`에 연결, 표준 입력 읽기, `PostgresStore.source_revisions()`로 요약 채우기, 사람용·JSON 출력, 종료 코드.
   시험용 주입 인자(`store_factory`, `provider_factory`, `ledger_factory`, `indexer/cli.py`의 기존 factory 키워드 인자 방식)를 둔다. `src/qello_knowledge/indexer/cli.py`에 `search` 하위 명령 등록(기존 하위 명령 그대로)
-- [ ] T052 [P] [US7] `tests/localdb/retrieval/test_search_command.py`: 로컬 DB에 합성 색인을 넣고 명령을 실행해 spec US7 시나리오 1~3(사용량 기록에 질의용 1건·원문 없음)
+- [X] T052 [P] [US7] `tests/localdb/retrieval/test_search_command.py`: 로컬 DB에 합성 색인을 넣고 명령을 실행해 spec US7 시나리오 1~3(사용량 기록에 질의용 1건·원문 없음)
 
 **Checkpoint**: 모든 스토리 시험 통과
 
