@@ -17,7 +17,7 @@ from qello_knowledge.domain.retrieval import (
 )
 
 COLLECTED = datetime(2026, 10, 22, tzinfo=UTC)
-SECRET = "질문-원문-노출되면-안-됨"
+QUESTION_MARKER = "질문-원문-노출되면-안-됨"
 
 
 def _chunk(chunk_id: int, ordinal: int, artifact_id: int = 1, body: str = "본문") -> ContextChunk:
@@ -84,11 +84,11 @@ def test_block_tokens_and_text() -> None:
 
 
 def test_question_and_bodies_are_hidden_from_repr() -> None:
-    request = RetrievalRequest(question=SECRET)
-    chunk = _chunk(1, 0, body=SECRET)
+    request = RetrievalRequest(question=QUESTION_MARKER)
+    chunk = _chunk(1, 0, body=QUESTION_MARKER)
     result = RetrievalResult(status="ok", context=(_block((chunk,)),), summary=RetrievalSummary())
     for value in (request, chunk, result):
-        assert SECRET not in repr(value)
+        assert QUESTION_MARKER not in repr(value)
 
 
 def test_result_failure_property() -> None:
