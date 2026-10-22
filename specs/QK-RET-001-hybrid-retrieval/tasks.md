@@ -37,10 +37,10 @@ description: "QK-RET-001 구현 작업 목록"
 
 ## Phase 1: Setup
 
-- [ ] T001 패키지 자리 만들기: `src/qello_knowledge/retrieval/__init__.py`, `tests/unit/retrieval/`, `tests/localdb/retrieval/conftest.py`(`tests/localdb/store/conftest.py`의 `db_url` 방식을 재사용하는
+- [X] T001 패키지 자리 만들기: `src/qello_knowledge/retrieval/__init__.py`, `tests/unit/retrieval/`, `tests/localdb/retrieval/conftest.py`(`tests/localdb/store/conftest.py`의 `db_url` 방식을 재사용하는
   `db_url`·`store` 픽스처와, 활성 인덱스 버전 하나·자료·청크·임베딩을 합성해 넣는 `seed_chunks(...)` 도우미. 접근 범위·자료 상태·인덱스 버전·제목 경로·순서 번호를 인자로 받는다), `tests/localdb/devtools/`.
   시험 디렉터리에는 `__init__.py`를 만들지 않는다(QK-EMB-001 T001 결정과 같은 이유)
-- [ ] T002 [P] `tests/unit/test_boundaries.py`: 기존 `RESTRICTED`·`ALLOWED_INTERNAL`·`sync_violations`는 그대로 두고, `retrieval` 전용 허용 목록(`domain`·`ports`·`embedding`·`retrieval`)과 검사 함수를 따로 더한다.
+- [X] T002 [P] `tests/unit/test_boundaries.py`: 기존 `RESTRICTED`·`ALLOWED_INTERNAL`·`sync_violations`는 그대로 두고, `retrieval` 전용 허용 목록(`domain`·`ports`·`embedding`·`retrieval`)과 검사 함수를 따로 더한다.
   위반 사례 시험: `retrieval/`이 `qello_knowledge.adapters`·`security`·`chunking`·`psycopg`·`markdown_it`를 가져오면 실패, `domain`이 `qello_knowledge.retrieval`을 가져오면 기존 검사가 실패
   (contracts/retrieval.md 6절, plan.md Structure Decision)
 
@@ -50,41 +50,41 @@ description: "QK-RET-001 구현 작업 목록"
 
 **목적**: 모든 스토리가 쓰는 타입·설정, 저장소 경계와 새 SQL 함수 두 개, 메모리 저장소. 이 단계가 끝나야 스토리 시험을 쓸 수 있다.
 
-- [ ] T003 [P] `tests/unit/retrieval/test_retrieval_settings.py`(spec FR-028): `RetrievalSettings` 기본값(후보 20, RRF 60, 확장 상위 8, 앞뒤 1·1, 예산 2,000, 질문 상한 2,000자, 질의 규칙 `kw-query-v1`, 바이트당 토큰 3.5)과
+- [X] T003 [P] `tests/unit/retrieval/test_retrieval_settings.py`(spec FR-028): `RetrievalSettings` 기본값(후보 20, RRF 60, 확장 상위 8, 앞뒤 1·1, 예산 2,000, 질문 상한 2,000자, 질의 규칙 `kw-query-v1`, 바이트당 토큰 3.5)과
   범위 경계("후보 1~50, RRF 1~1,000, 확장 상위 1~20, 앞뒤 0~3, 예산 1~8,000, 질문 상한 1~8,000자") 안·밖, 알 수 없는 질의 규칙 거부, `overrides`를 합친 값도 같은 검사를 받음
-- [ ] T004 [P] `tests/unit/retrieval/test_retrieval_domain.py`: data-model 2절 타입 불변식. `ContextBlock`에 같은 청크 두 번·다른 자료 청크·`ordinal` 역순이면 생성 실패, `RetrievalSummary`와 모든 결과 타입의 `repr`에
+- [X] T004 [P] `tests/unit/retrieval/test_retrieval_domain.py`: data-model 2절 타입 불변식. `ContextBlock`에 같은 청크 두 번·다른 자료 청크·`ordinal` 역순이면 생성 실패, `RetrievalSummary`와 모든 결과 타입의 `repr`에
   질문·본문이 나오지 않음, `RetrievalFailure`가 spec FR-011의 아홉 값(`empty_question`, `question_too_long`, `no_active_index`, `store_unavailable`, `index_version_changed`, `query_embedding_failed`,
   `outgoing_blocked`, `keyword_search_failed`, `both_searches_failed`)과 정확히 같음
-- [ ] T005 `src/qello_knowledge/domain/retrieval.py`: data-model 1~2절을 표준 라이브러리 불변 dataclass·`StrEnum`으로 정의한다. `RetrievalSettings`(1.1 표의 기본·범위, 생성 때 `ValueError`, `with_overrides(**값)`),
+- [X] T005 `src/qello_knowledge/domain/retrieval.py`: data-model 1~2절을 표준 라이브러리 불변 dataclass·`StrEnum`으로 정의한다. `RetrievalSettings`(1.1 표의 기본·범위, 생성 때 `ValueError`, `with_overrides(**값)`),
   `RetrievalMode`(`hybrid`·`vector`·`keyword`), `RetrievalRequest`, `FusedHit`, `ContextChunk`(`role`: `center`·`section_first`·`before`·`after`), `ContextBlock`, `Skipped`(`reason`: `larger_than_budget`·
   `budget_exhausted`·`not_visible`), `Omitted`(생략한 검색과 사유), `RetrievalSummary`(2.5 필드, `source_revisions`는 기본 빈 값), `RetrievalResult`, `RetrievalFailure`(2.7 아홉 값).
   본문·질문 필드는 `field(repr=False)`
-- [ ] T006 [P] `src/qello_knowledge/domain/keyword_rules.py`: 규칙 식별자 상수 `QUERY_RULES = ("kw-query-v1", "kw-query-raw")`, `INDEX_RULES = ("kw-index-baseline-v1", "kw-index-idsplit-v1")`,
+- [X] T006 [P] `src/qello_knowledge/domain/keyword_rules.py`: 규칙 식별자 상수 `QUERY_RULES = ("kw-query-v1", "kw-query-raw")`, `INDEX_RULES = ("kw-index-baseline-v1", "kw-index-idsplit-v1")`,
   `INDEX_KEYWORD_RULES = {"iv-4c0bc4fcc642": "kw-index-baseline-v1"}`(식별자 분해 항목은 T039), `index_rule_for(index_version) -> str`(없으면 `"unknown"`) (research R-05)
-- [ ] T007 `src/qello_knowledge/ports/retrieval.py`: `RetrievalStore` Protocol(`search_vector`, `search_keyword_terms(terms, top_n, filters) -> KeywordSearchResult`, `chunk_context(center_ids, before, after) -> ContextResult`)과
+- [X] T007 `src/qello_knowledge/ports/retrieval.py`: `RetrievalStore` Protocol(`search_vector`, `search_keyword_terms(terms, top_n, filters) -> KeywordSearchResult`, `chunk_context(center_ids, before, after) -> ContextResult`)과
   `ContextItem(center, section_first, before, after)`·`ContextNeighbor`(QK-STO-001 `SearchHit` 필드 + `ordinal`·`artifact_id`)·`ContextResult(index_version, items)`. 키워드 결과는
   `KeywordHit(hit: SearchHit, matched_terms: int)`와 `KeywordSearchResult(status, index_version, hits: tuple[KeywordHit, ...])`로 싣고 `search_keyword_terms`는 `KeywordSearchResult`를 돌려준다.
   `domain/store.py`는 바꾸지 않는다 (contracts/retrieval.md 2절, 2026-10-22 재승인)
-- [ ] T008 [P] `tests/localdb/retrieval/test_keyword_terms.py`(research R-03 결정 2, data-model 4.1): `qk.search_keyword_terms`가 (1) 서로 다른 맞은 낱말 수가 많은 청크를 낱말 횟수와 무관하게 위에 둔다("결제"만 6번 나온 청크 < 네 낱말이 다 맞은 청크),
+- [X] T008 [P] `tests/localdb/retrieval/test_keyword_terms.py`(research R-03 결정 2, data-model 4.1): `qk.search_keyword_terms`가 (1) 서로 다른 맞은 낱말 수가 많은 청크를 낱말 횟수와 무관하게 위에 둔다("결제"만 6번 나온 청크 < 네 낱말이 다 맞은 청크),
   (2) 같은 `matched_terms` 안에서는 OR 질의 점수, 그다음 `chunk_id` 순, (3) OR 질의에 없는 행의 점수는 0, (4) 일치 확장이 꺼져 `retry`가 `retryPayment`만 든 청크를 찾지 않고 다른 청크 유무와 무관하게 같은 결과,
   (5) 낱말 속 `"` `(` `-` `:` 등 특수 문자가 오류 없이 글자로 처리되고 소문자 `or` 낱말이 글자 "OR"를 찾는다, (6) 접근 범위 미확인·제한, 삭제 자료, 비활성 버전 청크 0건, 필터 적용,
   (7) `terms`가 빈 배열이면 `active_index_version`을 채운 빈 결과, 활성 버전이 없으면 `active_index_version`이 `null`, (8) 낱말 17개면 앞 16개만, `top_n`은 1~50으로 자름, (9) 같은 입력 두 번 같은 결과
-- [ ] T009 [P] `tests/localdb/retrieval/test_chunk_context.py`(research R-06, data-model 4.2): `qk.chunk_context`가 (1) 중심마다 `before`·`after`를 `ordinal` 오름차순으로 같은 자료·같은 인덱스 버전에서만,
+- [X] T009 [P] `tests/localdb/retrieval/test_chunk_context.py`(research R-06, data-model 4.2): `qk.chunk_context`가 (1) 중심마다 `before`·`after`를 `ordinal` 오름차순으로 같은 자료·같은 인덱스 버전에서만,
   (2) `section_first` 정의(제목 경로가 다른 마지막 앞 청크 다음 청크, 없으면 자료의 첫 청크, 그것이 중심이면 `null`), 같은 제목 경로가 문서 안에 두 번 나올 때 중심 쪽 절만,
   (3) 노출 조건을 통과하지 못한 중심(미확인 접근 범위·삭제·비활성 버전·없는 식별자)은 항목이 없음, (4) 중심 21개면 앞 20개, 앞뒤 4면 3으로 자름, (5) 항목마다 `ordinal`·`artifact_id`·출처 키,
   (6) 활성 버전이 없으면 빈 `items`와 `null` 버전. 같은 파일에 `PostgresStore.source_revisions()` 시험(실행 기록 여럿 중 자료원별 가장 최근 `succeeded`의 `origin_version`, 실패 실행은 무시)
-- [ ] T010 `src/qello_knowledge/adapters/postgres/migrations/0005_retrieval.sql`: data-model 4.1·4.2의 두 함수. 둘 다 `STABLE`, `SET search_path = qk, public, extensions`, 쓰기 없음.
+- [X] T010 `src/qello_knowledge/adapters/postgres/migrations/0005_retrieval.sql`: data-model 4.1·4.2의 두 함수. 둘 다 `STABLE`, `SET search_path = qk, public, extensions`, 쓰기 없음.
   `qk.search_keyword_terms(terms text[], top_n int, source_kinds text[] DEFAULT NULL, artifact_kinds text[] DEFAULT NULL)`에 `SET pgroonga.match_escalation_threshold = -1`, `SET enable_seqscan = off`.
   낱말별 조회는 `unnest(terms[1:16]) WITH ORDINALITY`와 `search_text &@~ pgroonga_query_escape(낱말)`, 점수는 `pgroonga_query_escape`한 낱말들을 ` OR `로 이은 질의 한 번의 `pgroonga_score`(research R-03 실측 2).
   노출은 `qk.is_visible`·`qk.kind_matches`. 반환은 `qk.search_keyword`와 같은 형식 + `matched_terms`. `qk.chunk_context`는 `qk.hit_json` 키 + `ordinal`·`artifact_id`. 기존 함수는 건드리지 않는다
 - [ ] T011 0005·`keyword_text_rule` 추가로 깨지는 기존 시험의 기대값만 고친다(2026-10-22 사용자 결정): `tests/localdb/sync/test_migration.py`의 `"applied=0 skipped=4"`를 마이그레이션 파일 수에서 세게 하고
   (`tests/localdb/store/test_migrate.py`와 같은 방식), `tests/unit/devtools/test_measure.py`의 `c["settings"]` 기대 dict에 `"keyword_text_rule": "kw-index-baseline-v1"`을 더한다(T037 뒤). 검사 내용은 바꾸지 않는다.
   `tests/localdb/store/test_migrate.py`는 이미 파일 수에서 세므로 그대로. `uv run qk-migrate` 두 번째 실행이 `applied=0`
-- [ ] T012 `src/qello_knowledge/adapters/postgres/store.py`: `PostgresStore.search_keyword_terms`(빈 배열이면 빈 리스트를 넘김)·`chunk_context`·`source_revisions() -> Mapping[자료원 이름, 리비전]`
+- [X] T012 `src/qello_knowledge/adapters/postgres/store.py`: `PostgresStore.search_keyword_terms`(빈 배열이면 빈 리스트를 넘김)·`chunk_context`·`source_revisions() -> Mapping[자료원 이름, 리비전]`
   (자료원별 가장 최근 `succeeded` 실행의 `qk.sync_run_source.origin_version`, research R-09). 연결 실패는 `StoreUnavailable`, 그 밖은 `StoreError`. 기존 메서드는 그대로
-- [ ] T013 `tests/unit/retrieval/fakes.py`: 메모리 `RetrievalStore`(정해 둔 `SearchResult`·`ContextResult`를 돌려주고, 호출 횟수와 받은 인자를 기록하고, 지정한 호출에서 `StoreUnavailable`·`StoreError`를 낸다)와
+- [X] T013 `tests/unit/retrieval/fakes.py`: 메모리 `RetrievalStore`(정해 둔 `SearchResult`·`ContextResult`를 돌려주고, 호출 횟수와 받은 인자를 기록하고, 지정한 호출에서 `StoreUnavailable`·`StoreError`를 낸다)와
   호출 횟수를 세는 가짜 `Embedder` 감싸개(`embedding/fake.py` 제공자 + `tests/unit/fakes.py` 장부로 만든 `EmbeddingService`)
-- [ ] T014 [P] `src/qello_knowledge/config/registry.py`: `QK_RETRIEVAL_CONTEXT_BUDGET`(정수 1~8,000, 기본 2,000, 질의·색인 진입점) 등록. 설정 예시 파일 `.env.example`을 `uv run python -m qello_knowledge.config.example`로 다시 만든다.
+- [X] T014 [P] `src/qello_knowledge/config/registry.py`: `QK_RETRIEVAL_CONTEXT_BUDGET`(정수 1~8,000, 기본 2,000, 질의·색인 진입점) 등록. 설정 예시 파일 `.env.example`을 `uv run python -m qello_knowledge.config.example`로 다시 만든다.
   에이전트는 `.env.*`를 읽지 않으므로 생성 결과 확인은 기존 `tests/unit/config/test_example_file.py`가 맡는다. 범위 검사 시험은 새 파일 `tests/unit/config/test_retrieval_budget_setting.py`
 
 **Checkpoint**: 로컬 DB 시험 T008·T009 통과, `qk-migrate` 재실행 안전, 기존 시험 전부 통과
@@ -97,18 +97,18 @@ description: "QK-RET-001 구현 작업 목록"
 
 **Independent Test**: 메모리 저장소와 로컬 DB에서 벡터 쪽에만·키워드 쪽에만·양쪽에 걸리는 청크가 있는 질문으로 통합 순위가 RRF 계산과 같고, 두 번 실행이 같다.
 
-- [ ] T015 [P] [US1] `tests/unit/retrieval/test_fuse.py`(research R-02, spec SC-001): `1/(k+rank)` 합, 한쪽만 나온 청크 포함, 양쪽 청크 한 번만·두 순위 기록, 수학적으로 같은 합의 동점이
+- [X] T015 [P] [US1] `tests/unit/retrieval/test_fuse.py`(research R-02, spec SC-001): `1/(k+rank)` 합, 한쪽만 나온 청크 포함, 양쪽 청크 한 번만·두 순위 기록, 수학적으로 같은 합의 동점이
   `(vector_rank, keyword_rank, chunk_id)`로 갈림(`Fraction` 비교), `k` 바꾸면 점수 변함, `keyword_matched`가 `FusedHit`에 실림
-- [ ] T016 [P] [US1] `tests/unit/retrieval/test_keyword_query.py`(research R-03 결정 1): `kw-query-v1` 기대값 표. "결제 취소 API 경로가 뭐야?" → `("결제", "취소", "API", "경로")`, 백틱·따옴표·괄호·`<>`·`[]`·`?!.,;:` 떼기,
+- [X] T016 [P] [US1] `tests/unit/retrieval/test_keyword_query.py`(research R-03 결정 1): `kw-query-v1` 기대값 표. "결제 취소 API 경로가 뭐야?" → `("결제", "취소", "API", "경로")`, 백틱·따옴표·괄호·`<>`·`[]`·`?!.,;:` 떼기,
   조사는 긴 것부터 하나("에서" 먼저, "경로가"→"경로", "집에서"→그대로), 대문자 `OR`→`or`(가운데 끼어도), 1글자 한글·질문 어미 목록 제외, 대소문자 무시 중복 제거, 64자 넘는 낱말 제외, 최대 16개,
   빈 질문 → 빈 배열. `kw-query-raw`는 질문 전체 낱말 하나 + 대문자 `OR`만 소문자
-- [ ] T017 [P] [US1] `tests/unit/retrieval/test_retrieve_hybrid.py`: 메모리 저장소로 contracts/retrieval.md 3절 1~7단계. 임베딩 요청이 `EmbedPurpose.QUERY`·입력 1개·질의마다 새 `run_id`, 두 검색 모두 `candidates`개 요청,
+- [X] T017 [P] [US1] `tests/unit/retrieval/test_retrieve_hybrid.py`: 메모리 저장소로 contracts/retrieval.md 3절 1~7단계. 임베딩 요청이 `EmbedPurpose.QUERY`·입력 1개·질의마다 새 `run_id`, 두 검색 모두 `candidates`개 요청,
   필터가 두 검색에 같게 전달, 결과 항목에 통합·검색별 순위·원래 점수·`keyword_matched`·출처, 두 번 실행 같음, 결과 0건이면 `no_results`, 요약 기본 필드 값,
   한 검색 결과 안 같은 청크 두 번이면 그 검색만 생략(하이브리드), `caplog`에 질문·낱말이 없음(spec FR-008)
-- [ ] T018 [P] [US1] `tests/localdb/retrieval/test_hybrid.py`: 로컬 DB + 가짜 임베딩 제공자로 spec US1 수용 시나리오 1~5(한쪽 1위끼리 둘 다 나옴, 양쪽 청크 한 번, 동점 순서 고정, 자료원 필터, 결과 필드)
-- [ ] T019 [P] [US1] `src/qello_knowledge/retrieval/fusion.py`: `fuse(vector: SearchResult | None, keyword: KeywordSearchResult | None, k: int) -> tuple[FusedHit, ...]`(research R-02). 결과 안 중복 검사는 하지 않는다(T021이 검색마다 미리 한다)
-- [ ] T020 [P] [US1] `src/qello_knowledge/retrieval/keyword.py`: `keyword_query(question, rule) -> tuple[str, ...]`, 조사·질문 어미·떼는 문자 목록은 모듈 상수(research R-03 결정 1의 목록 그대로)
-- [ ] T021 [US1] `src/qello_knowledge/retrieval/service.py`: `retrieve(request, deps, settings)`의 1~7단계(질문 검사, 설정 합치기, 임베딩, 낱말 배열, 두 검색, `no_active_index`·버전 불일치 판정, `fuse`).
+- [X] T018 [P] [US1] `tests/localdb/retrieval/test_hybrid.py`: 로컬 DB + 가짜 임베딩 제공자로 spec US1 수용 시나리오 1~5(한쪽 1위끼리 둘 다 나옴, 양쪽 청크 한 번, 동점 순서 고정, 자료원 필터, 결과 필드)
+- [X] T019 [P] [US1] `src/qello_knowledge/retrieval/fusion.py`: `fuse(vector: SearchResult | None, keyword: KeywordSearchResult | None, k: int) -> tuple[FusedHit, ...]`(research R-02). 결과 안 중복 검사는 하지 않는다(T021이 검색마다 미리 한다)
+- [X] T020 [P] [US1] `src/qello_knowledge/retrieval/keyword.py`: `keyword_query(question, rule) -> tuple[str, ...]`, 조사·질문 어미·떼는 문자 목록은 모듈 상수(research R-03 결정 1의 목록 그대로)
+- [X] T021 [US1] `src/qello_knowledge/retrieval/service.py`: `retrieve(request, deps, settings)`의 1~7단계(질문 검사, 설정 합치기, 임베딩, 낱말 배열, 두 검색, `no_active_index`·버전 불일치 판정, `fuse`).
   `RetrievalDeps(store, embedder, new_run_id, model_version)`(질의 임베딩 모델 버전은 조립하는 쪽이 넘긴다, 기본 `@cf/baai/bge-m3`). 검색마다 결과 안 같은 청크가 두 번이면 그 검색의 `StoreError`로 본다(research R-02·R-14).
   요약 기본 필드(`mode`, `candidates`, `rrf_k`, `query_rule`, `index_rule`, `index_version`, `vector_count`, `keyword_count`, `keyword_terms`, `embedding`)를 채운다.
   질문 원문은 지역 변수로만 지나고 요약·예외·로그에 남기지 않는다. `retrieval/__init__.py`에서 공개
