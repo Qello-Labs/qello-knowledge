@@ -1,88 +1,71 @@
-# Task Contract: QK-SYN-001 증분 동기화·원자적 교체·실행 기록·스케줄러·CLI (WBS 1.8)
+# Task Contract: QK-RET-001 하이브리드 검색·RRF·문맥 확장·토큰 예산·키워드 검색 텍스트 (WBS 1.9)
 
-> Generated at: `2026-10-21`
+> Generated at: `2026-10-22`
 >
 > 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-102` / https://tkv123.atlassian.net/browse/SCRUM-102 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: QK-SYN-001 / `specs/QK-SYN-001-incremental-sync/spec.md`(2026-10-21 승인)
+- Jira 이슈: `SCRUM-104` / https://tkv123.atlassian.net/browse/SCRUM-104 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: QK-RET-001 / `specs/QK-RET-001-hybrid-retrieval/spec.md`(2026-10-22 승인)
 - 팀 스프린트 ID: `QELLO-S2026-W43`
-- GitHub Issue: `#48`
-- Branch: `feat/SCRUM-102-gh-48-incremental-sync`
-- Base branch: `main`. 2026-10-21 `origin/main` `96f54a8`(#47 병합)에서 분기했다
+- GitHub Issue: `#51`
+- Branch: `feat/SCRUM-104-gh-51-hybrid-retrieval`
+- Base branch: `main`. 2026-10-22 `origin/main` `e4fee77`(#49 병합)에서 분기했다
 
 ## Objective
 
-- 완료: QK-SYN-001 명세(`spec.md`)를 `/speckit-specify`로 작성하고 Codex 독립 검토 5회를 거쳐 사람 승인을 받았다(2026-10-21).
-- 완료: `/speckit-plan` 설계 산출물을 만들고 Codex 독립 검토 4회를 거쳐 사람 승인을 받았다(2026-10-21).
-- 완료: `/speckit-tasks` 작업 목록(`tasks.md`, 작업 50개 + 사람 단계 7개)을 만들고 사람 승인을 받았다(2026-10-21, 독립 검토 없이 승인).
-- 이번 단계: `tasks.md` T001~T050 구현. 사람 단계 H01~H07은 구현 뒤 사람이 한다(H01~H03은 사람 승인 뒤 실행 가능).
-- 함께: 로드맵 진행 상태 열을 GitHub Issue 상태에 맞게 갱신한다(`scripts/roadmap_status.py --write`).
+- 완료: QK-RET-001 명세(`spec.md`)를 `/speckit-specify`로 작성하고, 별도 에이전트의 독립 검토 3회(변경 요청 2회, 승인 권고 1회)를 거쳐 사람 승인을 받았다(2026-10-22).
+- 완료: `/speckit-plan` 설계 산출물(`plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`)을 만들고, 별도 에이전트 독립 검토 3회(변경 요청 2회, 승인 1회)를 거쳐 사람 승인을 받았다(2026-10-22).
+- 완료: `/speckit-tasks` 작업 목록(`tasks.md`, 작업 56개 + 사람 단계 3개)을 만들고 사람 승인을 받았다(2026-10-22). 승인 뒤 독립 검토를 한다.
+- 이번 단계: `tasks.md` T001~T056 구현. 독립 검토 지적을 반영한 뒤 시작한다. 사람 단계 H02·H03은 구현 뒤 사람 확인으로 한다.
 
 ## Scope
 
-- `specs/QK-SYN-001-incremental-sync/spec.md`, `checklists/requirements.md`(승인됨, 바꾸려면 다시 승인)
-- 설계 산출물: 같은 디렉터리의 `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/`(승인됨, 바꾸려면 다시 승인)
-- 작업 목록: 같은 디렉터리의 `tasks.md`(승인됨). 구현 중 체크 표시와 실행 기록은 고친다.
-- 구현(tasks.md, plan.md Project Structure·"구현 Scope 승인이 필요한 것"):
-  - 새 파일: `src/qello_knowledge/domain/sync.py`, `src/qello_knowledge/ports/sync.py`, `src/qello_knowledge/sync/`(`__init__`, `keys`, `decide`, `plan`, `identity`, `execute`, `preview`, `activate`, `run`, `report`),
-    `src/qello_knowledge/adapters/postgres/sync_store.py`, `src/qello_knowledge/adapters/postgres/migrations/0004_sync.sql`, `src/qello_knowledge/indexer/sync_cli.py`, `.github/workflows/index-sync.yml`,
-    `tests/unit/sync/`, `tests/localdb/sync/`, `tests/fixtures/sync/`, `tests/unit/indexer/test_run_cli.py`, `tests/unit/indexer/test_schedule_workflow.py`, `tests/unit/security/test_screen_listing.py`
-  - 고치는 파일(Scope 표의 변경만): `src/qello_knowledge/domain/source.py`·`sources/collect.py`·`adapters/github.py`·`adapters/fake.py`(QK-ING-001·002 `origin`),
-    `src/qello_knowledge/domain/security.py`·`security/screen.py`(QK-SEC-001 `ScreenResult.listing`, `source_excluded`), `src/qello_knowledge/adapters/postgres/store.py`(QK-STO-001 내부 함수 분리, 동작 그대로),
-    `src/qello_knowledge/indexer/cli.py`, `tests/unit/test_boundaries.py`, `tests/contract/source_adapter_contract.py`·GitHub 재생 시험, `tests/unit/sources/test_list_all.py`,
-    `tests/unit/chunking/test_perf.py`(합성 문서 생성기 재사용이 필요할 때 도우미로 옮기는 것만)
-    `tests/unit/indexer/test_cli.py`(`run` 성공 경로 사례 3개에 가짜 의존성 주입과 새 출력 기대값만. 실패 경로·다른 하위 명령 사례는 그대로, 2026-10-21 사용자 결정)
-- `.specify/feature.json`(git 무시 파일, 로컬 전용)은 이 명세 디렉터리를 가리키게 한다.
-- `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만, 손으로 고치지 않음)
-- `TASK.md`
-- 명세가 다룰 동작:
-  - 색인 실행: 수집(QK-ING-002) → 보안 필터(QK-SEC-001) → 청킹(QK-CHK-002) → 임베딩(QK-EMB-001) → 저장(QK-STO-001)
-  - 증분 동기화: 원본 버전·내용 해시로 바뀐 문서만 다시 청킹·임베딩. 변경 없는 재동기화에서 임베딩 호출 0건
-  - 문서 단위 원자적 교체: 문서 하나의 청크를 한 번에 바꾸고, 실패한 문서는 이전 청크를 유지(constitution C-08)
-  - 기존 청크 처리: 원본에서 사라진 문서, 접근 범위가 바뀌거나 미확인이 된 문서, 보안 규칙 버전·청킹 규칙 버전이 바뀐 문서, 빈 문서·청킹 실패 문서
-  - 실행 기록(수집·필터·청킹·임베딩 요약, 실패 목록), 실행 전 사용량 미리 보기(`qk-index run --preview`)
-  - 스케줄러(주기 실행, `usage prune` 포함)와 CLI. 실행 위치는 ADR-008(색인은 Workers 밖, GitHub Actions 또는 로컬 CLI)
+- `specs/QK-RET-001-hybrid-retrieval/spec.md`·`plan.md`·`research.md`·`data-model.md`·`quickstart.md`·`contracts/`(승인됨, 바꾸려면 다시 승인), `checklists/requirements.md`, `measurement/measure_context.py`
+- 작업 목록 `tasks.md`(승인됨). 구현 중 체크 표시와 실행 기록은 고친다.
+- 구현(plan.md Project Structure·"구현 Scope 승인이 필요한 것", 2026-10-22 tasks 승인과 함께 승인):
+  - 새 파일: `src/qello_knowledge/domain/retrieval.py`, `domain/keyword_rules.py`, `ports/retrieval.py`, `retrieval/`(`__init__`, `keyword`, `fusion`, `pack`, `service`),
+    `indexer/search_cli.py`, `devtools/eval_index.py`, `adapters/postgres/migrations/0005_retrieval.sql`(함수 2개 추가만)
+  - 기존 파일 변경: `domain/chunking.py`·`chunking/header.py`·`chunking/service.py`·`chunking/version.py`(QK-CHK-002, 기준선 출력·해시 불변), `adapters/postgres/store.py`(메서드 추가만, QK-STO-001),
+    `indexer/sync_cli.py`(조립 함수 인자, 기본 동작 그대로, QK-SYN-001), `indexer/cli.py`(`search` 등록), `devtools/db.py`·`devtools/bench.py`, `config/registry.py`와 설정 예시 재생성(QK-FND-001)
+  - 시험: `tests/unit/retrieval/`, `tests/localdb/retrieval/`, `tests/localdb/devtools/`, `tests/unit/chunking/`·`tests/unit/indexer/`·`tests/unit/config/`의 새 파일, `tests/unit/test_boundaries.py`(검사 추가만),
+    기대값 갱신 2건 `tests/localdb/sync/test_migration.py`·`tests/unit/devtools/test_measure.py`(2026-10-22 사용자 결정, 검사 내용 그대로)
+- `TASK.md`(이 파일)
 
 ## Explicit exclusions
 
-- 위 구현 목록 밖의 `src/`·`tests/` 변경. 새 의존성 추가, `pyproject.toml`·`uv.lock` 변경.
-- 기존 시험 삭제·수정으로 통과시키기, `skip`·`xfail`, 경고 suppress(AGENTS.md 9절). 계약 시험은 항목을 더하기만 한다.
-- 승인된 spec·plan 산출물 변경(구현과 다르면 먼저 사람 승인, tasks T049).
-- 저장소 Secret·변수 등록, 워크플로 켜기(`QK_SYNC_ENABLED`), `config/store_policy.toml` 작성(사람 단계 H04·H07).
-- Discord `/reindex`·실패 문서 재시도(QK-SYN-002), 인덱스 버전 평가 게이트·활성화(QK-STO-002), 전체 대조 삭제·백업·복구(QK-SYN-003).
-- 새 자료원(QK-ING-003 이후), 검색·생성.
-- QK-ING-002·QK-SEC-001·QK-CHK-002·QK-EMB-001·QK-STO-001의 승인된 명세 변경.
-- 로드맵 `상태`·`진행` 열 외의 `docs/sdd/roadmap.md` 내용, `docs/sdd/constitution.md`, `.specify/memory/constitution.md`, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
-- 실제 색인 실행(실제 원본 수집, Workers AI 호출, 운영 DB 저장). 사람 단계 H01~H07로만 하고, 각 단계는 미리 보기 사용량 보고와 사람 승인 뒤에만 한다.
-- 원본 자료원에 쓰기.
+- Scope에 없는 코드 변경, 기존 SQL 함수·테이블·`PostgresStore` 기존 메서드 변경, 운영 색인 규칙·인덱스 버전 변경, 운영 저장소 대상 색인 실행.
+- 실제 Workers AI 호출과 평가용 색인 준비(H02)·실제 검색 확인(H03)은 사람 확인 없이 하지 않는다.
+- 질문 분류·필터 추론(QK-TRK-001), 질의 재작성(QK-BOT-002), 관계 기반 확장(QK-RET-002), 리랭커(QK-RET-003),
+  검색 평가 실행기(QK-EVL-001), 인덱스 버전 활성화(QK-STO-002), 생성(QK-GEN-001).
+- ADR-010 확정. 이 명세는 후보와 기준선을 정하고, 비교 평가와 확정은 QK-EVL-001 결과로 한다.
+- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, ADR, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다. 명세 예시는 합성 문서로 쓴다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음. 대상은 이미 활성화된 `dnd-backend-docs`(ADR-019)
-- 외부 API로 보내는 데이터: 이번 단계(명세) 해당 없음. 구현 뒤 실제 실행에서는 필터를 통과한 청크를 Workers AI bge-m3(ADR-002)로 보낸다
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 이번 단계 0 Neurons. 첫 실제 색인 예상 사용량은 `--preview`로 보고하고 무료 한도 안에서만 실행한다
-- 인덱스 버전 변경: 명세 단계 없음. 실행 기록 등 저장 스키마 변경 여부는 명세·plan에서 정한다. 첫 실제 저장 전에 저장소 제공자(Supabase) 데이터 처리 정책을 확인한다(ADR-019 결정)
+- 새로 읽는 자료원: 해당 없음
+- 외부 API로 보내는 데이터: 기본 검증 0건(가짜 제공자). H03에서만 질문 몇 개를 질의용 임베딩으로 보낸다(사람 확인 뒤)
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 명세 단계 0 Neurons. 구현 뒤 질의 임베딩은 질의응답 예비 예산(하루 3,000 Neurons)에서 차감한다
+- 인덱스 버전 변경: 운영 색인은 없음(옵션 A, 기준선 유지). 평가용 색인(별도 로컬 DB)만 식별자 분해 후보의 새 인덱스 버전을 갖는다. 임베딩 캐시를 복사하므로 예상 0 Neurons이고,
+  캐시로 처리되지 않는 임베딩이 있으면 미리 보기로 보고하고 사람 확인을 받는다
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `specs/QK-SYN-001-incremental-sync/` | Byuntil | 사람 리뷰(명세 승인) |
-| `docs/sdd/roadmap.md` 상태 열 | Byuntil | 사람 리뷰 |
-| `TASK.md` | Byuntil | 사람 리뷰 |
-| `src/qello_knowledge/sync/`, `domain/sync.py`, `ports/sync.py`, `adapters/postgres/sync_store.py`, `migrations/0004_sync.sql`, `indexer/` | Byuntil | 사람 리뷰 |
-| QK-ING-001·002·QK-SEC-001·QK-STO-001 코드의 Scope 표 변경 | Byuntil | 사람 리뷰(선행 명세 동작 불변 확인) |
-| `.github/workflows/index-sync.yml` | Byuntil | 사람 리뷰 |
-| `tests/unit/sync/`, `tests/localdb/sync/`, `tests/fixtures/sync/`, 그 밖에 고치는 시험 | Byuntil | 사람 리뷰 |
+| `specs/QK-RET-001-hybrid-retrieval/`, `TASK.md` | tkv00 | 사람 리뷰 |
+| `src/qello_knowledge/retrieval/`, `domain/retrieval.py`, `domain/keyword_rules.py`, `ports/retrieval.py` | tkv00 | 사람 리뷰 |
+| `adapters/postgres/store.py`, `adapters/postgres/migrations/0005_retrieval.sql` | tkv00 | 사람 리뷰 |
+| `domain/chunking.py`, `chunking/header.py`·`service.py`·`version.py` | tkv00 | 사람 리뷰(기준선 해시 불변 확인) |
+| `indexer/search_cli.py`, `indexer/cli.py`, `indexer/sync_cli.py`, `devtools/eval_index.py`·`db.py`·`bench.py`, `config/registry.py`, `.env.example` | tkv00 | 사람 리뷰 |
+| `tests/` 새 시험과 기대값 갱신 2건(`tests/localdb/sync/test_migration.py`, `tests/unit/devtools/test_measure.py`) | tkv00 | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-21 `origin/main`(`96f54a8`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-22 `origin/main`(`e4fee77`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
@@ -92,70 +75,59 @@ git diff --check
 uv run ruff check .
 uv run ruff format --check .
 uv run qk-dev db up
+uv run qk-migrate   # 두 번 실행, 두 번째는 applied=0
+uv run qk-migrate
 QK_REQUIRE_LOCALDB=1 uv run pytest
+uv run qk-dev store bench --retrieval   # SC-006, 결과는 tasks.md 실행 기록
 ```
 
 ## Completion criteria
 
-- `spec.md`가 사람 리뷰로 승인된다 — 리뷰 기록
-- (구현 단계) 변경 없는 재동기화에서 임베딩 호출 0건, 문서 1개를 고치면 그 문서의 청크만 교체된다 — 가짜 자료원·가짜 임베딩 시험(로드맵 1.G 조건)
-- (구현 단계) 원본에서 지운 문서와 접근 범위가 미확인으로 바뀐 문서는 검색되지 않는다 — 로컬 DB 시험
+- 벡터 쪽에만·키워드 쪽에만·양쪽에 걸린 청크가 RRF 순서대로 합쳐지고 두 번 실행이 같다 — 단위·로컬 DB 시험(SC-001)
+- 접근 범위 미확인·제한, 비활성 인덱스 버전, 삭제·내림 청크가 결과와 Context에 0건이다 — 로컬 DB 시험(SC-002, 로드맵 1.G 조건)
+- Context 예상 토큰 합이 예산 이하이고 잘림·중복 0건이다 — 단위 시험(SC-003)
+- 기준선 `chk-md-20d966f730bb`·`iv-4c0bc4fcc642`가 그대로이고, 캐시를 복사한 평가용 DB 색인에서 임베딩 호출 0건이다 — 단위·로컬 DB 시험(SC-009, SC-010)
+- 질의당 외부 호출 7회 이하, 단일 방식 실패가 다른 방식으로 바뀌지 않고, 요약·기록에 질문 원문 0건이다 — 단위 시험(SC-007, SC-008, SC-011)
+- 로컬 1.1 MB에서 하이브리드 검색 + Context p95 1.5초 — `qk-dev store bench --retrieval` 측정(SC-006)
 
 ## Decisions
 
-- 2026-10-21 사용자 결정: WBS 1.8(#48) 진행.
-- 2026-10-21 사실: Jira `SCRUM-102`(SCRUM-42 하위 작업, 해야 할 일)와 GitHub `#48`이 같은 작업을 가리키는 것을 확인했다. 선행 1.5(#41)·1.7(#42)·1.6(#46, PR #47 병합 `96f54a8`)은 끝났다.
-- 2026-10-21 사실: 요구사항 FR-SYN-01, 03, 04, 05(CLI), 06은 저장소에 원문이 없다. 백로그 제목·constitution·관련 ADR에서 요구를 끌어내고 명세 Assumptions에 적는다.
-- 2026-10-20 사용자 결정(이어받음): 단계 게이트 0.G 미완료 상태로 Phase 1을 계속 진행한다.
-- 2026-10-21 사용자 결정: TASK.md 초안 승인, 명세 디렉터리 `specs/QK-SYN-001-incremental-sync/`로 명세 작성 시작.
-- 2026-10-21 사실: `spec.md`·`checklists/requirements.md` 초안 작성. 확인 필요 표시 2건을 사용자에게 물었다.
-- 2026-10-21 사용자 결정: 첫 인덱스 버전은 동기화가 준비 상태로 만들고, 활성 버전이 없을 때만 쓰는 활성화 명령으로 사람이 활성화한다(첫 버전 평가 예외, FR-021).
-- 2026-10-21 사용자 결정: 실행 기록은 저장소(DB) 테이블로 남긴다(FR-027). 구현 단계에서 마이그레이션 추가(저장 스키마 변경, 인덱스 버전 변경 아님)가 Scope에 들어간다.
-- 2026-10-21 사실: Codex 패널 명세 1차 검토 "변경 요청"(높음 5, 중간 4, 낮음 1). 10건 모두 코드·선행 명세와 대조해 맞다고 확인했다.
-- 2026-10-21 사용자 결정: 내림 때 청크 본문 삭제는 보안 내림(비밀값 차단·접근 범위 보류·설정 제외 패턴)만 한다. 일반 내림은 검색 제외만 하고 물리 정리는 QK-SYN-003.
-- 2026-10-21 사실: 1차 검토 10건 반영. 보안 검색 제외는 버전 불일치·예산 초과·비율 초과에도 적용, 문서 단위 반영 연산 추가(QK-STO-001 기존 연산은 그대로),
-  변경 조건에 원본 제목·인덱스 버전 추가, 처리 버전과 확인 버전 분리, 같은 종류 자료원·자료원 정체성 변경을 실행 전 점검에서 막음, 미리 보기는 대상 집합 비교,
-  실행 기록은 점검 통과 뒤 생성·문서 결과는 반영과 함께, 내부 식별값 분리, 첫 버전 활성화 조건.
-- 2026-10-21 사실: Codex 명세 2차 검토 "변경 요청"(1차 2건 해소·8건 일부, 새 지적 높음 2·중간 5). 모두 확인 후 사용자 승인으로 반영했다.
-  FR-008 (4)를 접근 범위·내림 기준으로 좁힘, 활성화 대상은 현재 설정 버전·실행 중 없음·검색될 문서 1개 이상·벡터 누락 0으로 한정하고 동기화와 배타,
-  "본문 삭제 대기" 상태와 비율 기준(분모 0 규칙), 자료원 제거는 정체성 검사 대신 일반 내림·수집 뒤 정체성 비교, 모든 쓰기는 FR-002·029·032·033 통과 뒤,
-  끝나지 않은 기록은 같은 자료원 실행이 실행 중 아님을 확인한 경우만 닫음, US4·Edge Cases 옛 문구 정리.
-- 2026-10-21 사실: Codex 명세 3차 검토 "변경 요청"(2차 5건 해소, 남은 지적 높음 1·중간 1·낮음 1). 확인 후 사용자 승인으로 반영했다.
-  "본문 삭제 대기"를 검색 제외와 분리해 보안 대상 본문이 남은 인덱스 버전 목록으로 정의(다시 처리해도 다른 버전 본문은 확인 옵션 실행에서만 지움),
-  수집 공통 결과가 자료원 정체성(바뀌지 않는 식별값, 이름·위치)을 내보내도록 수집 경계 확장(구현 때 QK-ING-001·002 코드 변경 필요), US3 시나리오 전제 보완.
-- 2026-10-21 사실: Codex 명세 4차 검토 "변경 요청"(중간 2: 정체성 기준값 등록 시점 불일치, FR-017 "확인 옵션 없는 삭제 금지" 문장 범위). 사용자 결정으로 두 건만 고치고 5차 검토 없이 사람이 직접 검토한다.
-- 2026-10-21 사실: Codex 명세 5차 검토 "승인" 권고(4차 지적 2건과 정체성·체크리스트 이전 지적 모두 해소, 새 지적 0건). 명세 수준 판정이며 구현 검증은 아니다. 사람 승인 전이다.
-- 2026-10-21 사용자 결정: QK-SYN-001 명세 승인(Codex 5차 검토 "승인" 권고 뒤, 커밋과 plan 진행 지시). 저장소 관례대로 `spec.md`의 Status 표기는 바꾸지 않고 이 기록으로 승인을 남긴다.
-- 2026-10-21 사용자 결정: 명세 커밋 뒤 plan 단계 진행. Scope에 plan 설계 산출물(문서)을 더했다.
-- 2026-10-21 사실: plan 산출물(plan·research R-01~R-16·data-model·contracts/sync.md·contracts/cli.md·quickstart) 작성. 사람 승인 전이다.
-  구현 Scope에 걸리는 변경(수집 경계 origin, store.py 내부 함수 분리, 마이그레이션 0004, 주기 실행 워크플로)은 plan.md "구현 Scope 승인이 필요한 것"에 모았다.
-- 2026-10-21 사실: Codex plan 1차 검토 "변경 요청"(높음 5, 중간 7). 모두 코드와 대조해 맞다고 확인하고 사용자 승인으로 반영했다.
-  구현 Scope 표에 QK-SEC-001 코드(`ScreenResult.listing`)가 더해졌고, `qk.sync_source(source_kind)` 유일 제약으로 종류마다 자료원 하나를 DB가 강제한다.
-- 2026-10-21 사실: Codex plan 2차 검토 "변경 요청"(1차 7건 해소·5건 일부, 새 지적 높음 3·중간 4. N2·N4는 Codex 메모리 재현). 모두 확인하고 기존 결정 안에서 반영했다.
-  바뀐 문서만 청킹, 실행 소진 상태와 캐시 완비 문서 직접 반영(QK-EMB-001 경계 변경 없음), 설정 제외는 보안 필터 규칙(`source_excluded` 공개 이름 추가, Scope 표 반영),
-  같은 종류 자료원 교체는 첫 쓰기 전 거부(교체 절차는 같은 종류 자료원을 더하는 명세로), 보류 사유별 작업 허용표, 남은 청크 없는 삭제 보류는 대기 비움.
-- 2026-10-21 사실: Codex plan 3차 검토 "변경 요청"(2차 4건 해소·3건 일부, 새 지적 높음 2·중간 2. M2는 Codex 메모리 재현). 모두 확인하고 반영했다.
-  버전 불일치에서 일반 내림 막음(spec SC-011과 맞춤), 사용량 장부 오류(예약 실패 항목·정산 실패 경고)도 실행 소진 신호, 청킹 대상은 변경 조건 전체, 캐시 직접 반영 문서의 임베딩 요약.
-- 2026-10-21 사실: Codex plan 4차 검토 "승인" 권고(3차 M1~M4와 이전 일부 해소 항목 모두 해소, 새 지적 0건. 설계 수준 판정). 사람 승인 전이다.
-- 2026-10-21 사용자 결정: QK-SYN-001 plan 승인(Codex 4차 검토 "승인" 권고 뒤). 같은 종류 자료원 교체 거부(research R-10, 교체 절차는 같은 종류 자료원을 더하는 명세로)도 승인.
-- 2026-10-21 사용자 결정: plan 커밋 뒤 tasks 단계 진행.
-- 2026-10-21 사실: `tasks.md` 작성(작업 50개 + 사람 단계 7개). 작성 중 plan.md Project Structure에 `sync/preview.py`·`sync/activate.py`를 더했다(미리 보기·활성화를 `run.py`와 나눔).
-  승인된 plan 산출물의 보완이라 tasks 승인 때 함께 확인받는다.
-- 2026-10-21 사용자 결정: `tasks.md` 승인(Codex 독립 검토 없이). plan.md 구조도 보완(`sync/preview.py`·`sync/activate.py`)과 구현 Scope(위 Scope·제외 범위·Ownership)를 함께 열었다.
-- 2026-10-21 사용자 결정: 구현은 우측 패널 Codex 세션이 한다. 이 Claude 세션은 커밋·검토 조율과 독립 리뷰를 맡는다(구현을 같은 세션이 승인하지 않는다, AGENTS.md 2절).
-- 2026-10-21 사실: Codex 구현 BLOCKED(T002 완료·T001 일부). 승인된 저장 스키마에 저장된 문서의 위치가 없어 research R-18의 설정 제외 판정을 할 수 없다(청크가 없는 문서는 locator로도 복구 불가).
-- 2026-10-21 사용자 결정: `qk.artifact`에 `location` 열을 더한다(0004, 더하기만, 인덱스 버전 변경 아님). data-model 1.1, research R-02·R-04·R-18, tasks T012·T013·T017을 보완했다.
-- 2026-10-21 사실: Codex 구현 2차 BLOCKED(완료 체크 28개, 전체 pytest 1198 passed). `run`을 실제 동기화로 바꾸면 기존 `test_cli.py`의 성공 경로 사례 3개가 점검 전용 출력을 기대해 충돌한다. T024 통합 시험은 구현 뒤 작성됐다.
-- 2026-10-21 사용자 결정: `test_cli.py`의 `run` 성공 경로 사례 3개에만 가짜 의존성을 주입하고 출력 기대값을 새 동작에 맞춘다(T041 예외, 점검 통과 검증은 유지). T024는 구현을 임시로 깨뜨려 RED를 증명하고 원복한 뒤 완료한다.
-- 2026-10-21 사실: Claude 세션 독립 리뷰(`/harness-review`) "변경 요청". 높음 1(이미 내려진 보안 문서를 매 실행 다시 내려 확인 옵션 뒤에도 내림 비율로 계속 멈춤, 메모리 재현), 중간 1, 낮음 2. 기본 검증은 재실행해 통과(1251 passed).
-- 2026-10-21 사용자 결정: 첫 버전 활성화 조건의 "끝나지 않은 실행이 없다"는 지금 `running`인 실행이 없음으로 읽는다(이미 `unfinished`로 닫힌 이력은 보지 않음). research R-09를 보완했다. 리뷰 지적 1~4는 Codex가 고친다.
-- 2026-10-21 사실: Codex가 독립 리뷰 지적 1~4를 반영했다. Claude 세션 재확인: 재현 스크립트 2건 모두 확인 뒤 실행 `succeeded`(종료 코드 0), 이미 내려진 보안 문서 재내림 0, 활성화 조건·정체성 등록 오류·CLI 시험 보완 확인.
-  기본 검증 재실행 통과(preflight 543, ruff, format 372, 로컬 DB, `QK_REQUIRE_LOCALDB=1 pytest` 1263 passed). 재리뷰 권고: 승인. 사람 단계 H01~H07은 남아 있다.
-- 2026-10-21 사실: 사람 단계 H01(로컬 DB 실제 미리 보기) 실행. 사전에 로컬 DB에 마이그레이션 0003·0004 적용. 결과: 원본 요청 84회, 처리 예정 79, 청크 1,291, 예상 368.93 Neurons(색인 예산 5,000 안),
-  쓰기 0·임베딩 호출 0 확인. 자세한 조건은 tasks.md H01 결과. H02(첫 실제 색인)는 사람 승인 대기.
-- 2026-10-21 사실: 사람 단계 H02(로컬 DB 첫 실제 색인과 재실행) 실행. 1회차 79개 처리·청크 1,291·제공자 호출 95·894.50 Neurons(측정값), 2회차 변경 없음 79·제공자 호출 0. SC-012 충족(예산 5,000 안).
-  관찰: 미리 보기 예상 368.93 대비 실제 894.50(약 2.42배)로 QK-EMB-001 SC-005(±20%) 미달. 예상식 보정은 이 작업 범위 밖이라 사람 결정이 필요하다.
-- 2026-10-21 사실: 사람 단계 H03 실행. 로컬 DB에서 첫 인덱스 버전 `iv-4c0bc4fcc642` 활성화(검색될 문서 79, 청크 1,291, 벡터 없는 청크 0). 키워드·벡터 검색 결과가 활성 버전에서 나옴(질의 임베딩 0.01 Neurons).
-  H01~H03 완료로 spec SC-012 증빙을 갖췄다. H04~H07(운영 저장소·Actions)은 운영 저장소 결정 뒤.
-- 2026-10-21 사용자 결정: 미리 보기 예상식 오차(실제 약 2.42배, QK-EMB-001 SC-005 미달)는 이 PR과 분리한다. QK-EMB-001 후속 작업으로 넘기고 PR 본문 위험 항목에 적는다. 이 작업에서 QK-EMB-001 코드·명세는 바꾸지 않는다.
-- 2026-10-21 사용자 결정: H01~H03 기록을 커밋하고 `/harness-pr`로 진행한다. H04~H07은 운영 저장소 결정 뒤 미실행으로 남긴다.
+- 2026-10-22 사실: GitHub Issue #51을 작업 폼 형식으로 만들었고, `Jira subtask` 워크플로가 `SCRUM-42` 아래 `SCRUM-104`를 자동 생성했다.
+  하위 작업의 Jira 스프린트는 상위 이슈를 따라 `Backend·Sprint 3`(10/12–10/18)이라 팀 스프린트 ID `QELLO-S2026-W43`과 어긋난다. 새 스프린트 생성은 사람이 한다.
+- 2026-10-20 사용자 결정(이어받음): 단계 게이트 0.G는 미완료 상태로 Phase 1을 계속 진행한다.
+- 2026-10-22 사용자 결정: 이 TASK.md를 승인했다("작업진행"). Jira 새 스프린트 생성도 요청했으나 Atlassian 연결이 인증되지 않아 하지 못했다(BLOCKED, 사람이 직접 만들거나 연결 인증 필요).
+- 2026-10-22 사용자 결정(명세 확인 Q1): ADR-010 색인 쪽 후보(기준선, 식별자 분해)를 모두 구현하되 운영 기본값은 기준선으로 둔다. 질의 쪽 규칙은 바로 적용한다.
+  운영 색인 규칙 변경은 QK-EVL-001 비교와 ADR-010 확정 뒤 별도 작업으로 한다.
+- 2026-10-22 사실: 작성에 관여하지 않은 별도 에이전트가 명세를 독립 검토해 변경 요청을 냈다(높음 2, 중간 6, 낮음 8). 사용자는 별도 세션을 요청했으나 원격 제어 중이라
+  세션을 만들 수 없어 서브에이전트로 했다.
+- 2026-10-22 사용자 결정(검토 반영): H1 평가용 색인은 후보마다 별도 로컬 DB + 임베딩 캐시 복사(이 명세가 준비 절차, QK-EVL-001이 비교). H2 질의당 외부 호출 상한 6
+  (사용량 기록 포함), 인덱스 버전 바뀜은 다시 검색하지 않음, 질의 임베딩 재시도 1회. M1 상위 절은 가장 가까운 절의 첫 청크만, 주변 청크 일괄 조회를 새로 둔다.
+  M5 Context 토큰 예산 2,000(Context 몫), 생성 토크나이저 비율 측정을 계획 게이트로 둔다.
+- 2026-10-22 사실: 같은 검토자의 재검토 판정은 변경 요청이다(높음 1: 재시도 경로 외부 호출 7, 중간 2: 다시 확인에서 빠진 중심 청크 처리, 평가 비교의 원본 시점). 질의용 임베딩이
+  시도마다 사용량을 기록하는 것을 `embedding/service.py`에서 확인했다.
+- 2026-10-22 사용자 결정(재검토 반영): 질의당 외부 호출 상한 7, 재시도 1회. 평가용 색인은 기준선 포함 모든 후보를 같은 원본 리비전으로 새 로컬 DB에 만든다.
+- 2026-10-22 사실: 같은 검토자의 최종 확인 판정은 승인 권고다(명세 수준, N1~N9 해소, 새 모순 없음). 참고: FR-029의 커밋 고정이 자료원 설정으로 되는지는 계획 단계에서 확인한다.
+  사람의 명세 승인은 아직 받지 않았다.
+- 2026-10-22 사용자 결정: QK-RET-001 `spec.md`를 승인했다. 바꾸려면 다시 승인을 받는다.
+- 2026-10-22 사실(plan): 로컬 컨테이너의 일회용 DB(`qk_scratch_ret001`, 측정 뒤 지움)에서 PGroonga 동작을 쟀다. `pgroonga_query_escape`는 `OR`를 이스케이프하지 않아
+  새 키워드 SQL 없이 OR 검색이 된다(research R-03). 외부 API 0건, 0 Neurons.
+- 2026-10-22 BLOCKED(plan 게이트 R-08): 생성 토크나이저 비율·예산 초과 청크 수 측정은 대상 저장소 복제와 Qwen3 토크나이저 내려받기 허락이 필요해 하지 않았다.
+- 2026-10-22 사용자 결정: R-08 측정을 허용했다(Hugging Face 토크나이저 내려받기). 대상 저장소는 scratchpad에 읽기 전용으로 복제했다.
+- 2026-10-22 사실(R-08 실측): 커밋 `6aeccd03`, 79개 문서·1,291개 청크, Qwen3 토크나이저 실제/예상 p95 1.286·최대 1.875, 예상 2,000 초과 청크 3개(0.23%). 판정 기준 안이라
+  Context 예산 2,000을 유지한다. Workers AI 0건.
+- 2026-10-22 사실: plan 독립 검토를 사용자가 별도 세션으로 요청했으나 원격 제어 중이라 세션을 만들 수 없어 별도 서브에이전트로 시작했다.
+- 2026-10-22 사실: plan 독립 검토(별도 서브에이전트) 판정은 변경 요청이다(높음 3, 중간 4, 낮음 8). PGroonga 점수가 낱말 횟수인 것과 일치 확장(match escalation)을 일회용 DB에서 다시 재현했다.
+- 2026-10-22 사용자 결정(plan 검토 반영): H1 새 키워드 함수 `qk.search_keyword_terms`(서로 다른 맞은 낱말 수 순). H2 그 함수에서 일치 확장을 끈다(기존 `qk.search_keyword`는 그대로).
+  H3 평가용 색인 준비는 범위 검토 파일의 임시 사본에서만 `ref`를 바꾸고, `sync_cli` 조립 함수가 청커 설정을 인자로 받게 고쳐 라이브러리로 부른다.
+- 2026-10-22 사실: 같은 검토자의 plan 재검토 판정은 변경 요청이다(중간 2: 낱말 "OR"이 점수 질의를 깨뜨림, spec에 없는 실패 종류 `vector_search_failed`. 낮음 7).
+  N1은 대문자 `OR`를 소문자로 바꾸는 단계를 되살려 고쳤다. N2는 spec 재승인을 피해 벡터 전용의 벡터 검색 오류를 기존 종류 `store_unavailable`로 대응시켰다(작성 세션 판단, 사람 확인 대상).
+- 2026-10-22 사실: 같은 검토자의 plan 최종 확인 판정은 승인이다. 남은 사소한 점 2건(`kw-query-raw`의 `OR`, R-10 옵션 줄)도 반영했다.
+- 2026-10-22 사용자 결정: plan을 승인했다(독립 검토를 거친 뒤 진행하라는 지시, "3. 진행"). 다음 단계는 `/speckit-tasks`다.
+- 2026-10-22 사용자 결정: `tasks.md`를 승인했다("승인 후 독립 검증 시행"). Scope를 구현 범위로 갱신했다. 독립 검토는 별도 서브에이전트로 한다(원격 제어 중이라 세션을 만들 수 없음).
+- 2026-10-22 사실: tasks 독립 검토(별도 서브에이전트) 판정은 변경 요청이다(높음 2: Scope 밖 기존 시험 2개가 깨짐, 새 시험 파일 이름 충돌로 pytest 수집 실패. 중간 7, 낮음 8). 두 높음은 코드로 다시 확인했다.
+- 2026-10-22 사용자 결정(tasks 검토 반영): (1) `tests/localdb/sync/test_migration.py`·`tests/unit/devtools/test_measure.py`의 기대값 갱신을 허용한다(검사 내용 그대로).
+  (2) 설계 문서를 tasks에 맞춰 고치고 이 답을 재승인으로 본다: 키워드 결과 타입 `KeywordSearchResult`/`KeywordHit`(contracts), SC-006은 `qk-dev store bench --retrieval`(quickstart·plan), 시험 파일 이름.
+  (3) Ownership은 tkv00. Validation·완료 조건을 구현 단계에 맞게 고쳤다.
+- 2026-10-22 사실: 같은 검토자의 tasks 재검토는 경미한 변경 요청이다(중간 1: T043이 `build_runtime`의 종류 검사·실제 전송 때문에 가짜 자료원으로 실행되지 않음. 낮음 2). 검토자는 고치면 승인 권고, 재검토 불필요라고 했다.
+  N1은 `targets_factory`·`provider_factory` 주입으로(종류 검사는 기본 대상 함수 안으로), N2는 T007 표기 통일로, N3은 `EmbedError` 경로의 호출 수를 최대치로 세고 표시 필드를 두지 않는 쪽으로 고쳤다
+  (data-model 변경 없음, 작성 세션 판단).
