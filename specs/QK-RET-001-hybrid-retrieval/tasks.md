@@ -123,11 +123,11 @@ description: "QK-RET-001 구현 작업 목록"
 
 **Independent Test**: 미확인·제한·삭제·내림·비활성 버전 청크를 질문과 가깝게 섞어 두고 결과에 0건, 버전이 바뀐 경로에서 합치지 않고 다시 검색하지 않는다.
 
-- [ ] T022 [P] [US2] `tests/localdb/retrieval/test_visibility.py`: spec US2 수용 시나리오 1·4와 SC-002 결과 쪽. 질문과 가장 가까운 청크가 미확인이면 결과에 없음, 삭제·내림(`artifact.status='deleted'`)·제한·비활성 버전 0건.
+- [X] T022 [P] [US2] `tests/localdb/retrieval/test_visibility.py`: spec US2 수용 시나리오 1·4와 SC-002 결과 쪽. 질문과 가장 가까운 청크가 미확인이면 결과에 없음, 삭제·내림(`artifact.status='deleted'`)·제한·비활성 버전 0건.
   `artifact.status='archived'`도 0건. Context 쪽(시나리오 2·3)은 T030에서 같은 파일에 더한다
-- [ ] T023 [P] [US2] `tests/unit/retrieval/test_retrieval_index_version.py`: 벡터·키워드 결과의 `index_version`이 다르면 `index_version_changed`이고 저장소 호출 수가 늘지 않음(다시 검색 0회, spec SC-007 일부), 한쪽이
+- [X] T023 [P] [US2] `tests/unit/retrieval/test_retrieval_index_version.py`: 벡터·키워드 결과의 `index_version`이 다르면 `index_version_changed`이고 저장소 호출 수가 늘지 않음(다시 검색 0회, spec SC-007 일부), 한쪽이
   `no_active_index`면 `no_active_index`
-- [ ] T024 [US2] `src/qello_knowledge/retrieval/service.py`: 6단계 판정을 T023에 맞게 고정하고, 결과에 들어가는 청크가 저장소 반환 항목에서만 오도록 한다(캐시·별도 조회 없음, spec FR-007)
+- [X] T024 [US2] `src/qello_knowledge/retrieval/service.py`: 6단계 판정을 T023에 맞게 고정하고, 결과에 들어가는 청크가 저장소 반환 항목에서만 오도록 한다(캐시·별도 조회 없음, spec FR-007)
 
 **Checkpoint**: US2 결과 쪽 시험 통과
 
@@ -295,4 +295,4 @@ US6:     T046, T047, T048 (시험) → T049
 
 ## 실행 기록
 
-(구현 중 채운다)
+- 2026-10-22 T024: US1의 `service.py`가 이미 버전 판정(다시 검색 없음)과 저장소 결과만 쓰는 구조여서 코드 변경 없이 T022·T023이 통과했다.
