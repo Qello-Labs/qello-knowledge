@@ -218,4 +218,3 @@ R-08은 대상 저장소 사본(GitHub 읽기)과 Hugging Face 토크나이저 �
 | 벡터 쪽이 생략됐고(사유 무관) 키워드 낱말이 0개 | 벡터 쪽 사유에 따라 `query_embedding_failed` / `outgoing_blocked` / `store_unavailable` | 해당 없음 |
 | 벡터 쪽과 키워드 쪽이 모두 생략(사유 무관) | 실패 `both_searches_failed` | 해당 없음 |
 | 주변 조회 `StoreError` | 실패 `store_unavailable`(순위만 요청이면 부르지 않음) | 같음 |
-
