@@ -214,15 +214,15 @@ description: "QK-RET-001 구현 작업 목록"
 
 **Independent Test**: 같은 질문을 세 방식으로 돌려 각 결과가 해당 검색 순위와 같고, 실패 주입에서 하이브리드는 축소·사유 기록, 단일 방식은 실패, 외부 호출 ≤ 7.
 
-- [ ] T046 [P] [US6] `tests/unit/retrieval/test_modes.py`(spec US6 시나리오 1~4): 벡터 전용은 키워드 저장소 호출 0, 키워드 전용은 임베딩 호출 0(사용량 0), 결과가 각 검색 순위와 같음, 요약에 방식·후보 수·RRF·질의 규칙·
+- [X] T046 [P] [US6] `tests/unit/retrieval/test_modes.py`(spec US6 시나리오 1~4): 벡터 전용은 키워드 저장소 호출 0, 키워드 전용은 임베딩 호출 0(사용량 0), 결과가 각 검색 순위와 같음, 요약에 방식·후보 수·RRF·질의 규칙·
   `index_rule`·인덱스 버전·예산·`vector_count`·`keyword_count`·`keyword_terms`(수만)·`embedding`, `want_context=False`면 `chunk_context` 호출 0
-- [ ] T047 [P] [US6] `tests/unit/retrieval/test_degrade.py`(spec SC-008·SC-011, FR-009, research R-14 표 전 행): 빈 질문·길이 초과는 외부 호출 0, 임베딩 `secret_blocked`·일시 실패·할당 소진·`EmbedError`, 벡터 검색 `StoreError`,
+- [X] T047 [P] [US6] `tests/unit/retrieval/test_degrade.py`(spec SC-008·SC-011, FR-009, research R-14 표 전 행): 빈 질문·길이 초과는 외부 호출 0, 임베딩 `secret_blocked`·일시 실패·할당 소진·`EmbedError`, 벡터 검색 `StoreError`,
   키워드 검색 `StoreError`, 어느 단계든 `StoreUnavailable`(축소 없이 `store_unavailable`), 벡터 쪽 생략 + 낱말 0개, 양쪽 생략, 주변 조회 `StoreError`. 하이브리드는 `omitted`에 사유, 단일 방식은 실패(벡터 전용 벡터 검색 오류는
   `store_unavailable`). 모든 경우 요약·예외 문구·사용량 기록에 질문·낱말이 없음
-- [ ] T048 [P] [US6] `tests/unit/retrieval/test_calls.py`(spec SC-007, SC-009 일부): 확장 상위 1·8·20, 임베딩 일시 실패 뒤 재시도 성공 경로에서 `external_calls` ≤ 7이고 실제 가짜 호출 수와 같음(임베딩 시도마다 사용량 기록 1),
+- [X] T048 [P] [US6] `tests/unit/retrieval/test_calls.py`(spec SC-007, SC-009 일부): 확장 상위 1·8·20, 임베딩 일시 실패 뒤 재시도 성공 경로에서 `external_calls` ≤ 7이고 실제 가짜 호출 수와 같음(임베딩 시도마다 사용량 기록 1),
   `EmbedError(AUTH_CONFIG)` 경로에서 임베딩 몫을 최대치 4로 셈,
   키워드 전용 임베딩 0, 버전 바뀜 경로 다시 검색 0
-- [ ] T049 [US6] `src/qello_knowledge/retrieval/service.py`: 방식 분기, research R-14 순서대로 예외 잡기(`StoreUnavailable` → `StoreError` → `EmbedError`), 하이브리드 축소와 `omitted`, 단일 방식 실패, `external_calls`
+- [X] T049 [US6] `src/qello_knowledge/retrieval/service.py`: 방식 분기, research R-14 순서대로 예외 잡기(`StoreUnavailable` → `StoreError` → `EmbedError`), 하이브리드 축소와 `omitted`, 단일 방식 실패, `external_calls`
   (저장소 호출은 서비스가 직접 세고, 임베딩은 `RunSummary`의 호출 수 × 2(호출 + 사용량 기록)로 센다. `EmbedError`로 `RunSummary`를 받지 못하면 시도 상한(재시도 포함 2) 기준의 최대치 4로 센다.
   보수적으로 크게 세는 값이라 상한 검사(SC-007)는 그대로 성립하고, 요약에 따로 표시하지 않는다(data-model 변경 없음)
 
