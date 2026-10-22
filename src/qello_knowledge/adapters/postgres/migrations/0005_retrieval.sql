@@ -1,6 +1,10 @@
 -- QK-RET-001 검색 질의(research R-03 결정 2, R-06, data-model 4절). 함수만 더한다. 기존 함수·테이블은 바꾸지 않는다.
 -- 노출 조건은 0002의 qk.is_visible·qk.kind_matches를 그대로 쓴다(spec FR-007, C-14).
 
+-- 함수의 SET 절은 설정 이름을 확인한다. 새 연결에서 PGroonga 라이브러리가 아직 로드되지 않았으면 이름이 임시 자리 값이 되어
+-- 슈퍼유저가 아닌 역할은 `permission denied to set parameter`로 실패한다. PGroonga 함수를 한 번 불러 라이브러리를 먼저 로드한다.
+SELECT pgroonga_query_escape('');
+
 -- 낱말 배열 키워드 검색. 서로 다른 맞은 낱말 수 → 낱말을 OR로 이은 질의 한 번의 점수 → 청크 식별자 순.
 -- pgroonga_score는 낱말이 나온 횟수라 1차 정렬 키로 쓰지 않는다. 일치 확장은 끈다(결과가 다른 청크·VACUUM 상태와 무관하다).
 CREATE FUNCTION qk.search_keyword_terms(
