@@ -54,6 +54,7 @@ HEX_64 = _pattern(r"[0-9a-fA-F]{64}", "64자리 16진수")
 DIGITS_17_20 = _pattern(r"[0-9]{17,20}", "숫자 17~20자리")
 POSITIVE_INT = _pattern(r"[1-9][0-9]{0,8}", "양의 정수")
 LOG_LEVEL = _pattern(r"DEBUG|INFO|WARNING|ERROR", "`DEBUG`, `INFO`, `WARNING`, `ERROR` 중 하나")
+CONTEXT_BUDGET = _pattern(r"[1-9][0-9]{0,2}|[1-7][0-9]{3}|8000", "1 이상 8000 이하 정수")
 
 
 @dataclass(frozen=True)
@@ -171,6 +172,15 @@ SETTINGS: tuple[SettingSpec, ...] = (
         secret=False,
         rule=POSITIVE_INT,
         default="3000",
+    ),
+    SettingSpec(
+        name="QK_RETRIEVAL_CONTEXT_BUDGET",
+        description="검색이 생성에 넘기는 Context의 예상 토큰 예산(QK-RET-001). 프롬프트·출력 몫은 들어 있지 않다",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=CONTEXT_BUDGET,
+        default="2000",
     ),
 )
 

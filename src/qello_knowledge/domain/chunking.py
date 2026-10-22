@@ -10,6 +10,7 @@ from statistics import median_low
 from types import MappingProxyType
 
 from qello_knowledge.domain.embedding import MODELS
+from qello_knowledge.domain.keyword_rules import INDEX_BASELINE, INDEX_RULES
 from qello_knowledge.domain.security import ScreenedContent
 from qello_knowledge.domain.store import ChunkInput
 
@@ -21,6 +22,7 @@ class ChunkingSettings:
     model_version: str = "@cf/baai/bge-m3"
     target_tokens: int = 512
     limit_tokens: int = 2800
+    keyword_text_rule: str = INDEX_BASELINE  # QK-RET-001 색인 쪽 키워드 규칙. 운영 기본값은 기준선(research R-04)
 
     def __post_init__(self) -> None:
         model = MODELS.get(self.model_version)
@@ -33,6 +35,8 @@ class ChunkingSettings:
             raise ValueError("청킹 설정이 올바르지 않다")
         if self.limit_tokens * model.bytes_per_token_estimate / WORST_BYTES_PER_TOKEN > model.max_input_tokens:
             raise ValueError("청킹 상한이 모델 안전 여유를 넘는다")
+        if self.keyword_text_rule not in INDEX_RULES:
+            raise ValueError("알 수 없는 색인 쪽 키워드 규칙")
 
 
 class ChunkOutcomeKind(StrEnum):

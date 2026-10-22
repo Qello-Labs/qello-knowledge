@@ -50,7 +50,7 @@ def chunk_markdown(body: str, *, location: str, source_title: str | None, settin
                     len(drafts),
                     {"path": location, "lines": [piece.start + 1, piece.end]},
                     text,
-                    search_text(header, text),
+                    search_text(header, text, settings.keyword_text_rule),
                     version,
                     section.heading_path,
                 )

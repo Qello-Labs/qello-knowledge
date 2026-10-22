@@ -40,27 +40,14 @@ class SyncRuntime:
             resource.close()
 
 
-def build_runtime(*, settings, configs, policy, source):
+def github_targets(configs, settings, clock):
+    """기본 수집 대상. GitHub 저장소 파일 자료원만 받는다."""
     from qello_knowledge.adapters.github import GitHubRepoFilesAdapter
     from qello_knowledge.adapters.http import HttpsTransport
-    from qello_knowledge.adapters.postgres.store import PostgresStore
-    from qello_knowledge.adapters.postgres.sync_store import PostgresSyncStore
-    from qello_knowledge.adapters.postgres.usage import PostgresUsageLedger
-    from qello_knowledge.adapters.workers_ai.rest import WorkersAiRestProvider
-    from qello_knowledge.embedding.service import EmbeddingService
-    from qello_knowledge.indexer.embedding import security_outgoing_check
-    from qello_knowledge.sources.clock import SystemClock
     from qello_knowledge.sources.session import DefaultSourceSession
 
     if any(c.enabled and c.kind != "github_repo_files" for c in configs):
         raise IdentityError("unsupported_source_kind")
-    url = database_url(source)
-    cache = PostgresStore(url)
-    store = PostgresSyncStore(url)
-    ledger = PostgresUsageLedger(url, budget_settings(settings))
-    provider = WorkersAiRestProvider(source["CLOUDFLARE_ACCOUNT_ID"], settings.get("CLOUDFLARE_API_TOKEN"))
-    embedder = EmbeddingService(provider, cache, ledger, budget_settings(settings), security_outgoing_check(policy))
-    clock = SystemClock()
     targets = []
     for config in configs:
         if not config.enabled:
@@ -76,7 +63,41 @@ def build_runtime(*, settings, configs, policy, source):
                 session=DefaultSourceSession(transport, adapter, config, clock),
             )
         )
-    deps = SyncDependencies(store, cache, embedder, policy, ChunkingSettings(), clock)
+    return targets
+
+
+def workers_ai_provider(source, settings):
+    from qello_knowledge.adapters.workers_ai.rest import WorkersAiRestProvider
+
+    return WorkersAiRestProvider(source["CLOUDFLARE_ACCOUNT_ID"], settings.get("CLOUDFLARE_API_TOKEN"))
+
+
+def current_index_version(chunking=None):
+    """현재 청커 설정의 인덱스 버전(활성화의 현재 버전 계산, QK-RET-001 research R-09)."""
+    from qello_knowledge.chunking.version import chunking_version
+    from qello_knowledge.sync.keys import index_version_id
+
+    return index_version_id("@cf/baai/bge-m3", 1024, chunking_version(chunking or ChunkingSettings()))
+
+
+def build_runtime(*, settings, configs, policy, source, chunking=None, targets_factory=None, provider_factory=None):
+    """인자 없이 부르면 지금까지와 같다. 평가용 색인 준비(QK-RET-001)가 청커 설정과 대상·제공자를 바꿔 넣는다."""
+    from qello_knowledge.adapters.postgres.store import PostgresStore
+    from qello_knowledge.adapters.postgres.sync_store import PostgresSyncStore
+    from qello_knowledge.adapters.postgres.usage import PostgresUsageLedger
+    from qello_knowledge.embedding.service import EmbeddingService
+    from qello_knowledge.indexer.embedding import security_outgoing_check
+    from qello_knowledge.sources.clock import SystemClock
+
+    clock = SystemClock()
+    targets = (targets_factory or github_targets)(configs, settings, clock)
+    url = database_url(source)
+    cache = PostgresStore(url)
+    store = PostgresSyncStore(url)
+    ledger = PostgresUsageLedger(url, budget_settings(settings))
+    provider = (provider_factory or workers_ai_provider)(source, settings)
+    embedder = EmbeddingService(provider, cache, ledger, budget_settings(settings), security_outgoing_check(policy))
+    deps = SyncDependencies(store, cache, embedder, policy, chunking or ChunkingSettings(), clock)
     store.current_version = current_spec(deps).id
     return SyncRuntime(tuple(targets), deps, (cache, store, ledger))
 
@@ -276,10 +297,7 @@ def query_command(args, store_factory, policy_path):
         policy, issues = load_policy(Path("config/security_exceptions.toml"), configs)
         if issues:
             return _failure(1, "security_policy_invalid")
-    from qello_knowledge.chunking.version import chunking_version
-    from qello_knowledge.sync.keys import index_version_id
-
-    version = index_version_id("@cf/baai/bge-m3", 1024, chunking_version(ChunkingSettings()))
+    version = current_index_version()
     store = None
     lock = None
     try:
