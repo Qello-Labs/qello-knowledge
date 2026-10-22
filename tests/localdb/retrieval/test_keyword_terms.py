@@ -111,3 +111,10 @@ def test_repeatable(store: PostgresStore) -> None:
     seed_doc(store, "a.md", ["결제 취소", "취소 결제", "결제", "취소"])
     first = [h.hit.chunk_id for h in store.search_keyword_terms(TERMS, 20).hits]
     assert first == [h.hit.chunk_id for h in store.search_keyword_terms(TERMS, 20).hits]
+
+
+def test_repeated_calls_keep_escalation_off(store: PostgresStore) -> None:
+    """plpgsql 일반 계획으로 바뀐 뒤에도 일치 확장이 꺼져 있어야 한다(0005 `plan_cache_mode`, 구현 중 발견)."""
+    seed_doc(store, "a.md", ["결제 실패 시 `retryPayment` 함수", "다른 문장"])
+    results = [[h.hit.chunk_id for h in store.search_keyword_terms(("payment",), 20).hits] for _ in range(12)]
+    assert results == [[]] * 12

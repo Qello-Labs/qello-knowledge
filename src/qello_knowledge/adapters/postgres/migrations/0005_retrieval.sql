@@ -10,6 +10,7 @@ LANGUAGE plpgsql STABLE
 SET search_path = qk, public, extensions
 SET enable_seqscan = off
 SET pgroonga.match_escalation_threshold = -1
+SET plan_cache_mode = force_custom_plan
 AS $$
 DECLARE
     active text := qk.active_index_version();
