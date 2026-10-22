@@ -17,6 +17,7 @@ INDEX_RULES = (INDEX_BASELINE, INDEX_IDSPLIT)
 INDEX_KEYWORD_RULES: Mapping[str, str] = MappingProxyType(
     {
         "iv-4c0bc4fcc642": INDEX_BASELINE,  # bge-m3, chk-md-20d966f730bb, meta-v1
+        "iv-8b7e93b22051": INDEX_IDSPLIT,  # bge-m3, chk-md-9621a10a386c, meta-v1
     }
 )
 

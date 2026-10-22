@@ -249,7 +249,12 @@ def test_chunk_measure_cli(paths, tmp_path, monkeypatch, index_env, capsys, json
         c = data["chunking"]
         assert data["requests"] == baseline.requests
         assert c["chunking_version"] == "chk-md-20d966f730bb"
-        assert c["settings"] == {"model_version": "@cf/baai/bge-m3", "target_tokens": 512, "limit_tokens": 2800}
+        assert c["settings"] == {
+            "model_version": "@cf/baai/bge-m3",
+            "target_tokens": 512,
+            "limit_tokens": 2800,
+            "keyword_text_rule": "kw-index-baseline-v1",  # QK-RET-001 설정 필드 추가(검사 내용 그대로)
+        }
         assert c["elapsed_seconds"] >= 0
         assert c["summary"]["by_outcome"] == {"CHUNKED": 1, "FAILED": 1}
         assert c["failures"] == [{"path": "docs/long.md", "failure": "LINE_TOO_LONG"}]

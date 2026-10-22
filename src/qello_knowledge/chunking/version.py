@@ -5,6 +5,7 @@ import json
 
 from qello_knowledge.chunking.blocks import PARSER_VERSION
 from qello_knowledge.domain.chunking import WORST_BYTES_PER_TOKEN, ChunkingSettings
+from qello_knowledge.domain.keyword_rules import INDEX_BASELINE
 
 RULES_REVISION = 1
 HEADER_FORMAT = 1
@@ -26,5 +27,8 @@ def chunking_version(settings: ChunkingSettings) -> str:
         },
         "parser": {"enable": ["table"], "name": "markdown-it-py", "preset": "commonmark", "version": PARSER_VERSION},
     }
+    if settings.keyword_text_rule != INDEX_BASELINE:
+        # 기준선은 재료에 넣지 않아 기존 버전 값이 그대로다(QK-RET-001 research R-04, spec SC-010).
+        material["keyword_text_rule"] = settings.keyword_text_rule
     payload = json.dumps(material, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     return "chk-md-" + hashlib.sha256(payload).hexdigest()[:12]
