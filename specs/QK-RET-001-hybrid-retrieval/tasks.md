@@ -256,7 +256,7 @@ TDD 순서: T050과 T052(시험)를 먼저 쓰고 실패를 확인한 뒤 T051�
 - [X] T054 경계·회귀 확인: `uv run pytest tests/unit/test_boundaries.py`, 기존 QK-STO-001·QK-CHK-002·QK-SYN-001·QK-EMB-001 시험 전부 통과, `uv run qk-migrate` 두 번
 - [X] T055 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`)과 2절 로컬 손 확인.
   결과를 "실행 기록"에 적고 이 목록 체크 표시를 갱신한다
-- [ ] T056 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
+- [X] T056 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
 
 ---
 

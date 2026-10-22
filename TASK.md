@@ -131,3 +131,11 @@ uv run qk-dev store bench --retrieval   # SC-006, 결과는 tasks.md 실행 기�
 - 2026-10-22 사실: 같은 검토자의 tasks 재검토는 경미한 변경 요청이다(중간 1: T043이 `build_runtime`의 종류 검사·실제 전송 때문에 가짜 자료원으로 실행되지 않음. 낮음 2). 검토자는 고치면 승인 권고, 재검토 불필요라고 했다.
   N1은 `targets_factory`·`provider_factory` 주입으로(종류 검사는 기본 대상 함수 안으로), N2는 T007 표기 통일로, N3은 `EmbedError` 경로의 호출 수를 최대치로 세고 표시 필드를 두지 않는 쪽으로 고쳤다
   (data-model 변경 없음, 작성 세션 판단).
+- 2026-10-22 사실(구현): `tasks.md` T001~T056을 구현하고 스토리 단위로 커밋했다(e94b772~7172c93). 구현 중 발견 2건을 고쳤다. (1) `qk.search_keyword_terms`가 plpgsql 일반 계획으로 바뀐 뒤
+  일치 확장이 켜진 것처럼 동작해 `plan_cache_mode = force_custom_plan`을 더했다. (2) 비슈퍼유저 역할의 새 연결에서 0005가 PGroonga 설정 이름을 인식하지 못해 실패해,
+  마이그레이션 첫머리에서 PGroonga 함수를 불러 라이브러리를 로드하게 했다. 두 건 모두 회귀 시험이 있다. 0005는 병합 전이라 체크섬 문제는 없다.
+- 2026-10-22 사실: preflight가 실패한 상태로 커밋 1건(e94b772, 시험 변수 이름 `SECRET` 오탐)이 들어갔다. 커밋 명령이 preflight 종료 코드를 `tail`로 가렸고 저장소에 커밋 훅이 없었다.
+  다음 커밋(d00a678)에서 이름을 바꿔 고쳤고, 그 뒤 커밋은 preflight 종료 코드로 막았다. 값은 비밀값이 아니었다.
+- 2026-10-22 검증: preflight, `git diff --check`, ruff check·format --check 통과, `qk-migrate` 두 번째 `applied=0 skipped=5`, `QK_REQUIRE_LOCALDB=1 uv run pytest` 1,506 passed,
+  SC-006 bench p95 52.4 ms(목표 1,500 ms). 같은 세션의 자기 검증이라 독립 검증이 아니다. 실제 Workers AI 호출은 하지 않았다(H02·H03은 사람 단계).
+- 2026-10-22 사실: 검증 명령의 `qk-migrate`로 로컬 개발 DB(`postgres`)에 0004·0005가 적용됐다. 0005 실패 시도 3건이 `qk.schema_migration`에 `failed`로 남아 있다.
