@@ -62,8 +62,10 @@
 | `docs/sdd/decisions/ADR-008-*.md`, `ADR-019-*.md` | Byuntil | 사람 리뷰(결정 승인) |
 | `config/store_policy.toml`, `compose.yaml` 주석 | Byuntil | 사람 리뷰 |
 | `docs/ops/oci-production-store.md` | Byuntil | 사람 리뷰 |
+| `docs/sdd/decisions/ADR-020-*.md` | Byuntil | 사람 리뷰(결정 승인) |
+| `tests/unit/indexer/test_run_cli.py`의 원격 관문 시험(정책 파일 경로 주입만) | Byuntil | 사람 리뷰 |
 | `specs/QK-SYN-001-incremental-sync/tasks.md` 사람 단계 기록, `docs/sdd/roadmap.md` 상태 열, `TASK.md` | Byuntil | 사람 리뷰 |
-| OCI 계정·인스턴스, GitHub Secret·변수 | Byuntil | 계정 소유자 |
+| OCI 인스턴스의 DB 컨테이너·`qksync`·타이머·비밀값 파일 | Byuntil(설치), 팀원(계정 소유자) | 계정 소유자 |
 
 ## Existing user-owned changes
 
@@ -85,8 +87,12 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 ## Completion criteria
 
 - 운영 저장소 결정(ADR-008)과 데이터 처리 정책 확인 결과가 기록되고 사람이 승인한다 — 결정 기록·PR 리뷰
-- OCI 인스턴스의 PostgreSQL에서 pgvector·PGroonga 확장과 마이그레이션 0001~0004가 적용된다 — `qk-migrate` 결과, 확장 확인 기록
-- 운영 저장소 첫 색인과 활성화 뒤 변경 없는 재동기화의 임베딩 호출이 0건이고, 예약 실행 1회가 성공한다 — `qk-index` 실행 기록, GitHub Actions 실행 기록
+- OCI 인스턴스의 PostgreSQL에서 pgvector·PGroonga 확장과 마이그레이션 0001~0005가 적용된다 — `qk-migrate` 결과, 확장 확인 기록
+- 운영 저장소 첫 색인과 활성화 뒤 변경 없는 재동기화의 임베딩 호출이 0건이다 — `qk-index` 실행 기록
+- 서버 systemd 타이머의 예약 실행 1회가 성공한다(ADR-020) — `journalctl -u qk-sync.service`, `qk-index runs list`의 `trigger=schedule` 실행 기록
+
+경계: 위 셋째 조건까지와 타이머 설치·비밀값 입력은 이 PR의 병합 전에 한다. 넷째 조건(수동 1회 실행 → 타이머 켜기 → 예약 실행 1회 확인)은 `config/store_policy.toml`이 `main`에 있어야 하므로 병합 뒤 운영 검증으로 하고,
+결과는 후속 PR로 이 계약과 tasks.md H07에 기록한다.
 
 ## Decisions
 
@@ -178,3 +184,6 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   `postgres`(superuser 아님)로 0005의 PGroonga 설정(`SET pgroonga.match_escalation_threshold`)이 권한 오류 없이 만들어졌다.
 - 2026-10-23 사실: PR 전 전체 검증에서 `test_remote_gates_before_runtime`이 실패했다(1 failed, 1505 passed). 시험이 기본 경로 `config/store_policy.toml`이 없다는 저장소 상태에 기대고 있었다.
   사용자 결정으로 이 PR에서 시험에 없는 정책 파일 경로를 주입했다(검사 강도 그대로, 삭제·skip 없음). PR은 Draft, 리뷰어 없음으로 정했다.
+- 2026-10-23 사실: 별도 리뷰 에이전트(Codex, Herdr 오른쪽 패널, harness-review)가 PR #55에 변경 요청(FAIL)을 냈다. ① 실행 스크립트 `rc=${rc:-1}`이 색인 성공 뒤 정리 실패를 성공(0)으로 남김(재현됨),
+  ② 완료 조건이 GitHub Actions 기준으로 남고 tasks.md H07 진행 기록이 낡음, ③ 팀원 계정의 적용 약관 판 미확인. 낮음: Ownership 행 누락, 일부 docs 커밋 scope 없음(scope는 선택이라 고치지 않음).
+  사용자 승인으로 ①②와 Ownership을 고쳤다(운영 문서 스크립트, 완료 조건·경계, tasks.md H07). 서버의 `/usr/local/libexec/qk-sync`는 별도 승인 뒤 같은 내용으로 바꾼다. ③은 사람 확인으로 남는다.
