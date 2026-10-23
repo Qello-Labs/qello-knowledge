@@ -253,7 +253,7 @@ description: "QK-SYN-001 구현 작업 목록"
   - `qk-index index activate iv-4c0bc4fcc642 --allow-remote`: 문서 79, 청크 1,291, 벡터 없는 청크 0, 실패 조건 없음. `index status`: active=current, matches=true.
 - [ ] H07 GitHub Actions 무료 할당 확인, Secret 등록, 저장소 변수 `QK_SYNC_ENABLED=true`, 첫 예약 실행 결과 확인
   - 2026-10-23: 저장소가 공개라 GitHub Actions 셀프 호스티드 러너 대신 OCI 인스턴스의 systemd 타이머로 예약 실행한다(ADR-020, 사용자 결정). 이 항목의 "GitHub Actions 무료 할당 확인, Secret 등록,
-    `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다. 남은 것: 타이머 설치, 비밀값 입력(사람), `main` 병합 뒤 첫 실행 확인.
+    `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다. 2026-10-23 타이머 설치(켜지 않음)와 비밀값 입력(사람)을 마쳤다. 남은 것: `main` 병합 뒤 수동 1회 실행, 타이머 켜기, 예약 실행 1회 확인.
 
 H04~H07은 운영 저장소가 정해진 뒤 1.G 완료 리뷰 전까지 한다.
 
