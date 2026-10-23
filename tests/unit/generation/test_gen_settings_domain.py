@@ -36,9 +36,9 @@ def test_defaults():
         {"output_price_per_m": -1},
         {"context_window": 8192},
         {"max_attempts": 3},
-        {"deadline_seconds": 41},  # 2 × 20 + 2 = 42보다 작다
+        {"deadline_seconds": 44},  # 2 × 20 + 5 = 45보다 작다(독립 검토 L5)
         {"deadline_seconds": 131},
-        {"timeout_seconds": 60, "deadline_seconds": 121},
+        {"timeout_seconds": 60, "deadline_seconds": 124},
     ],
 )
 def test_out_of_range_rejected(overrides):
@@ -59,7 +59,7 @@ def test_out_of_range_rejected(overrides):
         {"prompt_version": "gen-base"},
         {"underestimate_factor": 1.0},
         {"underestimate_factor": 4.0},
-        {"deadline_seconds": 42},
+        {"deadline_seconds": 45},
         {"deadline_seconds": 130},
     ],
 )
@@ -69,4 +69,4 @@ def test_in_range_accepted(overrides):
 
 def test_timeout_60_has_deadline_that_keeps_retry():
     s = GenerationSettings(timeout_seconds=60)
-    assert s.deadline == 125 and s.deadline >= 2 * s.timeout_seconds + 2
+    assert s.deadline == 125 and s.deadline >= 2 * s.timeout_seconds + 5

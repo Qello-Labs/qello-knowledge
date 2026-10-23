@@ -21,8 +21,9 @@ UNKNOWN_DATE = "수정 미상"
 DELIMITERS = ("[자료 시작]", "[자료 끝]", "[자료]", "[질문]")
 # 대괄호 쌍 안에 `S`+숫자가 있는 모든 글(줄바꿈 포함, 가장 짧게). 인식 규칙(R-04 6단계)보다 넓다(독립 검토 H1).
 CITATION_LIKE = re.compile(r"\[([^\[\]]*?S\d[^\[\]]*?)\]", re.DOTALL)
-# URL 후보: 공백·`<>"`·`)`·`]`·전각 괄호 전까지 가장 길게(비ASCII 포함, research R-04 4단계).
-URL_CANDIDATE = re.compile(r"https?://[^\s<>\")\]）］】]+")
+# URL 후보: 공백·`<>"`·괄호·대괄호(반각·전각) 전까지 가장 길게(비ASCII 포함, research R-04 4단계).
+# 대괄호를 빼야 URL 바로 뒤에 붙은 인용(`…/deploy[S1]`)을 URL로 잡지 않는다(독립 검토 M1).
+URL_CANDIDATE = re.compile(r"https?://[^\s<>\")\]\[）］［】]+")
 URL_TRAILING = ".,;:!?'"
 HEADER_SEPARATOR = " | "
 HEADER_SEPARATOR_SAFE = " ¦ "

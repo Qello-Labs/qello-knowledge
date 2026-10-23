@@ -170,3 +170,26 @@ def test_usage_reader_failure_still_prints_answer(made):
     made["reader_error"] = OSError("db down")
     code, out, _ = _main(made)
     assert code == 0 and "본문 하나에 따르면" in out and "오늘 사용량" not in out
+
+
+def test_citation_line_uses_korean_dates_like_header():
+    # 독립 검토 M4: 생성 입력 머리줄(한국 시간)과 같은 날짜를 보인다
+    from datetime import UTC, datetime
+
+    from qello_knowledge.domain.generation import Citation
+    from qello_knowledge.indexer.ask_cli import _citation_line
+
+    citation = Citation(
+        "S1", "제목", "https://example.invalid/a", "sha", datetime(2026, 10, 9, 16, 0, tzinfo=UTC),
+        datetime(2026, 10, 21, 15, 30, tzinfo=UTC),
+    )  # fmt: skip
+    assert "수정 2026-10-10" in _citation_line(citation) and "수집 2026-10-22" in _citation_line(citation)
+
+
+def test_fake_run_shows_zero_neurons(made):
+    # 독립 검토 L9: 가짜 응답의 토큰으로 계산한 Neurons를 보이지 않는다
+    code, out, _ = _main(made)
+    assert code == 0 and "0.00 Neurons(가짜)" in out
+    _, json_out, _ = _main(made, "--json")
+    summary = json.loads(json_out)["result"]["summary"]
+    assert summary["neurons"] == 0.0 and summary["measured"] is False

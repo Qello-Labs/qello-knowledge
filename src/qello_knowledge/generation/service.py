@@ -212,7 +212,6 @@ def generate(
                     continue
             return result(GenerationStatus.GENERATION_FAILED, failure=failure.kind, **sent)
         run.shape = reply.shape
-        post = postprocess(reply.text, rendered)
         neurons, measured = _usage_neurons(
             settings,
             rendered.estimated_input_tokens,
@@ -221,14 +220,19 @@ def generate(
             output_tokens=reply.output_tokens,
             billable=True,
         )
+        truncated = _truncated(reply, settings)  # 요약과 기록이 같은 값을 쓴다(spec FR-023, 독립 검토 M3)
+        try:
+            post = postprocess(reply.text, rendered)
+        except Exception:  # noqa: BLE001 - 후처리 오류도 과금된 시도이므로 기록하고 잘못된 응답으로 끝낸다(독립 검토 L1)
+            bad = GenerationFailure.BAD_RESPONSE.value
+            _record(deps, run, run_id, attempt, rendered, bad, neurons, measured, reply, truncated)
+            logger.warning("generation_postprocess_failed")
+            return result(GenerationStatus.GENERATION_FAILED, failure=GenerationFailure.BAD_RESPONSE, **sent)
         outcome = GenerationFailure.BAD_RESPONSE.value if post.empty else "ok"
-        _record(deps, run, run_id, attempt, rendered, outcome, neurons, measured, reply)
+        _record(deps, run, run_id, attempt, rendered, outcome, neurons, measured, reply, truncated)
         break
     assert reply is not None and post is not None  # noqa: S101 - 위 반복은 결과를 돌려주거나 두 값을 채운다
 
-    truncated = reply.finish_reason == "length" or (
-        reply.finish_reason is None and reply.output_tokens is not None and reply.output_tokens >= settings.max_tokens
-    )
     counts = {
         "removed_citations": post.removed_citations,
         "unrecognized_citations": post.unrecognized_citations,
@@ -266,6 +270,13 @@ def generate(
     return result(GenerationStatus.ANSWERED, post.answer, citations, flags=flags, **sent, **counts)
 
 
+def _truncated(reply: ProviderReply, settings: GenerationSettings) -> bool:
+    """종료 사유가 `length`이거나, 종료 사유를 모를 때 출력 토큰이 출력 상한 이상이면 잘림이다(spec FR-023)."""
+    if reply.finish_reason is not None:
+        return reply.finish_reason == "length"
+    return reply.output_tokens is not None and reply.output_tokens >= settings.max_tokens
+
+
 def _record(
     deps: GenerationDeps,
     run: _Run,
@@ -276,13 +287,13 @@ def _record(
     neurons: float,
     measured: bool,
     source: ProviderReply | GenerationProviderFailure,
+    truncated: bool = False,
 ) -> None:
     """시도 하나를 기록한다. 기록이 실패해도 답은 버리지 않는다(spec FR-020)."""
     run.neurons += neurons
     run.measured = run.measured and measured
     run.input_tokens = source.input_tokens
     run.output_tokens = source.output_tokens
-    truncated = isinstance(source, ProviderReply) and source.finish_reason == "length"
     usage = GenerationUsage(
         run_id=run_id,
         model_id=run.settings.model_id,

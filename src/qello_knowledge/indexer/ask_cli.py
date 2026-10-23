@@ -114,6 +114,8 @@ def _summary_dict(result: GenerationResult, fake: bool, usage: AnswerUsageToday 
     data.update(
         {
             "generation_calls": generation_calls,
+            "neurons": 0.0 if fake else s.neurons,  # 가짜 응답의 토큰으로 계산한 값을 보이지 않는다(독립 검토 L9)
+            "measured": False if fake else s.measured,
             "total_calls": generation_calls + (s.total_calls - s.generation_calls),
             "usage_today": _usage_dict(usage),
             "fake_provider": fake,
@@ -123,8 +125,11 @@ def _summary_dict(result: GenerationResult, fake: bool, usage: AnswerUsageToday 
 
 
 def _citation_line(c) -> str:
-    modified = c.source_modified_at.date().isoformat() if c.source_modified_at else "미상"
-    version, collected = c.source_version[:12], c.collected_at.date()
+    """날짜는 생성 입력 머리줄과 같은 한국 시간 날짜로 보인다(독립 검토 M4)."""
+    from qello_knowledge.generation.render import modified_label
+
+    modified = modified_label(c.source_modified_at) if c.source_modified_at else "미상"
+    version, collected = c.source_version[:12], modified_label(c.collected_at)
     return f"[{c.source_id}] {c.title} — {c.source_url} (버전 {version}, 수정 {modified}, 수집 {collected})"
 
 
@@ -180,7 +185,8 @@ def _render(result: GenerationResult, target: str, provider: str, usage, json_ou
         f"요약: 묶음 {s.blocks_sent}/{s.blocks_sent + len(s.dropped)}"
         + (f"(뺀 {len(s.dropped)}: {dropped})" if dropped else "")
         + f" · 입력 {s.input_tokens}(예상 {s.estimated_input_tokens}) · 출력 {s.output_tokens}"
-        + f" · {s.neurons:.2f} Neurons({'측정' if s.measured else '추정'}) · 시도 {s.attempts} · {s.latency_ms} ms"
+        + (" · 0.00 Neurons(가짜)" if fake else f" · {s.neurons:.2f} Neurons({'측정' if s.measured else '추정'})")
+        + f" · 시도 {s.attempts} · {s.latency_ms} ms"
         + f" · 호출 {summary['total_calls']}(생성 {summary['generation_calls']})"
     )  # fmt: skip
     lines.append(

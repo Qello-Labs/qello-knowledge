@@ -181,7 +181,6 @@ def workers_ai_provider_factory(settings: GenerationSettings):
     import os
 
     from qello_knowledge.adapters.workers_ai.generation import WorkersAiGenerationProvider
-
     from qello_knowledge.config.loader import load, merge_sources, read_env_file
     from qello_knowledge.config.registry import Entrypoint
 
@@ -190,9 +189,19 @@ def workers_ai_provider_factory(settings: GenerationSettings):
     return WorkersAiGenerationProvider(source["CLOUDFLARE_ACCOUNT_ID"], loaded.get("CLOUDFLARE_API_TOKEN"))
 
 
-def _no_secret_check(text: str, origin) -> tuple:
-    """합성 자료만 보내므로 비밀값 검사 대상이 없다. 실제 질의 경로는 QK-SEC-001 검사를 넘긴다."""
-    return ()
+def outgoing_check():
+    """QK-SEC-001 전송 직전 검사(AGENTS.md 3.1). 합성 자료여도 실제 질의 경로와 같은 검사를 거친다(독립 검토 L6)."""
+    from qello_knowledge.indexer.embedding import security_outgoing_check
+    from qello_knowledge.security.policy import load_policy
+    from qello_knowledge.sources.config import load_sources
+
+    configs, issues = load_sources(REPO / "config/sources.toml")
+    policy, policy_issues = (
+        load_policy(REPO / "config/security_exceptions.toml", configs) if not issues else (None, issues)
+    )
+    if issues or policy_issues:
+        return None
+    return security_outgoing_check(policy)
 
 
 def _inside_repo(path: Path) -> bool:
@@ -243,6 +252,10 @@ def main(argv: list[str] | None = None, *, provider_factory: ProviderFactory | N
         workers_ai_provider_factory if args.provider == "workers-ai" else fake_provider_factory
     )
 
+    check = outgoing_check()
+    if check is None:
+        print(json.dumps({"error": "security_policy_invalid"}), file=sys.stderr)
+        return 2
     out_dir.mkdir(parents=True, exist_ok=True)
     rows = []
     answers = []
@@ -254,9 +267,7 @@ def main(argv: list[str] | None = None, *, provider_factory: ProviderFactory | N
             ledger = MemoryLedger()
             context = context_for(item)
             retrieval = RetrievalResult(status="ok", context=context, summary=RetrievalSummary())
-            deps = GenerationDeps(
-                provider=provider, ledger=ledger, outgoing_check=lambda text, origin: (), sleep=time.sleep
-            )
+            deps = GenerationDeps(provider=provider, ledger=ledger, outgoing_check=check, sleep=time.sleep)
             started = time.perf_counter()
             result = generate(GenerationRequest(item.question, retrieval, prompt_version=name), deps, run_settings)
             elapsed = (time.perf_counter() - started) * 1000

@@ -21,7 +21,8 @@ CODE_SPAN = re.compile(r"`[^`\n]+`")
 PLACEHOLDER = re.compile(r"\x00C(\d+)\x00")
 SOURCE_HEAD = re.compile(r"^[ \t]*(출처|참고|Sources?|References)[ \t]*[:：]")
 LIST_LINE = re.compile(r"^[ \t]*([-*]|\d+\.)[ \t]")
-PARTICLE = re.compile(r"[가-힣]{1,2}")
+# URL 뒤에 붙어도 되는 조사(research R-04 4단계). 한글 1~2자 전부가 아니라 정해진 조사만 받는다(독립 검토 L4).
+PARTICLE = re.compile(r"에서|에게|으로|부터|까지|에|은|는|을|를|이|가|의|로|와|과|도|만")
 # 인식하는 인용: `[S1]`, `[ S1 ]`, `[S1, S2]`, `[S1，S2]`, `[S1 S2]`. 대괄호 안 공백은 줄바꿈을 받지 않는다(R-04 6단계).
 RECOGNIZED = re.compile(r"\[[ \t]*S[1-9]\d*(?:(?:[ \t]*[,，][ \t]*|[ \t]+)S[1-9]\d*)*[ \t]*\]")
 ID_IN_GROUP = re.compile(r"S([1-9]\d*)")
@@ -31,6 +32,7 @@ UNRECOGNIZED_OTHER = re.compile(r"\[s\d+\]|\(S\d+\)|【S\d+】")
 QUOTES = "\"'“”‘’「」"
 SENTENCE_END = ".?!"
 WORD = re.compile(r"\w")
+SPACE_BEFORE_MARK = re.compile(r"[ \t]+(?=[.,?!])")
 
 
 @dataclass(frozen=True)
@@ -54,14 +56,43 @@ class Postprocessed:
         )
 
 
+def _code_ranges(text: str) -> list[tuple[int, int]]:
+    ranges = [m.span() for m in CODE_FENCE.finditer(text)]
+    ranges += [m.span() for m in CODE_SPAN.finditer(text) if not _inside(m.start(), ranges)]
+    return ranges
+
+
+def _inside(position: int, ranges: list[tuple[int, int]]) -> bool:
+    return any(start <= position < end for start, end in ranges)
+
+
+def _positions(text: str, needle: str) -> list[int]:
+    found, start = [], 0
+    while (index := text.find(needle, start)) != -1:
+        found.append(index)
+        start = index + 1
+    return found
+
+
 def _strip_thinking(text: str) -> tuple[str, bool]:
-    detected = any(m.group(1).strip() for m in THINK_BLOCK.finditer(text))
-    text = THINK_BLOCK.sub("", text)
-    if "</think>" in text:  # 짝 없는 닫는 표시: 그 앞까지를 추론으로 본다
-        before, _, text = text.rpartition("</think>")
+    """추론 블록을 지운다. 코드 표기 안의 `<think>`·`</think>`는 추론 표시로 보지 않는다(독립 검토 M2)."""
+    detected = False
+    while True:
+        ranges = _code_ranges(text)
+        block = next((m for m in THINK_BLOCK.finditer(text) if not _inside(m.start(), ranges)), None)
+        if block is None:
+            break
+        detected = detected or bool(block.group(1).strip())
+        text = text[: block.start()] + text[block.end() :]
+    ranges = _code_ranges(text)
+    closes = [i for i in _positions(text, "</think>") if not _inside(i, ranges)]
+    if closes:  # 짝 없는 닫는 표시: 그 앞까지를 추론으로 본다
+        before, text = text[: closes[-1]], text[closes[-1] + len("</think>") :]
         detected = detected or bool(before.replace("<think>", "").strip())
-    if "<think>" in text:  # 닫히지 않은 추론: 끝까지 지운다
-        text, _, after = text.partition("<think>")
+    ranges = _code_ranges(text)
+    opens = [i for i in _positions(text, "<think>") if not _inside(i, ranges)]
+    if opens:  # 닫히지 않은 추론: 끝까지 지운다
+        text, after = text[: opens[0]], text[opens[0] + len("<think>") :]
         detected = detected or bool(after.strip())
     return text, detected
 
@@ -78,7 +109,11 @@ def _mask_code(text: str) -> tuple[str, list[str]]:
 
 
 def _unmask(text: str, codes: list[str]) -> str:
-    return PLACEHOLDER.sub(lambda m: codes[int(m.group(1))], text)
+    def restore(match: re.Match[str]) -> str:
+        index = int(match.group(1))
+        return codes[index] if index < len(codes) else ""
+
+    return PLACEHOLDER.sub(restore, text)
 
 
 def _drop_source_lines(text: str) -> tuple[str, int]:
@@ -206,7 +241,9 @@ def _attribute(sentences: list[str]) -> list[str]:
     out: list[str] = []
     for sentence in sentences:
         head, rest = _leading_citations(sentence)
-        if out and head and (not rest or out[-1].rstrip()[-1:] in SENTENCE_END or out[-1].rstrip().endswith("]")):
+        # 앞 조각이 (붙은 인용을 뗀 뒤) 문장부호로 끝날 때만 옮긴다(R-04 5단계, 독립 검토 L3)
+        previous_end = _strip_citation_marks(out[-1]).rstrip()[-1:] if out else ""
+        if out and head and (not rest or previous_end in SENTENCE_END):
             out[-1] = out[-1] + head
             sentence = rest
         if not WORD.search(_strip_citation_marks(sentence)):
@@ -216,7 +253,8 @@ def _attribute(sentences: list[str]) -> list[str]:
 
 
 def _tidy(text: str) -> str:
-    lines = [re.sub(r"[ \t]{2,}", " ", line).rstrip() for line in text.split("\n")]
+    """지운 자리의 겹친 공백과 문장부호 앞 공백을 정리한다(독립 검토 L2). 코드는 가려진 상태에서 부른다."""
+    lines = [SPACE_BEFORE_MARK.sub("", re.sub(r"[ \t]{2,}", " ", line)).rstrip() for line in text.split("\n")]
     return "\n".join(lines).strip()
 
 
@@ -224,7 +262,8 @@ def postprocess(reply_text: str, rendered: RenderedInput) -> Postprocessed:
     allowed = {b.source_id for b in rendered.blocks}
     excerpt_urls = frozenset().union(*(b.excerpt_urls for b in rendered.blocks)) if rendered.blocks else frozenset()
 
-    text, thinking = _strip_thinking(reply_text)  # 1
+    # 응답 안의 NUL은 코드 자리 표시와 겹칠 수 있어 먼저 지운다(독립 검토 L1)
+    text, thinking = _strip_thinking(reply_text.replace("\x00", ""))  # 1
     text, codes = _mask_code(text)  # 2
     text, source_lines = _drop_source_lines(text)  # 3
     text, removed_urls = _clean_urls(text, excerpt_urls)  # 4
@@ -260,7 +299,7 @@ def postprocess(reply_text: str, rendered: RenderedInput) -> Postprocessed:
     if all(core == CANNOT_CORE for core in cores):
         return Postprocessed(CANNOT_CONFIRM, (), CannotConfirmReason.MODEL_CANNOT_CONFIRM, False, **common)
     if all(core.endswith(CANNOT_CORE) or core == ORIGIN_CORE for core in cores):
-        stripped = _tidy(_unmask(_strip_citation_marks(body), codes))
+        stripped = _unmask(_tidy(_strip_citation_marks(body)), codes)
         return Postprocessed(stripped, (), CannotConfirmReason.MODEL_UNCONFIRMABLE_PARTS, False, **common)
 
     uncited = 0  # 9

@@ -93,3 +93,13 @@ def test_real_provider_path_prints_estimate_first(measure, capsys):
 
 def test_default_out_is_outside_repository(measure):
     assert not measure._inside_repo(Path(measure.tempfile.gettempdir()))
+
+
+def test_script_uses_real_outgoing_check(measure):
+    # 독립 검토 L6: 실측도 QK-SEC-001 전송 직전 검사를 거친다
+    from tests.unit.synthetic_secrets import SYNTHETIC
+
+    check = measure.outgoing_check()
+    assert check is not None
+    assert check("평범한 합성 문장", None) == ()
+    assert check(f"키는 {SYNTHETIC['github-classic']} 이다", None)

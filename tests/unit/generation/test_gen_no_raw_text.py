@@ -70,7 +70,11 @@ def test_retry_and_failure_paths_leave_no_raw_text(script, caplog):
     caplog.set_level(logging.DEBUG)
     ledger = MemoryLedger()
     result = generate(request(f"{Q_MARK} 배포?", context=_context()), deps(ScriptedProvider(script), ledger))
-    _assert_clean(result, ledger, caplog, GenerationProviderFailure(GenerationFailure.TIMEOUT, billable=True))
+    _assert_clean(result, ledger, caplog)
+    for raised in (item for item in script if isinstance(item, GenerationProviderFailure)):
+        # 생성 경계가 실제로 받은 예외 객체의 문구에도 표식이 없다(독립 검토 L7)
+        for mark in (Q_MARK, C_MARK, A_MARK):
+            assert mark not in str(raised) and mark not in repr(raised.shape)
 
 
 def test_record_failure_and_reserve_warning_leave_no_raw_text(caplog):

@@ -20,6 +20,9 @@ PROMPT_NAMES = ("gen-p1", "gen-base")  # `generation/prompts.py`의 이름과 �
 MODEL_PREFIX = "@cf/qwen/qwen3-"  # 다른 계열은 ADR-009 개정이 필요하다(spec FR-018)
 CONTEXT_WINDOW = 32768  # ADR-009
 MAX_RETRY_WAIT = 2.0  # 질의 경로 재시도 대기 상한(QK-RET-001 research R-07)
+# 마감 = 2 × 시간 제한 + 여유. 여유가 대기 상한(2초)뿐이면 시도가 시간 제한을 조금만 넘겨도
+# 재시도가 사라진다(독립 검토 L5)
+DEADLINE_SLACK = 5.0
 
 
 class GenerationStatus(StrEnum):
@@ -90,7 +93,7 @@ class GenerationSettings:
         if self.max_attempts != 2:
             problems.append("max_attempts")
         if self.deadline_seconds is not None and not (
-            2 * self.timeout_seconds + MAX_RETRY_WAIT <= self.deadline_seconds <= 130
+            2 * self.timeout_seconds + DEADLINE_SLACK <= self.deadline_seconds <= 130
         ):
             problems.append("deadline_seconds")
         if problems:
@@ -99,7 +102,7 @@ class GenerationSettings:
     @property
     def deadline(self) -> float:
         """재시도를 시작할 수 있는 마감(초). 설정만으로 재시도가 꺼지지 않게 시간 제한에서 계산한다(research R-07)."""
-        return self.deadline_seconds if self.deadline_seconds is not None else 2 * self.timeout_seconds + 5
+        return self.deadline_seconds if self.deadline_seconds is not None else 2 * self.timeout_seconds + DEADLINE_SLACK
 
     def estimated_neurons(self, input_tokens: int, output_tokens: int) -> float:
         return (input_tokens * self.input_price_per_m + output_tokens * self.output_price_per_m) / 1_000_000
