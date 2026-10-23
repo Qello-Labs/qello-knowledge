@@ -74,14 +74,15 @@ def test_preflight_rejection_never_builds_runtime(args, monkeypatch, capsys):
     capsys.readouterr()
 
 
-def test_remote_gates_before_runtime(args, monkeypatch, capsys):
+def test_remote_gates_before_runtime(args, monkeypatch, capsys, tmp_path):
     monkeypatch.setenv("DATABASE_URL", "postgresql://placeholder@remote.example.invalid/db")
+    missing = tmp_path / "store_policy.toml"
 
     def forbidden(**kw):
         pytest.fail("runtime must not be built")
 
-    assert main(args, sync_factory=forbidden) == 3
-    assert main([*args, "--allow-remote"], sync_factory=forbidden) == 1
+    assert main(args, sync_factory=forbidden, store_policy_path=missing) == 3
+    assert main([*args, "--allow-remote"], sync_factory=forbidden, store_policy_path=missing) == 1
     assert "remote.example.invalid" not in capsys.readouterr().out
 
 
