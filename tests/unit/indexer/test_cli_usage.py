@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 import pytest
 
 from qello_knowledge.domain.embedding import EmbedError, EmbedErrorKind, UsageOutcome
+from qello_knowledge.generation.fake import MemoryLedger
 from qello_knowledge.indexer.cli import main
 from tests.unit.fakes import InMemoryUsageLedger
 
@@ -62,18 +63,39 @@ def test_usage_json(env, ledgers, capsys) -> None:
     }  # fmt: skip
 
 
-def test_prune_on_local_db(env, ledgers, capsys, monkeypatch) -> None:
+@pytest.fixture
+def generation_ledgers():
+    # QK-GEN-001(2026-10-23 사용자 결정): prune이 생성 사용량도 정리한다. 실제 DB 대신 가짜 생성 장부를 넣는다.
+    made: list[MemoryLedger] = []
+
+    def factory(query_reserve, source):
+        ledger = MemoryLedger(query_reserve=query_reserve)
+        ledger.close = lambda: None
+        made.append(ledger)
+        return ledger
+
+    factory.made = made
+    return factory
+
+
+def test_prune_on_local_db(env, ledgers, generation_ledgers, capsys, monkeypatch) -> None:
     monkeypatch.delenv("DATABASE_URL", raising=False)
-    assert main(["usage", *env, "prune", "--retention-days", "30"], ledger_factory=ledgers) == 0
-    assert capsys.readouterr().out.splitlines() == ["target=local", "days_rolled_up=0 rows_deleted=0"]
+    argv = ["usage", *env, "prune", "--retention-days", "30"]
+    assert main(argv, ledger_factory=ledgers, generation_ledger_factory=generation_ledgers) == 0
+    assert capsys.readouterr().out.splitlines() == [
+        "target=local",
+        "days_rolled_up=0 rows_deleted=0",
+        "generation_days_rolled_up=0 generation_rows_deleted=0",
+    ]
 
 
-def test_prune_on_remote_db_needs_flag(env, ledgers, capsys, monkeypatch) -> None:
+def test_prune_on_remote_db_needs_flag(env, ledgers, generation_ledgers, capsys, monkeypatch) -> None:
     monkeypatch.setenv("DATABASE_URL", "postgresql://u@db.example.invalid:5432/app")
-    assert main(["usage", *env, "prune"], ledger_factory=ledgers) == 3
-    assert ledgers.made == []  # 연결도 하지 않는다
+    factories = {"ledger_factory": ledgers, "generation_ledger_factory": generation_ledgers}
+    assert main(["usage", *env, "prune"], **factories) == 3
+    assert ledgers.made == [] and generation_ledgers.made == []  # 연결도 하지 않는다
     assert "target=remote" in capsys.readouterr().out
-    assert main(["usage", *env, "prune", "--allow-remote"], ledger_factory=ledgers) == 0
+    assert main(["usage", *env, "prune", "--allow-remote"], **factories) == 0
 
 
 @pytest.mark.parametrize("days", ["0", "-1", "x"])
