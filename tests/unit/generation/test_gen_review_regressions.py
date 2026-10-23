@@ -117,3 +117,22 @@ def test_l5_retry_survives_attempt_slightly_over_timeout():
                      ProviderReply("답 [S1].", 1, 1)])  # fmt: skip
     result = generate(request(), deps(provider, MemoryLedger(), clock=clock))
     assert result.status is GenerationStatus.ANSWERED and len(provider.calls) == 2  # 20.01 + 2 + 20 ≤ 45
+
+
+@pytest.mark.parametrize(
+    "answer",
+    ["설정은 .env 파일에 둔다 [S1].", "확장자 .py 파일만 읽는다 [S1].", "숨김 파일 .gitignore도 본다 [S1]."],
+)
+def test_n1_dot_names_keep_preceding_space(answer):
+    # 재검토 N1: 문장부호 앞 공백 정리는 뒤가 공백·줄 끝인 문장부호에만 한다
+    assert postprocess(answer, _rendered()).answer == answer
+
+
+def test_n2_postprocess_error_keeps_truncation_flag(monkeypatch):
+    def boom(text, rendered):
+        raise RuntimeError("synthetic")
+
+    monkeypatch.setattr(service_module, "postprocess", boom)
+    ledger = MemoryLedger()
+    result = generate(request(), deps(ScriptedProvider([ProviderReply("a", 10, 800)]), ledger))
+    assert result.summary.flags.truncated is True and ledger.records[0].truncated is True

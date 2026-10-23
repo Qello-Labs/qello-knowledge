@@ -193,3 +193,5 @@ def test_fake_run_shows_zero_neurons(made):
     _, json_out, _ = _main(made, "--json")
     summary = json.loads(json_out)["result"]["summary"]
     assert summary["neurons"] == 0.0 and summary["measured"] is False
+    assert summary["input_tokens"] is None and summary["output_tokens"] is None  # 재검토 N4
+    assert "입력 -(예상" in out and "출력 -" in out

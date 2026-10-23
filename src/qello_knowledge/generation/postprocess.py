@@ -32,7 +32,8 @@ UNRECOGNIZED_OTHER = re.compile(r"\[s\d+\]|\(S\d+\)|【S\d+】")
 QUOTES = "\"'“”‘’「」"
 SENTENCE_END = ".?!"
 WORD = re.compile(r"\w")
-SPACE_BEFORE_MARK = re.compile(r"[ \t]+(?=[.,?!])")
+# 문장부호 뒤가 공백·줄 끝일 때만 앞 공백을 지운다. `.env`처럼 점으로 시작하는 이름은 건드리지 않는다(재검토 N1).
+SPACE_BEFORE_MARK = re.compile(r"[ \t]+(?=[.,?!](?:\s|$))")
 
 
 @dataclass(frozen=True)

@@ -116,6 +116,8 @@ def _summary_dict(result: GenerationResult, fake: bool, usage: AnswerUsageToday 
             "generation_calls": generation_calls,
             "neurons": 0.0 if fake else s.neurons,  # 가짜 응답의 토큰으로 계산한 값을 보이지 않는다(독립 검토 L9)
             "measured": False if fake else s.measured,
+            "input_tokens": None if fake else s.input_tokens,  # 가짜 응답의 토큰도 보이지 않는다(재검토 N4)
+            "output_tokens": None if fake else s.output_tokens,
             "total_calls": generation_calls + (s.total_calls - s.generation_calls),
             "usage_today": _usage_dict(usage),
             "fake_provider": fake,
@@ -184,7 +186,8 @@ def _render(result: GenerationResult, target: str, provider: str, usage, json_ou
     lines.append(
         f"요약: 묶음 {s.blocks_sent}/{s.blocks_sent + len(s.dropped)}"
         + (f"(뺀 {len(s.dropped)}: {dropped})" if dropped else "")
-        + f" · 입력 {s.input_tokens}(예상 {s.estimated_input_tokens}) · 출력 {s.output_tokens}"
+        + f" · 입력 {summary['input_tokens'] if not fake else '-'}(예상 {s.estimated_input_tokens})"
+        + f" · 출력 {summary['output_tokens'] if not fake else '-'}"
         + (" · 0.00 Neurons(가짜)" if fake else f" · {s.neurons:.2f} Neurons({'측정' if s.measured else '추정'})")
         + f" · 시도 {s.attempts} · {s.latency_ms} ms"
         + f" · 호출 {summary['total_calls']}(생성 {summary['generation_calls']})"

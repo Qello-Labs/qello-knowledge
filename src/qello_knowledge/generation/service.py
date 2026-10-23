@@ -227,7 +227,12 @@ def generate(
             bad = GenerationFailure.BAD_RESPONSE.value
             _record(deps, run, run_id, attempt, rendered, bad, neurons, measured, reply, truncated)
             logger.warning("generation_postprocess_failed")
-            return result(GenerationStatus.GENERATION_FAILED, failure=GenerationFailure.BAD_RESPONSE, **sent)
+            return result(  # 요약의 잘림도 기록 행과 같게 둔다(재검토 N2)
+                GenerationStatus.GENERATION_FAILED,
+                failure=GenerationFailure.BAD_RESPONSE,
+                flags=GenerationFlags(truncated=truncated),
+                **sent,
+            )
         outcome = GenerationFailure.BAD_RESPONSE.value if post.empty else "ok"
         _record(deps, run, run_id, attempt, rendered, outcome, neurons, measured, reply, truncated)
         break
