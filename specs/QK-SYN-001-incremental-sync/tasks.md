@@ -239,12 +239,15 @@ description: "QK-SYN-001 구현 작업 목록"
 - [X] H01 로컬 DB에 실제 자료원 미리 보기: `uv run qk-index run --preview --json`(GitHub 약 83회, 0 Neurons). 처리 예정 문서 수와 예상 Neurons를 기록하고 실행 승인을 받는다
 - [X] H02 로컬 DB에 첫 실제 색인과 재실행: `uv run qk-index run --json` 두 번(예상 약 325 Neurons, H01 값으로 확인). 두 번째 `embedding.provider_calls == 0`. spec SC-012 측정 조건(대상 커밋, 보안·청킹 규칙 버전, 인덱스 버전, 실행 환경, 날짜)과 원본 요청 수, 소요 시간, 처리 문서 수, 청크 수, 소비 Neurons를 기록
 - [X] H03 로컬 DB에서 `qk-index index status` → `qk-index index activate <버전>` → 검색 확인(질의 임베딩 소량). 활성화 요약과 검색 결과 출처 기록
-- [ ] H04 운영 저장소 제공자 데이터 처리 정책 확인(ADR-008·ADR-019에 출처·조회일)과 `config/store_policy.toml` PR
+- [X] H04 운영 저장소 제공자 데이터 처리 정책 확인(ADR-008·ADR-019에 출처·조회일)과 `config/store_policy.toml` PR
   - 2026-10-22 기록(SCRUM-103·#50): 운영 저장소는 팀원 테넌시(PAYG, `ap-osaka-1`)의 OCI A1 공유 인스턴스 위 자체 운영 PostgreSQL이다. 정책 확인 결과는 ADR-008 "데이터 처리 정책" 절, ADR-019에 적었고
-    `config/store_policy.toml`을 더했다(2026-10-23 사용자 승인). 팀원 계정이 동의한 Cloud Services Agreement 판은 확인하지 않고, 학습 사용 추론을 사람 판단으로 받아들였다(2026-10-23, 추론 유지). 남은 것: PR 리뷰·병합.
+    `config/store_policy.toml`을 더했다(2026-10-23 사용자 승인). 팀원 계정이 동의한 Cloud Services Agreement 판은 확인하지 않고, 학습 사용 추론을 사람 판단으로 받아들였다(2026-10-23, 추론 유지).
+  - 2026-10-23: PR #55를 리뷰어(팀원)가 승인했고 `main`에 병합됐다(`59132b2`).
 - [X] H05 운영 저장소 연결이 세션 advisory lock을 유지하는 직접 연결인지 확인(research R-06 남는 위험)
   - 2026-10-23: 연결 풀러가 없다. 예약 실행은 같은 인스턴스의 systemd 타이머(ADR-020)에서 `127.0.0.1:5432`로, 로컬 CLI는 OCI Bastion 경유 SSH 터널로 PostgreSQL에 직접 붙는다.
-    마이그레이션·첫 색인을 이 터널로 실행했다. 두 실행을 동시에 띄워 잠금 거절을 보는 시험은 하지 않았다.
+    마이그레이션·첫 색인을 이 터널로 실행했다.
+  - 2026-10-23 잠금 시험(서버, 병합 뒤 수동 실행 중): 첫 실행 `sync-20261023T155324-1bbd7bfc`가 advisory lock을 잡은 동안 `qksync`로 두 번째 `qk-index run --allow-remote`를 띄웠다.
+    두 번째는 `reason=already_running`, `exit_code 6`으로 멈췄고 실행 기록을 남기지 않았다. 첫 실행은 succeeded.
 - [X] H06 운영 저장소 첫 실제 색인(`--allow-remote`)과 활성화(H02와 같은 Neurons, spec SC-012)
   - 2026-10-23 조건: 대상 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`, 규칙 `sec-7222e5dd1d6e`, 청킹 `chk-md-20d966f730bb`, 인덱스 `iv-4c0bc4fcc642`,
     운영 DB `supabase/postgres:17.11.0.004`(pgvector 0.8.2·PGroonga 3.2.5), 작업자 PC에서 터널 경유. 마이그레이션 0001~0004 `applied=4`, 재실행 `applied=0`.
@@ -253,7 +256,11 @@ description: "QK-SYN-001 구현 작업 목록"
   - `qk-index index activate iv-4c0bc4fcc642 --allow-remote`: 문서 79, 청크 1,291, 벡터 없는 청크 0, 실패 조건 없음. `index status`: active=current, matches=true.
 - [ ] H07 GitHub Actions 무료 할당 확인, Secret 등록, 저장소 변수 `QK_SYNC_ENABLED=true`, 첫 예약 실행 결과 확인
   - 2026-10-23: 저장소가 공개라 GitHub Actions 셀프 호스티드 러너 대신 OCI 인스턴스의 systemd 타이머로 예약 실행한다(ADR-020, 사용자 결정). 이 항목의 "GitHub Actions 무료 할당 확인, Secret 등록,
-    `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다. 2026-10-23 타이머 설치(켜지 않음)와 비밀값 입력(사람)을 마쳤다. 남은 것: `main` 병합 뒤 수동 1회 실행, 타이머 켜기, 예약 실행 1회 확인.
+    `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다. 2026-10-23 타이머 설치(켜지 않음)와 비밀값 입력(사람)을 마쳤다.
+  - 2026-10-23 병합 뒤(`main` `59132b2`): #54의 `0006_generation_usage`를 운영 DB에 먼저 적용했다(`applied=1`, 재실행 `applied=0 skipped=6`). 서버 스크립트의 `usage prune`이 0006의 함수를 부르기 때문이다.
+    `sudo systemctl start qk-sync.service` 1회: `sync-20261023T155324-1bbd7bfc` succeeded(UNCHANGED 79·SKIP 1, 제공자 호출 0, 0 Neurons, 정리 단계 성공, 종료 코드 0, 색인 약 68초).
+    스크립트가 `--trigger schedule`을 고정하므로 이 수동 실행도 `trigger=schedule`로 남는다. 이어서 `sudo systemctl enable --now qk-sync.timer`(다음 실행 2026-10-24 00:30 UTC).
+    남은 것: 2026-10-24 00:30 UTC 예약 실행 1회 확인(`journalctl -u qk-sync.service`, `qk-index runs list`).
 
 H04~H07은 운영 저장소가 정해진 뒤 1.G 완료 리뷰 전까지 한다.
 
