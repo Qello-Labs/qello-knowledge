@@ -240,9 +240,20 @@ description: "QK-SYN-001 구현 작업 목록"
 - [X] H02 로컬 DB에 첫 실제 색인과 재실행: `uv run qk-index run --json` 두 번(예상 약 325 Neurons, H01 값으로 확인). 두 번째 `embedding.provider_calls == 0`. spec SC-012 측정 조건(대상 커밋, 보안·청킹 규칙 버전, 인덱스 버전, 실행 환경, 날짜)과 원본 요청 수, 소요 시간, 처리 문서 수, 청크 수, 소비 Neurons를 기록
 - [X] H03 로컬 DB에서 `qk-index index status` → `qk-index index activate <버전>` → 검색 확인(질의 임베딩 소량). 활성화 요약과 검색 결과 출처 기록
 - [ ] H04 운영 저장소 제공자 데이터 처리 정책 확인(ADR-008·ADR-019에 출처·조회일)과 `config/store_policy.toml` PR
-- [ ] H05 운영 저장소 연결이 세션 advisory lock을 유지하는 직접 연결인지 확인(research R-06 남는 위험)
-- [ ] H06 운영 저장소 첫 실제 색인(`--allow-remote`)과 활성화(H02와 같은 Neurons, spec SC-012)
+  - 2026-10-22 기록(SCRUM-103·#50): 운영 저장소는 팀원 테넌시(PAYG, `ap-osaka-1`)의 OCI A1 공유 인스턴스 위 자체 운영 PostgreSQL이다. 정책 확인 결과는 ADR-008 "데이터 처리 정책" 절, ADR-019에 적었고
+    `config/store_policy.toml`을 더했다(2026-10-23 사용자 승인). 남은 것: 팀원 계정이 동의한 Cloud Services Agreement 판 확인, PR 리뷰.
+- [X] H05 운영 저장소 연결이 세션 advisory lock을 유지하는 직접 연결인지 확인(research R-06 남는 위험)
+  - 2026-10-23: 연결 풀러가 없다. 예약 실행은 같은 인스턴스의 systemd 타이머(ADR-020)에서 `127.0.0.1:5432`로, 로컬 CLI는 OCI Bastion 경유 SSH 터널로 PostgreSQL에 직접 붙는다.
+    마이그레이션·첫 색인을 이 터널로 실행했다. 두 실행을 동시에 띄워 잠금 거절을 보는 시험은 하지 않았다.
+- [X] H06 운영 저장소 첫 실제 색인(`--allow-remote`)과 활성화(H02와 같은 Neurons, spec SC-012)
+  - 2026-10-23 조건: 대상 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`, 규칙 `sec-7222e5dd1d6e`, 청킹 `chk-md-20d966f730bb`, 인덱스 `iv-4c0bc4fcc642`,
+    운영 DB `supabase/postgres:17.11.0.004`(pgvector 0.8.2·PGroonga 3.2.5), 작업자 PC에서 터널 경유. 마이그레이션 0001~0004 `applied=4`, 재실행 `applied=0`.
+  - 미리 보기: 문서 80(PASSED 79·SECRET_BLOCKED 1), 청크 1,291, 원본 요청 83, 예상 368.93 Neurons, 임베딩 호출 0.
+  - 1회차 `sync-20261023T075442-2f24051c`: PROCESS 79·SKIP 1, 청크 1,291, 제공자 호출 94, **894.50 Neurons**(H02와 같음). 2회차 `sync-20261023T080122-16d16ba5`: UNCHANGED 79, 제공자 호출 0, 0 Neurons.
+  - `qk-index index activate iv-4c0bc4fcc642 --allow-remote`: 문서 79, 청크 1,291, 벡터 없는 청크 0, 실패 조건 없음. `index status`: active=current, matches=true.
 - [ ] H07 GitHub Actions 무료 할당 확인, Secret 등록, 저장소 변수 `QK_SYNC_ENABLED=true`, 첫 예약 실행 결과 확인
+  - 2026-10-23: 저장소가 공개라 GitHub Actions 셀프 호스티드 러너 대신 OCI 인스턴스의 systemd 타이머로 예약 실행한다(ADR-020, 사용자 결정). 이 항목의 "GitHub Actions 무료 할당 확인, Secret 등록,
+    `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다. 남은 것: 타이머 설치, 비밀값 입력(사람), `main` 병합 뒤 첫 실행 확인.
 
 H04~H07은 운영 저장소가 정해진 뒤 1.G 완료 리뷰 전까지 한다.
 
