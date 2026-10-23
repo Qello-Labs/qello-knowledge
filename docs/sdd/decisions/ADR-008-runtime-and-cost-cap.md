@@ -3,7 +3,7 @@
 > Created at: `2026-10-10`
 > ClickUp 작업: 해당 없음: 초기 세팅 단계 예외(WBS 0.9)
 > 기능명세서 ID: 해당 없음: Phase 0 준비 작업
-> Status: Proposed
+> Status: Accepted
 
 ## Context
 
@@ -196,5 +196,6 @@ Workers AI 무료 할당(하루 10,000 Neurons) 안에서 쓴다.
 
 ## Approval
 
-- Approvers: 확인 필요
-- Approved at: 미승인. 사용자가 2026-10-10에 실행 환경과 색인 분리를 선택했고, 이 문서의 승인은 PR 리뷰에서 받는다.
+- Approvers: PR #55 리뷰어 tkv00(팀원, OCI 계정 소유자)
+- Approved at: 2026-10-23 PR #55 리뷰 승인(APPROVED)과 병합(`59132b2`). 사용자가 2026-10-10에 실행 환경과 색인 분리를, 2026-10-22에 운영 저장소 OCI를 선택했다.
+  이 문서의 확정 초안은 Claude 세션이 썼고 그 세션은 승인하지 않았다(AGENTS.md 2절).
