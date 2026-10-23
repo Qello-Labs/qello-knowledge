@@ -29,12 +29,13 @@
     `adapters/postgres/generation_usage.py`, `adapters/postgres/migrations/0006_generation_usage.sql`(추가만), `indexer/ask_cli.py`
   - 기존 파일 변경: `ports/generator.py`(빈 경계 채움), `indexer/cli.py`(`ask` 등록), `indexer/usage.py`(`prune`에 생성 정리, `today` 표시 불변), `config/registry.py`·`config/check.py`와 설정 예시 재생성
   - 바꾸지 않음: `adapters/workers_ai/rest.py`(공개 상수만 가져옴), 기존 `qk.embedding_*`, `retrieval/`, `query/app.py`, `indexer/search_cli.py`(함수를 가져다 쓰기만)
-  - 시험: `tests/unit/generation/`, `tests/localdb/generation/`, `tests/unit/adapters/`·`tests/unit/indexer/`·`tests/unit/config/`의 새 `test_gen_*.py`, `tests/unit/test_boundaries.py`(검사 추가만). 기존 시험 기대값 변경 없음
+  - 시험: `tests/unit/generation/`, `tests/localdb/generation/`, `tests/unit/adapters/`·`tests/unit/indexer/`·`tests/unit/config/`의 새 `test_gen_*.py`, `tests/unit/test_boundaries.py`(검사 추가만).
+    기존 시험 기대값 변경은 `tests/unit/indexer/test_cli_usage.py` prune 시험 1건뿐이다(기대 출력 갱신과 가짜 생성 장부 주입, 검사 내용 그대로, 2026-10-23 사용자 결정)
 - `TASK.md`(이 파일)
 
 ## Explicit exclusions
 
-- Scope에 없는 코드 변경, 기존 SQL 함수·테이블 변경, `adapters/workers_ai/rest.py`·`retrieval/`·`query/app.py` 변경, 기존 시험 기대값 변경.
+- Scope에 없는 코드 변경, 기존 SQL 함수·테이블 변경, `adapters/workers_ai/rest.py`·`retrieval/`·`query/app.py` 변경, Scope에 적은 1건 말고 기존 시험 기대값 변경, `.github/` 변경.
 - Discord 명령·지연 응답·답변 분할·표시(QK-BOT-001), 질문 분류·필터 추론(QK-TRK-001), 질의 재작성·스레드 문맥(QK-BOT-002),
   답변 평가·판정 모델(QK-EVL-002), 질의 로그·피드백 저장(QK-OBS-001), 검색 동작 변경(QK-RET-001), Workers 배포.
 - 실제 Workers AI 생성 호출은 사람 확인 없이 하지 않는다.
@@ -119,6 +120,13 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-23 사실(tasks): `/speckit-tasks`로 `tasks.md`(작업 52개 + 사람 단계 3개)를 썼다. 계획한 시험 파일 이름 가운데 `test_settings.py`·`test_usage.py`가 저장소에 이미 있어 pytest 수집이 깨지므로,
   새 시험 파일에 `test_gen_` 접두어를 붙이고 quickstart.md 1절 표와 plan.md 시험 구조 줄의 파일 이름만 그에 맞춰 고쳤다(내용 변경 없음, 사람 확인 대상). Scope에 구현 범위 초안을 더했다. 사람의 tasks 승인은 아직 받지 않았다.
 - 2026-10-23 사용자 결정: `tasks.md`와 Scope 구현 범위 초안을 승인했다("tasks.md와 Scope 초안 승인", 시험 파일 이름 접두어 변경 포함). 승인 뒤 독립 검토를 한다. 구현은 검토 지적을 반영한 뒤 시작한다.
+- 2026-10-23 사실: tasks 독립 검토(작성에 관여하지 않은 별도 서브에이전트) 판정은 변경 요청이다(높음 3: `usage prune` 출력이 기존 시험 `test_cli_usage.py:68`과 충돌하고 생성 장부 주입 자리가 없음,
+  생성 설정 검사를 늘 넣으면 `tests/unit/embedding/test_settings.py:20`·`:37`이 깨짐, 프롬프트 시험이 브랜치마다 바뀌는 TASK.md를 읽음. 중간 5, 낮음 12). 세 높음은 코드로 다시 확인했다.
+  H2(문제가 있을 때만 검사 항목 추가), H3(승인 원문을 골든 파일로), 중간·낮음 17건을 반영했다(T030을 T030·T039a로 나눔, T024를 새 시험 파일로, T001 픽스처, 예비분 초과 경고 등).
+  승인된 문서의 문구 정리 3건(quickstart H01·H02 명령에 `--provider workers-ai`, plan의 환경값 수 5, research R-13·contracts 6절의 경계 시험 문구)은 내용을 실제 결정에 맞춘 것이다(사람 확인 대상).
+  H1은 사람 결정 대기다. 운영 워크플로 `.github/workflows/index-sync.yml:30`이 `qk-index usage prune --allow-remote`를 돌린다.
+- 2026-10-23 사용자 결정(tasks 검토 반영 H1 (a)): `tests/unit/indexer/test_cli_usage.py`의 prune 기대 출력 갱신과 가짜 생성 장부 주입을 허용한다(검사 내용은 그대로). 워크플로는 바꾸지 않고 기존 prune 명령이
+  생성 사용량도 정리한다. 승인된 문서의 문구 정리 3건도 이 반영과 함께 받아들인 것으로 본다. 다음 단계는 구현(T001~)이다.
 
 ## 승인된 입력
 
