@@ -151,18 +151,18 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **Independent Test**: 비밀값 규칙에 걸리는 질문·묶음, 구분자를 심은 청크·질문으로 가짜 제공자가 받은 입력·호출 수·기록을 본다(spec US4).
 
-- [ ] T025 [P] [US4] `tests/unit/generation/test_gen_neutralize.py`(spec FR-011, SC-004): 청크 본문·제목 경로·청크 위치·질문에 `[자료 시작]`, `[자료 끝]`, `[자료]`, `[질문]`, `[S7]`, `[S1, S2]`, `[S1,\nS2]`, `[\nS7\n]`,
+- [X] T025 [P] [US4] `tests/unit/generation/test_gen_neutralize.py`(spec FR-011, SC-004): 청크 본문·제목 경로·청크 위치·질문에 `[자료 시작]`, `[자료 끝]`, `[자료]`, `[질문]`, `[S7]`, `[S1, S2]`, `[S1,\nS2]`, `[\nS7\n]`,
   `[[S1]]`, `[S1 [S2]`, ` | `를 심었을 때 사용자 메시지 안 구분자가 템플릿 위치 말고 0개, FR-013 인식 꼴이 머리줄 `[S번호]` 말고 0개(시스템 프롬프트는 검사 대상 아님, research R-03 SC-004 범위),
   바꾼 개수 `neutralized`, 출처 목록 제목은 무력화 전 값
-- [ ] T026 [P] [US4] `tests/unit/generation/test_gen_outgoing.py`(spec FR-010, US4 1~3, SC-003): `OutgoingCheck` 가짜가 걸리게 한 질문 → `outgoing_blocked`, 제공자 호출 0, 결과·요약에 질문 없음. 검색 상태 `outgoing_blocked`와
+- [X] T026 [P] [US4] `tests/unit/generation/test_gen_outgoing.py`(spec FR-010, US4 1~3, SC-003): `OutgoingCheck` 가짜가 걸리게 한 질문 → `outgoing_blocked`, 제공자 호출 0, 결과·요약에 질문 없음. 검색 상태 `outgoing_blocked`와
   `omitted`에 `outgoing_blocked`(하이브리드)도 같은 결과. `no_results`이면서 걸리는 질문 → `outgoing_blocked`(판정 순서, research R-05). S1·S2·S3 중 S2만 걸림 → 보낸 입력에 S2 없음, S1·S3 그대로, `dropped`에 S2와 규칙 이름,
   모두 걸림 → `cannot_confirm(all_blocks_blocked)`, 호출 0. 검사는 질문 1회 + 묶음마다 1회, 출처 인자는 모두 `None`, 검사 대상은 무력화·렌더링 뒤 글(머리줄 포함).
   하이브리드 검색이 한쪽을 생략한 결과(`omitted`에 `query_embedding_failed`·`vector_search_failed`·`keyword_search_failed`)는 남은 Context로 생성하고 검색 요약에 생략 사유가 그대로 남음(spec Edge Cases, 독립 검토 L5)
-- [ ] T027 [US4] `generation/render.py`: R-03 무력화(`\[[^\[\]]*?S\d[^\[\]]*?\]` DOTALL과 구분자 표기의 대괄호를 전각 `［`·`］`로, 제목·위치의 ` | `를 ` ¦ `로, 개수 셈). T025 통과
-- [ ] T028 [US4] `generation/service.py`: R-05 1·2단계(질문 `strip`·무력화·검사)를 판정 맨 앞에, 6단계(묶음별 검사·빼기·0이면 확인 불가)를 렌더링 뒤에 둔다(contracts/generation.md 3절 순서). T026 통과
-- [ ] T029 [P] [US4] `tests/unit/generation/test_gen_injection_prompt.py`(spec US4·US5, C-03): `gen-p1` 시스템 프롬프트에 규칙 7(지시 무시)·규칙 5(충돌)·규칙 6(현재 상태)·규칙 3(확인 불가 문장)이 들어 있고, 자료 블록이
+- [X] T027 [US4] `generation/render.py`: R-03 무력화(`\[[^\[\]]*?S\d[^\[\]]*?\]` DOTALL과 구분자 표기의 대괄호를 전각 `［`·`］`로, 제목·위치의 ` | `를 ` ¦ `로, 개수 셈). T025 통과
+- [X] T028 [US4] `generation/service.py`: R-05 1·2단계(질문 `strip`·무력화·검사)를 판정 맨 앞에, 6단계(묶음별 검사·빼기·0이면 확인 불가)를 렌더링 뒤에 둔다(contracts/generation.md 3절 순서). T026 통과
+- [X] T029 [P] [US4] `tests/unit/generation/test_gen_injection_prompt.py`(spec US4·US5, C-03): `gen-p1` 시스템 프롬프트에 규칙 7(지시 무시)·규칙 5(충돌)·규칙 6(현재 상태)·규칙 3(확인 불가 문장)이 들어 있고, 자료 블록이
   `[자료 시작]`·`[자료 끝]` 사이, 질문이 `[질문]` 아래에 있음. 모델 동작 자체는 사람 단계 H02에서 본다
-- [ ] T030 [US4] `tests/unit/generation/test_gen_no_raw_text.py`(spec FR-012, SC-006): 표식 문자열(질문·청크 본문·모델 답에 각각 다른 무작위 표식)을 넣고, 이 단계까지 있는 상태 경로(정상, 확인 불가, 검색 실패, 전송 차단,
+- [X] T030 [US4] `tests/unit/generation/test_gen_no_raw_text.py`(spec FR-012, SC-006): 표식 문자열(질문·청크 본문·모델 답에 각각 다른 무작위 표식)을 넣고, 이 단계까지 있는 상태 경로(정상, 확인 불가, 검색 실패, 전송 차단,
   재시도 없는 제공자 실패)에서 `GenerationSummary`·`GenerationUsage`·`MemoryLedger` 기록·`caplog`의 모든 로그·예외 문구에 표식이 0건. 재시도·기록 실패 경로는 T039 뒤 T039a에서 같은 시험 파일에 더한다(독립 검토 M2)
 
 **Checkpoint**: P1 스토리(US1~US4) 전부 통과. QK-BOT-001이 쓸 생성 경계 완성
@@ -310,3 +310,4 @@ US7:     T047 (시험) → T048 → T049
   US2~US4·US6 시험이 각 단계를 확인하고, 그 작업들은 시험 통과 확인과 빈 곳 보완만 남는다. 골든 렌더링 3종(`golden/render-v1-*.txt`)은 구현 출력을 research R-03 꼴과 눈으로 대조한 뒤 고정했다.
 - 2026-10-23 T019·T020: T016 구현이 이미 판정 순서·문장 나누기·(가)(나)(다)·빈 결과를 담고 있어 T017·T018이 코드 변경 없이 통과했다.
 - 2026-10-23 T023: T015 구현이 research R-04 1~11단계를 이미 담고 있어 T021·T022·T024가 코드 변경 없이 통과했다(155 passed).
+- 2026-10-23 T027·T028: T014·T016 구현이 무력화·판정 순서·묶음 검사를 이미 담고 있어 T025·T026이 코드 변경 없이 통과했다. T030 파일에 T039a의 재시도·기록 실패·예비분 경고 경로도 함께 썼다(T016이 그 경로를 이미 구현). 188 passed.
