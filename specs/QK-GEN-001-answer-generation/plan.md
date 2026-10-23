@@ -113,10 +113,10 @@ src/qello_knowledge/
     ├── ask_cli.py                # 조립, 표준 입력, 실행 전 알림, 출력, 종료 코드(contracts/cli.md)
     └── usage.py                  # prune이 생성 사용량도 정리(R-06)
 tests/
-├── unit/generation/              # render, prompts, postprocess, generate, outgoing, retry_usage, no_raw_text, settings
-├── unit/adapters/test_workers_ai_generation.py   # 응답 두 꼴·오류 판정(저장한 응답 샘플, 합성)
-├── unit/indexer/test_ask_cli.py
-├── localdb/generation/           # usage(0006 함수), ask_command
+├── unit/generation/              # test_gen_*.py(이름 충돌을 피하는 접두어, tasks.md 공통 규칙)
+├── unit/adapters/test_gen_workers_ai_generation.py   # 응답 두 꼴·오류 판정(저장한 응답 샘플, 합성)
+├── unit/indexer/test_gen_ask_cli.py, test_gen_usage_prune_cli.py
+├── localdb/generation/           # test_gen_usage_ledger(0006 함수), test_gen_ask_command
 └── unit/test_boundaries.py       # generation 경계
 ```
 
