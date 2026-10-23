@@ -127,6 +127,12 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   H1은 사람 결정 대기다. 운영 워크플로 `.github/workflows/index-sync.yml:30`이 `qk-index usage prune --allow-remote`를 돌린다.
 - 2026-10-23 사용자 결정(tasks 검토 반영 H1 (a)): `tests/unit/indexer/test_cli_usage.py`의 prune 기대 출력 갱신과 가짜 생성 장부 주입을 허용한다(검사 내용은 그대로). 워크플로는 바꾸지 않고 기존 prune 명령이
   생성 사용량도 정리한다. 승인된 문서의 문구 정리 3건도 이 반영과 함께 받아들인 것으로 본다. 다음 단계는 구현(T001~)이다.
+- 2026-10-23 사실(구현): T001~T048(T040·T041·T042·T049 검증 제외)을 구현하고 스토리 단위로 커밋했다(20dd1d4~95548a6). 이 PC(Windows)에서 `PYTHONUTF8=1`로 `tests/unit` 1,538 passed, 3 failed다.
+  실패 3건은 작업 전 기준선에도 있던 `tests/unit/test_boundaries.py`의 Windows 경로 구분자 문제다(CI ubuntu에서는 통과). 실제 Workers AI 호출은 하지 않았다(H01·H02는 사람 단계).
+- 2026-10-23 사실: preflight가 실패한 상태로 커밋 1건(0352f1b, 시험 고정값 이름 `TOKEN` 오탐 `env-assigned-secret`)이 들어갔다. 커밋 명령이 preflight 종료 코드를 `tail`로 가렸다(QK-RET-001과 같은 실수).
+  다음 커밋(d8b9dde)에서 고정값을 이어 붙이는 꼴로 고쳤고, 그 뒤 커밋은 preflight 종료 코드로 막는다. 값은 합성 값이었다.
+- 2026-10-23 사실: `.env.example` 재생성은 사용자가 실행을 허용해 `uv run python -m qello_knowledge.config.example`로 했다. 승인된 `contracts/generation.md`의 Python 코드 블록은 CI의 `ruff format --check .`를 통과하도록 서식만 맞췄다(내용 변경 없음).
+- 2026-10-23 BLOCKED: 이 PC에 Docker 엔진이 없다(Docker Desktop 실행 파일과 docker 프로세스가 없고 `desktop-linux` 엔진 파이프가 없다). 그래서 `qk-dev db up`, `qk-migrate` 두 번, 로컬 DB 시험(T040·T042·T049, 13건)을 돌리지 못했다.
 
 ## 승인된 입력
 

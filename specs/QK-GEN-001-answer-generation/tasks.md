@@ -316,3 +316,5 @@ US7:     T047 (시험) → T048 → T049
 - 2026-10-23 발견(T045): 환경값 범위의 최대(Context 예산 8,000, 출력 4,096)도 설정 검사 (1) 합이 25,946으로 창 32,768 안이다. 그래서 (1)은 코드 설정용 안전망이고, 검색 요청별 덮어쓰기는 호출 직전 검사 (2)가 막는다(T038). 시험에 이 사실을 고정했다.
 - 2026-10-23 막힘: (1) `.env.example` 재생성(`uv run python -m qello_knowledge.config.example`)은 이 세션의 권한 설정이 막았다. 재생성 전까지 `tests/unit/config/test_example_file.py`가 실패한다. (2) 이 PC의 Docker 엔진이 꺼져 있어 로컬 DB 시험(T040·T042의 0006 검증, T049)과 `qk-migrate`를 아직 돌리지 못했다. 시험 13건은 수집까지 확인했다.
 - 2026-10-23 T046: `.env.example`을 `uv run python -m qello_knowledge.config.example`로 다시 만들었다(사용자가 실행 허용). `tests/unit/config` 51 passed.
+- 2026-10-23 발견: 커밋 0352f1b가 preflight 실패(`env-assigned-secret`, 합성 고정값 이름 `TOKEN`) 상태로 들어갔다. 커밋 명령이 종료 코드를 `tail`로 가렸다. d8b9dde에서 고쳤고 이후 커밋은 종료 코드로 막는다.
+- 2026-10-23 T050·T051(부분): preflight·`git diff --check`·`ruff check .`·`ruff format --check .` 통과(`contracts/generation.md` 코드 블록 서식만 맞춤), 바꾸지 않기로 한 파일(`rest.py`, `retrieval/`, `query/app.py`, `search_cli.py`, 0001~0005, `.github/`)의 `git diff origin/main` 비어 있음, `tests/unit` 1,538 passed·3 failed(기준선의 Windows 경로 3건). Docker 엔진이 없어 `qk-dev db up`·`qk-migrate`·로컬 DB 시험은 막혀 있다.

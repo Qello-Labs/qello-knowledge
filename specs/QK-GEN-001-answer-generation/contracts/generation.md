@@ -5,12 +5,17 @@
 ## 1. 공개 함수
 
 ```python
-def generate(request: GenerationRequest, deps: GenerationDeps, settings: GenerationSettings | None = None) -> GenerationResult: ...
+def generate(
+    request: GenerationRequest, deps: GenerationDeps, settings: GenerationSettings | None = None
+) -> GenerationResult: ...
 
-def render(question: str, blocks: Sequence[ContextBlock], prompt: PromptSpec, settings: GenerationSettings) -> RenderedInput: ...   # 순수(R-03)
-def postprocess(reply_text: str, rendered: RenderedInput) -> Postprocessed: ...                                                     # 순수(R-04)
-def check_settings(gen: GenerationSettings, retrieval: RetrievalSettings) -> list[str]: ...                                         # spec FR-019 (1)
-def prompt_spec(name: str) -> PromptSpec: ...                                                                                         # gen-p1, gen-base
+
+def render(
+    question: str, blocks: Sequence[ContextBlock], prompt: PromptSpec, settings: GenerationSettings
+) -> RenderedInput: ...  # 순수(R-03)
+def postprocess(reply_text: str, rendered: RenderedInput) -> Postprocessed: ...  # 순수(R-04)
+def check_settings(gen: GenerationSettings, retrieval: RetrievalSettings) -> list[str]: ...  # spec FR-019 (1)
+def prompt_spec(name: str) -> PromptSpec: ...  # gen-p1, gen-base
 ```
 
 `Postprocessed`는 `answer`, `citation_ids`, `cannot_confirm_reason`, `empty`(R-04 7단계), 후처리 수치, `unsupported_answer`, `thinking_detected`를 담는다.
@@ -18,12 +23,17 @@ def prompt_spec(name: str) -> PromptSpec: ...                                   
 ## 2. 경계 (`ports/generator.py`)
 
 ```python
-class Generator(Protocol):                      # 기존 빈 Protocol을 채운다
+class Generator(Protocol):  # 기존 빈 Protocol을 채운다
     def generate(self, request: GenerationRequest) -> GenerationResult: ...
 
-class GenerationProvider(Protocol):             # 외부 호출 한 번. 재시도하지 않는다
-    def complete(self, model_id: str, system: str, user: str, max_tokens: int, temperature: float, timeout_seconds: float) -> ProviderReply: ...
+
+class GenerationProvider(Protocol):  # 외부 호출 한 번. 재시도하지 않는다
+    def complete(
+        self, model_id: str, system: str, user: str, max_tokens: int, temperature: float, timeout_seconds: float
+    ) -> ProviderReply: ...
+
     # 실패는 GenerationProviderFailure(kind, billable, neurons, tokens, shape)
+
 
 class GenerationLedger(Protocol):
     def record(self, usage: GenerationUsage) -> AnswerUsageToday: ...
