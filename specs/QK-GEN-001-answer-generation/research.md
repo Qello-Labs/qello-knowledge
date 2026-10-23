@@ -203,7 +203,7 @@ spec FR-014의 순서를 따르되, 문장 경계가 필요한 단계보다 문�
 
 - **Decision**: `generation/fake.py`의 `ScriptedProvider`가 호출 순서대로 미리 정한 응답(본문·토큰·Neurons·종료 사유·응답 꼴) 또는 실패를 돌려주고, 받은 메시지를 기록한다. `MemoryLedger`는 메모리 장부다.
   단위 시험은 이것으로 SC-001~007·009·010을 덮는다. 로컬 DB 시험은 `0006` 함수(기록·오늘 합계·정리)와 `qk-index ask` 조립(R-10 시험 조립)을 본다. 외부 호출 시험은 두지 않는다(실측은 H01·H02).
-- **경계 시험(L10)**: `tests/unit/test_boundaries.py`의 RESTRICTED에 `generation`을 더하되 ALLOWED_INTERNAL에는 넣지 않는다. 대신 `generation/` 안의 같은 패키지 가져오기를 허용하는 검사를 QK-RET-001 방식
+- **경계 시험(L10)**: `tests/unit/test_boundaries.py`의 RESTRICTED·ALLOWED_INTERNAL에는 `generation`을 넣지 않는다(넣으면 `generation` 안의 서로 가져오기가 기존 검사에 걸린다). 대신 `generation/` 안의 같은 패키지 가져오기를 허용하는 검사를 QK-RET-001 방식
   (`generation` 전용 위반 검사 함수)으로 따로 두고, `domain`·`ports`가 `generation`을 가져오지 않는지 검사를 더한다.
 
 ## R-14 결정 요약

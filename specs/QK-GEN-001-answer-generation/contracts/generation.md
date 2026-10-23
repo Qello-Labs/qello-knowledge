@@ -86,4 +86,4 @@ research R-05 표 순서 그대로다. 앞 단계에서 끝나면 뒤 단계는 
 | `config/check.py` | `check_settings` 결과를 설정 검사 보고에 더한다 |
 | `indexer/cli.py`, `indexer/ask_cli.py`(새 파일) | `qk-index ask`(contracts/cli.md) |
 | `indexer/usage.py` | `prune`이 `qk.generation_usage_prune`도 부르고 결과를 함께 출력(R-06). `today` 표시는 바꾸지 않는다 |
-| `tests/unit/test_boundaries.py` | RESTRICTED에 `generation`, `generation` 전용 위반 검사, `domain`·`ports`가 `generation`을 가져오지 않는 검사(R-13) |
+| `tests/unit/test_boundaries.py` | `generation` 전용 위반 검사, `domain`·`ports`가 `generation`을 가져오지 않는 검사(R-13). RESTRICTED에는 넣지 않는다(넣으면 `generation` 안의 서로 가져오기가 기존 검사에 걸린다) |

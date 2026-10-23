@@ -106,7 +106,7 @@ src/qello_knowledge/
 │       ├── generation_usage.py   # PostgresGenerationLedger
 │       └── migrations/0006_generation_usage.sql
 ├── config/
-│   ├── registry.py               # QK_GEN_* 4개(R-12)
+│   ├── registry.py               # QK_GEN_* 5개(R-12)
 │   └── check.py                  # 생성 설정 검사 연결
 └── indexer/
     ├── cli.py                    # ask 하위 명령 등록

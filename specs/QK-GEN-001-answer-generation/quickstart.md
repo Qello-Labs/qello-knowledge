@@ -33,8 +33,8 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 
 | 단계 | 내용 | 외부 호출·비용 | 승인 |
 | --- | --- | --- | --- |
-| H01 | 실제 응답 꼴 확인. `measure_generation.py --only 1 --out <저장소 밖 경로>`로 합성 1문항을 후보 1로 실행하고, 응답 꼴(`ResponseShape`: 키 이름·`usage`·헤더·종료 사유 유무)만 기록(research R-01·R-11) | 생성 1회, 보통 약 7 Neurons(출력 상한까지 나오면 약 29, 재시도 시 최대 약 58), 임베딩 0, DB 없음 | 사람 확인 뒤 |
-| H02 | SC-008 실측. `uv run python specs/QK-GEN-001-answer-generation/measurement/measure_generation.py --out <저장소 밖 경로>` (research R-11) | 24회, 상한 약 920 Neurons(모두 재시도 시 최대 약 1,840), 임베딩 0 | 예상량·최대치 보고 뒤 사람 확인 |
+| H01 | 실제 응답 꼴 확인. `measure_generation.py --provider workers-ai --only 1 --prompt gen-p1 --out <저장소 밖 경로>`로 합성 1문항을 후보 1로 실행하고, 응답 꼴(`ResponseShape`: 키 이름·`usage`·헤더·종료 사유 유무)만 기록(research R-01·R-11) | 생성 1회, 보통 약 7 Neurons(출력 상한까지 나오면 약 29, 재시도 시 최대 약 58), 임베딩 0, DB 없음 | 사람 확인 뒤 |
+| H02 | SC-008 실측. `uv run python specs/QK-GEN-001-answer-generation/measurement/measure_generation.py --provider workers-ai --prompt both --out <저장소 밖 경로>` (research R-11) | 24회, 상한 약 920 Neurons(모두 재시도 시 최대 약 1,840), 임베딩 0 | 예상량·최대치 보고 뒤 사람 확인 |
 | H03 | H02 답변 원문을 사람이 읽고 확인 불가 판정·지시문 무시·충돌·현재 상태 문구를 판정, 결과를 tasks.md 실행 기록에 남김 | 없음 | 사람 |
 
 H01·H02는 하루 질의응답 예비분(3,000) 안이다. 같은 날 다른 질의가 많으면 예비분 초과 경고가 날 수 있고 막지는 않는다(spec FR-021).
