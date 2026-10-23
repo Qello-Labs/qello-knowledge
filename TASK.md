@@ -133,6 +133,9 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   다음 커밋(d8b9dde)에서 고정값을 이어 붙이는 꼴로 고쳤고, 그 뒤 커밋은 preflight 종료 코드로 막는다. 값은 합성 값이었다.
 - 2026-10-23 사실: `.env.example` 재생성은 사용자가 실행을 허용해 `uv run python -m qello_knowledge.config.example`로 했다. 승인된 `contracts/generation.md`의 Python 코드 블록은 CI의 `ruff format --check .`를 통과하도록 서식만 맞췄다(내용 변경 없음).
 - 2026-10-23 BLOCKED: 이 PC에 Docker 엔진이 없다(Docker Desktop 실행 파일과 docker 프로세스가 없고 `desktop-linux` 엔진 파이프가 없다). 그래서 `qk-dev db up`, `qk-migrate` 두 번, 로컬 DB 시험(T040·T042·T049, 13건)을 돌리지 못했다.
+- 2026-10-23 검증: 사용자가 Docker 엔진을 띄웠다(위 BLOCKED 해소). `qk-dev db up`, `qk-migrate --dry-run`으로 `target=local` 확인, `qk-migrate` 첫 실행 `applied=6`, 두 번째 `applied=0 skipped=6`.
+  `QK_REQUIRE_LOCALDB=1 uv run pytest` 1,801 passed, 3 failed(기준선의 Windows 경로 3건), 2 deselected(`external`). preflight, `git diff --check`, ruff check·format --check 통과.
+  같은 세션의 자기 검증이라 독립 검증이 아니다. 실제 Workers AI 호출은 하지 않았다(H01·H02는 사람 확인 뒤).
 
 ## 승인된 입력
 

@@ -209,14 +209,14 @@ description: "QK-GEN-001 구현 작업 목록"
 - [X] T038 [P] [US6] `tests/unit/generation/test_gen_input_limit.py`(spec FR-019 (2), SC-009): 검색 요청별 덮어쓰기로 Context 예산·질문 길이를 최대로 올린 입력(계산 36,364 > 32,768)은 호출 없이 `generation_failed(input_too_long)`, 기록 없음
 - [X] T039 [US6] `generation/service.py`: contracts/generation.md 3절 6~8단계 완성(호출 직전 한도, 시도·재시도·마감, 실패 즉시 기록·성공은 후처리 뒤 기록, R-06 Neurons 규칙, 잘림, 기록 실패 처리, 예비분 초과 경고). T037·T038 통과
 - [X] T039a [US6] `tests/unit/generation/test_gen_no_raw_text.py`에 재시도·시간 초과·할당 소진·인증·잘못된 응답·기록 실패·예비분 초과 경고 경로를 더하고 표식 0건을 확인한다(T030의 나머지, 독립 검토 M2)
-- [ ] T040 [P] [US6] `tests/localdb/generation/test_gen_usage_ledger.py`(research R-06, data-model 6절): `0006` 적용 뒤 `qk.generation_record`가 행을 넣고 `AnswerUsageToday`(생성·질의 임베딩·질의응답 합계·색인·하루 전체·예비분 초과)를 돌려줌,
+- [X] T040 [P] [US6] `tests/localdb/generation/test_gen_usage_ledger.py`(research R-06, data-model 6절): `0006` 적용 뒤 `qk.generation_record`가 행을 넣고 `AnswerUsageToday`(생성·질의 임베딩·질의응답 합계·색인·하루 전체·예비분 초과)를 돌려줌,
   `purpose`는 `'generate'`만 허용, `attempt` 1·2만, `outcome` 7종만, 음수 거부, 원문 열 없음. 질의 임베딩 기록(`qk.embedding_record`)과 생성 기록을 섞은 날 `answer_total`이 둘의 합이고 예비분 초과 판정이 이 합 기준,
   기존 `qk.embedding_usage_today`·`qk-index usage` 값과 색인 예산 판정(`qk.embedding_reserve`)은 생성 기록 전후로 같음, `qk.generation_usage_prune(90)`이 91일 전 행을 `qk.generation_usage_daily`로 합치고 지움, 재실행 안전
-- [ ] T041 [US6] `src/qello_knowledge/adapters/postgres/migrations/0006_generation_usage.sql`: data-model 6절 그대로(테이블 2개·함수 3개 추가만, 기존 객체 변경 없음).
+- [X] T041 [US6] `src/qello_knowledge/adapters/postgres/migrations/0006_generation_usage.sql`: data-model 6절 그대로(테이블 2개·함수 3개 추가만, 기존 객체 변경 없음).
   함수 인자: `qk.generation_record(p_run_id text, p_model_id text, p_prompt_version text, p_attempt smallint, p_input_tokens int, p_output_tokens int, p_estimated_input_tokens int, p_neurons numeric, p_measured boolean,
   p_outcome text, p_truncated boolean, p_query_reserve int) returns jsonb`(돌려주는 키는 data-model `AnswerUsageToday` 필드 이름 그대로), `qk.generation_usage_prune(retention_days int default 90) returns jsonb`(키
   `days_rolled_up`·`rows_deleted`, `qk.embedding_usage_prune`과 같음, 독립 검토 L6). `uv run qk-migrate`는 출력의 대상이 `target=local`인지 확인한 뒤 두 번 실행하고 두 번째 `applied=0`(독립 검토 L8)
-- [ ] T042 [US6] `src/qello_knowledge/adapters/postgres/generation_usage.py`: `PostgresGenerationLedger(url, query_reserve)`(`record`·`today`·`prune`, `adapters/postgres/usage.py`와 같은 연결·오류 처리). T040 통과
+- [X] T042 [US6] `src/qello_knowledge/adapters/postgres/generation_usage.py`: `PostgresGenerationLedger(url, query_reserve)`(`record`·`today`·`prune`, `adapters/postgres/usage.py`와 같은 연결·오류 처리). T040 통과
 - [X] T043 [P] [US6] `tests/unit/indexer/test_gen_usage_prune_cli.py`: `qk-index usage prune`이 임베딩 정리 뒤 생성 정리도 부르고 생성 쪽 `days_rolled_up`·`rows_deleted`를 함께 출력, 원격 대상 규칙(`--allow-remote`)은 그대로,
   `qk-index usage`(today) 출력은 바뀌지 않음. 기존 `tests/unit/indexer/test_cli_usage.py`의 prune 시험(65~76행)은 기대 출력에 생성 쪽 줄을 더하고 가짜 생성 장부(`generation_ledger_factory`)를 주입하도록
   고친다. 검사하는 내용(대상 표시, 원격 대상이면 연결 없이 종료 3, `--allow-remote`면 정리)은 그대로 둔다(2026-10-23 사용자 결정, 독립 검토 H1). 생성 정리 출력 줄은 `generation_days_rolled_up=<n> generation_rows_deleted=<n>`
@@ -244,7 +244,7 @@ description: "QK-GEN-001 구현 작업 목록"
 - [X] T048 [US7] `src/qello_knowledge/indexer/ask_cli.py`·`indexer/cli.py`: `add_ask_parser`, `main()`에 `ask_factory` 주입 자리(`search_factory` 꼴, `cli.py:36`·`tests/localdb/retrieval/test_search_command.py:24-33`, 독립 검토 L3),
   `postgres_ask(settings, source, policy, *, embedding_provider=None, generation_provider=None, transport=None)`(`postgres_search` 재사용, 생성 설정은 `generation_settings`,
   `security_outgoing_check(policy)`, `query_retry_delay`, 가짜면 기록 `MemoryLedger`·오늘 사용량은 `PostgresGenerationLedger.today()` 읽기만), `run_ask`. T047 통과
-- [ ] T049 [P] [US7] `tests/localdb/generation/test_gen_ask_command.py`: 합성 문서를 넣은 로컬 DB에서 가짜 임베딩 제공자(`FakeEmbeddingProvider`)와 (1) 가짜 생성 제공자로 `answered`·출처 줄, (2) `WorkersAiGenerationProvider` + 가짜 전송으로
+- [X] T049 [P] [US7] `tests/localdb/generation/test_gen_ask_command.py`: 합성 문서를 넣은 로컬 DB에서 가짜 임베딩 제공자(`FakeEmbeddingProvider`)와 (1) 가짜 생성 제공자로 `answered`·출처 줄, (2) `WorkersAiGenerationProvider` + 가짜 전송으로
   `PostgresGenerationLedger`에 기록 1행·`usage_today` 표시, (3) 활성 인덱스 없음 → `retrieval_failed` 종료 1. 외부 호출 0, 질문 원문이 출력·`qk.generation_usage`에 없음. T048 뒤 통과
 
 **Checkpoint**: 확인 명령 완료
@@ -253,10 +253,10 @@ description: "QK-GEN-001 구현 작업 목록"
 
 ## Phase 10: Polish & Cross-Cutting
 
-- [ ] T050 경계·회귀 확인: `uv run pytest tests/unit/test_boundaries.py`, 기존 QK-EMB-001·QK-RET-001·QK-SEC-001·QK-STO-001 시험 전부 통과, `uv run qk-migrate` 두 번(대상 `target=local` 확인, 두 번째 `applied=0`),
+- [X] T050 경계·회귀 확인: `uv run pytest tests/unit/test_boundaries.py`, 기존 QK-EMB-001·QK-RET-001·QK-SEC-001·QK-STO-001 시험 전부 통과, `uv run qk-migrate` 두 번(대상 `target=local` 확인, 두 번째 `applied=0`),
   `git diff origin/main --stat -- src/qello_knowledge/adapters/workers_ai/rest.py src/qello_knowledge/retrieval src/qello_knowledge/query/app.py src/qello_knowledge/indexer/search_cli.py src/qello_knowledge/adapters/postgres/migrations/000[1-5]*`가 비어 있음
   (바꾸지 않기로 한 파일, 독립 검토 L11). 실측 질문 세트 `gen-ko-v1`(T034 안 데이터)은 후처리·프롬프트 코드와 다른 커밋으로 넣는다(AGENTS.md 3.4 취지)
-- [ ] T051 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`).
+- [X] T051 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`).
   결과를 "실행 기록"에 적고 이 목록 체크 표시를 갱신한다
 - [ ] T052 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
 
@@ -318,3 +318,4 @@ US7:     T047 (시험) → T048 → T049
 - 2026-10-23 T046: `.env.example`을 `uv run python -m qello_knowledge.config.example`로 다시 만들었다(사용자가 실행 허용). `tests/unit/config` 51 passed.
 - 2026-10-23 발견: 커밋 0352f1b가 preflight 실패(`env-assigned-secret`, 합성 고정값 이름 `TOKEN`) 상태로 들어갔다. 커밋 명령이 종료 코드를 `tail`로 가렸다. d8b9dde에서 고쳤고 이후 커밋은 종료 코드로 막는다.
 - 2026-10-23 T050·T051(부분): preflight·`git diff --check`·`ruff check .`·`ruff format --check .` 통과(`contracts/generation.md` 코드 블록 서식만 맞춤), 바꾸지 않기로 한 파일(`rest.py`, `retrieval/`, `query/app.py`, `search_cli.py`, 0001~0005, `.github/`)의 `git diff origin/main` 비어 있음, `tests/unit` 1,538 passed·3 failed(기준선의 Windows 경로 3건). Docker 엔진이 없어 `qk-dev db up`·`qk-migrate`·로컬 DB 시험은 막혀 있다.
+- 2026-10-23 T041·T050·T051: 사용자가 이 PC의 Docker 엔진(29.8.0)을 띄운 뒤 `uv run qk-dev db up`(127.0.0.1:54322, vector·pgroonga), `uv run qk-migrate --dry-run`으로 `target=local` 확인, `qk-migrate` 첫 실행 `applied=6 skipped=0`(0006 포함, 새 컨테이너), 두 번째 `applied=0 skipped=6`. 로컬 DB 시험 `tests/localdb/generation` 13 passed(T040·T042·T049). `QK_REQUIRE_LOCALDB=1 uv run pytest` 전체 1,801 passed·3 failed·2 deselected(`external`). 실패 3건은 기준선의 Windows 경로 구분자 문제(`tests/unit/test_boundaries.py`)다. preflight·`git diff --check`·`ruff check .`·`ruff format --check .` 통과, 바꾸지 않기로 한 파일의 `git diff origin/main` 비어 있음. 실제 Workers AI 호출 0건(H01·H02는 사람 단계).
