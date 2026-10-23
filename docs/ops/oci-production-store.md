@@ -54,8 +54,9 @@
    git fetch --quiet origin main && git reset --quiet --hard origin/main || exit 1
    uv sync --locked --extra index --extra postgres || exit 1
    uv run qk-index run --allow-remote --trigger schedule --json; rc=$?
-   uv run qk-index usage prune --allow-remote || rc=${rc:-1}
-   uv run qk-index runs prune --allow-remote || rc=${rc:-1}
+   # 색인이 실패하면 그 종료 코드를 남기고, 색인이 성공해도 정리가 하나라도 실패하면 1로 끝낸다.
+   uv run qk-index usage prune --allow-remote || { [ "$rc" -eq 0 ] && rc=1; }
+   uv run qk-index runs prune --allow-remote || { [ "$rc" -eq 0 ] && rc=1; }
    exit "$rc"
    ```
 
