@@ -1,5 +1,5 @@
 # 로컬 개발·테스트 전용 DB. 운영 실행 환경이 아니다(ADR-008 Follow-ups, QK-FND-001 FR-010).
-# 운영 저장소(Supabase)와 같은 배포판 이미지라 pgvector·PGroonga를 함께 쓴다.
+# 운영 저장소(OCI 인스턴스의 자체 운영 PostgreSQL, ADR-008)와 같은 배포판 이미지라 pgvector·PGroonga를 함께 쓴다.
 # 시작·확장 확인은 `uv run qk-dev db up`으로 한다. 포트는 QK_LOCAL_DB_PORT로 바꾼다.
 name: qello-knowledge
 

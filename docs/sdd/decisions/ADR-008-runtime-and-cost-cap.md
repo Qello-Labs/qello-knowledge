@@ -18,8 +18,9 @@ Phase 1 구현 전에 시스템이 돌아갈 환경과 비용 상한을 정해�
 
 ## Decision
 
-질의응답은 Cloudflare Workers에서 실행하고, 저장은 Supabase 무료 플랜의 관리형 PostgreSQL(pgvector·PGroonga)에
-둔다. 색인은 Workers 밖(GitHub Actions 또는 로컬 CLI)에서 실행한다. 추가 고정비 상한은 월 0원이고, 종량 호출은
+질의응답은 Cloudflare Workers에서 실행하고, 저장은 Oracle Cloud Infrastructure(OCI) Ampere A1 인스턴스(팀원 테넌시의 공유 인스턴스) 위의 자체 운영
+PostgreSQL(pgvector·PGroonga)에 둔다(아래 2026-10-19 변경 제안을 채택. 처음 결정은 Supabase 무료 플랜이었다).
+색인은 Workers 밖(GitHub Actions 또는 로컬 CLI)에서 실행한다. 추가 고정비 상한은 월 0원이고, 종량 호출은
 Workers AI 무료 할당(하루 10,000 Neurons) 안에서 쓴다.
 
 ## Rationale
@@ -114,8 +115,22 @@ Workers AI 무료 할당(하루 10,000 Neurons) 안에서 쓴다.
 
 ## 변경 제안 (2026-10-19): 운영 저장소를 Oracle Cloud Always Free 인스턴스로
 
-> 상태: 제안. 2026-10-19 사용자가 QK-STO-001 작업 중 "운영 저장소는 아마 Oracle Cloud 프리티어급 인스턴스로 바꾼다"고 정했다.
-> 확정은 이 기록의 승인과 함께 한다. 확정되면 위 Decision의 저장 부분을 이 절로 바꾼다.
+> 상태: 채택(2026-10-21 사용자 결정, SCRUM-103·#50). 2026-10-19 사용자가 QK-STO-001 작업 중 "운영 저장소는 아마 Oracle Cloud 프리티어급 인스턴스로 바꾼다"고 정했고,
+> 2026-10-21 대안(Supabase·Neon·Aiven·Koyeb·Xata·무료 VPS) 비교 뒤 OCI로 확정했다. 위 Decision의 저장 부분을 이 절로 바꿨다. 이 기록의 승인은 PR 리뷰로 받는다.
+> 경과: 2026-10-21 작업자 테넌시(도쿄)에서 A1 인스턴스 생성이 "Out of host capacity"로 실패해 같은 날 Supabase Free로 잠시 돌렸다가,
+> 2026-10-22 팀원 테넌시의 기존 A1 인스턴스를 같이 쓰기로 하고 OCI로 되돌렸다(사용자 결정).
+
+### 확정 사항 (2026-10-22 갱신)
+
+- 계정: 팀원 테넌시(유료 Pay As You Go 전환 계정)다. 계정 소유자는 팀원이고, 작업자는 컴파트먼트 `dnd_Qello`의 IAM 접근을 받았다(루트 컴파트먼트는 못 본다). 홈 리전은 오사카(`ap-osaka-1`)다.
+- 인스턴스: 새로 만들지 않고 기존 `Qello-Meeting-Bot-Server`(A1 Flex 1 OCPU·6 GB, Ubuntu 22.04 aarch64)를 회의 봇과 같이 쓴다.
+  2026-10-22 실측 가용 메모리 4.6 GiB·디스크 여유 40 GB로 크기 변경 없이 올린다 `(추론)`. DB 컨테이너에 메모리 상한을 둔다.
+  PAYG라 테넌시 전체 A1 사용량이 무료 범위를 넘으면 과금되고, 작업자는 다른 컴파트먼트를 볼 수 없으므로 크기 변경·새 유료 자원은 팀원 확인과 C-05 승인 뒤에만 한다.
+- 작업자 접속: OCI Bastion `qkbastion`(무료, 작업자 공인 IP /32만 허용)의 관리형 SSH 세션으로 한다. 이를 위해 인스턴스의 Bastion 플러그인을 켰다(2026-10-22, 팀원 승인).
+- 색인 연결: 예약 실행은 인스턴스의 systemd 타이머로 돌고 DB에는 `localhost`로 붙는다(ADR-020. 저장소가 공개라 셀프 호스티드 러너는 쓰지 않는다).
+  DB 포트는 인터넷에 열지 않는다(보안 목록·호스트 iptables 모두 22만 받음). 작업자의 수동 실행은 Bastion 세션의 SSH 터널로 한다. Workers 질의 경로의 연결은 그대로 QK-BOT-001에서 정한다.
+- 작업자 테넌시(도쿄)에 만든 무료 네트워크 자원(컴파트먼트·VCN·서브넷·게이트웨이·경로 표·보안 목록)은 남겨 둔다(2026-10-22 사용자 결정).
+- 구성과 절차는 `docs/ops/oci-production-store.md`에 둔다.
 
 ### 제안 내용
 
@@ -133,22 +148,31 @@ Workers AI 무료 할당(하루 10,000 Neurons) 안에서 쓴다.
 ### 대가와 위험
 
 - **유휴 인스턴스 회수**: 7일 동안 CPU 95번째 백분위 20% 미만, 네트워크 20% 미만, 메모리 20% 미만(A1만)이면 Oracle이 회수할 수 있다.
+  2026-10-22: 쓰는 계정이 PAYG라 이 회수는 해당하지 않는다고 본다 `(추론, 공식 문서 확인 필요)`.
   하루 질문 50건 규모의 DB는 이 조건에 걸릴 가능성이 높다. 대응(유료 계정 전환 시 Always Free 무과금 유지 여부, 메모리 사용률 유지 등)을 정하기 전에는
   실제 팀 자료의 유일한 사본을 두지 않는다. 원본에서 전체 재색인으로 복구할 수 있어야 한다(RISK-08).
 - **운영 부담**: 백업, 보안 패치, 디스크 관리, 단일 장애점을 팀이 맡는다. 이 기록의 Alternatives에서 "전용 소형 VM 신설"을 뺀 이유 중 고정비는 사라지지만
   운영 부담은 그대로 남는다.
-- **용량 확보**: 홈 리전에서만 만들 수 있고, "out of host capacity"로 일시적으로 못 만들 수 있다.
+- **용량 확보**: 홈 리전에서만 만들 수 있고, "out of host capacity"로 일시적으로 못 만들 수 있다. 2026-10-21 도쿄에서 실제로 실패했다.
+- **공유 인스턴스**: 회의 봇과 CPU·메모리·디스크를 나눠 쓰고, 단일 장애점도 공유한다. 팀원(인스턴스 관리자)은 DB 내용을 볼 수 있다(저장하는 것은 팀 공용 자료 청크뿐).
+  팀원이 인스턴스를 재생성·종료하면 DB를 잃으므로 미리 알리기로 하고, 잃으면 재색인으로 복구한다(RISK-08).
 - **Workers 연결**: Supabase Data API가 없어진다. Python Workers에서 TCP 드라이버를 쓸 수 없으므로 인스턴스에 HTTP RPC 계층(예: PostgREST)을 두고
   공인 포트를 열지 않는 경로(예: Cloudflare Tunnel)로 연결하는 방안을 QK-BOT-001에서 정한다. QK-STO-001은 검색을 SQL 함수로 두어 어느 쪽이든 쓸 수 있다.
-- **계정**: 가입에 결제 수단 등록이 필요하다. 유료 전환은 C-05에 따라 사람 승인을 받는다.
+- **계정**: 팀원 계정은 이미 PAYG다. 무료 범위를 넘는 자원은 바로 과금되므로 C-05에 따라 사람 승인을 받는다.
 
-### 데이터 처리 정책 (FR-022 확인 결과)
+### 데이터 처리 정책 (QK-STO-001 FR-022, QK-SYN-001 H04 확인 결과)
 
-- 저장 위치: 우리 테넌시의 VM과 블록 볼륨이다. 관리형 DB 서비스가 아니므로 DB 내용을 제공자 서비스가 처리하지 않는다.
-- 학습 사용: OCI Generative AI 문서는 고객 입력을 보존하지 않고 학습 데이터를 공용 모델 개선에 쓰지 않는다고 적는다. 이 시스템은 OCI 생성 AI를 쓰지 않으므로
-  직접 해당하지 않는다. 컴퓨트·블록 볼륨 내용의 학습 사용을 명시적으로 다룬 문서는 찾지 못했다(확인 못 함).
-- 보존 기간: 서비스 종료 뒤 고객 콘텐츠 회수 기간은 Oracle Cloud Services Agreement와 서비스 사양에 따른다고 되어 있다. 기간(일수)은 공식 문서에서 확인하지 못했다(확인 못 함).
-- 확인 못 한 두 항목은 인스턴스를 만들기 전에 계정 약관 화면에서 다시 확인한다.
+- 저장 위치: 팀원 테넌시의 VM 부트 볼륨이다. 관리형 DB 서비스가 아니므로 DB 내용을 제공자 서비스가 처리하지 않는다. 콘텐츠는 서비스의 데이터 센터 리전(오사카, APAC)에 저장되고,
+  Oracle은 중복을 위해 같은 리전 안에만 복제할 수 있다(Hosting and Delivery Policies 3.13, Overview).
+- Oracle의 접근: Oracle 관리 구성 요소에서 고객 콘텐츠 접근은 권한 있는 인원으로 제한되고 need to know·최소 권한 원칙을 따른다(같은 문서 1.4).
+  테넌시 안에서는 계정 소유자인 팀원과 인스턴스 관리자가 DB 내용을 볼 수 있다.
+- 학습 사용: Cloud Services Agreement는 고객이 Oracle에 콘텐츠를 "서비스 제공을 위해" 호스팅·사용·처리할 권리를 준다고 적는다(3.3절, 확인한 판은 2016~2018년판).
+  모델 학습에 쓸 권리를 주는 조항은 찾지 못했다. AI Terms(2026-09-16)는 AI 기능에 쓰는 콘텐츠에만 적용되고, 이 시스템은 OCI AI 기능을 쓰지 않는다.
+  그래서 컴퓨트·블록 볼륨 내용은 학습에 쓰이지 않는다고 판단한다 `(추론)`. 학습 금지를 명시한 문장은 찾지 못했다.
+- 보존 기간: 유료 서비스는 서비스 기간이 끝난 뒤 60일 동안 회수할 수 있게 두고, 무료 체험·시범은 끝난 뒤 30일이다. 회수 기간이 지나면 Oracle은 콘텐츠를 지운다(같은 문서 6.1).
+  팀원 계정은 PAYG라 유료 서비스 쪽(60일)에 해당한다고 본다 `(추론)`. 인스턴스나 DB를 잃으면 원본에서 재색인으로 복구한다(RISK-08).
+- 2026-10-23 사람 판단: 팀원 계정이 가입 때 동의한 Cloud Services Agreement의 판(버전)은 확인하지 않았다. 위 학습 사용 추론을 사용자가 받아들였다.
+  판 미확인과 추론이라는 한계는 남는다. 공개 검색으로는 2018년판보다 새 판을 찾지 못했다.
 
 ### 근거 (조회 2026-10-19)
 
@@ -157,12 +181,18 @@ Workers AI 무료 할당(하루 10,000 Neurons) 안에서 쓴다.
 - OCI Generative AI 데이터 처리: https://docs.oracle.com/en-us/iaas/Content/generative-ai/data-handling.htm
 - Oracle AI Terms: https://www.oracle.com/contracts/docs/oracle-ai-terms.pdf
 - Oracle Cloud Hosting and Delivery Policies(종료·정지 정책 6절): https://www.oracle.com/contracts/docs/ocloud-hosting-delivery-policies-soc.pdf
+- (조회 2026-10-21) Oracle Cloud Hosting and Delivery Policies 3.13(2026-09, Overview·1.4·6.1): https://www.oracle.com/contracts/docs/ocloud_hosting_delivery_policies_3089853.pdf
+- (조회 2026-10-21) Oracle AI Terms(2026-09-16): https://www.oracle.com/contracts/docs/oracle-ai-terms.pdf
+- (조회 2026-10-21) Oracle Cloud Services Agreement(3.3 콘텐츠 사용 권한, 2016~2018년판): https://www.oracle.com/contracts/docs/oracle_cloud_services_agreement___oracle_systems_limited___v031916.pdf ,
+  https://www.oracle.com/us/corporate/contracts/cloud-csa-v012418-jp-eng-4420526.pdf
 - 이미지 arm64 태그: https://hub.docker.com/r/supabase/postgres/tags , 로컬 실측은 `docs/sdd/decisions/ADR-007-storage-schema.md` Evidence
 
-### 이 제안이 남기는 수정 (이 작업에서 고치지 않는다)
+### 이 제안이 남기는 수정
 
-- `docs/sdd/roadmap.md`의 Supabase 표기, `compose.yaml` 주석("운영 저장소(Supabase)와 같은 배포판 이미지")은 확정 뒤 사람 승인을 받아 고친다.
-- PGroonga 운영 확인은 인스턴스가 생긴 뒤 같은 이미지로 `CREATE EXTENSION` 결과를 이 절에 적는다(QK-STO-001 T031).
+- `compose.yaml` 주석은 2026-10-21 SCRUM-103 작업에서 고쳤다. `docs/sdd/roadmap.md`에는 Supabase 표기가 없다(2026-10-21 확인).
+- PGroonga 운영 확인은 DB 컨테이너를 띄운 뒤 같은 이미지로 `CREATE EXTENSION` 결과를 이 절에 적는다(QK-STO-001 T031, SCRUM-103).
+  2026-10-23 결과: 운영 컨테이너 `qk-postgres`(`supabase/postgres:17.11.0.004`, PostgreSQL 17.11, arm64)에서 `postgres` 사용자(superuser 아님)로
+  `CREATE EXTENSION vector`·`CREATE EXTENSION pgroonga`가 성공했고 설치 버전은 pgvector 0.8.2·PGroonga 3.2.5다(로컬 스파이크와 같다).
 
 ## Approval
 
