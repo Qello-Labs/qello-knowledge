@@ -136,6 +136,12 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-23 검증: 사용자가 Docker 엔진을 띄웠다(위 BLOCKED 해소). `qk-dev db up`, `qk-migrate --dry-run`으로 `target=local` 확인, `qk-migrate` 첫 실행 `applied=6`, 두 번째 `applied=0 skipped=6`.
   `QK_REQUIRE_LOCALDB=1 uv run pytest` 1,801 passed, 3 failed(기준선의 Windows 경로 3건), 2 deselected(`external`). preflight, `git diff --check`, ruff check·format --check 통과.
   같은 세션의 자기 검증이라 독립 검증이 아니다. 실제 Workers AI 호출은 하지 않았다(H01·H02는 사람 확인 뒤).
+- 2026-10-23 사실: 구현 독립 검토(작성에 관여하지 않은 별도 서브에이전트) 판정은 변경 요청이다(높음 0, 중간 4, 낮음 9). 중간 4건(URL에 붙은 인용 삭제, 코드 안 `<think>` 삭제, 사용량 행의 잘림 값,
+  CLI 출처 날짜 UTC)은 작성 세션이 다시 재현해 확인했다.
+- 2026-10-23 사용자 결정(구현 검토 반영): 중간 4건과 낮음 L1~L3·L5~L9를 고친다. L4는 URL 뒤 조사 예외를 정해진 조사 목록으로 한정한다. research 문구를 맞춰 고치고 같은 검토자에게 재검토받는다.
+  반영: URL 후보에서 대괄호 제외(M1), 코드 표기 안 추론 표시 무시(M2), 잘림을 한 번 계산해 기록에도 사용(M3), 출처 줄 한국 시간 날짜(M4), NUL 제거·후처리 예외를 bad_response로 기록(L1),
+  문장부호 앞 공백 정리(L2), 인용 귀속 조건(L3), 조사 목록(L4), 마감 하한 `2 × 시간 제한 + 5`(L5, data-model·research 갱신), 실측 스크립트에 실제 전송 직전 검사 연결(L6), 원문 비기록 시험 보강(L7),
+  prune 부분 반영은 받아들인 위험으로 research R-06에 기록(L8), 가짜 실행 Neurons 0 표시(L9). 회귀 시험 `tests/unit/generation/test_gen_review_regressions.py` 등을 더했다.
 
 ## 승인된 입력
 

@@ -20,7 +20,7 @@
 | `input_price_per_m` | 4,625 | > 0 | spike 3.2 |
 | `output_price_per_m` | 30,475 | > 0 | spike 3.2 |
 | `max_attempts` | 2 | 고정(재시도 1회) | spec FR-022 |
-| `deadline_seconds` | `2 × timeout_seconds + 5`(기본 45) | 직접 주면 `2 × timeout_seconds + 2` 이상 ~ 130 | R-07(마감 안에서만 재시도, 설정만으로 재시도가 꺼지지 않게) |
+| `deadline_seconds` | `2 × timeout_seconds + 5`(기본 45) | 직접 주면 `2 × timeout_seconds + 5` 이상 ~ 130 | R-07(마감 안에서만 재시도, 설정만으로 재시도가 꺼지지 않게) |
 
 환경값은 `QK_GEN_MODEL`, `QK_GEN_MAX_TOKENS`, `QK_GEN_TEMPERATURE`, `QK_GEN_TIMEOUT_SECONDS`, `QK_GEN_PROMPT_VERSION` 5개다(R-12). 나머지 필드는 조립 코드가 바꾼다.
 

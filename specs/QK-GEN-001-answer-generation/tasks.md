@@ -53,7 +53,7 @@ description: "QK-GEN-001 구현 작업 목록"
 
 - [X] T003 [P] `tests/unit/generation/test_gen_settings_domain.py`(data-model 1절, spec FR-025): `GenerationSettings` 기본값(모델 `@cf/qwen/qwen3-30b-a3b-fp8`, 출력 800, 온도 0.2, 시간 제한 20, 프롬프트 `gen-p1`,
   바이트당 토큰 3.5, 배율 2.0, 창 32,768, 입력 단가 4,625, 출력 단가 30,475, 시도 2, 마감 `2 × timeout_seconds + 5` = 45)과 범위("모델 `@cf/qwen/qwen3-` 접두어", "출력 1~4,096", "온도 0~1",
-  "시간 제한 1~60", "배율 1.0~4.0", "마감을 직접 주면 `2 × timeout_seconds + 2` 이상 ~ 130", "단가 > 0") 안·밖, `PROMPT_NAMES = ("gen-p1", "gen-base")`에 없는 프롬프트 이름 거부
+  "시간 제한 1~60", "배율 1.0~4.0", "마감을 직접 주면 `2 × timeout_seconds + 5` 이상 ~ 130", "단가 > 0") 안·밖, `PROMPT_NAMES = ("gen-p1", "gen-base")`에 없는 프롬프트 이름 거부
   (이름 목록은 `domain`에 둔다. `domain`이 `generation`을 가져오지 않게, 독립 검토 M3). 시간 제한 30이면 마감 기본값 65
 - [X] T004 [P] `tests/unit/generation/test_gen_domain.py`(data-model 2~5절): 원문 필드(`question`, `system`, `user`, `text`, `answer`)가 `repr`에 나오지 않음, `GenerationStatus` 값 5개
   (`answered`, `cannot_confirm`, `retrieval_failed`, `outgoing_blocked`, `generation_failed`), `GenerationFailure` 6개(`transient`, `timeout`, `provider_quota`, `auth_config`, `bad_response`, `input_too_long`),
@@ -320,3 +320,4 @@ US7:     T047 (시험) → T048 → T049
 - 2026-10-23 T050·T051(부분): preflight·`git diff --check`·`ruff check .`·`ruff format --check .` 통과(`contracts/generation.md` 코드 블록 서식만 맞춤), 바꾸지 않기로 한 파일(`rest.py`, `retrieval/`, `query/app.py`, `search_cli.py`, 0001~0005, `.github/`)의 `git diff origin/main` 비어 있음, `tests/unit` 1,538 passed·3 failed(기준선의 Windows 경로 3건). Docker 엔진이 없어 `qk-dev db up`·`qk-migrate`·로컬 DB 시험은 막혀 있다.
 - 2026-10-23 T041·T050·T051: 사용자가 이 PC의 Docker 엔진(29.8.0)을 띄운 뒤 `uv run qk-dev db up`(127.0.0.1:54322, vector·pgroonga), `uv run qk-migrate --dry-run`으로 `target=local` 확인, `qk-migrate` 첫 실행 `applied=6 skipped=0`(0006 포함, 새 컨테이너), 두 번째 `applied=0 skipped=6`. 로컬 DB 시험 `tests/localdb/generation` 13 passed(T040·T042·T049). `QK_REQUIRE_LOCALDB=1 uv run pytest` 전체 1,801 passed·3 failed·2 deselected(`external`). 실패 3건은 기준선의 Windows 경로 구분자 문제(`tests/unit/test_boundaries.py`)다. preflight·`git diff --check`·`ruff check .`·`ruff format --check .` 통과, 바꾸지 않기로 한 파일의 `git diff origin/main` 비어 있음. 실제 Workers AI 호출 0건(H01·H02는 사람 단계).
 - 2026-10-23 T052: `/pr-draft-summary`로 PR 제목·본문 초안을 만들었다(본문 2,371자). push와 PR 생성은 하지 않았다.
+- 2026-10-23 구현 독립 검토 반영: 판정 변경 요청(높음 0, 중간 4, 낮음 9). 중간 4건 재현 확인 뒤 M1~M4·L1~L3·L5~L9를 고치고 L4는 조사 목록으로 한정했다(사용자 결정). research R-04 1·4단계, R-06 보관, R-07 마감, data-model 마감 하한을 맞췄다. 회귀 시험을 더했다.
