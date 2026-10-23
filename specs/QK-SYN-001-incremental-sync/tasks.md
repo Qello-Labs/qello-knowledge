@@ -241,7 +241,7 @@ description: "QK-SYN-001 구현 작업 목록"
 - [X] H03 로컬 DB에서 `qk-index index status` → `qk-index index activate <버전>` → 검색 확인(질의 임베딩 소량). 활성화 요약과 검색 결과 출처 기록
 - [ ] H04 운영 저장소 제공자 데이터 처리 정책 확인(ADR-008·ADR-019에 출처·조회일)과 `config/store_policy.toml` PR
   - 2026-10-22 기록(SCRUM-103·#50): 운영 저장소는 팀원 테넌시(PAYG, `ap-osaka-1`)의 OCI A1 공유 인스턴스 위 자체 운영 PostgreSQL이다. 정책 확인 결과는 ADR-008 "데이터 처리 정책" 절, ADR-019에 적었고
-    `config/store_policy.toml`을 더했다(2026-10-23 사용자 승인). 남은 것: 팀원 계정이 동의한 Cloud Services Agreement 판 확인, PR 리뷰.
+    `config/store_policy.toml`을 더했다(2026-10-23 사용자 승인). 팀원 계정이 동의한 Cloud Services Agreement 판은 확인하지 않고, 학습 사용 추론을 사람 판단으로 받아들였다(2026-10-23, 추론 유지). 남은 것: PR 리뷰·병합.
 - [X] H05 운영 저장소 연결이 세션 advisory lock을 유지하는 직접 연결인지 확인(research R-06 남는 위험)
   - 2026-10-23: 연결 풀러가 없다. 예약 실행은 같은 인스턴스의 systemd 타이머(ADR-020)에서 `127.0.0.1:5432`로, 로컬 CLI는 OCI Bastion 경유 SSH 터널로 PostgreSQL에 직접 붙는다.
     마이그레이션·첫 색인을 이 터널로 실행했다. 두 실행을 동시에 띄워 잠금 거절을 보는 시험은 하지 않았다.
