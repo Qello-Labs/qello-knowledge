@@ -1,0 +1,6 @@
+[자료 시작]
+{context}
+[자료 끝]
+
+[질문]
+{question} /no_think

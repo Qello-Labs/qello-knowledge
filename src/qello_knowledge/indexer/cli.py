@@ -7,6 +7,7 @@ from pathlib import Path
 
 from qello_knowledge.config.cli import add_check_options, run_check
 from qello_knowledge.config.registry import Entrypoint
+from qello_knowledge.indexer.ask_cli import AskFactory, add_ask_parser, postgres_ask, run_ask
 from qello_knowledge.indexer.search_cli import SearchFactory, add_search_parser, postgres_search, run_search
 from qello_knowledge.indexer.sync_cli import (
     add_sync_parsers,
@@ -15,7 +16,14 @@ from qello_knowledge.indexer.sync_cli import (
     query_command,
     run_command,
 )
-from qello_knowledge.indexer.usage import LedgerFactory, add_usage_parser, postgres_ledger, run_usage
+from qello_knowledge.indexer.usage import (
+    GenerationLedgerFactory,
+    LedgerFactory,
+    add_usage_parser,
+    postgres_generation_ledger,
+    postgres_ledger,
+    run_usage,
+)
 from qello_knowledge.security.policy import load_policy
 from qello_knowledge.security.report import render_security_report, security_report
 from qello_knowledge.sources.config import load_sources
@@ -30,10 +38,12 @@ def main(
     argv: list[str] | None = None,
     *,
     ledger_factory: LedgerFactory = postgres_ledger,
+    generation_ledger_factory: GenerationLedgerFactory = postgres_generation_ledger,
     sync_factory=build_runtime,
     sync_store_factory=postgres_sync_store,
     store_policy_path=Path("config/store_policy.toml"),
     search_factory: SearchFactory = postgres_search,
+    ask_factory: AskFactory = postgres_ask,
     stdin=None,
 ) -> int:
     parser = argparse.ArgumentParser(prog="qk-index", description="색인 진입점")
@@ -59,6 +69,7 @@ def main(
     add_usage_parser(sub)
     add_sync_parsers(sub, run)
     add_search_parser(sub)
+    add_ask_parser(sub)
     args = parser.parse_args(argv)
 
     if args.command == "run":
@@ -68,9 +79,11 @@ def main(
     if args.command in {"runs", "index"}:
         return query_command(args, sync_store_factory, store_policy_path)
     if args.command == "usage":
-        return run_usage(args, ledger_factory)
+        return run_usage(args, ledger_factory, generation_ledger_factory)
     if args.command == "search":
         return run_search(args, search_factory, stdin)
+    if args.command == "ask":
+        return run_ask(args, ask_factory, stdin)
 
     if args.command not in {"sources", "security"}:
         code, _ = run_check(Entrypoint.INDEX, args)

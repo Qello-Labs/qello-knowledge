@@ -49,11 +49,27 @@ class UsageReader(Protocol):
 LedgerFactory = Callable[[BudgetSettings, Mapping[str, str]], UsageReader]
 
 
+class GenerationPruner(Protocol):
+    def prune(self, retention_days: int = 90) -> PruneResult: ...
+    def close(self) -> None: ...
+
+
+GenerationLedgerFactory = Callable[[int, Mapping[str, str]], GenerationPruner]
+
+
 def postgres_ledger(settings: BudgetSettings, source: Mapping[str, str]) -> UsageReader:
     from qello_knowledge.adapters.postgres.connection import database_url
     from qello_knowledge.adapters.postgres.usage import PostgresUsageLedger
 
     return PostgresUsageLedger(database_url(source), settings)
+
+
+def postgres_generation_ledger(query_reserve: int, source: Mapping[str, str]) -> GenerationPruner:
+    """생성 사용량 장부(QK-GEN-001 research R-06). `prune`이 임베딩 정리 뒤 함께 부른다."""
+    from qello_knowledge.adapters.postgres.connection import database_url
+    from qello_knowledge.adapters.postgres.generation_usage import PostgresGenerationLedger
+
+    return PostgresGenerationLedger(database_url(source), query_reserve)
 
 
 def add_usage_parser(sub: argparse._SubParsersAction) -> None:
@@ -91,7 +107,11 @@ def render_usage(usage: DailyUsage, settings: BudgetSettings, json_output: bool)
     )
 
 
-def run_usage(args: argparse.Namespace, ledger_factory: LedgerFactory = postgres_ledger) -> int:
+def run_usage(
+    args: argparse.Namespace,
+    ledger_factory: LedgerFactory = postgres_ledger,
+    generation_ledger_factory: GenerationLedgerFactory = postgres_generation_ledger,
+) -> int:
     source = merge_sources(os.environ, read_env_file(args.env_file))
     settings = budget_settings(load(Entrypoint.INDEX, environ=source, env_file=None))
     if settings is None:
@@ -114,6 +134,13 @@ def run_usage(args: argparse.Namespace, ledger_factory: LedgerFactory = postgres
             if pruning:
                 result = ledger.prune(args.retention_days)
                 print(f"days_rolled_up={result.days_rolled_up} rows_deleted={result.rows_deleted}")
+                generated = _prune_generation(generation_ledger_factory, settings.query_reserve, source, args)
+                if generated is None:
+                    return EXIT_UNAVAILABLE
+                print(
+                    f"generation_days_rolled_up={generated.days_rolled_up}"
+                    f" generation_rows_deleted={generated.rows_deleted}"
+                )
             else:
                 print(render_usage(ledger.today(), settings, args.json))
         finally:
@@ -122,3 +149,20 @@ def run_usage(args: argparse.Namespace, ledger_factory: LedgerFactory = postgres
         print(f"저장소 사용 불가: {error.kind.value}")
         return EXIT_UNAVAILABLE
     return EXIT_OK
+
+
+def _prune_generation(
+    factory: GenerationLedgerFactory, query_reserve: int, source: Mapping[str, str], args: argparse.Namespace
+) -> PruneResult | None:
+    """생성 사용량도 같은 보관 기간으로 정리한다(QK-GEN-001 spec FR-020). 저장소 오류면 `None`."""
+    from qello_knowledge.adapters.postgres.generation_usage import GenerationUsageUnavailable
+
+    try:
+        ledger = factory(query_reserve, source)
+        try:
+            return ledger.prune(args.retention_days)
+        finally:
+            ledger.close()
+    except GenerationUsageUnavailable:
+        print("저장소 사용 불가: generation_usage_unavailable")
+        return None
