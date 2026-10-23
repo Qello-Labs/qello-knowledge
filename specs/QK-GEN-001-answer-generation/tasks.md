@@ -258,7 +258,7 @@ description: "QK-GEN-001 구현 작업 목록"
   (바꾸지 않기로 한 파일, 독립 검토 L11). 실측 질문 세트 `gen-ko-v1`(T034 안 데이터)은 후처리·프롬프트 코드와 다른 커밋으로 넣는다(AGENTS.md 3.4 취지)
 - [X] T051 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`).
   결과를 "실행 기록"에 적고 이 목록 체크 표시를 갱신한다
-- [ ] T052 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
+- [X] T052 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
 
 ---
 
@@ -319,3 +319,4 @@ US7:     T047 (시험) → T048 → T049
 - 2026-10-23 발견: 커밋 0352f1b가 preflight 실패(`env-assigned-secret`, 합성 고정값 이름 `TOKEN`) 상태로 들어갔다. 커밋 명령이 종료 코드를 `tail`로 가렸다. d8b9dde에서 고쳤고 이후 커밋은 종료 코드로 막는다.
 - 2026-10-23 T050·T051(부분): preflight·`git diff --check`·`ruff check .`·`ruff format --check .` 통과(`contracts/generation.md` 코드 블록 서식만 맞춤), 바꾸지 않기로 한 파일(`rest.py`, `retrieval/`, `query/app.py`, `search_cli.py`, 0001~0005, `.github/`)의 `git diff origin/main` 비어 있음, `tests/unit` 1,538 passed·3 failed(기준선의 Windows 경로 3건). Docker 엔진이 없어 `qk-dev db up`·`qk-migrate`·로컬 DB 시험은 막혀 있다.
 - 2026-10-23 T041·T050·T051: 사용자가 이 PC의 Docker 엔진(29.8.0)을 띄운 뒤 `uv run qk-dev db up`(127.0.0.1:54322, vector·pgroonga), `uv run qk-migrate --dry-run`으로 `target=local` 확인, `qk-migrate` 첫 실행 `applied=6 skipped=0`(0006 포함, 새 컨테이너), 두 번째 `applied=0 skipped=6`. 로컬 DB 시험 `tests/localdb/generation` 13 passed(T040·T042·T049). `QK_REQUIRE_LOCALDB=1 uv run pytest` 전체 1,801 passed·3 failed·2 deselected(`external`). 실패 3건은 기준선의 Windows 경로 구분자 문제(`tests/unit/test_boundaries.py`)다. preflight·`git diff --check`·`ruff check .`·`ruff format --check .` 통과, 바꾸지 않기로 한 파일의 `git diff origin/main` 비어 있음. 실제 Workers AI 호출 0건(H01·H02는 사람 단계).
+- 2026-10-23 T052: `/pr-draft-summary`로 PR 제목·본문 초안을 만들었다(본문 2,371자). push와 PR 생성은 하지 않았다.
