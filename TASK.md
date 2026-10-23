@@ -17,16 +17,24 @@
 
 - 완료: QK-GEN-001 `spec.md`를 쓰고 독립 검토 2회(변경 요청, 경미한 변경 요청)를 거쳐 사람 승인을 받았다(2026-10-23).
 - 완료: `/speckit-plan` 설계 산출물을 쓰고 독립 검토 2회(변경 요청, 승인 권고)를 거쳐 사람 승인을 받았다(2026-10-23).
-- 이번 단계: `/speckit-tasks`로 작업 목록(`tasks.md`)을 만들고 사람 승인을 받는다. 구현 범위는 tasks 승인 때 이 파일의 Scope에 더한다.
+- 완료: `/speckit-tasks` 작업 목록(`tasks.md`, 작업 52개 + 사람 단계 3개)을 만들고 사람 승인을 받았다(2026-10-23). 승인 뒤 독립 검토를 한다.
+- 이번 단계: `tasks.md` T001~T052 구현. 독립 검토 지적을 반영한 뒤 시작한다. 사람 단계 H01~H03은 구현 뒤 사람 확인으로 한다.
 
 ## Scope
 
-- `specs/QK-GEN-001-answer-generation/`의 `spec.md`·`plan.md`·`research.md`·`data-model.md`·`quickstart.md`·`contracts/`(승인됨, 바꾸려면 다시 승인), `checklists/requirements.md`, `tasks.md`
+- `specs/QK-GEN-001-answer-generation/`의 `spec.md`·`plan.md`·`research.md`·`data-model.md`·`quickstart.md`·`contracts/`(승인됨, 바꾸려면 다시 승인), `checklists/requirements.md`, `tasks.md`,
+  `measurement/measure_generation.py`
+- 구현(2026-10-23 tasks 승인과 함께 승인. plan "구현 Scope 승인이 필요한 것" 표):
+  - 새 파일: `src/qello_knowledge/domain/generation.py`, `generation/`(`__init__`, `prompts`, `render`, `postprocess`, `service`, `settings`, `fake`), `adapters/workers_ai/generation.py`,
+    `adapters/postgres/generation_usage.py`, `adapters/postgres/migrations/0006_generation_usage.sql`(추가만), `indexer/ask_cli.py`
+  - 기존 파일 변경: `ports/generator.py`(빈 경계 채움), `indexer/cli.py`(`ask` 등록), `indexer/usage.py`(`prune`에 생성 정리, `today` 표시 불변), `config/registry.py`·`config/check.py`와 설정 예시 재생성
+  - 바꾸지 않음: `adapters/workers_ai/rest.py`(공개 상수만 가져옴), 기존 `qk.embedding_*`, `retrieval/`, `query/app.py`, `indexer/search_cli.py`(함수를 가져다 쓰기만)
+  - 시험: `tests/unit/generation/`, `tests/localdb/generation/`, `tests/unit/adapters/`·`tests/unit/indexer/`·`tests/unit/config/`의 새 `test_gen_*.py`, `tests/unit/test_boundaries.py`(검사 추가만). 기존 시험 기대값 변경 없음
 - `TASK.md`(이 파일)
 
 ## Explicit exclusions
 
-- 코드 변경. 구현 범위는 tasks 승인 때 정한다(plan "구현 Scope 승인이 필요한 것").
+- Scope에 없는 코드 변경, 기존 SQL 함수·테이블 변경, `adapters/workers_ai/rest.py`·`retrieval/`·`query/app.py` 변경, 기존 시험 기대값 변경.
 - Discord 명령·지연 응답·답변 분할·표시(QK-BOT-001), 질문 분류·필터 추론(QK-TRK-001), 질의 재작성·스레드 문맥(QK-BOT-002),
   답변 평가·판정 모델(QK-EVL-002), 질의 로그·피드백 저장(QK-OBS-001), 검색 동작 변경(QK-RET-001), Workers 배포.
 - 실제 Workers AI 생성 호출은 사람 확인 없이 하지 않는다.
@@ -37,9 +45,9 @@
 ## Data and cost impact
 
 - 새로 읽는 자료원: 해당 없음. QK-RET-001이 접근 범위를 거른 Context만 쓴다
-- 외부 API로 보내는 데이터: 명세 단계 0건. 구현 뒤 질문과 Context 청크 본문을 Workers AI 생성 모델(ADR-009)로 보낸다. 기본 검증은 가짜 제공자
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 명세 단계 0 Neurons. 구현 뒤 질의당 생성 1회, 질의 임베딩 포함 약 51 Neurons(입력 3,000·출력 1,200 가정, 실측 전),
-  하루 50건 약 2,550으로 질의응답 예비분(하루 3,000) 안
+- 외부 API로 보내는 데이터: 기본 검증 0건(가짜 제공자). 운영에서는 질문과 Context 청크 본문을 Workers AI 생성 모델(ADR-009)로 보낸다. 사람 단계 H01·H02는 합성 자료만 보낸다
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 기본 검증 0 Neurons. 운영 질의당 생성 약 38 Neurons(출력 800, plan research R-11), 하루 50건 약 1,900으로 질의응답 예비분(하루 3,000) 안.
+  H01 약 7(최대 약 58), H02 상한 약 920(최대 약 1,840)이며 사람 확인 뒤 실행한다
 - 인덱스 버전 변경: 없음
 
 ## Ownership
@@ -47,6 +55,11 @@
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
 | `specs/QK-GEN-001-answer-generation/`, `TASK.md` | tkv00 | 사람 리뷰 |
+| `src/qello_knowledge/generation/`, `domain/generation.py`, `ports/generator.py` | tkv00 | 사람 리뷰 |
+| `adapters/workers_ai/generation.py`, `adapters/postgres/generation_usage.py`, `migrations/0006_generation_usage.sql` | tkv00 | 사람 리뷰 |
+| `indexer/ask_cli.py`, `indexer/cli.py`, `indexer/usage.py`, `config/registry.py`·`check.py`, 설정 예시 파일 | tkv00 | 사람 리뷰 |
+| `tests/`의 새 `test_gen_*.py`, `tests/unit/test_boundaries.py`(검사 추가만) | tkv00 | 사람 리뷰 |
+
 ## Existing user-owned changes
 
 - 2026-10-23 `origin/main`(`4c66ff6`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
@@ -56,13 +69,21 @@
 ```bash
 python scripts/preflight.py
 git diff --check
+uv run ruff check .
+uv run ruff format --check .
+uv run qk-dev db up
+uv run qk-migrate   # 두 번 실행, 두 번째는 applied=0
+uv run qk-migrate
+QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
 ## Completion criteria
 
-- 완료: `spec.md`가 독립 검토를 거쳐 사람 승인을 받았다. #53 완료 조건을 시험 가능한 요구사항·성공 기준으로 담았다(`checklists/requirements.md`)
-- 완료: plan 설계 산출물이 독립 검토를 거쳐 사람 승인을 받았다
-- 이번 단계: `tasks.md`가 승인된 spec·plan의 FR-001~027·SC-001~010을 빠짐없이 작업으로 담고 사람 승인을 받는다 — 이 파일의 Decisions
+- 고정 샘플 Context로 만든 답변의 Source ID가 모두 보낸 묶음 안에 있고 출처 목록이 원본 값으로 붙는다 — 단위 시험(SC-001)
+- 결과 없음·빈 Context·모든 묶음 차단에서 생성 호출 0회로 확인 불가 문장을 돌려준다 — 단위 시험(SC-002, 로드맵 1.G 조건)
+- 비밀값이 든 질문·묶음이 외부로 0건 나가고, 사용자 메시지가 ` /no_think`로 끝나며, 요약·기록·로그에 원문이 0건이다 — 단위 시험(SC-003·005·006)
+- 재시도·사용량 기록·외부 호출 상한과 기존 사용량 합계 불변 — 단위·로컬 DB 시험(SC-007)
+- 실측(SC-008)은 사람 단계 H01~H03에서 사람 확인 뒤 한다
 
 ## Decisions
 
@@ -95,6 +116,9 @@ git diff --check
 - 2026-10-23 사실: 같은 검토자의 plan 재검토 판정은 승인 권고다(해소 20, 부분 해소 5, 미해소 0, 새 지적 중간 4·낮음 5). N1~N9를 반영했다. N1 한글 경로 URL 비교, N2 응답·예외별 과금 분류표와
   성공 시도를 후처리 뒤에 기록, N4 마감 기본값을 시간 제한에서 계산하는 것은 작성 세션 판단이다. 사람의 plan 승인은 아직 받지 않았다.
 - 2026-10-23 사용자 결정: plan을 승인했다("plan 승인", N1·N2·N4 작성 세션 판단 포함). 바꾸려면 다시 승인을 받는다. 다음 단계는 `/speckit-tasks`다.
+- 2026-10-23 사실(tasks): `/speckit-tasks`로 `tasks.md`(작업 52개 + 사람 단계 3개)를 썼다. 계획한 시험 파일 이름 가운데 `test_settings.py`·`test_usage.py`가 저장소에 이미 있어 pytest 수집이 깨지므로,
+  새 시험 파일에 `test_gen_` 접두어를 붙이고 quickstart.md 1절 표와 plan.md 시험 구조 줄의 파일 이름만 그에 맞춰 고쳤다(내용 변경 없음, 사람 확인 대상). Scope에 구현 범위 초안을 더했다. 사람의 tasks 승인은 아직 받지 않았다.
+- 2026-10-23 사용자 결정: `tasks.md`와 Scope 구현 범위 초안을 승인했다("tasks.md와 Scope 초안 승인", 시험 파일 이름 접두어 변경 포함). 승인 뒤 독립 검토를 한다. 구현은 검토 지적을 반영한 뒤 시작한다.
 
 ## 승인된 입력
 
