@@ -11,7 +11,7 @@
 - 팀 스프린트 ID: `QELLO-S2026-W43`
 - GitHub Issue: `#50`
 - Branch: `chore/SCRUM-103-gh-50-oci-production-store`
-- Base branch: `main`. 2026-10-21 `origin/main` `e4fee77`(#49 병합)에서 분기했다
+- Base branch: `main`. 2026-10-21 `origin/main` `e4fee77`(#49 병합)에서 분기했다. 2026-10-23 `origin/main` `4c66ff6`(#52 병합) 위로 rebase했다
 
 ## Objective
 
@@ -172,3 +172,6 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-23 사실(읽기 전용): `origin/main`이 이 브랜치 기준 `e4fee77`보다 10커밋 앞서 있다(#51·#52, QK-RET-001). 새 마이그레이션 `0005_retrieval.sql`은 검색 함수만 더한다.
   기준 키워드 규칙에서는 청킹 버전이 바뀌지 않는다(`chunking/version.py`). 운영 DB에는 0005가 아직 없다. PR 전에 이 브랜치를 `origin/main` 위로 옮겨야 한다.
 - 2026-10-23 사실: 사용자가 오른쪽 패널에서 숨김 입력으로 `GITHUB_API_TOKEN`·`CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`를 `sync.env`에 넣었다. 에이전트는 `키=<설정됨>` 네 줄과 완료 표시만 확인했고 값은 보지 않았다.
+- 2026-10-23 사실(사용자 승인): 변경을 6개 커밋으로 나누고 `origin/main` `4c66ff6` 위로 rebase했다. 충돌은 TASK.md 하나였고 이 브랜치의 계약을 그대로 두었다.
+- 2026-10-23 사실(사용자 승인 명령, Herdr 오른쪽 패널, 터널 경유): 운영 DB에 `0005_retrieval` 적용. dry-run `pending 0005 retrieval`만 → `applied=1 skipped=4` → 재실행 `applied=0 skipped=5`.
+  `postgres`(superuser 아님)로 0005의 PGroonga 설정(`SET pgroonga.match_escalation_threshold`)이 권한 오류 없이 만들어졌다.
