@@ -90,6 +90,9 @@ def test_decimal_and_file_names_are_not_boundaries():
 def test_no_valid_citation_marks_unsupported_answer():
     out = _post("배포는 승인 뒤에 한다.")
     assert out.unsupported_answer and out.citation_ids == () and out.uncited_sentences == 1
+    assert out.fact_sentences == 1
+    mixed = _post("배포는 승인 뒤에 한다 [S1]. 재시도는 3회다. 담당자는 제공된 자료만으로 확인할 수 없습니다.")
+    assert (mixed.fact_sentences, mixed.uncited_sentences) == (2, 1)
 
 
 def test_only_missing_ids_leave_unsupported_answer():

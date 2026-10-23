@@ -42,6 +42,7 @@ class Postprocessed:
     removed_citations: int = 0
     unrecognized_citations: int = 0
     uncited_sentences: int = 0
+    fact_sentences: int = 0  # 사실 문장 수. 문장마다 인용 비율 = (사실 - 인용 없음) ÷ 사실(SC-008)
     removed_urls: int = 0
     removed_source_lines: int = 0
     unsupported_answer: bool = False
@@ -263,9 +264,11 @@ def postprocess(reply_text: str, rendered: RenderedInput) -> Postprocessed:
         return Postprocessed(stripped, (), CannotConfirmReason.MODEL_UNCONFIRMABLE_PARTS, False, **common)
 
     uncited = 0  # 9
+    facts = 0
     for sentence, core in zip(sentences, cores, strict=True):
         if core.endswith(CANNOT_CORE) or core == ORIGIN_CORE or PLACEHOLDER.fullmatch(core):
             continue
+        facts += 1
         if not RECOGNIZED.search(sentence):
             uncited += 1
     ids = sorted({f"S{n}" for g in RECOGNIZED.findall(body) for n in ID_IN_GROUP.findall(g)}, key=lambda s: int(s[1:]))
@@ -276,6 +279,7 @@ def postprocess(reply_text: str, rendered: RenderedInput) -> Postprocessed:
         None,
         False,
         uncited_sentences=uncited,
+        fact_sentences=facts,
         unsupported_answer=not ids,
         **common,
     )

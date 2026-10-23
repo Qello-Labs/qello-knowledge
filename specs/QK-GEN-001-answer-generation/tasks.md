@@ -175,13 +175,13 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **Independent Test**: render-v1·render-base 출력과 실측 스크립트의 가짜 제공자 실행을 본다. 실제 모델 판정은 H02·H03.
 
-- [ ] T031 [P] [US5] `tests/unit/generation/test_gen_base_render.py`(research R-02·R-03): render-base 묶음 `[S1] 제목: <제목>` 다음 줄에 청크 본문, 수정일·생략·절 줄 없음, 무력화 같음, `gen-base` 템플릿 `[자료]`·`[질문]` 꼴
-- [ ] T032 [US5] `generation/render.py`: render-base 완성. T031 통과
-- [ ] T033 [P] [US5] `tests/unit/generation/test_gen_measure_script.py`: 스크립트를 `importlib.util.spec_from_file_location`으로 불러(경로에 하이픈이 있어 일반 import 불가) 제공자 팩토리 주입 자리에 가짜 제공자를 넣고 실행한다.
+- [X] T031 [P] [US5] `tests/unit/generation/test_gen_base_render.py`(research R-02·R-03): render-base 묶음 `[S1] 제목: <제목>` 다음 줄에 청크 본문, 수정일·생략·절 줄 없음, 무력화 같음, `gen-base` 템플릿 `[자료]`·`[질문]` 꼴
+- [X] T032 [US5] `generation/render.py`: render-base 완성. T031 통과
+- [X] T033 [P] [US5] `tests/unit/generation/test_gen_measure_script.py`: 스크립트를 `importlib.util.spec_from_file_location`으로 불러(경로에 하이픈이 있어 일반 import 불가) 제공자 팩토리 주입 자리에 가짜 제공자를 넣고 실행한다.
   질문 세트 `gen-ko-v1`이 12문항(spike-ko-v0 생성 5 + 충돌 2·현재 상태 2·일부만 답 1·지시문 주입 1·무관 1)이고 모두 합성 문서, `--only 1 --prompt gen-p1`이 1문항·후보 1만 실행, 출력에 문항별 상태·후처리 전 수치
   (지운 인용·인식 못 한 꼴·인용 없는 문장)·문장마다 인용 비율·응답 꼴·지연·Neurons, 프롬프트별 지연 p50·p95, C-13 메타데이터(질문 세트 `gen-ko-v1`, 모델, 프롬프트 버전, 날짜, 표본 수)가 있음(독립 검토 L7),
   답변 원문은 `--out` 경로에만 쓰임, `--out` 기본이 저장소 밖(OS 임시 폴더), `--out`이 저장소 안이면 거부, `--provider workers-ai`일 때만 실제 제공자 팩토리를 부르고 그 전에 예상 Neurons와 최대치를 표준 오류로 보임
-- [ ] T034 [US5] `specs/QK-GEN-001-answer-generation/measurement/measure_generation.py`(research R-11): `gen-ko-v1` 합성 Context·질문을 코드 안에 두고 생성 경계를 직접 부른다(임베딩·DB 없음, `MemoryLedger`).
+- [X] T034 [US5] `specs/QK-GEN-001-answer-generation/measurement/measure_generation.py`(research R-11): `gen-ko-v1` 합성 Context·질문을 코드 안에 두고 생성 경계를 직접 부른다(임베딩·DB 없음, `MemoryLedger`).
   `--provider {fake,workers-ai}`(기본 `fake`), `--only N`, `--prompt {gen-p1,gen-base,both}`(기본 `both`. H01은 `--prompt gen-p1`을 명시한다), `--out`, 제공자 팩토리 주입 자리(`main(argv, provider_factory=None)`).
   실제 제공자(T036 `WorkersAiGenerationProvider`, US6에 기댐)는 `.env`에서 계정·토큰을 읽되 값은 출력하지 않는다. T033 통과(가짜 제공자 경로만. 실제 제공자 경로는 T036 뒤에 쓰인다)
 
@@ -311,3 +311,4 @@ US7:     T047 (시험) → T048 → T049
 - 2026-10-23 T019·T020: T016 구현이 이미 판정 순서·문장 나누기·(가)(나)(다)·빈 결과를 담고 있어 T017·T018이 코드 변경 없이 통과했다.
 - 2026-10-23 T023: T015 구현이 research R-04 1~11단계를 이미 담고 있어 T021·T022·T024가 코드 변경 없이 통과했다(155 passed).
 - 2026-10-23 T027·T028: T014·T016 구현이 무력화·판정 순서·묶음 검사를 이미 담고 있어 T025·T026이 코드 변경 없이 통과했다. T030 파일에 T039a의 재시도·기록 실패·예비분 경고 경로도 함께 썼다(T016이 그 경로를 이미 구현). 188 passed.
+- 2026-10-23 T034: 실측 스크립트의 질문 세트 `gen-ko-v1`은 spike-ko-v0 생성 질문 5개(부록 A.3)와 그 합성 문서(부록 A.1, S6의 지시문 주입 문장 포함)에 충돌 2·현재 상태 2·일부만 답 1·지시문 주입 1·무관 1을 더한 12문항이다. 모두 합성 문서다. 문장마다 인용 비율을 내려고 `Postprocessed`에 `fact_sentences`(사실 문장 수)를 더했다(내부 필드, 계약 변경 없음). 실제 제공자 경로(`workers_ai_provider_factory`)는 T036 어댑터를 쓴다. 가짜 제공자 실행에서 표준 출력에 질문·답 원문이 없음을 확인했다.
