@@ -186,10 +186,14 @@ def workers_ai_provider_factory(settings: GenerationSettings):
 
     source = merge_sources(os.environ, read_env_file(REPO / ".env"))
     loaded = load(Entrypoint.INDEX, environ=source, env_file=None)
+    # 형식 검사를 통과한 값만 쓴다. 없거나 형식이 틀리면 값을 내지 않고 멈춘다(설정 레지스트리 규칙)
     try:
-        return WorkersAiGenerationProvider(source["CLOUDFLARE_ACCOUNT_ID"], loaded.get("CLOUDFLARE_API_TOKEN"))
+        account, token = loaded.get("CLOUDFLARE_ACCOUNT_ID"), loaded.get("CLOUDFLARE_API_TOKEN")
     except KeyError:
-        raise CredentialsMissing from None  # 어떤 값이 없는지만 알리고 값은 내지 않는다
+        raise CredentialsMissing from None
+    if not isinstance(account, str) or token is None:
+        raise CredentialsMissing
+    return WorkersAiGenerationProvider(account, token)
 
 
 class CredentialsMissing(Exception):  # noqa: N818 - 상태 이름
