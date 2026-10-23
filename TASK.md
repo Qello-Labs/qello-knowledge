@@ -7,7 +7,7 @@
 ## Work gate
 
 - Jira 이슈: `SCRUM-107` / https://tkv123.atlassian.net/browse/SCRUM-107 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: QK-GEN-001 / `specs/QK-GEN-001-answer-generation/spec.md`(작성 예정)
+- 기능명세서 ID / 링크: QK-GEN-001 / `specs/QK-GEN-001-answer-generation/spec.md`(2026-10-23 승인)
 - 팀 스프린트 ID: `QELLO-S2026-W43`
 - GitHub Issue: `#53`
 - Branch: `feat/SCRUM-107-gh-53-answer-generation`
@@ -15,17 +15,18 @@
 
 ## Objective
 
-- 이번 단계: QK-GEN-001 명세(`spec.md`)를 `/speckit-specify`로 작성하고, 별도 에이전트의 독립 검토 뒤 사람 승인을 받는다.
-- 다음 단계(각각 사람 승인 뒤): `/speckit-plan` → `/speckit-tasks` → 구현. 구현 범위는 plan 승인 때 이 파일의 Scope에 더한다.
+- 완료: QK-GEN-001 `spec.md`를 쓰고 독립 검토 2회(변경 요청, 경미한 변경 요청)를 거쳐 사람 승인을 받았다(2026-10-23).
+- 완료: `/speckit-plan` 설계 산출물을 쓰고 독립 검토 2회(변경 요청, 승인 권고)를 거쳐 사람 승인을 받았다(2026-10-23).
+- 이번 단계: `/speckit-tasks`로 작업 목록(`tasks.md`)을 만들고 사람 승인을 받는다. 구현 범위는 tasks 승인 때 이 파일의 Scope에 더한다.
 
 ## Scope
 
-- `specs/QK-GEN-001-answer-generation/`의 `spec.md`, `checklists/requirements.md`
+- `specs/QK-GEN-001-answer-generation/`의 `spec.md`·`plan.md`·`research.md`·`data-model.md`·`quickstart.md`·`contracts/`(승인됨, 바꾸려면 다시 승인), `checklists/requirements.md`, `tasks.md`
 - `TASK.md`(이 파일)
 
 ## Explicit exclusions
 
-- 코드 변경. 구현 범위는 plan 승인 뒤 정한다.
+- 코드 변경. 구현 범위는 tasks 승인 때 정한다(plan "구현 Scope 승인이 필요한 것").
 - Discord 명령·지연 응답·답변 분할·표시(QK-BOT-001), 질문 분류·필터 추론(QK-TRK-001), 질의 재작성·스레드 문맥(QK-BOT-002),
   답변 평가·판정 모델(QK-EVL-002), 질의 로그·피드백 저장(QK-OBS-001), 검색 동작 변경(QK-RET-001), Workers 배포.
 - 실제 Workers AI 생성 호출은 사람 확인 없이 하지 않는다.
@@ -46,7 +47,6 @@
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
 | `specs/QK-GEN-001-answer-generation/`, `TASK.md` | tkv00 | 사람 리뷰 |
-
 ## Existing user-owned changes
 
 - 2026-10-23 `origin/main`(`4c66ff6`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
@@ -60,9 +60,9 @@ git diff --check
 
 ## Completion criteria
 
-- `spec.md`가 별도 에이전트의 독립 검토를 거쳐 사람 승인을 받는다 — 검토 기록과 이 파일의 Decisions
-- 명세가 #53 완료 조건(Source ID가 Context 안에만 있음, 결과 없음에 생성 호출 0회로 확인 불가, `/no_think` 기본값과 전송 직전 검사)을
-  시험 가능한 요구사항과 성공 기준으로 담는다 — `checklists/requirements.md`
+- 완료: `spec.md`가 독립 검토를 거쳐 사람 승인을 받았다. #53 완료 조건을 시험 가능한 요구사항·성공 기준으로 담았다(`checklists/requirements.md`)
+- 완료: plan 설계 산출물이 독립 검토를 거쳐 사람 승인을 받았다
+- 이번 단계: `tasks.md`가 승인된 spec·plan의 FR-001~027·SC-001~010을 빠짐없이 작업으로 담고 사람 승인을 받는다 — 이 파일의 Decisions
 
 ## Decisions
 
@@ -84,6 +84,17 @@ git diff --check
   검토자는 H3 지적을 철회했고, 고치면 승인 권고이며 재검토는 필요 없다고 했다. N1~N9를 반영했다. N3은 (나)일 때 인용을 지우고 출처 목록을 비우는 쪽으로 정했다(작성 세션 판단,
   사람 확인 대상). 사람의 spec 승인은 아직 받지 않았다.
 - 2026-10-23 사용자 결정: QK-GEN-001 `spec.md`를 승인했다("spec.md 승인", N3 처리 포함). 바꾸려면 다시 승인을 받는다. 다음 단계는 `/speckit-plan`이다.
+- 2026-10-23 사실(plan): `/speckit-plan`으로 `plan.md`, `research.md`(R-01~R-14), `data-model.md`, `contracts/generation.md`·`cli.md`, `quickstart.md`를 썼다. 외부 호출 0건, 0 Neurons.
+  주요 결정 후보: Workers AI REST 제공자(바인딩은 QK-BOT-001), 새 사용량 표 `qk.generation_usage`(0006, 기존 표 불변), 확인 명령 `qk-index ask`(기본 가짜 제공자), 실측 H01(약 7)·H02(약 920 Neurons).
+  사람의 plan 승인은 아직 받지 않았다. 독립 검토는 별도 서브에이전트로 한다.
+- 2026-10-23 사실: plan 독립 검토(작성에 관여하지 않은 별도 서브에이전트) 판정은 변경 요청이다(높음 2: 줄바꿈 든 인용 꼴이 무력화되지 않음, URL 정규식이 조사까지 잡음. 중간 9, 낮음 14).
+  `rest.py` `classify`가 임베딩 전용인 것, 전송 시간 제한이 생성자에서만 정해지는 것, 실패 시도가 0 Neurons로 기록되는 것을 코드로 다시 확인했다. 25건을 반영했다.
+  작성 세션 판단 3건(전용 전송·판정, 과금 가능성별 실패 Neurons, `qk-index usage prune` 연결)과 사람 결정 2건(gen-base 템플릿 글, FR-009 (나) 위험)은 사람 확인 대상이다.
+- 2026-10-23 사용자 결정(plan 검토 반영): gen-base 사용자 메시지 템플릿(research R-02)을 승인했다. FR-009 (나)는 spec 그대로 두고, 유효 인용이 있는 사실 문장이 확인 불가가 되는 사례를
+  시험으로 고정한다. 작성 세션 판단 3건(`rest.py` 불변·생성 전용 전송과 판정, 과금 가능성별 실패 시도 Neurons, `qk-index usage prune`에 생성 정리 연결)을 그대로 진행한다.
+- 2026-10-23 사실: 같은 검토자의 plan 재검토 판정은 승인 권고다(해소 20, 부분 해소 5, 미해소 0, 새 지적 중간 4·낮음 5). N1~N9를 반영했다. N1 한글 경로 URL 비교, N2 응답·예외별 과금 분류표와
+  성공 시도를 후처리 뒤에 기록, N4 마감 기본값을 시간 제한에서 계산하는 것은 작성 세션 판단이다. 사람의 plan 승인은 아직 받지 않았다.
+- 2026-10-23 사용자 결정: plan을 승인했다("plan 승인", N1·N2·N4 작성 세션 판단 포함). 바꾸려면 다시 승인을 받는다. 다음 단계는 `/speckit-tasks`다.
 
 ## 승인된 입력
 
