@@ -184,9 +184,16 @@ def workers_ai_provider_factory(settings: GenerationSettings):
     from qello_knowledge.config.loader import load, merge_sources, read_env_file
     from qello_knowledge.config.registry import Entrypoint
 
-    source = merge_sources(os.environ, read_env_file(Path(".env")))
+    source = merge_sources(os.environ, read_env_file(REPO / ".env"))
     loaded = load(Entrypoint.INDEX, environ=source, env_file=None)
-    return WorkersAiGenerationProvider(source["CLOUDFLARE_ACCOUNT_ID"], loaded.get("CLOUDFLARE_API_TOKEN"))
+    try:
+        return WorkersAiGenerationProvider(source["CLOUDFLARE_ACCOUNT_ID"], loaded.get("CLOUDFLARE_API_TOKEN"))
+    except KeyError:
+        raise CredentialsMissing from None  # 어떤 값이 없는지만 알리고 값은 내지 않는다
+
+
+class CredentialsMissing(Exception):  # noqa: N818 - 상태 이름
+    """실제 제공자를 만들 계정·토큰이 없다."""
 
 
 def outgoing_check():
@@ -255,6 +262,11 @@ def main(argv: list[str] | None = None, *, provider_factory: ProviderFactory | N
     check = outgoing_check()
     if check is None:
         print(json.dumps({"error": "security_policy_invalid"}), file=sys.stderr)
+        return 2
+    try:
+        factory(settings)  # 호출 전에 제공자를 만들 수 있는지(계정·토큰) 먼저 확인한다. 외부 호출은 없다
+    except CredentialsMissing:
+        print(json.dumps({"error": "cloudflare_credentials_missing"}), file=sys.stderr)
         return 2
     out_dir.mkdir(parents=True, exist_ok=True)
     rows = []

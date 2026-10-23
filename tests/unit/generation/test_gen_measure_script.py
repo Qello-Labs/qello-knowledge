@@ -88,7 +88,7 @@ def test_real_provider_path_prints_estimate_first(measure, capsys):
     estimate = json.loads(captured.err)
     assert code == 0 and estimate["calls"] == 4
     assert estimate["with_retry_max"] == pytest.approx(estimate["estimated_neurons_max_output"] * 2, abs=0.2)
-    assert made == ["gen-p1", "gen-p1", "gen-base", "gen-base"]
+    assert made == ["gen-p1", "gen-p1", "gen-p1", "gen-base", "gen-base"]  # 첫 번째는 호출 전 자격 증명 확인
 
 
 def test_default_out_is_outside_repository(measure):
@@ -103,3 +103,12 @@ def test_script_uses_real_outgoing_check(measure):
     assert check is not None
     assert check("평범한 합성 문장", None) == ()
     assert check(f"키는 {SYNTHETIC['github-classic']} 이다", None)
+
+
+def test_missing_credentials_stop_before_any_call(measure, capsys):
+    def factory(settings):
+        raise measure.CredentialsMissing
+
+    out = Path(measure.tempfile.gettempdir()) / "qk-gen-measure-test-nocreds"
+    code, captured = _run(measure, capsys, ["--provider", "workers-ai", "--only", "1", "--out", str(out)], factory)
+    assert code == 2 and "cloudflare_credentials_missing" in captured.err
