@@ -33,11 +33,12 @@
 - `docs/sdd/roadmap.md`의 `상태`·`진행` 열(스크립트 출력만)
 - `TASK.md`
 - `docs/sdd/decisions/ADR-020-scheduled-sync-systemd-timer.md`(새 파일): 예약 실행을 systemd 타이머로 하는 결정(2026-10-23 사용자 결정)
+- `tests/unit/indexer/test_run_cli.py`의 `test_remote_gates_before_runtime`: 정책 파일 경로를 없는 파일로 주입하는 것만(2026-10-23 사용자 결정. `config/store_policy.toml` 추가로 시험이 저장소 상태에 기대던 것이 드러났다)
 - OCI 콘솔·인스턴스 작업(계정 소유자가 하거나 승인한 명령만): DB 컨테이너, 동기화 사용자 `qksync`, 코드 복제본, systemd 유닛·타이머, 비밀값 파일(값 입력은 사람)
 
 ## Explicit exclusions
 
-- `src/`·`tests/`·`pyproject.toml`·`uv.lock`·마이그레이션·`.github/workflows/` 변경. `index-sync.yml`의 삭제·수정은 후속 작업이다(ADR-020). 코드 변경이 필요해지면 멈추고 별도 작업으로 한다.
+- `src/`·`tests/`(위 시험 하나 제외)·`pyproject.toml`·`uv.lock`·마이그레이션·`.github/workflows/` 변경. `index-sync.yml`의 삭제·수정은 후속 작업이다(ADR-020). 코드 변경이 필요해지면 멈추고 별도 작업으로 한다.
 - GitHub Actions 셀프 호스티드 러너 설치, 저장소 변수 `QK_SYNC_ENABLED` 생성, 저장소 공개 범위 변경.
 - Workers 질의 경로의 DB 연결(QK-BOT-001), 백업·복구 절차 전체(QK-SYN-003), 미리 보기 예상식 보정(QK-EMB-001 후속).
 - DB 포트를 공인 인터넷에 여는 설정. 유료 계정 전환·유료 자원 생성(별도 사람 승인).
@@ -175,3 +176,5 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-23 사실(사용자 승인): 변경을 6개 커밋으로 나누고 `origin/main` `4c66ff6` 위로 rebase했다. 충돌은 TASK.md 하나였고 이 브랜치의 계약을 그대로 두었다.
 - 2026-10-23 사실(사용자 승인 명령, Herdr 오른쪽 패널, 터널 경유): 운영 DB에 `0005_retrieval` 적용. dry-run `pending 0005 retrieval`만 → `applied=1 skipped=4` → 재실행 `applied=0 skipped=5`.
   `postgres`(superuser 아님)로 0005의 PGroonga 설정(`SET pgroonga.match_escalation_threshold`)이 권한 오류 없이 만들어졌다.
+- 2026-10-23 사실: PR 전 전체 검증에서 `test_remote_gates_before_runtime`이 실패했다(1 failed, 1505 passed). 시험이 기본 경로 `config/store_policy.toml`이 없다는 저장소 상태에 기대고 있었다.
+  사용자 결정으로 이 PR에서 시험에 없는 정책 파일 경로를 주입했다(검사 강도 그대로, 삭제·skip 없음). PR은 Draft, 리뷰어 없음으로 정했다.
