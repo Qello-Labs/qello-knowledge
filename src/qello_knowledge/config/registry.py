@@ -55,6 +55,11 @@ DIGITS_17_20 = _pattern(r"[0-9]{17,20}", "숫자 17~20자리")
 POSITIVE_INT = _pattern(r"[1-9][0-9]{0,8}", "양의 정수")
 LOG_LEVEL = _pattern(r"DEBUG|INFO|WARNING|ERROR", "`DEBUG`, `INFO`, `WARNING`, `ERROR` 중 하나")
 CONTEXT_BUDGET = _pattern(r"[1-9][0-9]{0,2}|[1-7][0-9]{3}|8000", "1 이상 8000 이하 정수")
+GEN_MODEL = _pattern(r"@cf/qwen/qwen3-[A-Za-z0-9._-]+", "`@cf/qwen/qwen3-`로 시작하는 Workers AI 모델 식별자")
+GEN_MAX_TOKENS = _pattern(r"[1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-6]", "1 이상 4096 이하 정수")
+GEN_TEMPERATURE = _pattern(r"0(?:\.[0-9]{1,3})?|1(?:\.0{1,3})?", "0 이상 1 이하 소수(소수점 아래 3자리까지)")
+GEN_TIMEOUT = _pattern(r"[1-9]|[1-5][0-9]|60", "1 이상 60 이하 정수(초)")
+GEN_PROMPT = _pattern(r"gen-p1|gen-base", "`gen-p1` 또는 `gen-base`")
 
 
 @dataclass(frozen=True)
@@ -181,6 +186,51 @@ SETTINGS: tuple[SettingSpec, ...] = (
         secret=False,
         rule=CONTEXT_BUDGET,
         default="2000",
+    ),
+    SettingSpec(
+        name="QK_GEN_MODEL",
+        description="답변 생성 모델(QK-GEN-001, ADR-009). qwen3 계열만 받는다. 다른 계열은 ADR-009 개정이 필요하다",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=GEN_MODEL,
+        default="@cf/qwen/qwen3-30b-a3b-fp8",
+    ),
+    SettingSpec(
+        name="QK_GEN_MAX_TOKENS",
+        description="답변 생성 출력 상한(토큰)",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=GEN_MAX_TOKENS,
+        default="800",
+    ),
+    SettingSpec(
+        name="QK_GEN_TEMPERATURE",
+        description="답변 생성 온도",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=GEN_TEMPERATURE,
+        default="0.2",
+    ),
+    SettingSpec(
+        name="QK_GEN_TIMEOUT_SECONDS",
+        description="생성 호출 한 번의 시간 제한(초). 재시도 마감은 이 값의 두 배 + 5초다",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=GEN_TIMEOUT,
+        default="20",
+    ),
+    SettingSpec(
+        name="QK_GEN_PROMPT_VERSION",
+        description="답변 생성 프롬프트. 기본은 승인된 후보 1, 비교용은 기준 프롬프트다",
+        entrypoints=BOTH,
+        required=False,
+        secret=False,
+        rule=GEN_PROMPT,
+        default="gen-p1",
     ),
 )
 

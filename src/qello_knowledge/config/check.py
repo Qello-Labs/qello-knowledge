@@ -8,9 +8,15 @@ from dataclasses import dataclass
 from qello_knowledge.config.loader import Settings, SettingStatus
 from qello_knowledge.config.registry import Entrypoint
 from qello_knowledge.domain.embedding import BudgetSettings
+from qello_knowledge.domain.generation import GenerationSettings
+from qello_knowledge.domain.retrieval import RetrievalSettings
 
 BUDGET_NAMES = ("QK_EMBED_DAILY_ALLOWANCE", "QK_EMBED_INDEX_BUDGET", "QK_EMBED_QUERY_RESERVE")
 BUDGET_CHECK = "QK_EMBED_INDEX_BUDGET + QK_EMBED_QUERY_RESERVE <= QK_EMBED_DAILY_ALLOWANCE"
+GENERATION_NAMES = (
+    "QK_GEN_MODEL", "QK_GEN_MAX_TOKENS", "QK_GEN_TEMPERATURE", "QK_GEN_TIMEOUT_SECONDS", "QK_GEN_PROMPT_VERSION",
+)  # fmt: skip
+GENERATION_CHECK = "QK-GEN-001 생성 입력 최대 예상 <= 모델 컨텍스트"
 
 
 @dataclass(frozen=True)
@@ -65,6 +71,43 @@ def budget_settings(settings: Settings) -> BudgetSettings | None:
     return BudgetSettings(*values)
 
 
+def _text(settings: Settings, name: str) -> str | None:
+    try:
+        value = settings.get(name)
+    except KeyError:
+        return None
+    return value if isinstance(value, str) else None
+
+
+def generation_settings(settings: Settings) -> GenerationSettings | None:
+    """불러온 `QK_GEN_*`를 `GenerationSettings`로 바꾸는 하나뿐인 함수(QK-GEN-001). 형식이 어긋나면 `None`."""
+    values = {name: _text(settings, name) for name in GENERATION_NAMES}
+    if any(value is None for value in values.values()):
+        return None
+    try:
+        return GenerationSettings(
+            model_id=str(values["QK_GEN_MODEL"]),
+            max_tokens=int(str(values["QK_GEN_MAX_TOKENS"])),
+            temperature=float(str(values["QK_GEN_TEMPERATURE"])),
+            timeout_seconds=int(str(values["QK_GEN_TIMEOUT_SECONDS"])),
+            prompt_version=str(values["QK_GEN_PROMPT_VERSION"]),
+        )
+    except ValueError:
+        return None
+
+
+def _generation_check(settings: Settings) -> CrossCheck | None:
+    """문제가 있을 때만 항목을 만든다. 통과면 `checks`에 넣지 않는다(기존 설정 보고 꼴 유지, tasks T046)."""
+    from qello_knowledge.generation.settings import check_settings
+
+    gen = generation_settings(settings)
+    budget = _text(settings, "QK_RETRIEVAL_CONTEXT_BUDGET")
+    if gen is None or budget is None:
+        return None
+    problems = check_settings(gen, RetrievalSettings(context_budget=int(budget)))
+    return CrossCheck(GENERATION_CHECK, False, "; ".join(problems)) if problems else None
+
+
 def _budget_check(settings: Settings) -> CrossCheck | None:
     budget = budget_settings(settings)
     if budget is None:
@@ -82,6 +125,6 @@ def build_report(settings: Settings) -> CheckReport:
             ok = False
         elif item.status is SettingStatus.MISSING and item.spec.required:
             ok = False
-    checks = tuple(check for check in (_budget_check(settings),) if check is not None)
+    checks = tuple(check for check in (_budget_check(settings), _generation_check(settings)) if check is not None)
     ok = ok and all(check.ok for check in checks)
     return CheckReport(settings.entrypoint, tuple(items), ok, checks)

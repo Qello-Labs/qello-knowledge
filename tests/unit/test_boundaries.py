@@ -243,3 +243,79 @@ def test_domain_must_not_import_retrieval(tmp_path):
         (root / part).mkdir(parents=True)
     (root / "domain" / "bad.py").write_text("from qello_knowledge.retrieval import service\n")
     assert violations(root) == ["qello_knowledge/domain/bad.py:1: qello_knowledge.retrieval"]
+
+
+# QK-GEN-001: `generation/`은 표준 라이브러리와 domain·ports·generation만 가져온다(contracts 6절, research R-13).
+# RESTRICTED에는 넣지 않는다. 넣으면 `generation` 안의 서로 가져오기가 기존 검사에 걸린다.
+GENERATION_ALLOWED = ("qello_knowledge.domain", "qello_knowledge.ports", "qello_knowledge.generation")
+
+
+def generation_violations(root: Path) -> list[str]:
+    problems = []
+    for path in sorted((root / "generation").rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"), filename=str(path))):
+            modules = []
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                if node.level:
+                    problems.append(f"{path.relative_to(root.parent)}:{node.lineno}: 상대 경로 가져오기")
+                    continue
+                module = node.module or ""
+                modules = (
+                    [module + "." + alias.name for alias in node.names] if module == "qello_knowledge" else [module]
+                )
+            for module in modules:
+                if module.split(".")[0] in sys.stdlib_module_names or module == "__future__":
+                    continue
+                if any(module == prefix or module.startswith(prefix + ".") for prefix in GENERATION_ALLOWED):
+                    continue
+                problems.append(f"{path.relative_to(root.parent)}:{node.lineno}: {module}")
+    return problems
+
+
+def test_generation_dependencies_are_isolated():
+    assert generation_violations(PACKAGE) == []
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "import psycopg",
+        "from qello_knowledge.adapters.workers_ai.rest import API_BASE",
+        "from qello_knowledge import security",
+        "from qello_knowledge.retrieval import service",
+        "from qello_knowledge.indexer import cli",
+        "from qello_knowledge.embedding import estimate",
+        "from ..adapters import fake",
+        "from . import render",
+    ],
+)
+def test_generation_violations_are_detected(tmp_path, statement):
+    root = tmp_path / "qello_knowledge"
+    (root / "generation").mkdir(parents=True)
+    (root / "generation" / "bad.py").write_text(statement, encoding="utf-8")
+    assert len(generation_violations(root)) == 1
+
+
+def test_generation_allowed_imports(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    (root / "generation").mkdir(parents=True)
+    (root / "generation" / "good.py").write_text(
+        "from __future__ import annotations\nimport re\nfrom qello_knowledge.domain.generation import X\n"
+        "from qello_knowledge.ports.generator import GenerationProvider\n"
+        "from qello_knowledge.ports.embedder import OutgoingCheck\n"
+        "from qello_knowledge.generation.render import render\n",
+        encoding="utf-8",
+    )
+    assert generation_violations(root) == []
+
+
+@pytest.mark.parametrize("part", ["domain", "ports"])
+def test_domain_and_ports_must_not_import_generation(tmp_path, part):
+    root = tmp_path / "qello_knowledge"
+    for name in RESTRICTED:
+        (root / name).mkdir(parents=True)
+    (root / part / "bad.py").write_text("from qello_knowledge.generation import service\n", encoding="utf-8")
+    found = [problem.replace("\\", "/") for problem in violations(root)]  # Windows 경로 구분자도 같게 본다
+    assert found == [f"qello_knowledge/{part}/bad.py:1: qello_knowledge.generation"]
