@@ -82,7 +82,7 @@ uv run qk-dev db up
 QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
-운영 확인(사람 승인 뒤): `qk-migrate --dry-run`·`qk-migrate`(운영 대상), `qk-index run --preview --allow-remote --json`, `qk-index run --allow-remote --json` 두 번, `qk-index index activate`, GitHub Actions 예약 실행 1회.
+운영 확인(사람 승인 뒤): `qk-migrate --dry-run`·`qk-migrate`(운영 대상), `qk-index run --preview --allow-remote --json`, `qk-index run --allow-remote --json` 두 번, `qk-index index activate`. 병합 뒤: 서버에서 `sudo systemctl start qk-sync.service` 1회 → `sudo systemctl enable --now qk-sync.timer` → 예약 실행 1회(`journalctl -u qk-sync.service`, `qk-index runs list`).
 
 ## Completion criteria
 
@@ -187,3 +187,7 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-23 사실: 별도 리뷰 에이전트(Codex, Herdr 오른쪽 패널, harness-review)가 PR #55에 변경 요청(FAIL)을 냈다. ① 실행 스크립트 `rc=${rc:-1}`이 색인 성공 뒤 정리 실패를 성공(0)으로 남김(재현됨),
   ② 완료 조건이 GitHub Actions 기준으로 남고 tasks.md H07 진행 기록이 낡음, ③ 팀원 계정의 적용 약관 판 미확인. 낮음: Ownership 행 누락, 일부 docs 커밋 scope 없음(scope는 선택이라 고치지 않음).
   사용자 승인으로 ①②와 Ownership을 고쳤다(운영 문서 스크립트, 완료 조건·경계, tasks.md H07). 서버의 `/usr/local/libexec/qk-sync`는 별도 승인 뒤 같은 내용으로 바꾼다. ③은 사람 확인으로 남는다.
+- 2026-10-23 사실(사용자 승인, Herdr 오른쪽 아래 셸 패널): 서버 `/usr/local/libexec/qk-sync`의 정리 단계 종료 코드 처리를 운영 문서와 같게 바꿨다(백업 `qk-sync.bak-20261023`, 0755 root:root, 타이머는 계속 꺼짐).
+  첫 시도는 새 Bastion 세션 직후 `Permission denied (publickey)`로 접속 전에 실패했고(서버 변경 없음), 같은 세션으로 다시 시도해 성공했다. PR #55 본문의 고정 링크를 최신 HEAD로 바꿨다(문장 변경 없음).
+- 2026-10-23 사용자 판단: 운영 DB에 저장한 내용은 Oracle이 학습에 쓰지 않는다고 본다. 팀원 계정의 적용 약관 판은 확인하지 않고, ADR-008의 추론(콘텐츠 사용 권한은 서비스 제공 목적에 한정)을 사람 판단으로 받아들인다.
+- 2026-10-23 사실: 별도 리뷰 에이전트의 재리뷰는 ①② 해결, 남은 지적은 사람 판단이 PR 결정 기록에 없음(중간)과 Validation의 GitHub Actions 문구(낮음)였다(권고: 변경 요청). 사용자 승인으로 ADR-008 데이터 처리 정책 절·tasks.md H04에 사람 판단과 추론 한계를 적고 Validation을 고쳤다.
