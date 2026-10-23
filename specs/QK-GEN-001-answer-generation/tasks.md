@@ -129,16 +129,16 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **Independent Test**: 없는 ID, 여러 ID 표기, 인식 못 하는 꼴, URL, 출처 줄, 코드 표기를 섞은 가짜 답으로 본문·출처 목록·요약 수치를 본다(spec US3).
 
-- [ ] T021 [P] [US3] `tests/unit/generation/test_gen_citations.py`(spec FR-013·014·015, SC-001): `[S9]` 제거·`removed_citations` 1, `[S1, S2]`·`[S1，S2]`·`[ S1 ]`·`[S1 S2]` → `[S1][S2]`, 같은 문장 안 `[S1][S1]` → `[S1]`,
+- [X] T021 [P] [US3] `tests/unit/generation/test_gen_citations.py`(spec FR-013·014·015, SC-001): `[S9]` 제거·`removed_citations` 1, `[S1, S2]`·`[S1，S2]`·`[ S1 ]`·`[S1 S2]` → `[S1][S2]`, 같은 문장 안 `[S1][S1]` → `[S1]`,
   `[S1, S9]` → `[S1]`, 인식 못 한 꼴(`[S9,]`, `[S1；S2]`, `[S1/S2]`, `[S1 및 S2]`, `[S1, S3-S5]`, `[S1–S3]`, `[S0]`, `[S01]`, `[s1]`, `(S1)`, `【S1】`)은 남고 `unrecognized_citations`로 셈,
   `[AWS S3 버킷]`·`[S3 설정 참고]`는 세지 않음, 코드 span·코드 블록 안 `[S9]`는 지우지도 세지도 않음, `A다. [S1] B다. [S2]`의 귀속, `…잡는다.[S3] 다음`의 나눔, 유효 인용 0 → `unsupported_answer`·빈 출처 목록,
   인용 없는 문장 수(코드 블록 줄은 세지 않음), 불변식 "출처 ID = 코드 밖 인식된 인용 ID 집합"
-- [ ] T022 [P] [US3] `tests/unit/generation/test_gen_cleanup.py`(research R-04 1~4단계): `<think>…</think>` 여러 개·닫히지 않은 `<think>`·짝 없는 `</think>` 제거와 `thinking_detected`(안에 글이 있을 때만), 닫히지 않은 코드 펜스는 끝까지 코드,
+- [X] T022 [P] [US3] `tests/unit/generation/test_gen_cleanup.py`(research R-04 1~4단계): `<think>…</think>` 여러 개·닫히지 않은 `<think>`·짝 없는 `</think>` 제거와 `thinking_detected`(안에 글이 있을 때만), 닫히지 않은 코드 펜스는 끝까지 코드,
   출처 줄(`출처:`, `참고：`, `Sources:`, `References:`와 아래 목록 줄) 제거·`removed_source_lines`, `참고로 배포는 …다 [S1].`는 남음, URL: 발췌문과 같은 URL 남음, `…/deploy에 있다` → URL과 조사 남음,
   끝 마침표 붙은 URL 남음, `https://docs.example.test`(발췌문 URL의 앞부분) 지움, 발췌문 `…/docs/설계.md`일 때 `…/docs/가짜.md` 지움, 괄호 경로 `…/Foo_(bar)` 비교, 코드 안 URL 그대로, `removed_urls`
-- [ ] T023 [US3] `generation/postprocess.py`: R-04 1~4단계(추론 블록, 코드 가림을 10단계까지 유지, 출처 줄, URL 규칙)와 9~10단계(세기, 코드 되돌림), 6단계 인식 못 한 꼴 셈(대괄호 안이 `S`+숫자와 공백·`,，;；/-~–`·`및`뿐인 글,
+- [X] T023 [US3] `generation/postprocess.py`: R-04 1~4단계(추론 블록, 코드 가림을 10단계까지 유지, 출처 줄, URL 규칙)와 9~10단계(세기, 코드 되돌림), 6단계 인식 못 한 꼴 셈(대괄호 안이 `S`+숫자와 공백·`,，;；/-~–`·`및`뿐인 글,
   `(S숫자)`·`【S숫자】`·`[s숫자]`). 단계 순서는 research R-04 1~11 그대로. T021·T022 통과
-- [ ] T024 [US3] `tests/unit/generation/test_gen_cannot_confirm_cleanup.py`: 후처리 1~6단계를 거쳐야 하는 확인 불가·빈 결과 사례. 인식 못 한 꼴이 붙은 확인 불가 문장(`… 없습니다 (S1).`) → (가),
+- [X] T024 [US3] `tests/unit/generation/test_gen_cannot_confirm_cleanup.py`: 후처리 1~6단계를 거쳐야 하는 확인 불가·빈 결과 사례. 인식 못 한 꼴이 붙은 확인 불가 문장(`… 없습니다 (S1).`) → (가),
   `출처: [S1]` 한 줄만·발췌문에 없는 URL 하나만·추론 블록만 → `generation_failed(bad_response)`. T023 뒤 통과(T018에서 옮긴 사례, 독립 검토 M1)
 
 **Checkpoint**: 후처리 전체 완료
@@ -309,3 +309,4 @@ US7:     T047 (시험) → T048 → T049
 - 2026-10-23 T014·T015·T016: `render.py`(무력화 포함)와 `postprocess.py`(research R-04 1~11단계 전체), `service.py`(contracts 3절 전체)를 US1에서 한 번에 구현했다(QK-RET-001 T028 `pack.py`와 같은 방식).
   US2~US4·US6 시험이 각 단계를 확인하고, 그 작업들은 시험 통과 확인과 빈 곳 보완만 남는다. 골든 렌더링 3종(`golden/render-v1-*.txt`)은 구현 출력을 research R-03 꼴과 눈으로 대조한 뒤 고정했다.
 - 2026-10-23 T019·T020: T016 구현이 이미 판정 순서·문장 나누기·(가)(나)(다)·빈 결과를 담고 있어 T017·T018이 코드 변경 없이 통과했다.
+- 2026-10-23 T023: T015 구현이 research R-04 1~11단계를 이미 담고 있어 T021·T022·T024가 코드 변경 없이 통과했다(155 passed).
