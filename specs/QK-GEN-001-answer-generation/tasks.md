@@ -85,16 +85,16 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **Independent Test**: 고정 Context(S1·S2·S3)와 정해 둔 가짜 답변으로 `generate`를 불러 생성 입력·본문·출처 목록·요약을 본다(spec US1).
 
-- [ ] T012 [P] [US1] `tests/unit/generation/test_gen_render.py`(research R-03, spec FR-004·006): render-v1 머리줄 `[S1] A > B | 수정 2026-10-10`(UTC 2026-10-09T16:00Z가 한국 날짜 10-10이 되는 사례 포함),
+- [X] T012 [P] [US1] `tests/unit/generation/test_gen_render.py`(research R-03, spec FR-004·006): render-v1 머리줄 `[S1] A > B | 수정 2026-10-10`(UTC 2026-10-09T16:00Z가 한국 날짜 10-10이 되는 사례 포함),
   수정 시각 없음 → `수정 미상`, 빈 제목 경로 → 청크 위치 경로 → `제목 없음`, `gaps`마다 `…(중간 생략)…` 줄, 같은 묶음 안 제목 경로가 바뀌면 `(절: A > C)` 줄, 묶음 사이 빈 줄 하나, 사용자 메시지가 템플릿 그대로이고
   ` /no_think`로 끝남(따로 붙이지 않음), 같은 입력 두 번 바이트 일치, 고정 Context 3종 골든 비교(`tests/unit/generation/golden/`의 합성 기대 파일)
-- [ ] T013 [P] [US1] `tests/unit/generation/test_gen_happy_path.py`(spec US1 1~5, FR-016·026): S1·S2 인용 답 → `answered`, 출처 목록 S1·S2 번호 순서이며 제목·링크·버전·수정 시각·수집 시각이 원본 `ContextBlock` 값,
+- [X] T013 [P] [US1] `tests/unit/generation/test_gen_happy_path.py`(spec US1 1~5, FR-016·026): S1·S2 인용 답 → `answered`, 출처 목록 S1·S2 번호 순서이며 제목·링크·버전·수정 시각·수집 시각이 원본 `ContextBlock` 값,
   S1만 인용 → 목록 S1만, 요약에 프롬프트 버전·모델·출력 상한·온도·추론 끔·보낸 묶음 수·예상 입력 토큰·제공자 토큰·Neurons·시도·지연·호출 수(생성 2, 질의 전체 = 검색 `external_calls` + 2),
   같은 입력으로 `generate`를 두 번 불러 생성 입력과 결과가 같음(가짜 `monotonic`·`new_run_id` 고정, SC-010, 독립 검토 L4)
-- [ ] T014 [US1] `src/qello_knowledge/generation/render.py`: render-v1·render-base 렌더링(무력화는 US4에서 더한다), `RenderedBlock` 생성(원본 `block`·`raw_title`·`excerpt_urls`), 예상 토큰. T012 통과
-- [ ] T015 [US1] `src/qello_knowledge/generation/postprocess.py` 1차: research R-04 6단계 인용 인식(`\[[ \t]*S([1-9]\d*)([ \t]*[,，][ \t]*S([1-9]\d*)|[ \t]+S([1-9]\d*))*[ \t]*\]`)과 `[S1][S2]` 정규화, 생성 입력에 없는 ID 제거,
+- [X] T014 [US1] `src/qello_knowledge/generation/render.py`: render-v1·render-base 렌더링(무력화는 US4에서 더한다), `RenderedBlock` 생성(원본 `block`·`raw_title`·`excerpt_urls`), 예상 토큰. T012 통과
+- [X] T015 [US1] `src/qello_knowledge/generation/postprocess.py` 1차: research R-04 6단계 인용 인식(`\[[ \t]*S([1-9]\d*)([ \t]*[,，][ \t]*S([1-9]\d*)|[ \t]+S([1-9]\d*))*[ \t]*\]`)과 `[S1][S2]` 정규화, 생성 입력에 없는 ID 제거,
   11단계 출처 목록 ID. 나머지 단계는 US2·US3에서 더한다
-- [ ] T016 [US1] `src/qello_knowledge/generation/service.py` 1차: `GenerationDeps`, `generate`의 정상 경로(contracts/generation.md 3절 5~9단계 가운데 렌더링·호출 1회·기록·후처리·결과 조립), 출처 목록을 `RenderedBlock.block`과
+- [X] T016 [US1] `src/qello_knowledge/generation/service.py` 1차: `GenerationDeps`, `generate`의 정상 경로(contracts/generation.md 3절 5~9단계 가운데 렌더링·호출 1회·기록·후처리·결과 조립), 출처 목록을 `RenderedBlock.block`과
   `raw_title`로 만듦, 요약. 제공자 실패는 이 단계에서 재시도 없이 `generation_failed(<종류>)`와 시도 기록 1건으로 돌려준다(재시도·마감·R-06 Neurons는 T039, 독립 검토 M2). `generation/__init__.py`에서 `generate`·`render`·`postprocess`·`check_settings`·`prompt_spec` 공개. T013 통과
 
 **Checkpoint**: 가짜 제공자로 출처 붙은 답 생성
@@ -300,4 +300,11 @@ US7:     T047 (시험) → T048 → T049
 
 ## 실행 기록
 
-(구현 중 결정·발견·측정을 날짜와 함께 적는다.)
+- 2026-10-23 T007: 승인 원문 고정 파일 `tests/unit/generation/golden/gen-p1-system.txt`(2,184바이트)·`gen-p1-template.txt`(69바이트)는 `TASK.md` "승인된 입력"의 두 코드 블록에서,
+  `gen-base-system.txt`는 spike-workers-ai 부록 B "시스템 프롬프트:" 코드 블록에서, `gen-base-template.txt`는 research R-02 코드 블록(들여쓰기 제거)에서 한 번 뽑아 대조했다. 끝 줄바꿈은 넣지 않았다.
+  `generation/prompts.py`의 상수는 이 파일에서 만들었다.
+- 2026-10-23 환경: 이 PC(Windows, cp949 기본 인코딩)에서는 시험을 `PYTHONUTF8=1`로 돌린다. 기준선(이 작업 전 `tests/unit`)에서 `tests/unit/test_boundaries.py`의 기존 3건
+  (`test_violation_is_detected`, `test_chunking_violations_are_detected`, `test_domain_must_not_import_retrieval`)이 Windows 경로 구분자(`\`)로 실패한다(1,253 passed, 3 failed). 이 작업과 무관하고 CI(ubuntu)에서는 통과한다.
+  새 경계 시험은 구분자를 `/`로 맞춰 비교한다.
+- 2026-10-23 T014·T015·T016: `render.py`(무력화 포함)와 `postprocess.py`(research R-04 1~11단계 전체), `service.py`(contracts 3절 전체)를 US1에서 한 번에 구현했다(QK-RET-001 T028 `pack.py`와 같은 방식).
+  US2~US4·US6 시험이 각 단계를 확인하고, 그 작업들은 시험 통과 확인과 빈 곳 보완만 남는다. 골든 렌더링 3종(`golden/render-v1-*.txt`)은 구현 출력을 research R-03 꼴과 눈으로 대조한 뒤 고정했다.
