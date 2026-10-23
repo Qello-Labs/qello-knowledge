@@ -107,16 +107,16 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **Independent Test**: 검색 상태별 결과와 확인 불가 꼴의 가짜 답으로 상태·본문·호출 수를 본다(spec US2).
 
-- [ ] T017 [P] [US2] `tests/unit/generation/test_gen_no_call.py`(spec US2 1·2, FR-007·008, SC-002): `no_results`·빈 Context에서 제공자 호출 0, 본문이 `"제공된 자료만으로 확인할 수 없습니다."`와 글자 일치,
+- [X] T017 [P] [US2] `tests/unit/generation/test_gen_no_call.py`(spec US2 1·2, FR-007·008, SC-002): `no_results`·빈 Context에서 제공자 호출 0, 본문이 `"제공된 자료만으로 확인할 수 없습니다."`와 글자 일치,
   `citations == ()`, 사유 `no_results`·`empty_context`. 검색 실패 종류마다(`empty_question`, `question_too_long`, `no_active_index`, `store_unavailable`, `index_version_changed`, `query_embedding_failed`,
   `keyword_search_failed`, `both_searches_failed`) `retrieval_failed`와 원래 종류, 호출 0
-- [ ] T018 [P] [US2] `tests/unit/generation/test_gen_cannot_confirm.py`(spec US2 3~5, FR-009, research R-04 7·8단계): (가) 공백·따옴표·인식된 인용(`[S1]`)이 붙은 확인 불가 문장·끝 마침표 없는 문장·같은 문장 두 번 → `cannot_confirm`
+- [X] T018 [P] [US2] `tests/unit/generation/test_gen_cannot_confirm.py`(spec US2 3~5, FR-009, research R-04 7·8단계): (가) 공백·따옴표·인식된 인용(`[S1]`)이 붙은 확인 불가 문장·끝 마침표 없는 문장·같은 문장 두 번 → `cannot_confirm`
   (`model_cannot_confirm`), 본문은 확인 불가 문장 하나. (나) "○○은 … 확인할 수 없습니다." 문장들만, 확인 불가 + "현재 상태는 원본에서 확인해야 합니다." → `cannot_confirm`(`model_unconfirmable_parts`), 본문 유지·인용
   제거·출처 비움. (나) 고정 사례: `재시도는 3회이며 나머지는 제공된 자료만으로 확인할 수 없습니다 [S1].` → `cannot_confirm`, 출처 비움(2026-10-23 사용자 결정, research R-04 남는 위험). (다) 유효 인용 문장 + 확인 불가 부분 → `answered`.
   빈 결과: 빈 글, 공백만 → `generation_failed(bad_response)`. 1~4단계가 있어야 하는 사례(`(S1)`이 붙은 확인 불가 문장, `출처: [S1]` 한 줄만, 발췌문에 없는 URL 하나만, 추론 블록만)는 US3의 T024에 둔다
   (US2 체크포인트가 빨갛게 남지 않게, 독립 검토 M1)
-- [ ] T019 [US2] `generation/service.py`: research R-05 3~5단계 판정(검색 실패 → 결과 없음 → 빈 Context)을 렌더링·호출 앞에 둔다. T017 통과
-- [ ] T020 [US2] `generation/postprocess.py`: R-04 5단계 문장 나누기(마침표·물음표·느낌표 뒤 공백·줄 끝, 줄바꿈, 점 뒤 공백 없는 `5.5`·`a.py`는 경계 아님, 조각 머리 인용을 문장부호로 끝난 앞 조각으로 옮김, 인용만 남은 조각은 앞에 붙임,
+- [X] T019 [US2] `generation/service.py`: research R-05 3~5단계 판정(검색 실패 → 결과 없음 → 빈 Context)을 렌더링·호출 앞에 둔다. T017 통과
+- [X] T020 [US2] `generation/postprocess.py`: R-04 5단계 문장 나누기(마침표·물음표·느낌표 뒤 공백·줄 끝, 줄바꿈, 점 뒤 공백 없는 `5.5`·`a.py`는 경계 아님, 조각 머리 인용을 문장부호로 끝난 앞 조각으로 옮김, 인용만 남은 조각은 앞에 붙임,
   빈 조각 버림), 7단계 빈 결과, 8단계 (가)(나)(다) 판정. `generation/service.py`가 빈 결과를 `bad_response`로. T018 통과
 
 **Checkpoint**: 확인 불가와 무호출 경로 완료
@@ -308,3 +308,4 @@ US7:     T047 (시험) → T048 → T049
   새 경계 시험은 구분자를 `/`로 맞춰 비교한다.
 - 2026-10-23 T014·T015·T016: `render.py`(무력화 포함)와 `postprocess.py`(research R-04 1~11단계 전체), `service.py`(contracts 3절 전체)를 US1에서 한 번에 구현했다(QK-RET-001 T028 `pack.py`와 같은 방식).
   US2~US4·US6 시험이 각 단계를 확인하고, 그 작업들은 시험 통과 확인과 빈 곳 보완만 남는다. 골든 렌더링 3종(`golden/render-v1-*.txt`)은 구현 출력을 research R-03 꼴과 눈으로 대조한 뒤 고정했다.
+- 2026-10-23 T019·T020: T016 구현이 이미 판정 순서·문장 나누기·(가)(나)(다)·빈 결과를 담고 있어 T017·T018이 코드 변경 없이 통과했다.
