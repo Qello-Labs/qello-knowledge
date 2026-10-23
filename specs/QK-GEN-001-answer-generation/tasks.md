@@ -195,20 +195,20 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **Independent Test**: 가짜 전송·가짜 제공자로 실패를 주입해 기록·재시도·결과를 보고, 로컬 DB로 0006 함수와 합계를 본다(spec US6).
 
-- [ ] T035 [P] [US6] `tests/unit/adapters/test_gen_workers_ai_generation.py`(research R-01·R-06): 가짜 `GenerationTransport`로 요청 본문(`messages` 두 개, `max_tokens`, `temperature`)과 주소(`rest.py` `API_BASE`), 호출마다
+- [X] T035 [P] [US6] `tests/unit/adapters/test_gen_workers_ai_generation.py`(research R-01·R-06): 가짜 `GenerationTransport`로 요청 본문(`messages` 두 개, `max_tokens`, `temperature`)과 주소(`rest.py` `API_BASE`), 호출마다
   시간 제한 전달, 응답 꼴 (a) `result.response`+`usage`와 (b) `choices[0].message.content`+`finish_reason`+`usage` 해석, 둘 다 아니면 `bad_response`와 `ResponseShape`(키 이름만), 헤더 `cf-ai-neurons`.
   research R-06 과금 분류표의 모든 행(200 해석 성공·실패, 429+3036, 429 그 밖, 5xx, 시간 초과, 연결·읽기 오류, 401, 403, 400+3030, 그 밖의 4xx)을 표 시험으로 고정: 결과 종류·`billable`·측정 Neurons.
   같은 상태 코드·오류 코드에 `rest.py` `classify`와 같은 종류(일시·할당·인증·입력 한도)를 내는지 비교. 예외 문구에 토큰·계정·본문 없음
-- [ ] T036 [US6] `src/qello_knowledge/adapters/workers_ai/generation.py`: `GenerationTransport`(urllib, 호출마다 시간 제한, `TimeoutError`·`socket.timeout`·`URLError(reason=timeout)` → 시간 초과, 그 밖 → 일시),
+- [X] T036 [US6] `src/qello_knowledge/adapters/workers_ai/generation.py`: `GenerationTransport`(urllib, 호출마다 시간 제한, `TimeoutError`·`socket.timeout`·`URLError(reason=timeout)` → 시간 초과, 그 밖 → 일시),
   오류 판정(R-06 표), `WorkersAiGenerationProvider(account_id, api_token, transport=None)`. `rest.py`는 공개 상수만 가져온다. T035 통과
-- [ ] T037 [P] [US6] `tests/unit/generation/test_gen_retry_usage.py`(spec FR-020~024, US6, SC-007): 일시 실패 → 재시도 성공(시도 2, 기록 2, 호출 4), 일시 실패 2회 → `generation_failed(transient)`, 시간 초과 → 재시도,
+- [X] T037 [P] [US6] `tests/unit/generation/test_gen_retry_usage.py`(spec FR-020~024, US6, SC-007): 일시 실패 → 재시도 성공(시도 2, 기록 2, 호출 4), 일시 실패 2회 → `generation_failed(transient)`, 시간 초과 → 재시도,
   할당 소진·인증·잘못된 응답 → 재시도 없음, 마감이 모자라면 재시도하지 않음(가짜 `monotonic`), `retry_delay`에 제공자 `retry_after` 전달, Neurons: 헤더 측정 → 토큰 × 단가(추정) → 예상 입력 + 출력 상한(추정),
   과금 안 되는 실패 0, 성공 시도 기록이 후처리 뒤이고 빈 결과면 `outcome='bad_response'`, 출력 잘림(`finish_reason == "length"`, 또는 없음 + 출력 토큰 = 상한) → `flags.truncated`, 기록 실패 → 답 유지·`usage_record_failed`·경고 로그 1줄,
   `usage_today`가 마지막 성공 기록 값, `usage_today.query_reserve_exceeded`면 원문 없는 경고 로그 한 줄을 남기고 생성 결과는 그대로(spec FR-021·US6 3, `embedding/service.py`의 `QUERY_RESERVE_WARNING` 꼴, 독립 검토 M4),
   생성 단계 호출 ≤ 4
-- [ ] T038 [P] [US6] `tests/unit/generation/test_gen_input_limit.py`(spec FR-019 (2), SC-009): 검색 요청별 덮어쓰기로 Context 예산·질문 길이를 최대로 올린 입력(계산 36,364 > 32,768)은 호출 없이 `generation_failed(input_too_long)`, 기록 없음
-- [ ] T039 [US6] `generation/service.py`: contracts/generation.md 3절 6~8단계 완성(호출 직전 한도, 시도·재시도·마감, 실패 즉시 기록·성공은 후처리 뒤 기록, R-06 Neurons 규칙, 잘림, 기록 실패 처리, 예비분 초과 경고). T037·T038 통과
-- [ ] T039a [US6] `tests/unit/generation/test_gen_no_raw_text.py`에 재시도·시간 초과·할당 소진·인증·잘못된 응답·기록 실패·예비분 초과 경고 경로를 더하고 표식 0건을 확인한다(T030의 나머지, 독립 검토 M2)
+- [X] T038 [P] [US6] `tests/unit/generation/test_gen_input_limit.py`(spec FR-019 (2), SC-009): 검색 요청별 덮어쓰기로 Context 예산·질문 길이를 최대로 올린 입력(계산 36,364 > 32,768)은 호출 없이 `generation_failed(input_too_long)`, 기록 없음
+- [X] T039 [US6] `generation/service.py`: contracts/generation.md 3절 6~8단계 완성(호출 직전 한도, 시도·재시도·마감, 실패 즉시 기록·성공은 후처리 뒤 기록, R-06 Neurons 규칙, 잘림, 기록 실패 처리, 예비분 초과 경고). T037·T038 통과
+- [X] T039a [US6] `tests/unit/generation/test_gen_no_raw_text.py`에 재시도·시간 초과·할당 소진·인증·잘못된 응답·기록 실패·예비분 초과 경고 경로를 더하고 표식 0건을 확인한다(T030의 나머지, 독립 검토 M2)
 - [ ] T040 [P] [US6] `tests/localdb/generation/test_gen_usage_ledger.py`(research R-06, data-model 6절): `0006` 적용 뒤 `qk.generation_record`가 행을 넣고 `AnswerUsageToday`(생성·질의 임베딩·질의응답 합계·색인·하루 전체·예비분 초과)를 돌려줌,
   `purpose`는 `'generate'`만 허용, `attempt` 1·2만, `outcome` 7종만, 음수 거부, 원문 열 없음. 질의 임베딩 기록(`qk.embedding_record`)과 생성 기록을 섞은 날 `answer_total`이 둘의 합이고 예비분 초과 판정이 이 합 기준,
   기존 `qk.embedding_usage_today`·`qk-index usage` 값과 색인 예산 판정(`qk.embedding_reserve`)은 생성 기록 전후로 같음, `qk.generation_usage_prune(90)`이 91일 전 행을 `qk.generation_usage_daily`로 합치고 지움, 재실행 안전
@@ -217,16 +217,16 @@ description: "QK-GEN-001 구현 작업 목록"
   p_outcome text, p_truncated boolean, p_query_reserve int) returns jsonb`(돌려주는 키는 data-model `AnswerUsageToday` 필드 이름 그대로), `qk.generation_usage_prune(retention_days int default 90) returns jsonb`(키
   `days_rolled_up`·`rows_deleted`, `qk.embedding_usage_prune`과 같음, 독립 검토 L6). `uv run qk-migrate`는 출력의 대상이 `target=local`인지 확인한 뒤 두 번 실행하고 두 번째 `applied=0`(독립 검토 L8)
 - [ ] T042 [US6] `src/qello_knowledge/adapters/postgres/generation_usage.py`: `PostgresGenerationLedger(url, query_reserve)`(`record`·`today`·`prune`, `adapters/postgres/usage.py`와 같은 연결·오류 처리). T040 통과
-- [ ] T043 [P] [US6] `tests/unit/indexer/test_gen_usage_prune_cli.py`: `qk-index usage prune`이 임베딩 정리 뒤 생성 정리도 부르고 생성 쪽 `days_rolled_up`·`rows_deleted`를 함께 출력, 원격 대상 규칙(`--allow-remote`)은 그대로,
+- [X] T043 [P] [US6] `tests/unit/indexer/test_gen_usage_prune_cli.py`: `qk-index usage prune`이 임베딩 정리 뒤 생성 정리도 부르고 생성 쪽 `days_rolled_up`·`rows_deleted`를 함께 출력, 원격 대상 규칙(`--allow-remote`)은 그대로,
   `qk-index usage`(today) 출력은 바뀌지 않음. 기존 `tests/unit/indexer/test_cli_usage.py`의 prune 시험(65~76행)은 기대 출력에 생성 쪽 줄을 더하고 가짜 생성 장부(`generation_ledger_factory`)를 주입하도록
   고친다. 검사하는 내용(대상 표시, 원격 대상이면 연결 없이 종료 3, `--allow-remote`면 정리)은 그대로 둔다(2026-10-23 사용자 결정, 독립 검토 H1). 생성 정리 출력 줄은 `generation_days_rolled_up=<n> generation_rows_deleted=<n>`
-- [ ] T044 [US6] `src/qello_knowledge/indexer/usage.py`·`indexer/cli.py`: `prune` 경로에 생성 장부 정리를 더하고 `main()`·`run_usage`에 생성 장부 팩토리 주입 자리(`generation_ledger_factory`, 기본 `PostgresGenerationLedger`)를 둔다.
+- [X] T044 [US6] `src/qello_knowledge/indexer/usage.py`·`indexer/cli.py`: `prune` 경로에 생성 장부 정리를 더하고 `main()`·`run_usage`에 생성 장부 팩토리 주입 자리(`generation_ledger_factory`, 기본 `PostgresGenerationLedger`)를 둔다.
   운영 워크플로 `.github/workflows/index-sync.yml:30`의 `qk-index usage prune --allow-remote`가 바뀌지 않고 생성 사용량도 정리해야 한다. T043 통과
-- [ ] T045 [P] [US6] `tests/unit/config/test_gen_settings_registry.py`(research R-12): `QK_GEN_MODEL`·`QK_GEN_MAX_TOKENS`·`QK_GEN_TEMPERATURE`·`QK_GEN_TIMEOUT_SECONDS`·`QK_GEN_PROMPT_VERSION`가 질의·색인 진입점에 등록되고
+- [X] T045 [P] [US6] `tests/unit/config/test_gen_settings_registry.py`(research R-12): `QK_GEN_MODEL`·`QK_GEN_MAX_TOKENS`·`QK_GEN_TEMPERATURE`·`QK_GEN_TIMEOUT_SECONDS`·`QK_GEN_PROMPT_VERSION`가 질의·색인 진입점에 등록되고
   기본값·범위가 data-model 1절과 같음, `config/check.py`의 `generation_settings(settings) -> GenerationSettings | None`(불러온 설정을 바꾸는 하나뿐인 함수, `budget_settings` 꼴. T034·T048이 쓴다, 독립 검토 L6),
   생성 설정에 문제가 있을 때만 설정 검사 보고에 `CrossCheck`가 생기고 기본 설정이면 `checks`에 생성 항목이 없음(기존 `tests/unit/embedding/test_settings.py:20`·`:37`이 그대로 통과, 독립 검토 H2),
   설정 예시 파일(`.env.example`)이 재생성본과 같음(`tests/unit/config/test_example_file.py` 방식. 재생성은 `uv run python -m qello_knowledge.config.example`, 파일은 직접 읽지 않는다, 독립 검토 L9)
-- [ ] T046 [US6] `src/qello_knowledge/config/registry.py`·`config/check.py`·설정 예시 파일: 환경값 5개 등록, `generation_settings`, 문제가 있을 때만 생기는 생성 설정 검사, 예시 재생성. T045와 기존 설정 시험 통과
+- [X] T046 [US6] `src/qello_knowledge/config/registry.py`·`config/check.py`·설정 예시 파일: 환경값 5개 등록, `generation_settings`, 문제가 있을 때만 생기는 생성 설정 검사, 예시 재생성. T045와 기존 설정 시험 통과
 
 **Checkpoint**: 제공자·사용량·설정 완료
 
@@ -238,10 +238,10 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **Independent Test**: 로컬 DB에 합성 문서를 넣고 가짜 제공자·가짜 임베딩으로 명령을 실행해 출력·종료 코드·비출력 항목을 본다(spec US7).
 
-- [ ] T047 [P] [US7] `tests/unit/indexer/test_gen_ask_cli.py`(contracts/cli.md 1~4절): 질문은 표준 입력만(빈 입력 → 종료 2), 기본 가짜 제공자, `--provider workers-ai`일 때만 실제 제공자 팩토리 호출과 실행 전 표준 오류 알림
+- [X] T047 [P] [US7] `tests/unit/indexer/test_gen_ask_cli.py`(contracts/cli.md 1~4절): 질문은 표준 입력만(빈 입력 → 종료 2), 기본 가짜 제공자, `--provider workers-ai`일 때만 실제 제공자 팩토리 호출과 실행 전 표준 오류 알림
   (모델·프롬프트·예상 입력 토큰·예상 Neurons·재시도 최대치, 질문 없음), `--prompt`, 상태별 종료 코드(0 `answered`·`cannot_confirm`, 1 `retrieval_failed`·`outgoing_blocked`·`generation_failed`, 2 설정 검사 실패, 3 원격 대상 + `--allow-remote` 없음),
   사람용·`--json` 출력 꼴, 출처 줄 꼴, 표시 줄, 오늘 사용량 줄(가짜면 "가짜 실행은 기록하지 않음", 생성 호출 0), 응답 꼴 줄, 출력·로그에 질문 원문 없음
-- [ ] T048 [US7] `src/qello_knowledge/indexer/ask_cli.py`·`indexer/cli.py`: `add_ask_parser`, `main()`에 `ask_factory` 주입 자리(`search_factory` 꼴, `cli.py:36`·`tests/localdb/retrieval/test_search_command.py:24-33`, 독립 검토 L3),
+- [X] T048 [US7] `src/qello_knowledge/indexer/ask_cli.py`·`indexer/cli.py`: `add_ask_parser`, `main()`에 `ask_factory` 주입 자리(`search_factory` 꼴, `cli.py:36`·`tests/localdb/retrieval/test_search_command.py:24-33`, 독립 검토 L3),
   `postgres_ask(settings, source, policy, *, embedding_provider=None, generation_provider=None, transport=None)`(`postgres_search` 재사용, 생성 설정은 `generation_settings`,
   `security_outgoing_check(policy)`, `query_retry_delay`, 가짜면 기록 `MemoryLedger`·오늘 사용량은 `PostgresGenerationLedger.today()` 읽기만), `run_ask`. T047 통과
 - [ ] T049 [P] [US7] `tests/localdb/generation/test_gen_ask_command.py`: 합성 문서를 넣은 로컬 DB에서 가짜 임베딩 제공자(`FakeEmbeddingProvider`)와 (1) 가짜 생성 제공자로 `answered`·출처 줄, (2) `WorkersAiGenerationProvider` + 가짜 전송으로
@@ -312,3 +312,7 @@ US7:     T047 (시험) → T048 → T049
 - 2026-10-23 T023: T015 구현이 research R-04 1~11단계를 이미 담고 있어 T021·T022·T024가 코드 변경 없이 통과했다(155 passed).
 - 2026-10-23 T027·T028: T014·T016 구현이 무력화·판정 순서·묶음 검사를 이미 담고 있어 T025·T026이 코드 변경 없이 통과했다. T030 파일에 T039a의 재시도·기록 실패·예비분 경고 경로도 함께 썼다(T016이 그 경로를 이미 구현). 188 passed.
 - 2026-10-23 T034: 실측 스크립트의 질문 세트 `gen-ko-v1`은 spike-ko-v0 생성 질문 5개(부록 A.3)와 그 합성 문서(부록 A.1, S6의 지시문 주입 문장 포함)에 충돌 2·현재 상태 2·일부만 답 1·지시문 주입 1·무관 1을 더한 12문항이다. 모두 합성 문서다. 문장마다 인용 비율을 내려고 `Postprocessed`에 `fact_sentences`(사실 문장 수)를 더했다(내부 필드, 계약 변경 없음). 실제 제공자 경로(`workers_ai_provider_factory`)는 T036 어댑터를 쓴다. 가짜 제공자 실행에서 표준 출력에 질문·답 원문이 없음을 확인했다.
+- 2026-10-23 T036~T048: Workers AI 생성 어댑터(전용 전송·과금 분류표·응답 꼴), 0006 마이그레이션과 `PostgresGenerationLedger`, `qk-index usage prune`의 생성 정리, `QK_GEN_*` 5개와 생성 설정 검사, `qk-index ask`를 구현했다. 단위 시험 전부 통과. 기존 `tests/unit/indexer/test_cli_usage.py` prune 시험 2건은 2026-10-23 사용자 결정대로 기대 출력에 생성 정리 줄을 더하고 가짜 생성 장부를 주입했다(검사 내용 그대로).
+- 2026-10-23 발견(T045): 환경값 범위의 최대(Context 예산 8,000, 출력 4,096)도 설정 검사 (1) 합이 25,946으로 창 32,768 안이다. 그래서 (1)은 코드 설정용 안전망이고, 검색 요청별 덮어쓰기는 호출 직전 검사 (2)가 막는다(T038). 시험에 이 사실을 고정했다.
+- 2026-10-23 막힘: (1) `.env.example` 재생성(`uv run python -m qello_knowledge.config.example`)은 이 세션의 권한 설정이 막았다. 재생성 전까지 `tests/unit/config/test_example_file.py`가 실패한다. (2) 이 PC의 Docker 엔진이 꺼져 있어 로컬 DB 시험(T040·T042의 0006 검증, T049)과 `qk-migrate`를 아직 돌리지 못했다. 시험 13건은 수집까지 확인했다.
+- 2026-10-23 T046: `.env.example`을 `uv run python -m qello_knowledge.config.example`로 다시 만들었다(사용자가 실행 허용). `tests/unit/config` 51 passed.
