@@ -36,11 +36,11 @@ description: "QK-GEN-001 구현 작업 목록"
 
 ## Phase 1: Setup
 
-- [ ] T001 패키지 자리 만들기: `src/qello_knowledge/generation/__init__.py`, `tests/unit/generation/`(골든 파일 자리 `tests/unit/generation/golden/` 포함), `specs/QK-GEN-001-answer-generation/measurement/`,
+- [X] T001 패키지 자리 만들기: `src/qello_knowledge/generation/__init__.py`, `tests/unit/generation/`(골든 파일 자리 `tests/unit/generation/golden/` 포함), `specs/QK-GEN-001-answer-generation/measurement/`,
   `tests/localdb/generation/conftest.py`. conftest는 `tests/localdb/retrieval/conftest.py:20-33` 꼴을 따른다: `pytestmark = pytest.mark.localdb`, `db_url`(`tests/localdb/store/conftest.py` 방식), 시험마다
   `qk.generation_usage`·`qk.generation_usage_daily`·`qk.embedding_usage`·`qk.embedding_usage_daily`를 비우는 자동 픽스처, `store` 픽스처, `seed_index_versions`·`seed_doc` 도우미(활성 인덱스 없음 사례를 만들 수 있게).
   시험 디렉터리에는 `__init__.py`를 만들지 않는다
-- [ ] T002 [P] `tests/unit/test_boundaries.py`: 기존 `RESTRICTED`·`ALLOWED_INTERNAL`·검사 함수는 그대로 두고, `generation` 전용 허용 목록(`domain`·`ports`·`generation`)과 검사 함수를 따로 더한다
+- [X] T002 [P] `tests/unit/test_boundaries.py`: 기존 `RESTRICTED`·`ALLOWED_INTERNAL`·검사 함수는 그대로 두고, `generation` 전용 허용 목록(`domain`·`ports`·`generation`)과 검사 함수를 따로 더한다
   (QK-RET-001 `retrieval` 검사와 같은 꼴). 위반 사례 시험: `generation/`이 `qello_knowledge.adapters`·`security`·`retrieval`·`indexer`·`psycopg`를 가져오면 실패, 상대 경로 가져오기(`from . import x`,
   `from ..adapters import y`)면 실패, `domain`·`ports`가 `qello_knowledge.generation`을 가져오면 기존 검사가 실패. RESTRICTED에 `generation`을 넣지 않는다(넣으면 `generation` 안의 서로 가져오기가 기존 검사에 걸린다.
   research R-13·contracts 6절도 이에 맞춰 고쳤다, 독립 검토 L10)
@@ -51,29 +51,29 @@ description: "QK-GEN-001 구현 작업 목록"
 
 **목적**: 모든 스토리가 쓰는 타입·설정·프롬프트·경계·가짜 구현. 이 단계가 끝나야 스토리 시험을 쓸 수 있다.
 
-- [ ] T003 [P] `tests/unit/generation/test_gen_settings_domain.py`(data-model 1절, spec FR-025): `GenerationSettings` 기본값(모델 `@cf/qwen/qwen3-30b-a3b-fp8`, 출력 800, 온도 0.2, 시간 제한 20, 프롬프트 `gen-p1`,
+- [X] T003 [P] `tests/unit/generation/test_gen_settings_domain.py`(data-model 1절, spec FR-025): `GenerationSettings` 기본값(모델 `@cf/qwen/qwen3-30b-a3b-fp8`, 출력 800, 온도 0.2, 시간 제한 20, 프롬프트 `gen-p1`,
   바이트당 토큰 3.5, 배율 2.0, 창 32,768, 입력 단가 4,625, 출력 단가 30,475, 시도 2, 마감 `2 × timeout_seconds + 5` = 45)과 범위("모델 `@cf/qwen/qwen3-` 접두어", "출력 1~4,096", "온도 0~1",
   "시간 제한 1~60", "배율 1.0~4.0", "마감을 직접 주면 `2 × timeout_seconds + 2` 이상 ~ 130", "단가 > 0") 안·밖, `PROMPT_NAMES = ("gen-p1", "gen-base")`에 없는 프롬프트 이름 거부
   (이름 목록은 `domain`에 둔다. `domain`이 `generation`을 가져오지 않게, 독립 검토 M3). 시간 제한 30이면 마감 기본값 65
-- [ ] T004 [P] `tests/unit/generation/test_gen_domain.py`(data-model 2~5절): 원문 필드(`question`, `system`, `user`, `text`, `answer`)가 `repr`에 나오지 않음, `GenerationStatus` 값 5개
+- [X] T004 [P] `tests/unit/generation/test_gen_domain.py`(data-model 2~5절): 원문 필드(`question`, `system`, `user`, `text`, `answer`)가 `repr`에 나오지 않음, `GenerationStatus` 값 5개
   (`answered`, `cannot_confirm`, `retrieval_failed`, `outgoing_blocked`, `generation_failed`), `GenerationFailure` 6개(`transient`, `timeout`, `provider_quota`, `auth_config`, `bad_response`, `input_too_long`),
   `CannotConfirmReason` 5개(`no_results`, `empty_context`, `all_blocks_blocked`, `model_cannot_confirm`, `model_unconfirmable_parts`), `GenerationResult` 불변식("`status == cannot_confirm`이면 `citations == ()`",
   "`flags.unsupported_answer`이면 `status == answered`이고 `citations == ()`") 위반 시 생성 실패
-- [ ] T005 `src/qello_knowledge/domain/generation.py`: data-model 1~5절을 표준 라이브러리 불변 dataclass·`StrEnum`으로 정의한다. `PROMPT_NAMES`, `GenerationSettings`(생성 때 `ValueError`), `PromptSpec`, `GenerationRequest`,
+- [X] T005 `src/qello_knowledge/domain/generation.py`: data-model 1~5절을 표준 라이브러리 불변 dataclass·`StrEnum`으로 정의한다. `PROMPT_NAMES`, `GenerationSettings`(생성 때 `ValueError`), `PromptSpec`, `GenerationRequest`,
   `RenderedBlock`(`source_id`, `block: ContextBlock`, `raw_title`, `title`, `modified_label`, `text`, `excerpt_urls: frozenset[str]`, `estimated_tokens`), `DroppedBlock`, `RenderedInput`, `ResponseShape`, `ProviderReply`,
   `GenerationStatus`, `GenerationFailure`, `CannotConfirmReason`, `Citation`, `GenerationFlags`, `GenerationSummary`, `GenerationResult`, `GenerationUsage`, `AnswerUsageToday`. T003·T004 통과
-- [ ] T006 `src/qello_knowledge/ports/generator.py`: 빈 `Generator`를 채우고 `GenerationProvider`, `GenerationLedger`, 예외 `GenerationProviderFailure`(`kind: GenerationFailure`, `retry_after_seconds`, `billable`,
+- [X] T006 `src/qello_knowledge/ports/generator.py`: 빈 `Generator`를 채우고 `GenerationProvider`, `GenerationLedger`, 예외 `GenerationProviderFailure`(`kind: GenerationFailure`, `retry_after_seconds`, `billable`,
   `neurons`, `input_tokens`, `output_tokens`, `shape`. 메시지는 종류 값만)를 contracts/generation.md 2절대로 정의한다
-- [ ] T007 [P] `tests/unit/generation/test_gen_prompts.py`(research R-02, spec FR-003·005, SC-010): 승인 원문을 고정 파일 `tests/unit/generation/golden/gen-p1-system.txt`·`gen-p1-template.txt`·
+- [X] T007 [P] `tests/unit/generation/test_gen_prompts.py`(research R-02, spec FR-003·005, SC-010): 승인 원문을 고정 파일 `tests/unit/generation/golden/gen-p1-system.txt`·`gen-p1-template.txt`·
   `gen-base-system.txt`·`gen-base-template.txt`로 두고(코드 블록 안 글 그대로, 끝 줄바꿈 없음, UTF-8), `prompt_spec(...)`의 글이 그 파일과 글자 그대로 같음. 고정 파일을 만들 때 한 번만 `TASK.md`
   "승인된 입력"·spike 부록 B·research R-02와 대조하고 그 사실을 실행 기록에 남긴다(시험은 `TASK.md`를 읽지 않는다. TASK.md는 브랜치마다 바뀐다, 독립 검토 H3). 두 템플릿이 ` /no_think`로 끝남,
   식별자 꼴 `<이름>-<12자 16진>`, 시스템·템플릿·렌더링 규칙 중 하나만 바꾼 `PromptSpec`의 식별자가 모두 다름, 해시 재료가 `json.dumps(..., ensure_ascii=False, sort_keys=True)`, `prompts.py`의 이름 집합 = `domain` `PROMPT_NAMES`
-- [ ] T008 `src/qello_knowledge/generation/prompts.py`: `gen-p1`(render-v1)·`gen-base`(render-base) 상수와 `prompt_spec`, 식별자 계산. T007 통과
-- [ ] T009 `src/qello_knowledge/generation/fake.py`(T005·T006 뒤): `ScriptedProvider`(호출 순서대로 `ProviderReply` 또는 `GenerationProviderFailure`를 돌려주고 받은 `(system, user, max_tokens, temperature, timeout_seconds)`를 기록),
+- [X] T008 `src/qello_knowledge/generation/prompts.py`: `gen-p1`(render-v1)·`gen-base`(render-base) 상수와 `prompt_spec`, 식별자 계산. T007 통과
+- [X] T009 `src/qello_knowledge/generation/fake.py`(T005·T006 뒤): `ScriptedProvider`(호출 순서대로 `ProviderReply` 또는 `GenerationProviderFailure`를 돌려주고 받은 `(system, user, max_tokens, temperature, timeout_seconds)`를 기록),
   `MemoryLedger`(`record`가 `AnswerUsageToday`를 돌려줌, 실패 주입 옵션). 질의 임베딩 사용량은 생성자 인자로 받는다
-- [ ] T010 [P] `tests/unit/generation/test_gen_check_settings.py`(spec FR-019 (1), research R-08, SC-009): 기본 설정 통과(계산값 10,650 ≤ 32,768), Context 예산 8,000·질문 상한 8,000자면 거부,
+- [X] T010 [P] `tests/unit/generation/test_gen_check_settings.py`(spec FR-019 (1), research R-08, SC-009): 기본 설정 통과(계산값 10,650 ≤ 32,768), Context 예산 8,000·질문 상한 8,000자면 거부,
   질문 상한을 "한 글자 4바이트"로 바꾸는지, 배율을 입력에만 곱하는지, 출력 상한을 그대로 더하는지
-- [ ] T011 `src/qello_knowledge/generation/settings.py`: `check_settings(gen, retrieval) -> list[str]`(문제 문장 목록, 원문 없음)과 `estimate_tokens(text, settings)`(`ceil(UTF-8 바이트 ÷ bytes_per_token)`). T010 통과
+- [X] T011 `src/qello_knowledge/generation/settings.py`: `check_settings(gen, retrieval) -> list[str]`(문제 문장 목록, 원문 없음)과 `estimate_tokens(text, settings)`(`ceil(UTF-8 바이트 ÷ bytes_per_token)`). T010 통과
 
 **Checkpoint**: 타입·프롬프트·설정 검사·가짜 구현 준비 완료
 
