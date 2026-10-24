@@ -40,6 +40,7 @@
    확장 확인: `CREATE EXTENSION vector; CREATE EXTENSION pgroonga;` 결과를 ADR-008에 적는다(QK-STO-001 T031).
 4. 마이그레이션: 작업자 PC에서 Bastion 세션을 거친 SSH 터널(`ssh -L 15432:127.0.0.1:5432 ...`)을 열고 `DATABASE_URL`을 터널 주소로 둔 채
    `uv run qk-migrate --dry-run` → `uv run qk-migrate` → 다시 실행해 `applied=0`.
+   타이머를 켠 뒤에는 새 마이그레이션을 그 코드가 `main`에 병합되기 전에(늦어도 다음 00:30 UTC 실행 전에) 이 방법으로 적용한다(6절).
 5. 첫 색인(H06, 2026-10-23 완료): 4번의 터널로 `qk-index run --preview --allow-remote --json` → 사용량 승인 → `qk-index run --allow-remote --json` 두 번(두 번째 임베딩 호출 0) → `qk-index index activate <버전> --allow-remote`.
 6. 동기화 사용자와 코드: 시스템 사용자 `qksync`(홈 `/var/lib/qksync`, sudo·docker 그룹 없음)를 만든다. `qksync`로 `uv`(작업자 PC와 같은 판, 2026-10-23 기준 0.13.1)를 설치하고
    공개 저장소를 `/opt/qello-knowledge`에 받는다(인증 없음). 이 복제본은 동기화 전용이다. 사람이 고치지 않는다.
@@ -99,6 +100,7 @@
 
 10. 켜기(H07): `config/store_policy.toml`이 `main`에 병합된 뒤에 한다(없으면 `store_policy_required`로 멈춘다). `systemctl start qk-sync.service`로 1회 실행해 성공을 확인하고
     `systemctl enable --now qk-sync.timer`로 예약을 켠다. `systemctl list-timers qk-sync.timer`로 다음 실행 시각을 확인한다.
+    2026-10-23 #55 병합 뒤 0006 적용 → 수동 1회 실행 성공(0 Neurons) → 타이머 켜기를 마쳤다(`specs/QK-SYN-001-incremental-sync/tasks.md` H07).
 11. GitHub 워크플로 `index-sync.yml`은 쓰지 않는다. 저장소 변수 `QK_SYNC_ENABLED`를 만들지 않는다(ADR-020).
 
 ## 3. 공유 인스턴스 운영 규칙
@@ -127,4 +129,6 @@ DB를 잃으면 2절 3~4번으로 다시 만들고 `qk-index run --allow-remote`
 - 실패 알림: 아직 없다. 후속 작업으로 만든다(ADR-020 Negative).
 - 사용량: `qk-index usage`(같은 DB를 보는 환경에서).
 - 정리: 예약 실행이 `usage prune`과 `runs prune`을 함께 돈다(보관 90일).
+- 마이그레이션 순서: 예약 실행은 매번 최신 `main`을 받아 실행하고 마이그레이션은 돌리지 않는다. 새 마이그레이션이 든 PR은 병합 전에 2절 4번으로 운영 DB에 적용한다.
+  적용하지 않으면 새 코드가 없는 테이블·함수를 불러 실행이 실패한다(2026-10-23 `0006_generation_usage`: `usage prune`이 실패할 뻔했다).
 - 자원: Bastion 세션으로 `free -h`, `df -h /`, `sudo docker stats --no-stream`.

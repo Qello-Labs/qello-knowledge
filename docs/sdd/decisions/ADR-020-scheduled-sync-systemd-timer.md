@@ -3,7 +3,7 @@
 > Created at: `2026-10-23`
 > Jira 이슈: `https://tkv123.atlassian.net/browse/SCRUM-103`
 > 기능명세서 ID: `QK-SYN-001` (사람 단계 H07, 작업 T047)
-> Status: Proposed
+> Status: Accepted
 >
 > 작성 방식: ASD-STE-100 원칙(짧은 문장, 한 문장에 한 내용, 능동형, 한 가지 뜻의 단어)을 한국어에 적용한다(2026-10-23 사용자 요청).
 
@@ -102,5 +102,6 @@
 
 ## Approval
 
-- Approvers: 확인 필요
-- Approved at: 미승인. 사용자가 2026-10-23에 systemd 타이머를 선택했다. 이 기록의 승인은 PR 리뷰에서 받는다.
+- Approvers: PR #55 리뷰어 tkv00(팀원, OCI 계정 소유자)
+- Approved at: 2026-10-23 PR #55 리뷰 승인(APPROVED)과 병합(`59132b2`). 사용자가 2026-10-23에 systemd 타이머를 선택했다.
+  이 기록은 Claude 세션이 썼고 그 세션은 승인하지 않았다(AGENTS.md 2절).
