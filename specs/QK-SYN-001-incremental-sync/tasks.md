@@ -254,13 +254,15 @@ description: "QK-SYN-001 구현 작업 목록"
   - 미리 보기: 문서 80(PASSED 79·SECRET_BLOCKED 1), 청크 1,291, 원본 요청 83, 예상 368.93 Neurons, 임베딩 호출 0.
   - 1회차 `sync-20261023T075442-2f24051c`: PROCESS 79·SKIP 1, 청크 1,291, 제공자 호출 94, **894.50 Neurons**(H02와 같음). 2회차 `sync-20261023T080122-16d16ba5`: UNCHANGED 79, 제공자 호출 0, 0 Neurons.
   - `qk-index index activate iv-4c0bc4fcc642 --allow-remote`: 문서 79, 청크 1,291, 벡터 없는 청크 0, 실패 조건 없음. `index status`: active=current, matches=true.
-- [ ] H07 GitHub Actions 무료 할당 확인, Secret 등록, 저장소 변수 `QK_SYNC_ENABLED=true`, 첫 예약 실행 결과 확인
+- [X] H07 GitHub Actions 무료 할당 확인, Secret 등록, 저장소 변수 `QK_SYNC_ENABLED=true`, 첫 예약 실행 결과 확인
   - 2026-10-23: 저장소가 공개라 GitHub Actions 셀프 호스티드 러너 대신 OCI 인스턴스의 systemd 타이머로 예약 실행한다(ADR-020, 사용자 결정). 이 항목의 "GitHub Actions 무료 할당 확인, Secret 등록,
     `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다. 2026-10-23 타이머 설치(켜지 않음)와 비밀값 입력(사람)을 마쳤다.
   - 2026-10-23 병합 뒤(`main` `59132b2`): #54의 `0006_generation_usage`를 운영 DB에 먼저 적용했다(`applied=1`, 재실행 `applied=0 skipped=6`). 서버 스크립트의 `usage prune`이 0006의 함수를 부르기 때문이다.
     `sudo systemctl start qk-sync.service` 1회: `sync-20261023T155324-1bbd7bfc` succeeded(UNCHANGED 79·SKIP 1, 제공자 호출 0, 0 Neurons, 정리 단계 성공, 종료 코드 0, 색인 약 68초).
     스크립트가 `--trigger schedule`을 고정하므로 이 수동 실행도 `trigger=schedule`로 남는다. 이어서 `sudo systemctl enable --now qk-sync.timer`(다음 실행 2026-10-24 00:30 UTC).
-    남은 것: 2026-10-24 00:30 UTC 예약 실행 1회 확인(`journalctl -u qk-sync.service`, `qk-index runs list`).
+  - 2026-10-24 첫 예약 실행: 타이머가 00:30:31 UTC에 시작했다. `sync-20261024T003032-be5aa192` succeeded(`trigger=schedule`, `main` `59132b2`, 원본 커밋 `6aeccd0` 그대로):
+    문서 80 처리(UNCHANGED 79·SKIP 1), GitHub 요청 83, 제공자 호출 0, 0 Neurons, 보류·실패 없음. 정리 단계 성공, `Result=success`, 종료 코드 0, 약 70초.
+    `index status` active=current=`iv-4c0bc4fcc642`, `matches=true`. 실행 뒤 `qk-postgres` 261 MiB, 호스트 가용 4.4 GiB. 다음 예정 2026-10-25 00:30 UTC.
 
 H04~H07은 운영 저장소가 정해진 뒤 1.G 완료 리뷰 전까지 한다.
 

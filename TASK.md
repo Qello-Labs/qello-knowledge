@@ -86,3 +86,7 @@ uv run ruff format --check .
 - 2026-10-23 사실(사용자 승인 명령, Bastion 세션): 마지막 실행 성공을 확인하고 `sudo systemctl enable --now qk-sync.timer`. `enabled / active`, 다음 실행 `Sat 2026-10-24 00:30:00 UTC`(LAST n/a, 켤 때 바로 돌지 않음).
 - 2026-10-24 사용자 결정: 후속 기록 PR 브랜치를 만들어 예약 실행 확인 전 기록을 먼저 한다.
 - 2026-10-24 사용자 결정: 이 계약과 기록 초안(ADR-008·ADR-020 Status·Approval 포함)을 승인했다. 지금 기록을 커밋하고, 예약 실행 확인 뒤 H07 체크 커밋을 더해 PR을 올린다.
+- 2026-10-24 사실(사용자 재인증 뒤 승인 명령, Herdr 오른쪽 패널, 읽기 전용): 첫 재인증은 `qello-team` 프로필에 들어가지 않아(`session validate`: expired) 세션 생성이 `Abort:`로 끝났다(변경 없음).
+  다시 인증한 뒤 Bastion 세션 `qk-h07-check`로 확인했다. 타이머 LAST `2026-10-24 00:30:31 UTC`, NEXT `2026-10-25 00:30:00 UTC`.
+  예약 실행 `sync-20261024T003032-be5aa192` succeeded(`trigger=schedule`): UNCHANGED 79·SKIP 1, 제공자 호출 0, 0 Neurons, 정리 단계 성공, `Result=success`·종료 코드 0.
+  터널로 `index status` matches=true, `runs list` 4건 succeeded, `usage` 2026-10-24 0. 실행 뒤 `qk-postgres` 261 MiB, 호스트 가용 4.4 GiB. 완료 조건 첫째를 충족했다.
