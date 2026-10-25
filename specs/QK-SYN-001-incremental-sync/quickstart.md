@@ -62,7 +62,7 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 | H04 | 운영 저장소 제공자 데이터 처리 정책 확인과 `config/store_policy.toml` PR | 없음 | ADR-008 또는 ADR-019에 출처·조회일 |
 | H05 | 운영 저장소 연결 방식 확인(세션 advisory lock이 유지되는 직접 연결인지, research R-06) | 없음 | 확인 방법과 결과 |
 | H06 | 운영 저장소 첫 실제 색인(`--allow-remote`)과 활성화 | H02와 같은 Neurons | spec SC-012 |
-| H07 | GitHub Actions 무료 할당 확인, Secret 등록, `QK_SYNC_ENABLED=true` | Actions 실행 시간(research R-14) | 첫 예약 실행 결과 링크 |
+| H07 | 서버 systemd 타이머 구성·비밀값 파일·수동 1회 실행 뒤 타이머 켜기(ADR-020. 처음 계획은 GitHub Actions Secret과 `QK_SYNC_ENABLED`였다) | 없음 | 첫 예약 실행 결과(`journalctl`, `qk-index runs list`) |
 
 H01~H03은 이 작업의 완료 판정(spec SC-012)에 쓴다. H04~H07은 운영 저장소가 정해진 뒤에 하고, 1.G 완료 리뷰 전까지 끝낸다.
 

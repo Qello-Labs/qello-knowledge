@@ -114,8 +114,6 @@ src/qello_knowledge/
     └── sync_cli.py               # 옵션 해석, 의존성 조립, 종료 코드(contracts/cli.md)
 config/
 └── store_policy.toml             # 만들지 않는다. 사람 단계 H04에서 PR로 더한다(R-13)
-.github/workflows/
-└── index-sync.yml                # 주기 실행, QK_SYNC_ENABLED로 켬(R-14)
 tests/
 ├── unit/sync/                    # 판단·미리 보기·실행 기록·정체성(메모리 SyncStore, fake_store.py)
 ├── localdb/sync/                 # 원자 반영·내림·인덱스 버전·동시 실행·성능
@@ -152,7 +150,7 @@ TASK.md 제외 범위에 걸리는 변경이다. tasks 승인 때 Scope를 고�
 | `adapters/postgres/store.py` 내부 함수 분리 | QK-STO-001 코드 | 같은 청크 쓰기 SQL을 두 곳에 두지 않기 위해(R-01). 동작 변경 없음 |
 | `domain/security.py`·`security/screen.py`에 `ScreenResult.listing`과 공개 이름 `source_excluded` 추가 | QK-SEC-001 코드 | 수집 뒤 정체성·목록 완전 여부를 넘기고, 저장된 문서의 설정 제외를 보안 필터와 같은 규칙으로 판정하기 위해(R-18). 판정 동작 변경 없음 |
 | 마이그레이션 `0004_sync.sql` | 저장 스키마 변경 | spec FR-027 사용자 결정(실행 기록 DB), FR-006 저장 상태 |
-| `.github/workflows/index-sync.yml` | (워크플로 파일) | spec FR-034. 변수로 꺼진 채 더한다 |
+| `.github/workflows/index-sync.yml` | (워크플로 파일) | spec FR-034. 변수로 꺼진 채 더한다. 2026-10-25 지웠다: 주기 실행은 서버 systemd 타이머(ADR-020, SCRUM-113) |
 
 ## 다른 명세에 넘기는 것
 
