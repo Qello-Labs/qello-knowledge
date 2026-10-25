@@ -6,7 +6,7 @@ from qello_knowledge.embedding.service import QUERY_RESERVE_WARNING, QUOTA_MISMA
 from qello_knowledge.ports.embedder import ProviderFailure
 from tests.unit.embedding.helpers import index_request, query_request
 
-TEXTS = [f"문서 {i} " + "본문 " * 300 for i in range(6)]  # 항목마다 예상 약 0.5 Neurons
+TEXTS = [f"문서 {i} " + "본문 " * 120 for i in range(6)]  # 항목마다 예상 약 0.65 Neurons(1.4바이트/토큰)
 
 
 def _spend_index_budget(harness) -> None:

@@ -87,7 +87,7 @@ def test_two_sources_are_budgeted_together_and_partial_option_stays_within_budge
     from qello_knowledge.security.policy import SecurityPolicy
     from tests.unit.security.helpers import fake_config
 
-    text = "# Synthetic\n\n" + "word " * 400
+    text = "# Synthetic\n\n" + "word " * 160  # 문서 하나 예상 약 0.6 Neurons: 하나는 예산 1 안, 둘은 넘친다
     first = harness({"A": text}, settings=BudgetSettings(index_budget=1))
     second = harness(
         {"B": text + "second"},
