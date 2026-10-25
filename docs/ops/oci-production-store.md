@@ -101,7 +101,7 @@
 10. 켜기(H07): `config/store_policy.toml`이 `main`에 병합된 뒤에 한다(없으면 `store_policy_required`로 멈춘다). `systemctl start qk-sync.service`로 1회 실행해 성공을 확인하고
     `systemctl enable --now qk-sync.timer`로 예약을 켠다. `systemctl list-timers qk-sync.timer`로 다음 실행 시각을 확인한다.
     2026-10-23 #55 병합 뒤 0006 적용 → 수동 1회 실행 성공(0 Neurons) → 타이머 켜기를 마쳤다(`specs/QK-SYN-001-incremental-sync/tasks.md` H07).
-11. GitHub 워크플로 `index-sync.yml`은 쓰지 않는다. 저장소 변수 `QK_SYNC_ENABLED`를 만들지 않는다(ADR-020).
+11. GitHub Actions로 예약 실행하지 않는다(ADR-020). 쓰지 않던 워크플로 `index-sync.yml`은 2026-10-25 지웠다(SCRUM-113). 저장소 변수·Secret을 만들지 않는다.
 
 ## 3. 공유 인스턴스 운영 규칙
 

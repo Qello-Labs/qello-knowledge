@@ -89,6 +89,7 @@
 - 매 실행은 최신 `main`을 받아 실행한다. `main`의 나쁜 변경은 인스턴스에서 실행된다. 이 위험은 러너와 같다.
 - 이 결정은 QK-SYN-001의 T047과 H07을 바꾼다. `index-sync.yml`은 저장소에 남는다.
   저장소 변수 `QK_SYNC_ENABLED`가 없으므로 이 워크플로는 실행하지 않는다. 후속 작업에서 지우거나 고친다.
+  2026-10-25 이 워크플로와 그 전용 시험을 지웠다(SCRUM-113).
 - `config/store_policy.toml`이 `main`에 들어가기 전에는 타이머를 켤 수 없다.
   이 파일이 없으면 `qk-index run --allow-remote`는 `store_policy_required`로 멈춘다.
 
