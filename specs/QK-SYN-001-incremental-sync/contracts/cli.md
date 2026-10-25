@@ -60,18 +60,18 @@
 `--json` 최상위 키(미리 보기): `preview: true`와 위 `sources[]`에서 실행 결과 대신 예정 수, 그리고 `embedding_preview`(QK-EMB-001 `EmbedPreview`의 모든 필드), `runnable`.
 `run_id`는 없다.
 
-## 5. 주기 실행 정의 `.github/workflows/index-sync.yml` (research R-14)
+## 5. 주기 실행 정의: 서버 systemd 타이머 (research R-14, ADR-020)
+
+처음 정의는 GitHub Actions 워크플로 `.github/workflows/index-sync.yml`이었다. 저장소가 공개라 ADR-020이 실행 위치를 운영 OCI 인스턴스의 systemd 타이머로 바꿨고,
+쓰지 않는 워크플로 파일과 그 파일만 검사하던 시험(`tests/unit/indexer/test_schedule_workflow.py`)은 2026-10-25 지웠다(SCRUM-113). 구성 원본은 `docs/ops/oci-production-store.md` 2절 6~10번이다.
 
 | 항목 | 값 |
 | --- | --- |
-| 트리거 | `schedule: cron '30 0 * * *'`, `workflow_dispatch` |
-| 켜기 게이트 | `jobs.sync.if: vars.QK_SYNC_ENABLED == 'true'` |
-| 권한 | `permissions: contents: read` |
-| 동시 실행 | `concurrency: { group: index-sync, cancel-in-progress: false }` |
-| 시간 제한 | `timeout-minutes: 30` |
-| 비밀값 | `DATABASE_URL`, `QK_GITHUB_API_TOKEN`(→ 환경 변수 `GITHUB_API_TOKEN`), `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. 정의 파일에 값 없음 |
-| 단계 | checkout(`persist-credentials: false`) → setup-uv → `uv sync --locked --extra index --extra postgres` → `uv run qk-index run --allow-remote --trigger schedule --json` → (`if: always()`) `uv run qk-index usage prune --allow-remote` → (`if: always()`) `uv run qk-index runs prune --allow-remote` |
-| 결과 | 동기화가 0이 아니면 작업 실패(spec FR-037). 다음 예약 실행은 처음부터 돈다 |
-
-워크플로 파일은 이 작업에서 더하지만 `QK_SYNC_ENABLED` 변수와 Secret은 사람이 FR-033 확인과 첫 실제 색인 뒤 만든다(spec FR-036). 시험은 워크플로 파일을 읽어
-위 항목을 검사한다(`tests/unit/indexer/test_schedule_workflow.py`). YAML 해석 의존성이 없으므로 줄 단위 텍스트로 확인한다(새 의존성 없음).
+| 트리거 | `qk-sync.timer`: `OnCalendar=*-*-* 00:30:00 UTC`, `Persistent=true`. 수동 실행은 `systemctl start qk-sync.service` |
+| 켜기 게이트 | 사람이 비밀값 파일을 만들고 수동 1회 실행에 성공한 뒤 `systemctl enable --now qk-sync.timer`(spec FR-036) |
+| 실행 사용자 | `qksync`(sudo·docker 그룹 없음). `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp` |
+| 동시 실행 | 타이머는 앞 실행이 끝나기 전에 다시 시작하지 않는다. 그 밖의 겹침은 세션 잠금이 막는다(종료 6) |
+| 시간 제한 | `TimeoutStartSec=30min` |
+| 비밀값 | `/etc/qello-knowledge/sync.env`(root:qksync, 0640)의 `DATABASE_URL`, `GITHUB_API_TOKEN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`. 저장소에 값 없음 |
+| 단계 | 복제본을 `origin/main`으로 맞춤 → `uv sync --locked --extra index --extra postgres` → `uv run qk-index run --allow-remote --trigger schedule --json` → `usage prune --allow-remote` → `runs prune --allow-remote`(정리는 동기화 결과와 관계없이 돈다) |
+| 결과 | 동기화나 정리가 실패하면 서비스가 실패 상태로 끝난다(spec FR-037). 다음 예약 실행은 처음부터 돈다 |
