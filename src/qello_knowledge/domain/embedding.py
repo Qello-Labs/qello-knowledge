@@ -21,7 +21,8 @@ class ModelSpec:
     dimension: int
     max_input_tokens: int
     neurons_per_million_tokens: float
-    bytes_per_token_estimate: float
+    bytes_per_token_estimate: float  # 청크 나누기·묶음 나누기·입력 한도 판정. 바꾸면 청크 경계가 바뀐다
+    neuron_bytes_per_token: float  # 예상 Neurons 전용. 정산된 사용량으로 보정한다(research R-04)
 
 
 MODELS: Mapping[str, ModelSpec] = {
@@ -31,6 +32,7 @@ MODELS: Mapping[str, ModelSpec] = {
         max_input_tokens=8192,
         neurons_per_million_tokens=1075,
         bytes_per_token_estimate=3.5,
+        neuron_bytes_per_token=1.4,
     ),
 }
 

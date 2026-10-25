@@ -15,7 +15,7 @@ def test_preview_counts_cache_hits_and_makes_no_side_effects(make_harness) -> No
     assert (preview.requested, preview.cache_hits, preview.to_embed) == (100, 60, 40)
     assert preview.estimated_neurons == estimated_neurons(TEXTS[60:], MODELS["@cf/baai/bge-m3"])
     assert preview.basis.bytes_total == sum(len(t.encode()) for t in TEXTS[60:])
-    assert preview.basis.bytes_per_token == 3.5 and preview.basis.neurons_per_million_tokens == 1075
+    assert preview.basis.bytes_per_token == 1.4 and preview.basis.neurons_per_million_tokens == 1075
     assert preview.index_budget == 5000 and preview.index_remaining == 5000 - preview.index_used_today
     assert preview.runnable is True
     assert (len(harness.provider.calls), len(harness.ledger.rows), len(harness.store.vectors)) == (calls, rows, stored)
