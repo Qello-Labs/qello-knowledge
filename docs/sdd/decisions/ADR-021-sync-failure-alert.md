@@ -39,12 +39,19 @@
   알림 유닛은 `LoadCredential=`로 이 파일을 받는다. systemd 관리자가 파일을 읽고 알림 유닛의 프로세스에만 보여 준다.
   동기화 사용자 `qksync`와 `qk-sync.service`는 웹훅 URL을 읽지 못한다. 알림 유닛은 동기화 토큰을 읽지 못한다.
   systemd 문서는 환경 변수가 비밀값 전달에 맞지 않는다고 적고 `LoadCredential=`을 권한다.
-- **알림 유닛은 권한이 작다.** 알림 유닛은 `DynamicUser=yes`로 실행한다. 실행할 때만 생기는 사용자이고 root가 아니다.
-  실패한 실행의 `run_id`를 찾으려고 `systemd-journal` 그룹만 더한다.
+- **알림 유닛은 권한이 작다.** 알림 유닛은 전용 시스템 사용자 `qknotify`로 실행한다. 이 사용자는 root가 아니고 로그인할 수 없다.
+  `sudo`·`docker` 그룹에 없다. 실패한 실행의 `run_id`를 찾으려고 `systemd-journal` 그룹만 더한다.
+  `NoNewPrivileges=`, `ProtectSystem=strict`, `ProtectHome=`, `PrivateTmp=`를 켠다.
+  처음에는 `DynamicUser=yes`를 골랐다. 그러나 이 인스턴스에서 동적 사용자는 시스템 D-Bus에 붙지 못했다(Evidence). 그래서 전용 사용자로 바꾼다.
 - **보내는 내용이 적다.** 유닛 이름, systemd `Result`, 종료 코드와 그 뜻, 시작·끝 시각, `run_id`, 확인 방법 한 줄만 보낸다.
   `journalctl` 원문, 오류 메시지 원문, 문서 경로·내용, 접속 주소, 호스트 이름은 보내지 않는다. 오류 원문에 비밀값이나 주소가 섞일 수 있다.
   `run_id`는 정해진 형식(`sync-YYYYMMDDTHHMMSS-xxxxxxxx`)과 맞는 문자열만 로그에서 꺼낸다.
   메시지는 `allowed_mentions`를 비워서 아무도 멘션하지 않는다.
+- **처음 보는 사람도 읽는다.** 메시지는 Discord 임베드 카드 1장이다. 첫 줄은 결과 한 문장이다(예: "색인 동기화 멈춤 · 보류 있음"). 휴대폰 알림에도 이 줄이 보인다.
+  카드에는 KST 시각과 걸린 시간, 실행 ID, 종료 코드별 다음 명령 한 개와 그 명령으로 무엇을 보는지를 담는다. systemd 값(유닛 이름, `Result`, 종료 코드)은 바닥글로 내린다.
+  카드 색은 멈춤(5, 6)이 주황, 그 밖의 실패가 빨강이다. `qk-sync.service`가 아닌 유닛(시험 유닛)이면 첫 줄에 `[시험]`을 붙인다.
+  안내 문구와 시각 변환은 스크립트가 정한 값으로 만든다. 그래서 보내는 정보의 범위는 위와 같다.
+  2026-10-25 첫 수신을 본 사용자가 원래 문장 형식이 읽기 어렵다고 해서 이 형식으로 바꿨다.
 - **헌법 C-09의 범위 밖이다(해석).** C-09의 제목은 "원본은 읽기만 한다"이다. C-09는 수집기와 그 토큰이 원본 자료원에 쓰는 일을 막는다.
   쓰기 예외(Discord 답변·요약 게시)도 수집·질의 시스템의 쓰기를 다룬다.
   실패 알림은 수집기가 아니다. 알림은 원본 자료원에 쓰지 않는다. 알림은 수집기 토큰을 쓰지 않는다.
@@ -73,8 +80,11 @@
 - systemd.exec(5)(조회 2026-10-25): https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html
   문서는 "environment variables are not suitable for passing secrets"라고 적고 `LoadCredential=`을 권한다.
   `LoadCredential=`(version 247)의 원본 파일은 서비스 관리자만 읽을 수 있으면 된다. 자격 증명은 그 유닛의 사용자와 root만 읽는다.
-  `DynamicUser=`는 `NoNewPrivileges=`, `ProtectSystem=strict`, `ProtectHome=read-only`를 함께 켠다.
-- 인스턴스: Ubuntu 22.04(`docs/ops/oci-production-store.md` 1절). Ubuntu 22.04의 systemd는 249다 `(추론, 구성할 때 systemctl --version으로 확인)`.
+- 인스턴스 확인(2026-10-25, 읽기 전용): systemd 249, Python 3.10.12, `systemd-journal` 그룹이 있다.
+- `DynamicUser=` 진단(2026-10-25, 일회성 `systemd-run` 유닛): 첫 실패 흉내 시험에서 알림 유닛이 `systemctl show`에서 실패했다. 메시지는 보내지 않았다.
+  같은 격리에서 `systemctl show`는 `Failed to get properties: Transport endpoint is not connected`로 실패했다.
+  `User=nobody`에서는 성공했다. `DynamicUser=`와 `systemd-journal` 그룹으로 `journalctl`은 읽을 수 있었다.
+  실패한 유닛의 결과를 환경 변수(`$MONITOR_*`)로 받는 방법은 systemd 251부터라서 쓸 수 없다 `(추론, 이 인스턴스는 249)`.
 - 종료 코드: `specs/QK-SYN-001-incremental-sync/contracts/cli.md` 3절. 2026-10-23 잠금 시험의 6(`already_running`)은 `TASK.md`(SCRUM-103) 기록에 있다.
 
 ## Data and cost
