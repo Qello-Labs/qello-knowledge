@@ -1,0 +1,15 @@
+# QK-FND-001 research R-01의 pywrangler/Python Workers 설정.
+# Workers VPC TOML·FFI·fetch·waitUntil은 미확인(H01에서 확인).
+name = "qello-knowledge-relay"
+main = "src/qello_knowledge/query/worker.py"
+compatibility_date = "2026-10-26"
+compatibility_flags = ["python_workers"]
+
+[[vpc_services]]
+binding = "QUERY_SERVICE"
+service_id = "<vpc-service-id>"
+
+[vars]
+QK_RELAY_TIMEOUT_SECONDS = "2.5"
+
+# DISCORD_PUBLIC_KEY는 사람이 wrangler secret put DISCORD_PUBLIC_KEY로 등록한다.

@@ -26,7 +26,8 @@ def test_secret_default_is_rejected() -> None:
 def test_query_does_not_require_index_tokens() -> None:
     names = {spec.name for spec in specs_for(Entrypoint.QUERY)}
     assert "GITHUB_API_TOKEN" not in names
-    assert "CLOUDFLARE_API_TOKEN" not in names
+    assert "CLOUDFLARE_API_TOKEN" in names
+    assert "CLOUDFLARE_ACCOUNT_ID" in names
 
 
 def test_index_does_not_use_discord() -> None:

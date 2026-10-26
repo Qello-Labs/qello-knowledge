@@ -13,7 +13,12 @@ HEADER = """\
 # 같은 이름의 실행 환경 변수가 있으면 그 값이 우선한다.
 """
 
-_LABELS = {Entrypoint.QUERY: "질의응답", Entrypoint.INDEX: "색인"}
+_LABELS = {
+    Entrypoint.QUERY: "질의응답",
+    Entrypoint.INDEX: "색인",
+    Entrypoint.RELAY: "중계 Worker",
+    Entrypoint.REGISTER: "명령 등록",
+}
 
 
 def render() -> str:
