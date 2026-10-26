@@ -181,10 +181,10 @@ description: "QK-BOT-001 구현 작업 목록"
 
 **Independent Test**: 가짜 생성 제공자로 상태와 표시를 하나씩 만들어 갱신 메시지를 본다(spec US2 Independent Test).
 
-- [ ] T035 [P] [US2] `tests/unit/query/test_bot_status_messages.py`(spec US2-1~US2-5, FR-011, SC-006): 확인 불가 → 생성 결과 본문 그대로, 출처 목록 없음. 출처 확인 안 됨(`flags.unsupported_answer`) → 본문 앞
+- [X] T035 [P] [US2] `tests/unit/query/test_bot_status_messages.py`(spec US2-1~US2-5, FR-011, SC-006): 확인 불가 → 생성 결과 본문 그대로, 출처 목록 없음. 출처 확인 안 됨(`flags.unsupported_answer`) → 본문 앞
   "⚠️ 출처를 확인하지 못한 답변입니다. 원문으로 확인해 주세요." 줄, 출처 목록 없음. 출력 잘림(`flags.truncated`) → 본문 끝 "(답변이 길어 일부가 잘렸습니다.)". 검색 실패 9종·생성 실패 6종·질의 마감 초과·예상하지 못한 예외 각각 → FR-011 문구와
   짧은 실행 식별자. 제공자 할당 소진 → "오늘 사용 한도에 닿아…". 질의 중 전송 차단(검색 `outgoing_blocked`, 생성 상태 "외부 전송 차단") → FR-006 문장, 공개 범위는 처리 중 응답 그대로. 모든 메시지에 실패 종류 이름·예외 메시지·주소·질문 원문이 없음
-- [ ] T036 [US2] `src/qello_knowledge/discord/render.py`·`src/qello_knowledge/query/pipeline.py`: 표시 줄과 실패 안내 연결(T035). 예상하지 못한 예외는 작업 경계에서 잡아 "요청을 처리하지 못했습니다…"로 보낸다
+- [X] T036 [US2] `src/qello_knowledge/discord/render.py`·`src/qello_knowledge/query/pipeline.py`: 표시 줄과 실패 안내 연결(T035). 예상하지 못한 예외는 작업 경계에서 잡아 "요청을 처리하지 못했습니다…"로 보낸다
 
 **Checkpoint**: US1·US2 시험 통과.
 
@@ -196,19 +196,19 @@ description: "QK-BOT-001 구현 작업 목록"
 
 **Independent Test**: 서명이 틀린 요청, 허용 밖 요청, 비밀값 질문, 멘션 꼴을 심은 가짜 결과로 응답·외부 호출 수·알림 설정을 본다(spec US3 Independent Test).
 
-- [ ] T037 [P] [US3] `tests/unit/discord/test_bot_access.py`(data-model 2절, spec FR-004, US3-2·US3-3): 허용 채널의 글 채널 → `ALLOWED`, 다른 서버 → `GUILD_OUTSIDE`, 목록 밖 채널 → `CHANNEL_OUTSIDE`, 허용 채널 아래 스레드 → `THREAD`,
+- [X] T037 [P] [US3] `tests/unit/discord/test_bot_access.py`(data-model 2절, spec FR-004, US3-2·US3-3): 허용 채널의 글 채널 → `ALLOWED`, 다른 서버 → `GUILD_OUTSIDE`, 목록 밖 채널 → `CHANNEL_OUTSIDE`, 허용 채널 아래 스레드 → `THREAD`,
   DM → `DM`, 허용 역할 목록이 있고 역할이 없음 → `ROLE_MISSING`, 역할 목록이 비면 역할 제한 없음, 허용 채널 목록이 비었거나 서버가 설정되지 않음 → `NOT_CONFIGURED`(닫힘)
-- [ ] T038 [P] [US3] `tests/unit/query/test_bot_reject_paths.py`(spec US3-1·US3-2·US3-4, FR-001·FR-006·FR-007, SC-003·SC-004·SC-005·SC-013 자동 부분): 서명 없음·틀림·시각 초과 → `401`, 검색·생성·Discord 호출 0회, 운영 로그 0줄.
+- [X] T038 [P] [US3] `tests/unit/query/test_bot_reject_paths.py`(spec US3-1·US3-2·US3-4, FR-001·FR-006·FR-007, SC-003·SC-004·SC-005·SC-013 자동 부분): 서명 없음·틀림·시각 초과 → `401`, 검색·생성·Discord 호출 0회, 운영 로그 0줄.
   허용 밖 각 경우와 빈 허용 목록 → 질문자만 보는 허용 범위 안내, 검색·생성 0회. `tests/unit/synthetic_secrets.py`의 합성 비밀값이 든 질문 → 질문자만 보는 FR-006 안내, 임베딩·생성 0회, 안내·로그에 맞은 문자열 0건.
   지원하지 않는 요청 → 질문자만 보는 안내. 이 즉시 안내들은 "나만 보기" 인자와 상관없이 플래그 64
-- [ ] T039 [P] [US3] `tests/unit/query/test_bot_no_raw_logs.py`(spec FR-021, SC-009): 모든 경로(답변, 확인 불가, 실패 주입 전부, 시간 초과, 전달 실패, 서명 거부, 중복, 자리 없음)의 표준 오류 운영 로그와 예외 문구를 모아
+- [X] T039 [P] [US3] `tests/unit/query/test_bot_no_raw_logs.py`(spec FR-021, SC-009): 모든 경로(답변, 확인 불가, 실패 주입 전부, 시간 초과, 전달 실패, 서명 거부, 중복, 자리 없음)의 표준 오류 운영 로그와 예외 문구를 모아
   합성 질문 원문·답변 본문·청크 본문·출처 제목·링크·상호작용 식별자·토큰·서명·사용자 식별자·채널 식별자·`DATABASE_URL`·`CLOUDFLARE_API_TOKEN` 표식이 0건
-- [ ] T040 [P] [US3] `tests/unit/discord/test_bot_neutralize.py`(spec FR-014, US3-5, SC-008): 답변 본문·출처 제목에 `@everyone`, `@here`, `<@123…>`, `<@&123…>`를 심어도 모든 메시지의 `allowed_mentions`가 `{"parse": []}`,
+- [X] T040 [P] [US3] `tests/unit/discord/test_bot_neutralize.py`(spec FR-014, US3-5, SC-008): 답변 본문·출처 제목에 `@everyone`, `@here`, `<@123…>`, `<@&123…>`를 심어도 모든 메시지의 `allowed_mentions`가 `{"parse": []}`,
   출처 제목의 `[ ] ( ) * _ ~ \` | >` 같은 서식·링크 꼴 글자는 `\`로 바뀌어 링크 꼴을 바꾸지 못함, 수정일 같은 자료 유래 글도 같음, 답변 본문의 굵게·목록·코드 서식은 그대로
-- [ ] T041 [US3] `src/qello_knowledge/discord/access.py`와 `src/qello_knowledge/query/app.py`: 허용 범위 판정(T037)과 처리 중 응답 전 비밀값 검사(`indexer/embedding.py`의 `security_outgoing_check(policy)`에 질문만, 출처 없이) 연결(T038).
+- [X] T041 [US3] `src/qello_knowledge/discord/access.py`와 `src/qello_knowledge/query/app.py`: 허용 범위 판정(T037)과 처리 중 응답 전 비밀값 검사(`indexer/embedding.py`의 `security_outgoing_check(policy)`에 질문만, 출처 없이) 연결(T038).
   정책은 `serve` 시작 때 `config/sources.toml`·`config/security_exceptions.toml`로 한 번 읽는다(`ask_cli`와 같은 방식). 읽기에 실패하면 시작하지 않는다(종료 코드 2)
-- [ ] T042 [US3] `src/qello_knowledge/discord/render.py`: 자료 유래 글의 서식 무력화(T040). 무력화 뒤 길이가 렌더러 상수(항목 최대 길이)에 반영되게 한다
-- [ ] T043 [US3] 운영 로그 한 줄(`QueryRunLog.to_json()`)을 `query/server.py`에서 표준 오류로 쓰고, 예외 문구에서 원문이 나가지 않게 작업 경계에서 바꾼다(T039)
+- [X] T042 [US3] `src/qello_knowledge/discord/render.py`: 자료 유래 글의 서식 무력화(T040). 무력화 뒤 길이가 렌더러 상수(항목 최대 길이)에 반영되게 한다
+- [X] T043 [US3] 운영 로그 한 줄(`QueryRunLog.to_json()`)을 `query/server.py`에서 표준 오류로 쓰고, 예외 문구에서 원문이 나가지 않게 작업 경계에서 바꾼다(T039)
 
 **Checkpoint**: US1~US3 시험 통과.
 
@@ -220,13 +220,13 @@ description: "QK-BOT-001 구현 작업 목록"
 
 **Independent Test**: 긴 본문, 긴 코드 블록, 경계의 링크·인용 표기, 출처 최대 수로 분할 결과를 본다(spec US4 Independent Test).
 
-- [ ] T044 [P] [US4] `tests/unit/discord/test_bot_split.py`(spec FR-012, US4-1~US4-4, SC-007): 한도 안이면 메시지 1개, 나눈 자리 문단 → 문장 → 공백 순, 링크·`[S번호]`·무력화한 글 중간에서 안 나눔, 공백 없는 긴 문자열은 한도에서 자름,
+- [X] T044 [P] [US4] `tests/unit/discord/test_bot_split.py`(spec FR-012, US4-1~US4-4, SC-007): 한도 안이면 메시지 1개, 나눈 자리 문단 → 문장 → 공백 순, 링크·`[S번호]`·무력화한 글 중간에서 안 나눔, 공백 없는 긴 문자열은 한도에서 자름,
   한도를 넘는 링크 하나는 "(긴 링크 생략)", 코드 블록이 나뉘면 조각마다 닫고 같은 언어 표시로 다시 엶, 메시지 수 상한(4)을 넘는 본문은 줄이고 "(답변이 길어 일부를 생략했습니다.)", 출처 목록은 줄이지 않고 항목 사이에서만 나뉘며 본문 뒤 마지막 메시지들에 옴,
   설정이 허용하는 최대 수(`expand_top` 8)의 출처가 모두 최대 길이 제목(무력화로 길이가 최대로 늘어나는 글)·긴 링크를 가진 경우에도 모든 메시지 ≤ 2,000자이고 메시지 수 ≤ 상한, 같은 입력이면 같은 결과, "나만 보기"면 이어지는 메시지도 질문자만 보기
-- [ ] T045 [P] [US4] `tests/unit/config/test_bot_source_list_check.py`(data-model 1절 출처 목록 산식, SC-007 마지막 문장): `항목 최대 길이`를 렌더러가 내보내는 실제 문자열(최대 길이 제목 전부 무력화, 비해시 버전 12자, 링크 상한)로 계산해
+- [X] T045 [P] [US4] `tests/unit/config/test_bot_source_list_check.py`(data-model 1절 출처 목록 산식, SC-007 마지막 문장): `항목 최대 길이`를 렌더러가 내보내는 실제 문자열(최대 길이 제목 전부 무력화, 비해시 버전 12자, 링크 상한)로 계산해
   상수와 같음을 고정, 기본 설정(`expand_top` 8, 2,000자, 제목 80, 링크 300, 메시지 4)은 통과(메시지당 항목 수와 필요한 메시지 수를 "실행 기록"에 적는다), 제목·링크 상한을 키우거나 메시지 상한을 줄여 `⌈expand_top ÷ 메시지당 항목⌉ > 메시지 수 상한 − 1`이 되는 설정은 모두 거부
-- [ ] T046 [US4] `src/qello_knowledge/discord/render.py`: 분할(T044). 첫 메시지가 처리 중 응답을 바꾸는 글이다
-- [ ] T047 [US4] `src/qello_knowledge/config/check.py`: 출처 목록 산식 검사(T045). 렌더러 상수를 가져온다(`config` → `discord` 방향만)
+- [X] T046 [US4] `src/qello_knowledge/discord/render.py`: 분할(T044). 첫 메시지가 처리 중 응답을 바꾸는 글이다
+- [X] T047 [US4] `src/qello_knowledge/config/check.py`: 출처 목록 산식 검사(T045). 렌더러 상수를 가져온다(`config` → `discord` 방향만)
 
 **Checkpoint**: US1~US4 시험 통과.
 
@@ -452,3 +452,31 @@ US6:     T052, T053 (시험) → T054 → T055
   2. `QK_REQUIRE_LOCALDB=1 .venv/bin/python -m pytest tests/localdb/query/test_bot_store_deadline.py tests/localdb/retrieval -q` — 정정한 T025 계수와 기존 검색 회귀 확인.
   3. `python scripts/preflight.py` — 저장소 전체 검사. 이 실행 에이전트는 .env·.env.*를 직접 읽지 않았다.
 - 2026-10-26 T025 GREEN(오케스트레이터, 샌드박스 밖): `QK_REQUIRE_LOCALDB=1` 전체 2,024 passed(외부 2 제외), preflight·ruff·format·`git diff --check` 통과. 호출 수 시험은 FR-026의 사용량 기록 1회 계수를 기대식에 넣었다(구현 변경 없음).
+
+- 2026-10-26 US2~US4 시작: 작업 트리는 깨끗했고 승인된 US1 커밋 cdeacce..02d9759를 보존했다. 사용자 전달: 오케스트레이터가 샌드박스 밖 `QK_REQUIRE_LOCALDB=1` 전체 2024 passed, preflight·ruff 통과를 확인했고 사람이 승인했다.
+  이번 실행 범위는 T035~T047이다. US5(T048~)·네트워크/외부 API·커밋·push·PR·웹 검색은 하지 않았으며 .env·.env.*를 직접 열거나 검색하지 않았다.
+- 2026-10-26 T035·T036: 먼저 상태별 시험을 작성해 33 failed / 2 passed RED를 확인한 뒤 안내·표시를 연결했다. 관련 상태·파이프라인·기본 렌더링 시험 48 passed.
+  확인 불가 본문 유지, 출처 확인 안 됨 경고·출력 잘림 안내, 검색 실패 9종·생성 실패 6종·전송 차단·질의 마감·예상 밖 실패를 고정 문구와 짧은 실행 식별자로 보인다.
+  검색 질문 길이 안내는 RetrievalSettings.question_max_chars를 따르고, 실패 안내의 공개 범위는 첫 처리 중 응답과 같다. 검색·생성 경계는 바꾸지 않았다.
+- 2026-10-26 T037~T043: 접근 제어 모듈·무력화 함수·로그 출력 함수 부재로 단위 시험 RED(수집 오류)를 확인했다. 구현 뒤 접근 제어·거부·원문 비기록·무력화 관련 90 passed.
+  AccessPolicy는 서버·글 채널·선택 역할을 판정하고, 서버나 채널 목록이 없으면 닫는다. 운영 create_app은 기존 security_outgoing_check(policy)에 질문만·출처 없이 넘기는 검사를 처리 중 응답 앞에 명시적으로 연결한다.
+  기존 시험의 주입 인터페이스는 유지했다. 운영 서버 조립 시험에서 정책 한 번 읽기와 실제 허용 범위·합성 비밀값 거부를 확인했으며 정책 읽기 실패는 원문 없이 종료 2다.
+  T038 합성 비밀값은 tests/unit/synthetic_secrets.py만 사용했다. 실제 키·채널·역할·질문은 쓰지 않았다.
+  자료 유래 제목·원본 버전·날짜의 서식 글자는 이스케이프하고 답변 본문의 굵게·목록·코드 서식은 유지한다. 링크의 닫는 괄호·공백·제어 문자는 URL 안에서 인코딩하며 인코딩 뒤 상한을 넘으면 링크를 생략한다.
+  QueryJobs의 완료 콜백과 QueryReply의 수치 요약으로 QueryRunLog를 조립하고 server.write_run_log가 표준 오류에 한 줄 JSON을 쓴다. 즉시 거부도 고정 상태 이름만 기록하고 서명 거부·연결 확인·시작 확인에는 질의 로그를 만들지 않는다.
+  HTTP 자동 접근 로그는 끄고, 질문·답변·청크·출처·상호작용/사용자/채널 식별자·서명·자격 정보·예외 원문을 운영 로그에 넣지 않는다. 생성 요약은 숫자·측정 여부만 허용한다.
+  기록 항목 확장과 단계별 전체 시간·호출 수 채우기는 US6 T053~T054에 남긴다. 이번 구현은 T043의 원문 없는 로그 경계다.
+  전달 실패 상태가 answered로 남는 회귀를 RED로 확인하고 undelivered로 고쳤다. 처리 전 접근 제어·비밀값 검사 함수 자체가 예외를 내는 두 경로도 RED → 고정 비공개 안내·무원문 로그로 고쳤다.
+  시작 확인 미도착·실제 마감·전달 실패·중복·자리 없음·예외·사용자 정보가 포함된 요청까지 원문 비기록 시험으로 확인했다.
+- 2026-10-26 T044~T047: 분할 시험 13 failed / 1 passed RED와 수용량 상수 부재 수집 오류를 확인한 뒤 구현했다. 분할·설정 수용량·기본 렌더링·상태 안내를 묶은 시험 80 passed.
+  보호 구간(중첩 괄호가 있는 Markdown 링크·각괄호 링크·일반 URL·Source ID·이스케이프 글자·코드 펜스)을 넘겨 자르지 않는다. 문단 → 문장 → 공백 → 글자 한도 순서로 자르며 한도보다 긴 링크는 고정 안내로 바꾼다.
+  코드 조각은 각각 닫고 같은 언어로 다시 연다. 본문을 줄일 때는 코드 밖에 생략 안내를 붙인다. 코드 펜스만 든 빈 조각을 만들던 실패를 확인해 분할 후보에서 제외했다.
+  출처 목록에 메시지 자리를 먼저 배정하고 항목 사이에서만 나누며, 남은 본문 자리가 모자라면 본문만 줄인다. 짧은 본문·출처가 한 메시지에 들어가면 합친다. 분할된 후속 메시지도 선택한 공개 범위와 allowed_mentions를 유지한다.
+  T045 계산값: 실제 최악 항목(최대 길이 제목의 전 글자 이스케이프 + 말줄임표, 비해시 버전 12자의 전 글자 이스케이프, 링크 300자, 최대 Source ID S20, 날짜, 줄바꿈 포함)은 **545자**.
+  목록 머리글+줄바꿈은 **14자**, 메시지당 항목은 floor((2000-14)/545)=**3**, 기본 expand_top 8개에 필요한 메시지는 ceil(8/3)=**3**, 기본 메시지 상한 4에서 본문 **1자리**가 남는다.
+  이 수치는 실제 citation_line 출력 길이와 상수가 같은지 시험으로 고정했다. 제목/링크/메시지 수 27개 조합을 검사하고 출처가 본문 자리를 침범하는 설정을 discord_source_capacity 규칙으로 거부한다.
+  check.py 변경은 T042·T046 뒤에 했고 config → discord 방향만 가져온다. 기본 통과 설정은 기존 보고 꼴을 유지한다.
+- 2026-10-26 변경 파일 비밀값 규칙 검사에서 링크 시험의 변수 이름 때문에 assigned-secret 오탐 1건을 확인했다. bot_builders와 같은 주석·문자열 이어 붙이기로 런타임 값은 유지하며 고쳤다. 비밀값 규칙·allowlist는 바꾸지 않았다.
+  샌드박스 밖 검증은 중간 요청하지 않았으며 마지막 명령 목록으로만 넘긴다. 새로 추가한 로컬 DB 시험은 없다. US5는 미착수다.
+- 2026-10-26 T045 계산값(오케스트레이터가 시험·상수에서 확인): 기본 설정(제목 80, 링크 300, `expand_top` 8, 2,000자)에서 출처 항목 최대 길이 545자, 메시지당 3항목, 출처에 필요한 메시지 3개 ≤ 메시지 상한 4 − 1(`source_capacity(80, 300, expand_top=8) == (3, 3)`). spec FR-012 추론값(551자, 3항목, 3개)과 같은 결론이다.
+- 2026-10-26 US2~US4 검증(오케스트레이터, 샌드박스 밖): `QK_REQUIRE_LOCALDB=1` 전체 2,197 passed(외부 2 제외), preflight·ruff·format·`git diff --check` 통과. Codex 세션은 마지막 검증 중 모델 용량 초과로 멈췄다.
