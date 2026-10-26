@@ -157,14 +157,14 @@ Discord Developer Portal에서 애플리케이션을 만들고 봇 사용자를 
 | 토큰 | 이름 | `.env` 변수 | 교체 시점 | 유출 시 |
 | --- | --- | --- | --- | --- |
 | GitHub | `qk-github-read-dev` | `GITHUB_API_TOKEN` | 만료 없음. 발급자가 팀을 떠나거나 권한을 바꿀 때 | GitHub 설정에서 토큰 삭제 후 재발급 |
-| Cloudflare(로컬) | `qk-workers-ai-dev` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | TTL을 정했다면 만료 전 | 대시보드에서 토큰 삭제 후 재발급 |
-| Cloudflare(서버 예약 색인) | `qk-workers-ai-index-prod` | 서버 `/etc/qello-knowledge/sync.env`(root:qksync, 0640)의 같은 두 변수 | TTL을 정했다면 만료 전 | 대시보드에서 토큰 삭제 후 재발급, 서버 파일을 숨김 입력으로 교체 |
+| Cloudflare(로컬) | `qk-workers-ai-dev` | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | TTL 365일. 만료일 2027-10-26 전(정확한 시각·시간대 미확인) | 대시보드에서 토큰 삭제 후 재발급 |
+| Cloudflare(서버 예약 색인) | `qk-workers-ai-index-prod` | 서버 `/etc/qello-knowledge/sync.env`(root:qksync, 0640)의 같은 두 변수 | TTL 365일. 만료일 2027-10-26 전(정확한 시각·시간대 미확인) | 대시보드에서 토큰 삭제 후 재발급, 서버 파일을 숨김 입력으로 교체 |
 | Discord | 애플리케이션 `Qello Knowledge` | `DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN` | 정기 교체 없음 | Developer Portal에서 Bot Token 재설정 |
 
 - 토큰 이름은 `qk-<서비스·용도>-<환경>` 형식이다. 지금은 로컬 개발용이라 `dev`로 끝난다. Discord는 애플리케이션 이름이 봇 이름으로 서버에 보이므로 제품 이름을 쓴다.
 - 지금은 저장소 루트의 `.env`에만 둔다. `.env`와 `.env.*`는 `.gitignore`에 있다. Claude Code는 `.claude/settings.json`으로, Codex는 `.codex/config.toml` 권한 프로필로 저장소 루트 `.env` 읽기가 막혀 있다. Codex 차단은 샌드박스 안 명령에만 적용되고, 사용자가 승인한 샌드박스 밖 실행, MCP·커넥터, 브라우저에는 적용되지 않는다([하네스 개요](../../harness/OVERVIEW.md)). 하위 폴더의 `.env`도 대상이 아니므로 Codex 작업 폴더에 `.env`를 두지 않는다(WBS 0.3에서 Codex가 하위 폴더 `.env` 토큰을 직접 쓴 사례).
 - 실행 환경이 정해지면 그 환경의 비밀값 저장소로 옮긴다. 옮긴 위치는 이 표에 적는다.
-- 2026-10-26: Cloudflare 토큰을 Qello 전용 Cloudflare 계정(팀 계정)의 계정 소유 토큰으로 옮겼다(SCRUM-117, #61). 권한은 둘 다 그 계정의 Workers AI만이다. 쓰는 곳마다 토큰을 나눠
+- 2026-10-26: Cloudflare 토큰을 Qello 전용 Cloudflare 계정(팀 공용 메일, 2단계 인증, 팀원 관리자 초대, Free 플랜, Workers AI 사용 가능 확인)의 계정 소유 토큰으로 옮겼다(SCRUM-117, #61). 권한은 둘 다 그 계정의 Workers AI만이다. 쓰는 곳마다 토큰을 나눠
   한 곳이 새도 다른 곳을 멈추지 않는다. 질의 서비스용 `qk-workers-ai-query-prod`는 QK-BOT-001 운영 구성 때 같은 계정에 만든다(ADR-022 Proposed). Workers AI 무료 할당(하루 10,000 Neurons)은
   계정 단위라 토큰을 나눠도 함께 쓴다. 같은 모델을 쓰므로 인덱스 버전과 임베딩은 바뀌지 않았다(재색인 없음). 기존 계정의 토큰은 사용자가 지운다.
 
@@ -178,7 +178,7 @@ Discord Developer Portal에서 애플리케이션을 만들고 봇 사용자를 
 | Cloudflare | 3.2 계정 소유 토큰 | `success = True status = active` | `success = True status = active`. 사용자 토큰 주소는 `success = False`로, 토큰 종류가 달라 예상한 결과다 | 2026-10-09 |
 | Discord | 4.4 | `discord users/@me = 200` | `discord users/@me = 200` | 2026-10-09 |
 | Cloudflare 새 계정 `qk-workers-ai-dev` | 3.2 계정 소유 토큰 | `success = True status = active` | `success = True status = active`(사용자 확인) | 2026-10-26 |
-| Cloudflare 새 계정 `qk-workers-ai-index-prod` | 서버 `qksync` 환경에서 모델 조회, 벡터 검색 1회 | HTTP 200, 임베딩 호출 성공 | 모델 조회 HTTP 200. `qk-index search --mode vector --ranks-only` 종료 코드 0, 임베딩 호출 1, `qk-index usage` 질의 0.01 Neurons(측정값). 같은 날 00:30 UTC 예약 실행 `sync-20261026T003032-b9cadf41` succeeded(임베딩 호출 0) | 2026-10-26 |
+| Cloudflare 새 계정 `qk-workers-ai-index-prod` | 3.2 계정 소유 토큰, 서버 `qksync` 환경에서 모델 조회, 벡터 검색 1회 | `active`, HTTP 200, 임베딩 호출 성공 | 3.2 `success = True status = active`(사용자 확인). 모델 조회 HTTP 200. `qk-index search --mode vector --ranks-only` 종료 코드 0, 임베딩 호출 1, `qk-index usage` 질의 0.01 Neurons(측정값). 같은 날 00:30 UTC 예약 실행 `sync-20261026T003032-b9cadf41` succeeded(임베딩 호출 0) | 2026-10-26 |
 
 - 2026-10-26 서버 확인은 Bastion 세션에서 예약 실행과 같은 조건(`qksync` 사용자, `sync.env`, `/opt/qello-knowledge`)으로 했다. 출력에는 토큰 값과 계정 ID가 없다. 서버에서 비밀값 파일 가운데
   토큰 이름이나 계정 소유 토큰 형식(`cfat_`)이 든 파일은 `sync.env` 하나였고(`/opt/qello-knowledge` 복제본의 문서·코드는 이름만), 교체 중 만든 임시 파일은 남지 않았다.
