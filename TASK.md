@@ -11,7 +11,8 @@
 - 팀 스프린트 ID: `QELLO-S2026-W44`
 - GitHub Issue: `#63`
 - Branch: `feat/SCRUM-118-gh-63-code-chunker`
-- Base branch: `main`. 2026-10-26 `origin/main` `d7c9e3f`(#60 병합)에서 분기했다
+- Base branch: `main`. 2026-10-26 `origin/main` `d7c9e3f`(#60 병합)에서 분기했고, 첫 커밋은 `1c9a9f6`(#62 병합) 위에 있다.
+  같은 날 PR #65 충돌을 풀려고 `369b2ec`(#64 병합)를 병합했다. 충돌난 `TASK.md`는 이 계약을 남겼고, 이전 `main`의 계약(QK-BOT-001)은 git 이력에 남긴다
 
 ## Objective
 
