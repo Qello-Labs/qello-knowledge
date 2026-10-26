@@ -297,7 +297,7 @@ description: "QK-BOT-001 구현 작업 목록"
 | --- | --- | --- | --- |
 | H00 | 운영 게이트 닫기: Cloudflare Tunnel 요금과 Worker·Tunnel 트래픽의 데이터 처리 정책(보존, 학습 사용)을 ADR-022 Data and cost에 URL과 함께 적는다. 인스턴스 바깥 방향 UDP 7844 읽기 전용 확인. 운영 색인·마이그레이션 역할의 `qk.embedding_usage` 소유 확인. 질의 서비스 전용 Workers AI 토큰 발급 계획(PR #62 계정 교체 결과와 맞춘다) | 2026-10-26 완료(아래 "H00 운영 게이트") | 없음. 유료·학습 사용·장기 보존이면 멈추고 결정 재검토 |
 | H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | 2026-10-27 완료(아래 "H01 배포 확인"). Worker CPU 초과 위험은 H04 | 0 Neurons |
-| H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | H01 뒤 | 0 Neurons |
+| H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | 2026-10-27 완료(아래 "H02 질의 서비스 구성") | 0 Neurons |
 | H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | H02 뒤 | 0 Neurons |
 | H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | 일부 2026-10-27(아래 "H04 일부 측정", TS 재측정 "H04 TS 중계 재측정"으로 M-02 명령 경로 통과). M-03 실제 질의 서비스와 `qk-query` 자원은 H02 뒤 | 0 Neurons |
 | H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다. 실측 동안 인스턴스 자원(아래 "인스턴스 자원 기록")을 함께 잰다 | H04 뒤 | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
@@ -732,3 +732,25 @@ US6:     T052, T053 (시험) → T054 → T055
 - 비교(Python Worker, "H04 일부 측정"): CPU p50 31 ms·p95 167 ms·최대 250 ms, 23/23건 초과 → TS는 p50 2 ms·최대 5 ms, 0/30건 초과. outcome 모두 `ok`, Worker `error` 0, 시작 확인 204·원 메시지 갱신 200 21건.
 - 판정(M-02 명령 경로): 통과. Worker CPU가 Free 한도 안이다. 30초 넘게 쉰 뒤의 새 isolate 요청은 이번 표본에서 따로 확인하지 못했다(최대 간격 약 14초). PING 10회와 실제 질의 서비스 경로(M-03)는 H02 뒤.
 - 정리: 시험 서비스 중지·임시 파일 삭제·Bastion 세션 삭제·로그 수집 종료. 터널·`qk-cloudflared`·VPC Service·Worker·수신 주소·`/ask`는 H02용으로 남긴다.
+
+### H02 질의 서비스 구성 (2026-10-27)
+
+- 실행: 아래쪽 Herdr 패널의 Claude(실행 에이전트)가 운영 문서 7.2·7.3대로 했다. 서버·DB를 바꾸는 명령은 사람이 하나씩 승인했고, 비밀값은 사람이 대화형 SSH에서 숨김 입력했다.
+  오케스트레이터가 별도 Bastion 세션에서 읽기 전용으로 결과를 다시 확인했고 보고와 일치했다. 값·주소·식별자는 기록하지 않는다.
+- 구성:
+  - 시스템 사용자 `qkquery`(추가 그룹 없음, 로그인 셸 없음, 홈 없음)
+  - 질의 릴리스 `/opt/qello-knowledge-query`(root:qkquery 0750, `origin/main` `3a5a98e`). `uv sync --locked --extra query --extra postgres`.
+    uv 관리 Python 3.13을 릴리스 안 `.python/`에 두어(`UV_PYTHON_INSTALL_DIR`) `qkquery`와 `ProtectHome=yes`에서 읽힌다. 168 MB. main에 남은 개발 의존성 `workers-py`도 함께 설치됐다(PR #66 병합 전).
+  - `qk_query`: LOGIN, 암호 SCRAM-SHA-256(사람이 `\password`로 입력), super·createrole·createdb 없음. `qkquery`로 DB 연결과 `qk.embedding_usage` 읽기 권한 확인
+  - `/etc/qello-knowledge/query.env`(root:qkquery 0640, 8개 키, 역할 목록만 빈 값). `qk-query check` 누락·형식 오류 0
+  - `qk-query.service`(운영 문서 7.3 유닛, `--port 8787`): active, 재시작 0, 루프백 8787만 수신, `/healthz` 200 `ok=true`, 메모리 약 34 MB(상한 512 MB)
+- 0 Neurons 확인: 허용 밖 채널 `/ask` 2회 → 거부 안내(나만 보기), 운영 로그 `access=channel_outside`·`status=access_denied`, 검색·생성·전송 호출 0, 첫 응답 결정 0~1 ms.
+  운영 로그 키는 `run_id, access, private, status, failure, timings_ms, calls, deliver_retries, deliver_failure, retrieval_summary, generation_summary`뿐이고 원문 필드가 없다.
+- 범위 밖 허용 경로 1건: 서비스 기동 약 1분 30초 뒤 시험 서버의 누군가가 허용 채널에서 공개로 `/ask`를 보냈다. 검색 5·생성 2·전송 1회, 결과 `cannot_confirm`, 검색 870 ms·생성 639 ms·전송 1,071 ms,
+  생성 13.42 Neurons(측정)·검색 임베딩 0 Neurons(측정). 실제 경로(qk_query 검색, 전용 Workers AI 토큰, 원 메시지 갱신)가 동작한 사실이지만 H05 실측 표본으로는 쓰지 않는다.
+  사용자 결정(2026-10-27): 허용 채널을 그대로 열어 둔다(누구나 `/ask`로 Neurons를 쓸 수 있고, 하루 예산 검사는 질의 서비스가 한다).
+- 실행 중 실수: 관리 DB 조회 한 번에서 관리 암호가 `docker exec -e PGPASSWORD=<값>` 꼴로 약 1초 동안 같은 호스트의 프로세스 인자에 있었다. 외부 전송·기록은 없다. 이후 명령은 이름만 넘기는 꼴로 바꿨다.
+  사용자 결정(2026-10-27): 암호를 교체하지 않는다.
+- 공유 인스턴스 영향: `qk-postgres`·회의 봇 컨테이너 재시작 0, `qk-cloudflared`·`qk-sync.timer` active, 가용 메모리 약 4.5 GB. `MemoryMax=512M`은 초기값이며 질의 중 메모리는 H04 남은 항목에서 잰다.
+- 되돌리기(운영 문서 7.5): `qk-query` 중지·비활성화, 유닛 삭제, 관리 psql `ALTER ROLE qk_query NOLOGIN;`, `query.env`·릴리스 폴더 삭제, `userdel qkquery`. 터널·Worker·수신 주소·명령은 사람 승인 뒤 해제한다.
+- 남은 일: PR #66 병합 뒤 질의 릴리스 갱신 절차가 없다(H03~H05 전에 정하거나 기록한다). 서버 배너 "System restart required"는 범위 밖이라 두었다.

@@ -21,7 +21,9 @@
   (요청 본문·Web Crypto 서명 검사·VPC 바인딩 `fetch`·`waitUntil`·`[[vpc_services]]` 설정·`pywrangler` 번들). 2026-10-26 사용자 요청으로 범위에 더했다.
 - H04 일부(M-02 Worker CPU, 시험 서비스 기준 첫 응답 시간, 인스턴스 자원 기준선): H01에서 Worker CPU가 Free 한도를 크게 넘어 H02 전에 먼저 잰다(2026-10-27 사용자 결정).
   M-03의 실제 질의 서비스 첫 응답과 `qk-query` 자원 항목은 H02 뒤에 잰다.
-- H02 이후(실제 질의 서비스 구성·실측)는 H04 일부 결과를 보고 사람이 이 계약에 더한다.
+- H02(실제 질의 서비스 구성, 2026-10-27 사용자 요청): 운영 문서 7.2·7.3 절차로 `qkquery` 사용자, `main` 승인 커밋의 별도 질의 릴리스, `qk_query` 로그인·암호, `query.env`, `qk-query.service`(루프백 8787)를 구성한다.
+  실행은 아래쪽 Herdr 패널의 Claude(실행 에이전트)가 하고, 사람이 명령마다 승인하고 비밀값은 사람이 숨김 입력한다. 확인은 healthz와 허용 밖 채널 `/ask`(0 Neurons)까지만 한다.
+- H03·H05(외부 포트 차단, Discord 실측)는 H02 결과를 보고 사람이 이 계약에 더한다.
 
 ## Scope
 
@@ -50,13 +52,15 @@
   - `.github/workflows/ci.yml`: TS 중계 시험(`node --test workers/relay/relay.test.ts`) 한 단계 추가
   - 결정 기록 새 파일 `docs/sdd/decisions/ADR-024-ts-relay-worker.md`, ADR-022에 링크 한 줄, 운영 문서 7.4·quickstart의 배포 명령
   - TS Worker 재배포와 H04 Worker CPU 재측정(시험 서비스 임시 재배치, 사람 인증·명령별 승인)
+- H02 운영 변경(2026-10-27 사용자 요청): 공유 인스턴스에 `qkquery` 시스템 사용자, 질의 릴리스 폴더, `/etc/qello-knowledge/query.env`(root:qkquery 0640), `qk-query.service`를 더하고 운영 DB 역할 `qk_query`에 로그인과 암호를 준다.
+  저장소 파일은 실행 에이전트가 고치지 않고, 결과 기록은 오케스트레이터가 `tasks.md`·`TASK.md`에 남긴다
 - H01 로컬 확인으로 찾은 Worker 수정(2026-10-26 사용자 승인으로 더함):
   - `src/qello_knowledge/query/worker.py`: Python Workers SDK의 요청·응답 본문(`bytes()`), VPC 바인딩 `fetch(url, **kwargs)`, `headers.get`, `waitUntil` 프록시. 실패 로그에 예외 클래스 이름만 더함
   - `wrangler.toml`: `base_dir = "src"`
 
 ## Explicit exclusions
 
-- 실제 질의 서비스 구성(`qkquery`, `qk-query.service`, 질의 릴리스, `query.env`, `qk_query` 로그인·암호, 전용 토큰 서버 배치)과 SC-010 외부 접속 확인은 H02·H03이다.
+- SC-010 외부 접속 확인(H03)과 Discord 실측(H05, Neurons 사용)은 아직 범위 밖이다.
   OCI 보안 목록·호스트 방화벽 변경, 공개 호스트명·ingress 규칙 추가, Cloudflare 유료 기능(Argo 등) 켜기는 하지 않는다.
 - `src/`·`tests/`(아래 Worker 수정·TS 이전 제외), 마이그레이션 변경. 더 수정이 필요해지면 멈추고 따로 묻는다.
 - `wrangler.toml`의 실제 VPC Service ID는 저장소에 커밋하지 않는다(추적하지 않는 로컬 사본으로 배포).
@@ -138,3 +142,7 @@ TS 중계를 더한 뒤에는 AGENTS.md 7절 기본 검증 전부와 `node --tes
   결정 기록은 새 ADR-024로 쓴다. 시험 이동은 같은 기대값을 TS 시험으로 옮기는 것이며 검증 통과를 위한 시험 삭제가 아니다(AGENTS.md 9절).
 - 2026-10-27 사실(사람 인증·명령별 승인): TS Worker를 재배포했다(업로드 716 → 8.4 KiB, 기동 681 → 2 ms). `/ask` 30건(허용 20, 거부 흉내 10)의 Worker CPU p50 2 ms·최대 5 ms, 10 ms 초과 0/30.
   M-02 명령 경로를 통과로 본다. 자세한 내용은 tasks.md "H04 TS 중계 재측정". ADR-024 승인은 PR 리뷰로 받는다.
+- 2026-10-27 사실(H02, 실행 에이전트, 사람 명령별 승인·숨김 입력): `qkquery`, 질의 릴리스(main `3a5a98e`), `qk_query` 로그인, `query.env`, `qk-query.service`(루프백 8787)를 구성했다. healthz 200, 허용 밖 채널 `/ask` 2회 거부(호출 0).
+  오케스트레이터가 서버에서 읽기 전용으로 재확인했다. 자세한 내용은 tasks.md "H02 질의 서비스 구성".
+- 2026-10-27 사실: 서비스 기동 직후 시험 서버의 누군가가 허용 채널 `/ask`를 1회 보내 약 13.4 Neurons를 썼다(H02 범위 밖). 관리 DB 암호가 약 1초 동안 프로세스 인자에 있었다(실행 에이전트 실수, 외부 전송 없음).
+- 2026-10-27 사용자 결정: 허용 채널은 그대로 연다. 관리 DB 암호는 교체하지 않는다. 사라진 왼쪽 Herdr 패널은 사용자가 닫았다.
