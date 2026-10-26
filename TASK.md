@@ -7,11 +7,11 @@
 ## Work gate
 
 - Jira 이슈: `SCRUM-115` / https://tkv123.atlassian.net/browse/SCRUM-115 (상위 `SCRUM-42` 팀 RAG 구축, GitHub Issue 폼으로 자동 생성)
-- 기능명세서 ID / 링크: `QK-BOT-001` / `specs/QK-BOT-001-*`(작성 예정). 로드맵 WBS 1.11, 요구사항 FR-BOT-01, 02, 06, 07(저장소에 원문 없음)
+- 기능명세서 ID / 링크: `QK-BOT-001` / `specs/QK-BOT-001-discord-ask/`. 로드맵 WBS 1.11, 요구사항 FR-BOT-01, 02, 06, 07(저장소에 원문 없음)
 - 팀 스프린트 ID: `QELLO-S2026-W43`
 - GitHub Issue: `#58`
 - Branch: `feat/SCRUM-115-gh-58-discord-ask`
-- Base branch: `main`. 2026-10-25 `origin/main` `f11e146`(#56 병합)에서 분기했다
+- Base branch: `main`. 2026-10-25 `origin/main` `f11e146`(#56 병합)에서 분기했고, 2026-10-26 `d7c9e3f`(#60 병합)로 rebase했다
 - 이전 계약: `f11e146`의 `TASK.md`(SCRUM-103 H07 기록). 그 Decisions 기록은 git 이력에 남긴다
 
 ## Objective
