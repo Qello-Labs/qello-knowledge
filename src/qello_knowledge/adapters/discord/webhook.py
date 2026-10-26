@@ -8,8 +8,9 @@ import ssl
 import threading
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from http.client import HTTPException
+from http.client import HTTPException, HTTPSConnection
 from importlib.metadata import PackageNotFoundError, version
+from socket import SHUT_RDWR
 from time import monotonic, sleep
 from typing import Protocol
 from urllib.error import HTTPError, URLError
@@ -24,6 +25,7 @@ try:
 except PackageNotFoundError:
     PACKAGE_VERSION = "0.1.0"
 USER_AGENT = f"DiscordBot (https://github.com/Qello-Labs/qello-knowledge, {PACKAGE_VERSION})"
+DEFAULT_HTTP_CAPACITY = 6
 
 
 @dataclass(frozen=True)
@@ -56,22 +58,21 @@ class _DiscordRequest(Request):
 
 
 class UrllibTransport:
-    """소켓 제한에 더해 헤더·본문 수신 전체에 절대 마감을 적용한다.
+    """헤더·본문을 포함한 절대 마감에서 소켓을 끊고, 남은 작업 수를 제한한다.
 
-    urllib 호출은 중단할 수 없으므로 대기 스레드를 분리한다. 마감 뒤 결과는 버리고,
-    호출이 실제로 돌아오는 즉시 응답을 닫는다. 이 스레드는 재시도나 로그를 하지 않는다.
+    DNS 등 소켓이 아직 없는 urllib 단계는 직접 중단할 수 없다. 설정된 전송 자리는 그 작업이
+    실제로 끝날 때까지 반환하지 않아 새 HTTP 작업이 무한히 쌓이지 않는다.
     """
 
-    def __init__(self, *, opener=None, clock: Callable[[], float] = monotonic):
+    def __init__(
+        self, *, opener=None, clock: Callable[[], float] = monotonic, max_in_flight: int = DEFAULT_HTTP_CAPACITY
+    ):
+        if type(max_in_flight) is not int or max_in_flight < 1:
+            raise ValueError("invalid HTTP capacity")
         self._clock = clock
-        self._opener = (
-            opener
-            if opener is not None
-            else build_opener(
-                _NoRedirect(),
-                HTTPSHandler(context=ssl.create_default_context()),
-            )
-        )
+        self._opener = opener
+        self._context = ssl.create_default_context() if opener is None else None
+        self._slots = threading.BoundedSemaphore(max_in_flight)
 
     def request(
         self, method: str, path: str, headers: Mapping[str, str], body: object, *, timeout: float, deadline: float
@@ -80,17 +81,53 @@ class UrllibTransport:
         limit = min(timeout, deadline - self._clock())
         if limit <= 0:
             raise TimeoutError("timeout")
+        if not self._slots.acquire(blocking=False):
+            raise TimeoutError("timeout")
         done = threading.Event()
+        cancelled = threading.Event()
+        sockets = []
+        socket_lock = threading.Lock()
         result: list[DiscordResponse] = []
         failure: list[str] = []
+
+        def abort(sock):
+            try:
+                sock.shutdown(SHUT_RDWR)
+            except OSError:
+                pass
+            try:
+                sock.close()
+            except OSError:
+                pass
+
+        def register(sock):
+            if sock is None:
+                return
+            with socket_lock:
+                sockets.append(sock)
+                should_abort = cancelled.is_set()
+            if should_abort:
+                abort(sock)
+
+        class DeadlineConnection(HTTPSConnection):
+            def connect(self):
+                super().connect()
+                register(self.sock)
+
+        class DeadlineHandler(HTTPSHandler):
+            def https_open(self, request):
+                return self.do_open(DeadlineConnection, request, context=self._context)
 
         def send() -> None:
             response = None
             try:
+                opener = self._opener or build_opener(_NoRedirect(), DeadlineHandler(context=self._context))
                 try:
-                    response = self._opener.open(outgoing, timeout=limit)
+                    response = opener.open(outgoing, timeout=limit)
                 except HTTPError as error:
                     response = error
+                if cancelled.is_set():
+                    raise TimeoutError("timeout")
                 raw = response.read(65537)
                 try:
                     payload = json.loads(raw) if len(raw) <= 65536 else {}
@@ -110,10 +147,21 @@ class UrllibTransport:
                         response.close()
                     except Exception:
                         failure.append("connection")
+                self._slots.release()
                 done.set()
 
-        threading.Thread(target=send, daemon=True, name="discord-http").start()
+        try:
+            threading.Thread(target=send, daemon=True, name="discord-http").start()
+        except RuntimeError:
+            self._slots.release()
+            raise OSError("connection") from None
         if not done.wait(max(0, min(limit, deadline - self._clock()))):
+            cancelled.set()
+            with socket_lock:
+                pending = tuple(sockets)
+            for sock in pending:
+                abort(sock)
+            done.wait(0.05)
             raise TimeoutError("timeout")
         if self._clock() > deadline:
             raise TimeoutError("timeout")
@@ -144,6 +192,7 @@ class DiscordWebhook:
     def __init__(
         self,
         application_id: str,
+        http_capacity: int = DEFAULT_HTTP_CAPACITY,
         *,
         transport: Transport | None = None,
         clock: Callable[[], float] = monotonic,
@@ -152,7 +201,9 @@ class DiscordWebhook:
         self._application_id = application_id
         self._clock = clock
         self._sleep = sleep
-        self._transport = transport if transport is not None else UrllibTransport(clock=clock)
+        self._transport = (
+            transport if transport is not None else UrllibTransport(clock=clock, max_in_flight=http_capacity)
+        )
 
     def _request(
         self, method: str, path: str, body: object, deadline: float, token: str | None = None

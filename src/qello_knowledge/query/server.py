@@ -147,12 +147,14 @@ def create_app(settings):
         value = settings.get(name)
         source[name] = value.reveal() if isinstance(value, SecretValue) else str(value)
     pipeline = configured_pipeline(settings, source, policy)
-    webhook = DiscordWebhook(str(settings.get("DISCORD_APPLICATION_ID")))
+    workers = int(settings.get("QK_QUERY_WORKERS"))
+    queue_size = int(settings.get("QK_QUERY_QUEUE_SIZE"))
+    webhook = DiscordWebhook(str(settings.get("DISCORD_APPLICATION_ID")), workers + queue_size)
     jobs = QueryJobs(
         pipeline=pipeline,
         deliver=lambda job, reply: webhook.deliver(job.interaction.token, reply, deadline=job.notice_deadline),
-        workers=int(settings.get("QK_QUERY_WORKERS")),
-        queue_size=int(settings.get("QK_QUERY_QUEUE_SIZE")),
+        workers=workers,
+        queue_size=queue_size,
         start_wait=int(settings.get("QK_QUERY_START_WAIT_SECONDS")),
         min_start=int(settings.get("QK_QUERY_MIN_START_SECONDS")),
         deadline_seconds=int(settings.get("QK_QUERY_DEADLINE_SECONDS")),
