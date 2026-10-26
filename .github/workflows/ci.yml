@@ -54,6 +54,19 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
 
+  # Discord 중계 Worker(TypeScript) 계약 시험. npm 의존성 없이 Node 내장 시험과 타입 제거 실행으로 돈다(ADR-024).
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: node --test workers/relay/relay.test.ts
+
   secrets:
     runs-on: ubuntu-latest
     timeout-minutes: 10
