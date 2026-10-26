@@ -11,7 +11,7 @@
 - 팀 스프린트 ID: `QELLO-S2026-W43`
 - GitHub Issue: `#58`
 - Branch: `feat/SCRUM-115-gh-58-discord-ask`
-- Base branch: `main`. 2026-10-25 `origin/main` `f11e146`(#56 병합)에서 분기했고, 2026-10-26 `d7c9e3f`(#60 병합)로 rebase했다
+- Base branch: `main`. 2026-10-25 `origin/main` `f11e146`(#56 병합)에서 분기했고, 2026-10-26 `d7c9e3f`(#60 병합)로, 같은 날 PR #64를 올린 뒤 `ad38731`(#57 병합, #62 포함)로 다시 rebase했다
 - 이전 계약: `f11e146`의 `TASK.md`(SCRUM-103 H07 기록). 그 Decisions 기록은 git 이력에 남긴다
 
 ## Objective
