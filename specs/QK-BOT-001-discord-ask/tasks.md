@@ -124,51 +124,51 @@ description: "QK-BOT-001 구현 작업 목록"
 
 ### Tests for User Story 1
 
-- [ ] T019 [P] [US1] `tests/unit/query/test_bot_first_response.py`(contracts/relay.md 2절, spec US1-1·US1-5·US1-6, FR-007): `POST /discord/interactions`에 연결 확인 → `{"type": 1}`, 허용된 `/ask` → `{"type": 5}`와 응답 헤더
+- [X] T019 [P] [US1] `tests/unit/query/test_bot_first_response.py`(contracts/relay.md 2절, spec US1-1·US1-5·US1-6, FR-007): `POST /discord/interactions`에 연결 확인 → `{"type": 1}`, 허용된 `/ask` → `{"type": 5}`와 응답 헤더
   `X-QK-Run`(형식 `q-<UTC 시각>-<16진 8자>`), "나만 보기" → `flags: 64`. 응답을 돌려줄 때까지 검색·생성·저장소·Discord 호출 0회(가짜들의 호출 기록), 작업은 `AWAITING_START`로 등록
-- [ ] T020 [P] [US1] `tests/unit/query/test_bot_start_confirm.py`(contracts/relay.md 3절, research R-03): `POST /discord/interactions/start`(`{"run_id": …}`, 원본 서명 헤더 두 개)가 시작 대기 중이고 서명이 같으면 `204`이고
+- [X] T020 [P] [US1] `tests/unit/query/test_bot_start_confirm.py`(contracts/relay.md 3절, research R-03): `POST /discord/interactions/start`(`{"run_id": …}`, 원본 서명 헤더 두 개)가 시작 대기 중이고 서명이 같으면 `204`이고
   작업이 `QUEUED`로 감. 없는 `run_id`, 서명 불일치, 이미 시작함, 시작 대기 만료는 `409`이고 상태 변화 없음. 시작 확인 없이 `QK_QUERY_START_WAIT_SECONDS`(가짜 시계 5초)가 지나면 `NOT_STARTED` → 첫 메시지
   `PATCH` 한 번("요청을 처리하지 못했습니다…"), 검색·생성 0회, 수명 자리 반환. 시작 확인과 만료가 같은 순간에 오면 둘 중 하나만 일어남. 첫 `PATCH`가 `404`면 1초 뒤 1회만 다시 보냄
-- [ ] T021 [P] [US1] `tests/unit/query/test_bot_jobs.py`(research R-05, data-model 5·7절, spec FR-010): 수명 자리 `C = QK_QUERY_WORKERS + QK_QUERY_QUEUE_SIZE`(기본 6)를 넘는 새 요청은 "지금 요청이 많습니다" 즉시 안내,
+- [X] T021 [P] [US1] `tests/unit/query/test_bot_jobs.py`(research R-05, data-model 5·7절, spec FR-010): 수명 자리 `C = QK_QUERY_WORKERS + QK_QUERY_QUEUE_SIZE`(기본 6)를 넘는 새 요청은 "지금 요청이 많습니다" 즉시 안내,
   끝 상태(`DONE`, `UNDELIVERED`)에서 자리 반환, 실행 자리(기본 2)는 `RETRIEVING`에서 잡고 호출이 실제로 끝날 때 반환(질의 마감으로 버린 작업도 끝날 때까지 쥠), 늦게 끝나는 작업 2개가 실행 자리를 쥐어도 동시 검색·생성 ≤ 2,
   `QUEUED`에서 실행 자리를 잡을 때 남은 시간 < `QK_QUERY_MIN_START_SECONDS`면 `TIMED_OUT`, 마감 감시는 상태 전이와 전달 예약만 하고 Discord를 직접 부르지 않음, 전달 권한은 작업마다 한 번(결과·시간 초과·`NOT_STARTED` 중
   먼저 얻은 쪽), 전달 풀 크기 = `C`이고 전달 요청이 풀을 기다리지 않음, 동시 만료 6개·느린 전송·`429` 대기·앞 전송이 느린 동안 새 요청이 계속 오는 경우를 조합해 모든 전송이 안내 전달 마감 안에 끝나거나 멈춤.
   중복 판정: 처리 중·끝난 뒤(900초 안) 같은 상호작용 식별자는 "이미 처리 중인 요청입니다." 즉시 안내이고 질의·갱신 0회 추가, 900초 뒤 항목이 지워짐, 항목에 질문·사용자 정보가 없음, 동시 두 요청 중 하나만 처리.
   새 실행기(재시작 흉내)에 같은 상호작용을 넣으면 다시 처리됨을 기대 결과로 고정(spec SC-011 예외)
-- [ ] T022 [P] [US1] `tests/unit/query/test_bot_pipeline.py`(research R-06·R-11, spec FR-008·FR-015·FR-017, US1-2·US1-3·US1-4): 가짜 검색·생성으로 답변 결과 → 첫 메시지 `PATCH` 한 번, 같은 내용 두 번 없음, 스트리밍 없음.
+- [X] T022 [P] [US1] `tests/unit/query/test_bot_pipeline.py`(research R-06·R-11, spec FR-008·FR-015·FR-017, US1-2·US1-3·US1-4): 가짜 검색·생성으로 답변 결과 → 첫 메시지 `PATCH` 한 번, 같은 내용 두 번 없음, 스트리밍 없음.
   질의별 생성 설정: 남은 시간 R에서 시간 제한 = min(설정 시간 제한, ⌊(R − 5) ÷ 2⌋), 생성 마감 = min(설정 생성 마감, R), 기본 설정이 질의 마감보다 짧으면 설정 그대로, R < 7이면 생성 0회와 시간 초과 안내.
   임베딩 전송 시간 제한 = min(10, R − 여유), 임베딩 재시도 대기 뒤 남은 시간이 시간 제한보다 짧으면 대기 없이 `DeadlineReached` → 시간 초과 안내, 검색 재시도 대기는 질의 마감 안에서만(FR-017).
   `GenerationRequest.run_id`가 `X-QK-Run`과 같음. 질의 마감에서 생성이 안 끝나면 기다리지 않고 시간 초과 안내, 늦게 끝난 생성 결과는 버리고 장부 기록(`MemoryLedger`)은 남음, 저장소·장부 연결이 `finally`에서 닫힘.
   검색 요약의 외부 호출 수 ≤ 7, 생성 ≤ 4, 질의 전체 ≤ `QK_QUERY_CALL_LIMIT`(FR-016)
-- [ ] T023 [P] [US1] `tests/unit/discord/test_bot_render_basic.py`(spec FR-013, data-model 6절, US1-2): 답변 본문 뒤 출처 목록, 목록 머리 "자료 기준: 색인된 문서", 항목 꼴
+- [X] T023 [P] [US1] `tests/unit/discord/test_bot_render_basic.py`(spec FR-013, data-model 6절, US1-2): 답변 본문 뒤 출처 목록, 목록 머리 "자료 기준: 색인된 문서", 항목 꼴
   `[S1] <제목> · <URL> · 버전 <앞 7자> · 수정 2026-10-20 · 수집 2026-10-24 09:30 KST`(커밋 해시(40자 16진)면 앞 7자, 아니면 앞 12자, 수정일 없으면 "수정 미상", 날짜는 한국 시간), URL은 `<…>`로 감쌈, 링크 없으면 "링크 없음",
   제목이 `QK_DISCORD_TITLE_MAX_CHARS`(80)를 넘으면 줄이고 "…", 링크가 `QK_DISCORD_LINK_MAX_CHARS`(300)를 넘으면 "링크 생략(길이 초과)"(링크는 자르지 않음), 항목 순서·개수가 생성 결과와 같음, 모든 메시지 2,000자 이하,
   같은 입력이면 같은 결과. 출처 목록은 생성 결과의 출처에서만 만들고 본문에서 가져오지 않음
-- [ ] T024 [P] [US1] `tests/unit/discord/test_bot_relay.py`(contracts/relay.md 1절): Worker 중계 판단의 순수 함수. 본문 64 KiB 초과 → `413`, 서명 헤더 없음·시각 차이 300초 초과 → `401`(서명 검사 전), 질의 서비스 실패(연결 실패,
+- [X] T024 [P] [US1] `tests/unit/discord/test_bot_relay.py`(contracts/relay.md 1절): Worker 중계 판단의 순수 함수. 본문 64 KiB 초과 → `413`, 서명 헤더 없음·시각 차이 300초 초과 → `401`(서명 검사 전), 질의 서비스 실패(연결 실패,
   제한 시간 초과, `200` 아닌 응답) → 실패 안내 JSON(`{"type": 4, "data": {"content": "지금은 답할 수 없습니다. 잠시 후 다시 질문해 주세요.", "flags": 64, "allowed_mentions": {"parse": []}}}`), 원본 `type`이 1이면 질의 서비스 없이
   `{"type": 1}`, 응답 헤더 `X-QK-Run`이 있을 때만 시작 확인 요청(본문 `{"run_id": …}`, 원본 서명 헤더 두 개)을 만듦, 요청 하나에 질의 서비스 호출 계획 ≤ 2, 로그 항목은 `relayed`·`relay_failed`·`start_failed`와 걸린 시간뿐
-- [ ] T025 [P] [US1] `tests/localdb/query/test_bot_store_deadline.py`(research R-06, quickstart 1절 검색 마감 주입): `PostgresStore(url, deadline=…)`. 검색·문맥 호출 직전 남은 시간이 모자라면 저장소 질의 0회로 시간 초과 오류,
+- [X] T025 [P] [US1] `tests/localdb/query/test_bot_store_deadline.py`(research R-06, quickstart 1절 검색 마감 주입): `PostgresStore(url, deadline=…)`. 검색·문맥 호출 직전 남은 시간이 모자라면 저장소 질의 0회로 시간 초과 오류,
   `pg_sleep`으로 오래 걸리는 질의는 마감에 연결 취소로 시간 초과 오류, 질의 완료와 타이머 해제가 겹쳐도 예외·남은 타이머 없음, 취소 뒤 연결이 정리되고 다음 호출이 새 연결로 됨, 남은 시간 < 연결 제한 10초면 새 연결을 맺지 않음,
-  `deadline` 없으면 지금 동작 그대로(기존 `tests/localdb/retrieval` 시험이 바뀌지 않고 통과), 검색 요약의 외부 호출 수가 실제 저장소 질의 수와 같음(`SET` 문장을 보내지 않음)
+  `deadline` 없으면 지금 동작 그대로(기존 `tests/localdb/retrieval` 시험이 바뀌지 않고 통과), 검색 요약의 외부 호출 수가 FR-026의 계수 합(저장소 질의 + 임베딩 제공자 호출 + 시도마다 사용량 기록)과 같음(`SET` 문장을 보내지 않음)
 
 ### Implementation for User Story 1
 
-- [ ] T026 [P] [US1] `src/qello_knowledge/discord/render.py`: 답변 본문 + 출처 목록 기본 렌더링(T023). 길이 상수와 항목 꼴은 모듈 상수로 둔다(US4의 산식이 쓴다). 서식·멘션 무력화는 US3(T042), 분할은 US4(T046)에서 넓힌다
-- [ ] T027 [P] [US1] `src/qello_knowledge/discord/relay.py`: Worker 중계 판단 순수 함수(T024). Worker와 같은 패키지를 쓰므로 표준 라이브러리만 가져온다
-- [ ] T028 [US1] `src/qello_knowledge/query/jobs.py`: 수명 자리·실행 자리·마감 감시 스레드·전달 실행기·전달 권한·중복 판정 사전(T020·T021). 시계·실행기·전달 함수를 주입받는다
-- [ ] T029 [US1] `src/qello_knowledge/adapters/postgres/store.py`: 선택 인자 `deadline: Callable[[], float] | None = None`(남은 초를 돌려주는 함수). 검색·문맥 호출(`search_vector`, `search_keyword`, `search_keyword_terms`,
+- [X] T026 [P] [US1] `src/qello_knowledge/discord/render.py`: 답변 본문 + 출처 목록 기본 렌더링(T023). 길이 상수와 항목 꼴은 모듈 상수로 둔다(US4의 산식이 쓴다). 서식·멘션 무력화는 US3(T042), 분할은 US4(T046)에서 넓힌다
+- [X] T027 [P] [US1] `src/qello_knowledge/discord/relay.py`: Worker 중계 판단 순수 함수(T024). Worker와 같은 패키지를 쓰므로 표준 라이브러리만 가져온다
+- [X] T028 [US1] `src/qello_knowledge/query/jobs.py`: 수명 자리·실행 자리·마감 감시 스레드·전달 실행기·전달 권한·중복 판정 사전(T020·T021). 시계·실행기·전달 함수를 주입받는다
+- [X] T029 [US1] `src/qello_knowledge/adapters/postgres/store.py`: 선택 인자 `deadline: Callable[[], float] | None = None`(남은 초를 돌려주는 함수). 검색·문맥 호출(`search_vector`, `search_keyword`, `search_keyword_terms`,
   `chunk_context`, `chunk_neighbors`, `source_revisions`)마다 실행 직전 남은 시간 확인, 질의 동안만 `Connection.cancel_safe()`를 부르는 타이머(취소는 타이머 스레드에서), 취소되면 시간 초과 오류(`StoreError` 하위)로 바꿈(T025).
   색인 쓰기 메서드는 바꾸지 않는다
-- [ ] T030 [US1] `src/qello_knowledge/query/pipeline.py`: 작업마다 검색 부품을 새로 만든다. `postgres_search`와 같은 부품(`PostgresStore(url, deadline=…)`, `PostgresUsageLedger`, `EmbeddingService(…, retry_policy=RetryPolicy(max_retries=1),
+- [X] T030 [US1] `src/qello_knowledge/query/pipeline.py`: 작업마다 검색 부품을 새로 만든다. `postgres_search`와 같은 부품(`PostgresStore(url, deadline=…)`, `PostgresUsageLedger`, `EmbeddingService(…, retry_policy=RetryPolicy(max_retries=1),
   retry_delay=query_retry_delay, sleep=<마감 확인 sleep>)`, `WorkersAiRestProvider(transport=UrllibTransport(timeout=…))`)과 `postgres_ask`와 같은 생성 부품(`PostgresGenerationLedger`, `WorkersAiGenerationProvider`)을
   주입 가능한 공장으로 조립하고, `retrieve` → `generate(request, deps, settings)`(질의별 `GenerationSettings`, research R-06) → `render` → 전달(T018)을 잇는다(T022). `indexer/ask_cli.py`·`search_cli.py`는 가져다 쓰기만 한다
-- [ ] T031 [US1] `src/qello_knowledge/query/app.py`: `POST /discord/interactions`, `POST /discord/interactions/start` 경로. 처리 순서는 contracts/relay.md 2절(서명 재검사 → 해석 → 연결 확인 → 허용 범위 → 비밀값 → 중복 → 수명 자리 →
+- [X] T031 [US1] `src/qello_knowledge/query/app.py`: `POST /discord/interactions`, `POST /discord/interactions/start` 경로. 처리 순서는 contracts/relay.md 2절(서명 재검사 → 해석 → 연결 확인 → 허용 범위 → 비밀값 → 중복 → 수명 자리 →
   시작 대기 등록). 허용 범위·비밀값은 이 단계에서 통과로 두는 자리만 만들고 US3(T041)에서 채운다. 기존 `GET /healthz` 동작과 `tests/unit/query/test_app.py`는 그대로다. 요청 헤더·원본 본문을 받도록 `handle`을 넓히되 기존 호출 꼴도 받는다
-- [ ] T032 [US1] `src/qello_knowledge/query/server.py`: `serve`가 원본 본문(상한 64 KiB)과 헤더를 `handle`에 넘기고, 시작할 때 설정 검사(필수 없음·교차 규칙 위반이면 종료 코드 2, 허용 채널 비면 경고 뒤 계속)와
+- [X] T032 [US1] `src/qello_knowledge/query/server.py`: `serve`가 원본 본문(상한 64 KiB)과 헤더를 `handle`에 넘기고, 시작할 때 설정 검사(필수 없음·교차 규칙 위반이면 종료 코드 2, 허용 채널 비면 경고 뒤 계속)와
   `require_backend()`를 하고, 작업 실행기를 띄운다(contracts/cli.md). 기존 `tests/unit/query/test_server.py`는 그대로 통과한다
-- [ ] T033 [US1] `src/qello_knowledge/query/worker.py`: 중계 Worker로 바꾼다. 설정은 `Entrypoint.RELAY`만 읽고, Web Crypto `crypto.subtle.verify("Ed25519", …)`로 서명을 검사하고, `env.QUERY_SERVICE.fetch(…)`(VPC 바인딩)로 중계하고,
+- [X] T033 [US1] `src/qello_knowledge/query/worker.py`: 중계 Worker로 바꾼다. 설정은 `Entrypoint.RELAY`만 읽고, Web Crypto `crypto.subtle.verify("Ed25519", …)`로 서명을 검사하고, `env.QUERY_SERVICE.fetch(…)`(VPC 바인딩)로 중계하고,
   `ctx.waitUntil`로 시작 확인을 보낸다. 판단은 `discord/relay.py`가 한다. 이 파일은 Workers 런타임에서만 가져오므로 시험에서 가져오지 않는다(기존 주석 유지). 실제 실행 확인은 사람 단계 H01
-- [ ] T034 [US1] `wrangler.toml`: Worker 이름, `main = "src/qello_knowledge/query/worker.py"`, `compatibility_flags = ["python_workers"]`, `compatibility_date`, VPC 바인딩 `QUERY_SERVICE`(`service_id = "<vpc-service-id>"` placeholder),
+- [X] T034 [US1] `wrangler.toml`: Worker 이름, `main = "src/qello_knowledge/query/worker.py"`, `compatibility_flags = ["python_workers"]`, `compatibility_date`, VPC 바인딩 `QUERY_SERVICE`(`service_id = "<vpc-service-id>"` placeholder),
   `[vars] QK_RELAY_TIMEOUT_SECONDS = "2.5"`. `DISCORD_PUBLIC_KEY`는 `wrangler secret`로 넣는다는 주석만 둔다. 계정 ID·서비스 ID·주소를 넣지 않는다. `pywrangler` 설정 꼴은 QK-FND-001 research를 따르고, 구현 때 확인한 문서 URL을 "실행 기록"에 적는다
 
 **Checkpoint**: US1 시험과 기존 시험 전부 통과. 가짜 제공자로 처리 중 응답 → 시작 확인 → 답변 갱신이 이어진다(quickstart 2절을 가짜 전송으로).
@@ -402,3 +402,53 @@ US6:     T052, T053 (시험) → T054 → T055
   - `git diff --check`: 출력 없음, 종료 0.
   - `python scripts/preflight.py`: **후속 미실행 — 오케스트레이터 실행**. 전체 preflight 재검증 전에는 통과로 보고하지 않는다. 독립 검증·승인은 이 실행 세션의 자체 확인으로 대신하지 않는다.
   - 후속 상태 **BLOCKED**: 승인한 수정과 T008 완료 기록은 반영했으며, 남은 것은 샌드박스 환경 밖의 전체 검증과 오케스트레이터의 preflight 재실행이다. 추가 구현 결정은 필요 없다.
+
+- 2026-10-26 US1 재개: 시작 시 `git status --short`는 비어 있었고 브랜치는 계약과 같았다. Phase 1·2의 여섯 커밋(b0254b8..6902d09)은 보존했다. 사용자 전달: 오케스트레이터가 샌드박스 밖 전체 1969 passed와 preflight·ruff 통과를 확인하고 사람이 승인했다.
+  실행 범위는 T019~T034이며, US2 이후·실제 외부 호출·커밋·push·웹 검색은 하지 않는다. TDD·진행 기록은 이 파일에서 이어 간다.
+- 2026-10-26 T025·T029: 먼저 로컬 DB 시험을 작성했고, 샌드박스 및 오케스트레이터의 별도 실행 모두 `StoreDeadline` 부재 수집 오류 RED를 확인했다.
+  선택 인자 deadline과 검색 전용 문맥 관리자를 더해 여섯 검색·문맥 메서드만 연결했다. 색인 쓰기 메서드와 기존 `_db`는 변경하지 않았다. 연결 전 남은 시간이 10초 미만이면 연결하지 않고, 질의 중에는 타이머에서 cancel_safe를 부르며 완료 뒤 타이머를 취소·join한다.
+  오케스트레이터 첫 GREEN 실행에서 시험 벡터의 768 차원 오기 1건이 드러나 상수 EMBEDDING_DIMENSION(1024)으로 고쳤다. 재실행 `QK_REQUIRE_LOCALDB=1 .venv/bin/python -m pytest tests/localdb/query/test_bot_store_deadline.py tests/localdb/retrieval -q`: **57 passed in 3.38s**(사용자 전달, 샌드박스 밖). 기존 retrieval 회귀 없음.
+- 2026-10-26 T023·T024·T026·T027: 렌더링·중계 모듈 부재 수집 오류 RED → 해당 시험과 기존 경계 **55 passed**. 출처는 생성 결과의 citations만 쓰며 한국 시간·제목/링크 길이·버전 표기를 고정했다.
+  이 단계의 분할은 단순한 길이·항목 경계 처리다. 서식 무력화·코드/링크 경계 분할·출처 우선 자리 배분은 T042·T046에서 확장한다. 기본 렌더링이 메시지 수를 넘으면 조용히 출처를 버리지 않고 오류로 끝낸다.
+- 2026-10-26 T019~T022·T028·T030·T031: 첫 응답·시작 확인·작업 실행 시험은 새 DiscordApp 부재 RED → 기존 app 시험 포함 **19 passed**, 파이프라인은 모듈 부재 RED → **9 passed**.
+  허용 범위와 처리 전 질문 비밀값 검사는 T031 지시대로 주입 가능한 통과 자리만 뒀다. US3 T041 전에는 운영 배포를 위한 접근 제어가 완성된 것이 아니다.
+  검색·생성의 기존 경계를 바꾸지 않고 질의별 부품 공장·생성 설정·임베딩 전송 시간 제한과 재시도 대기 검사를 조립했다. 기존 생성의 전송 직전 검사는 정책과 함께 그대로 연결한다.
+  정책 읽기는 기본 파이프라인 조립에 필요해 서버 시작 조립에 뒀다. 처리 전 접근 제어·질문 검사는 여전히 자리이며 T041에서 연결한다. 늦은 생성 결과 폐기 후에도 장부 기록과 finally 연결 정리를 확인했다.
+  추가 압력 시험에서 늦은 실행 두 개 뒤의 만료된 대기 식별자 누적을 재현했고, 실행 전 대기열에서 전달 권한이 이미 넘어간 식별자를 지우게 고쳤다(RED → GREEN).
+- 2026-10-26 T032: 서버 시작 검사·원본 본문/헤더 전달 시험 **7 failed** RED → 기존 app 시험 포함 **11 passed**. CLI serve 시작 때 설정과 암호 백엔드를 확인하고 실행기를 만들며 종료 때 닫는다.
+  기존 make_server의 healthz 시험 계약은 유지한다. 설정이 없는 CLI serve는 종료 2이고, 기존 시험이 직접 만든 healthz 서버는 이전처럼 503을 돌려준다. 운영 로그에서 임의 요청 경로를 출력하지 않는다.
+- 2026-10-26 T033·T034: 런타임 겉껍질과 wrangler.toml은 저장소 안 근거로만 작성했다. 근거: QK-FND-001 research R-01·R-02의 https://developers.cloudflare.com/workers/languages/python/ 및 https://developers.cloudflare.com/workers/languages/python/packages/,
+  QK-BOT-001 research R-02·R-13 및 ADR-022의 https://developers.cloudflare.com/workers-vpc/configuration/vpc-services/ 와 https://developers.cloudflare.com/workers/runtime-apis/web-crypto/.
+  **미확인(H01에서 확인)**: Python Workers request/response arrayBuffer·Uint8Array/to_py·to_js FFI, crypto.subtle.importKey/verify 인자 변환, env.QUERY_SERVICE.fetch의 RequestInit와 Promise 대기/취소, self.ctx.waitUntil의 코루틴 수락, wrangler [[vpc_services]] service_id 및 pywrangler의 실제 번들링/기동.
+  Worker 파일은 시험에서 import하지 않았고 실제 Worker/배포 실행은 하지 않았다. 시작 확인은 처리 중 JSON 응답을 반환하도록 예약한 뒤 waitUntil 작업으로 보내며, 서비스 제한 시간 실패에는 보내지 않는다.
+
+- 2026-10-26 US1 추가 검증·최종 기록:
+  - T021·T022·T028: 늦은 실행 두 개 뒤에 만료된 대기 식별자가 누적되는 실패와 연결 close 실패를 별도 RED로 확인한 뒤 수정했다. 작업·파이프라인 추가 시험 **16 passed**.
+    수명 자리 여섯 개의 동시 만료·느린 전달·429 대기를 실제 스레드 풀과 가짜 시계로 조합해 전달이 풀을 기다리지 않고 안내 마감 안에서 끝나는 것을 확인했다.
+    close 오류는 모든 closer를 호출한 뒤 원문 없는 오류로 바꾸며, 같은 질의의 늦은 실행은 추가 전달 권한을 얻지 못한다.
+  - 오케스트레이터 전달: T032 서버 겉껍질 확인 `.venv/bin/python -m pytest tests/unit/query/test_server.py tests/unit/query/test_bot_server_runtime.py -q`: **8 passed**, 샌드박스 밖. 기존 루프백 서버 회귀 없음.
+  - 오케스트레이터 전달: T025에 질의 완료·늦은 취소 경합 시험을 추가한 뒤 `QK_REQUIRE_LOCALDB=1 .venv/bin/python -m pytest tests/localdb/query/test_bot_store_deadline.py tests/localdb/retrieval -q`: **58 passed in 3.50s**.
+  - 그 뒤 실제 retrieve의 호출 계수 대조 시험 한 개를 더했고, 오케스트레이터 결과는 **1 failed / 58 passed**였다. 원인은 시험 기대식에서 사용량 기록을 누락한 것이었다:
+    `specs/QK-RET-001-hybrid-retrieval/spec.md` FR-026은 임베딩 제공자 호출·시도마다 사용량 기록·검색 SQL을 모두 센다. `retrieval/service.py::_embed()`도 `2 * embedded.summary.provider_calls`를 더한다.
+    `no_results`의 4회는 검색 SQL 2회 + 임베딩 제공자 1회 + 사용량 장부 기록 1회다. `chunk_context`·`source_revisions`·추가 SET 호출은 없었다.
+    기존 `tests/unit/retrieval/test_calls.py::_actual()`과 같은 방식으로 새 시험의 기대식에 메모리 장부의 실제 기록 행 수를 더했다. store.py deadline 및 retrieval/ 구현은 이 정정에서 바꾸지 않았다.
+    T025 설명도 FR-026의 계수 합으로 명확히 했다. **이 마지막 기대식 정정 뒤 로컬 DB 시험은 아직 재실행하지 못했으므로 T025 체크를 보류**한다.
+  - 사용자 지시: 샌드박스 밖 검증은 더 중간 요청하지 않고 체크포인트 끝에 명령 목록으로 모아 보고한다(새 시험 RED 확인이 꼭 필요한 경우만 예외).
+- 2026-10-26 US1 Checkpoint(실행 에이전트 자체 실행, 독립 승인 아님):
+  - `.venv/bin/python -m pytest tests/unit -q`: **1746 passed / 2 failed**, 종료 1. 로그 `.pytest_cache/qk-bot-us1-unit.log`(git 제외).
+    실패는 기존 `tests/unit/query/test_server.py::test_serve_answers_healthz_on_loopback`, `tests/unit/test_conftest_guards.py::test_loopback_connection_is_allowed`의 샌드박스 bind PermissionError뿐이다. 통과로 표현하지 않는다.
+  - `.venv/bin/ruff check .`: **All checks passed**, 종료 0.
+  - `.venv/bin/ruff format --check .`: **516 files already formatted**, 종료 0.
+  - `git diff --check`: 출력 없음, 종료 0.
+  - Worker 파일은 import하지 않고 ast.parse만, wrangler.toml은 tomllib로 문법·placeholder만 확인했다. 런타임 실행 확인이 아니다.
+  - 변경된 Python·문서·TOML 파일에 기존 secret_rules.RULES만 적용한 검사: **검출 0건**. 전체 `python scripts/preflight.py`는 미실행 — 오케스트레이터 실행.
+  - 검색·생성·임베딩·보안·색인·Workers AI·마이그레이션 0001~0006의 작업 diff는 비어 있으며, 기존 시험 파일은 바꾸지 않았다. US2(T035~)는 미착수다.
+  - 인덱스 버전은 변경 없음(계약 iv-4c0bc4fcc642), 임베딩 모델 선택·청킹·평가 세트 변경 없음, 품질/운영 실측 없음(n=0), 실제 외부 호출 0건·사용 Neurons 0.
+    조립은 기존 RetrievalDeps의 DEFAULT_QUERY_MODEL(@cf/baai/bge-m3)을 그대로 쓴다. TASK의 embeddinggemma 문구와 차이가 있으나 이 범위에서 기존 모델·색인을 바꾸거나 실제 활성 모델을 추정하지 않았다.
+- 2026-10-26 최종 상태 **BLOCKED**: T019~T034의 구현은 작성했고, T025의 마지막 로컬 DB 기대식 정정 재검증과 샌드박스 밖 US1 전체 단위 검증·preflight가 남았다.
+  접근 제어·처리 전 질문 검사 자리와 기본 분할의 한계는 위 기록처럼 US3·US4의 범위다. Worker API 꼴은 H01에서 확인한다. 이 실행 결과는 독립 승인이나 운영 배포 가능 판정이 아니다.
+  오케스트레이터 실행 목록(현재 worktree에서):
+  1. `.venv/bin/python -m pytest tests/unit -q` — 샌드박스 밖에서 기존 루프백 두 개를 포함한 전체 단위 확인.
+  2. `QK_REQUIRE_LOCALDB=1 .venv/bin/python -m pytest tests/localdb/query/test_bot_store_deadline.py tests/localdb/retrieval -q` — 정정한 T025 계수와 기존 검색 회귀 확인.
+  3. `python scripts/preflight.py` — 저장소 전체 검사. 이 실행 에이전트는 .env·.env.*를 직접 읽지 않았다.
+- 2026-10-26 T025 GREEN(오케스트레이터, 샌드박스 밖): `QK_REQUIRE_LOCALDB=1` 전체 2,024 passed(외부 2 제외), preflight·ruff·format·`git diff --check` 통과. 호출 수 시험은 FR-026의 사용량 기록 1회 계수를 기대식에 넣었다(구현 변경 없음).
