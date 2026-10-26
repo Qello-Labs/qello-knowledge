@@ -1,6 +1,6 @@
 # Task Contract: 운영 예약 동기화 실패 알림
 
-> Generated at: `2026-10-25`
+> Generated at: `2026-10-26`
 >
 > 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
 
@@ -61,17 +61,14 @@
 
 ## Existing user-owned changes
 
-- 2026-10-25 `origin/main`(`f11e146`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-26 `origin/main`(`d7c9e3f`)에서 별도 worktree(`../qello-knowledge-cf-rotation`)로 브랜치를 만들 때 `git status --short` 결과: 변경 없음.
+  기본 체크아웃은 다른 작업(`fix/SCRUM-114-neuron-estimate-calibration`)이 쓰고 있어 건드리지 않았다.
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
-uv run ruff check .
-uv run ruff format --check .
-uv run qk-dev db up
-QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
 운영 확인(사람 인증 뒤, 명령마다 승인):
