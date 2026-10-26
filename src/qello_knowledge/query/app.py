@@ -48,6 +48,7 @@ class DiscordApp:
         self.on_response = on_response
 
     def respond(self, path, body, headers):
+        started_at = self.jobs.now()
         if len(body) > MAX_BODY_BYTES:
             return 413, "", {}
         signed = signature_headers(headers)
@@ -89,9 +90,26 @@ class DiscordApp:
         if response.type == 4 and self.on_response is not None:
             run_id = run_id or f"q-{datetime.now(UTC):%Y%m%dT%H%M%S}-{secrets.token_hex(4)}"
             try:
-                self.on_response(QueryRunLog(run_id, access, True, status, failure=status))
+                self.on_response(
+                    QueryRunLog(
+                        run_id,
+                        access,
+                        True,
+                        status,
+                        failure=status,
+                        timings_ms={
+                            "first_response": max(0, int((self.jobs.now() - started_at) * 1000)),
+                            "retrieve": 0,
+                            "generate": 0,
+                            "deliver": 0,
+                        },
+                        calls={"retrieve": 0, "generate": 0, "deliver": 0},
+                    )
+                )
             except Exception:
                 return 200, json.dumps(response.to_dict(), ensure_ascii=False), {}
+        if response.run_id:
+            self.jobs.record_first_response(response.run_id, (self.jobs.now() - started_at) * 1000)
         return (
             200,
             json.dumps(response.to_dict(), ensure_ascii=False),

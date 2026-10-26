@@ -34,7 +34,7 @@ def _safe_failure(value):
 
 
 def _numbers(summary):
-    names = {"external_calls", "generation_calls", "neurons", "measured", "attempts"}
+    names = {"external_calls", "generation_calls", "neurons", "estimated_neurons", "measured", "attempts"}
     return (
         {
             name: value
@@ -54,6 +54,36 @@ class _State:
     stage: QueryStage = QueryStage.AWAITING_START
     outcome: QueryStage | None = None
     claimed: bool = False
+    phase_started: float | None = None
+    timings_ms: dict = field(default_factory=lambda: dict.fromkeys(("first_response", "retrieve", "generate"), 0))
+    calls: dict = field(default_factory=lambda: {"retrieve": 0, "generate": 0})
+    retrieval_summary: dict = field(default_factory=dict)
+    generation_summary: dict = field(default_factory=dict)
+
+
+class _Progress:
+    def __init__(self, jobs, state):
+        self.jobs, self.state = jobs, state
+
+    def __call__(self, stage):
+        self.jobs._set_stage(self.state, stage)
+
+    def update(self, *, calls=None, retrieval_summary=None, generation_summary=None):
+        with self.jobs._lock:
+            if self.state.claimed:
+                return
+            if calls is not None:
+                self.state.calls.update(
+                    {
+                        name: value
+                        for name, value in calls.items()
+                        if name in {"retrieve", "generate"} and type(value) is int and value >= 0
+                    }
+                )
+            if retrieval_summary is not None:
+                self.state.retrieval_summary.update(_numbers(retrieval_summary))
+            if generation_summary is not None:
+                self.state.generation_summary = _numbers(generation_summary)
 
 
 class QueryJobs:
@@ -105,6 +135,15 @@ class QueryJobs:
     def in_flight(self):
         with self._lock:
             return len(self._jobs)
+
+    def now(self):
+        return self._clock()
+
+    def record_first_response(self, run_id, elapsed_ms):
+        with self._lock:
+            state = self._jobs.get(run_id)
+            if state is not None and not state.claimed:
+                state.timings_ms["first_response"] = max(0, int(elapsed_ms))
 
     @property
     def running(self):
@@ -169,8 +208,13 @@ class QueryJobs:
 
     def _set_stage(self, state, stage):
         with self._lock:
-            if not state.claimed:
+            if not state.claimed and (state.stage is not stage or state.phase_started is None):
+                phase = {QueryStage.RETRIEVING: "retrieve", QueryStage.GENERATING: "generate"}.get(state.stage)
+                now = self._clock()
+                if phase is not None and state.phase_started is not None:
+                    state.timings_ms[phase] += max(0, int((now - state.phase_started) * 1000))
                 state.stage = stage
+                state.phase_started = now
 
     def poll(self):
         with self._lock:
@@ -195,7 +239,7 @@ class QueryJobs:
             if state.job.query_deadline - self._clock() < self._min_start:
                 self._claim(state, self._notice(state, "timed_out"), QueryStage.TIMED_OUT)
                 continue
-            state.stage = QueryStage.RETRIEVING
+            self._set_stage(state, QueryStage.RETRIEVING)
             self._running += 1
             self._executor.submit(self._run, state)
 
@@ -204,7 +248,7 @@ class QueryJobs:
 
     def _run(self, state):
         try:
-            reply = self._pipeline(state.job, lambda stage: self._set_stage(state, stage))
+            reply = self._pipeline(state.job, _Progress(self, state))
             with self._lock:
                 if self._clock() >= state.job.query_deadline:
                     self._claim(state, self._notice(state, "timed_out"), QueryStage.TIMED_OUT)
@@ -224,6 +268,7 @@ class QueryJobs:
     def _claim(self, state, reply, outcome=None):
         if state.claimed:
             return
+        self._set_stage(state, QueryStage.DELIVERING)
         state.claimed = True
         state.outcome = outcome
         state.stage = QueryStage.DELIVERING
@@ -259,13 +304,13 @@ class QueryJobs:
                 state.job.interaction.private,
                 status,
                 failure=_safe_failure(state.outcome.value if state.outcome else getattr(reply, "failure", None)),
-                timings_ms={"deliver": max(0, int((self._clock() - started) * 1000))},
-                calls={"deliver": getattr(result, "calls", 0)},
+                timings_ms={**state.timings_ms, "deliver": max(0, int((self._clock() - started) * 1000))},
+                calls={**state.calls, "deliver": getattr(result, "calls", 0)},
                 deliver_retries=getattr(result, "retries", 0),
                 deliver_failure=_safe_failure(getattr(result, "failure", None))
                 or ("connection" if terminal is QueryStage.UNDELIVERED else None),
-                retrieval_summary=_numbers(getattr(reply, "retrieval_summary", {})),
-                generation_summary=_numbers(getattr(reply, "generation_summary", {})),
+                retrieval_summary=state.retrieval_summary or _numbers(getattr(reply, "retrieval_summary", {})),
+                generation_summary=state.generation_summary or _numbers(getattr(reply, "generation_summary", {})),
             )
             try:
                 self._on_finished(record)

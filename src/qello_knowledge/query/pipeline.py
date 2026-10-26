@@ -22,6 +22,40 @@ class DeadlineReached(TimeoutError):
     """질의 실행을 더 시작하지 않는다. 문구에 원문이나 자격 정보를 넣지 않는다."""
 
 
+class QueryCalls:
+    """질의 조립 경계에서 실제 시작한 외부 호출을 센다. 원문은 보관하지 않는다."""
+
+    def __init__(self):
+        self.values = {"retrieve": 0, "generate": 0}
+        self.on_change = None
+        self.embedding_measured = None
+
+    def track(self, port, phase, methods, *, embedding_usage=False):
+        counter = self
+
+        class CountedPort:
+            def __getattr__(self, name):
+                value = getattr(port, name)
+                if name not in methods:
+                    return value
+
+                def call(*args, **kwargs):
+                    counter.values[phase] += 1
+                    summary = None
+                    if embedding_usage and name == "record":
+                        # UsageLedger.record의 일곱 번째 인자는 측정 여부다. 원문 인자는 보관하지 않는다.
+                        measured = kwargs["measured"] if "measured" in kwargs else args[6]
+                        counter.embedding_measured = measured and counter.embedding_measured is not False
+                        summary = {"measured": counter.embedding_measured}
+                    if counter.on_change is not None:
+                        counter.on_change(calls=dict(counter.values), retrieval_summary=summary)
+                    return value(*args, **kwargs)
+
+                return call
+
+        return CountedPort()
+
+
 def generation_for_remaining(settings: GenerationSettings, remaining: float) -> GenerationSettings:
     if remaining < 7:
         raise DeadlineReached("질의 마감")
@@ -58,6 +92,7 @@ class QueryParts:
     ledger: object
     outgoing_check: object
     closers: tuple = ()
+    counter: QueryCalls | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True)
@@ -74,6 +109,7 @@ class _DeadlineStore:
 
     def __getattr__(self, name):
         from qello_knowledge.adapters.postgres.store import StoreDeadline
+        from qello_knowledge.domain.store import StoreUnavailable
 
         method = getattr(self._store, name)
 
@@ -81,7 +117,8 @@ class _DeadlineStore:
             try:
                 return method(*args, **kwargs)
             except StoreDeadline:
-                raise DeadlineReached("질의 마감") from None
+                # 전체 질의 마감 판정은 작업 경계가 한다. 그 전의 저장소 시간 초과는 FR-020.
+                raise StoreUnavailable("저장소 시간 초과") from None
 
         return call
 
@@ -118,13 +155,14 @@ def postgres_parts(settings, source, policy, job, remaining, *, sleeper=sleep):
         generation_ledger = stack.enter_context(PostgresGenerationLedger(url, budget.query_reserve))
         check = security_outgoing_check(policy)
         transport = _EmbeddingTransport(remaining)
+        counter = QueryCalls()
         provider = WorkersAiRestProvider(
             source["CLOUDFLARE_ACCOUNT_ID"], settings.get("CLOUDFLARE_API_TOKEN"), transport
         )
         embedder = EmbeddingService(
-            provider,
+            counter.track(provider, "retrieve", {"embed_texts"}),
             store,
-            embedding_ledger,
+            counter.track(embedding_ledger, "retrieve", {"record", "today"}, embedding_usage=True),
             budget,
             check,
             retry_policy=RetryPolicy(max_retries=1),
@@ -135,12 +173,15 @@ def postgres_parts(settings, source, policy, job, remaining, *, sleeper=sleep):
             source["CLOUDFLARE_ACCOUNT_ID"], settings.get("CLOUDFLARE_API_TOKEN")
         )
         parts = QueryParts(
-            _DeadlineStore(store),
+            counter.track(
+                _DeadlineStore(store), "retrieve", {"search_vector", "search_keyword_terms", "chunk_context"}
+            ),
             embedder,
-            generation_provider,
-            generation_ledger,
+            counter.track(generation_provider, "generate", {"complete"}),
+            counter.track(generation_ledger, "generate", {"record"}),
             check,
             (store, embedding_ledger, generation_ledger),
+            counter,
         )
         stack.pop_all()
         return parts
@@ -176,6 +217,10 @@ class QueryPipeline:
         if remaining() <= 0:
             raise DeadlineReached("질의 마감")
         parts = self._factory(job, remaining)
+        update = getattr(stage, "update", lambda **kwargs: None)
+        if parts.counter is not None:
+            parts.counter.on_change = update
+        retrieval_summary, generation_summary = {}, {}
         try:
             stage(QueryStage.RETRIEVING)
             result = self._retrieve(
@@ -183,9 +228,27 @@ class QueryPipeline:
                 RetrievalDeps(parts.store, parts.embedder),
                 self._retrieval,
             )
+            retrieval_summary = {"external_calls": result.summary.external_calls}
+            if result.summary.embedding is not None:
+                retrieval_summary.update(
+                    neurons=result.summary.embedding.neurons,
+                    estimated_neurons=result.summary.embedding.estimated_neurons,
+                )
+                if parts.counter is not None and parts.counter.embedding_measured is not None:
+                    retrieval_summary["measured"] = parts.counter.embedding_measured
+            update(retrieval_summary=retrieval_summary)
+            if parts.counter is None:
+                update(calls={"retrieve": result.summary.external_calls})
             if result.summary.external_calls > 7:
                 raise ValueError("검색 호출 상한")
-            configured = generation_for_remaining(self._generation, remaining())
+            if remaining() <= 0:
+                raise DeadlineReached("질의 마감")
+            # 검색 실패·빈 Context 안내는 생성 API를 부르지 않는다. 생성 시간 하한으로 가리지 않는다.
+            configured = (
+                generation_for_remaining(self._generation, remaining())
+                if result.failure is None and result.context
+                else self._generation
+            )
             stage(QueryStage.GENERATING)
             answer = self._generate(
                 GenerationRequest(job.interaction.question or "", result, run_id=job.run_id),
@@ -199,6 +262,15 @@ class QueryPipeline:
                 ),
                 configured,
             )
+            generation_summary = {
+                "generation_calls": answer.summary.generation_calls,
+                "neurons": answer.summary.neurons,
+                "measured": answer.summary.measured,
+                "attempts": answer.summary.attempts,
+            }
+            update(generation_summary=generation_summary)
+            if parts.counter is None:
+                update(calls={"generate": answer.summary.generation_calls})
             if remaining() <= 0:
                 raise DeadlineReached("질의 마감")
             if answer.summary.generation_calls > 4:
@@ -230,15 +302,12 @@ class QueryPipeline:
                 reply.body_truncated,
                 answer.status.value,
                 failure,
-                {"external_calls": result.summary.external_calls},
-                {
-                    "generation_calls": answer.summary.generation_calls,
-                    "neurons": answer.summary.neurons,
-                    "measured": answer.summary.measured,
-                    "attempts": answer.summary.attempts,
-                },
+                retrieval_summary,
+                generation_summary,
             )
         finally:
+            if parts.counter is not None:
+                parts.counter.on_change = None
             # 늦게 끝난 생성도 사용량을 먼저 기록한 뒤 연결을 닫는다.
             close_failed = False
             for closer in reversed(parts.closers):
