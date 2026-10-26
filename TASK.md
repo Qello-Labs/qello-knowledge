@@ -70,6 +70,8 @@ python scripts/preflight.py
 git diff --check
 uv run ruff check .
 uv run ruff format --check .
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
 운영 확인(사람 인증 뒤, 명령마다 승인):

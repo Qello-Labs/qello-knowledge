@@ -222,6 +222,7 @@ description: "QK-GEN-001 구현 작업 목록"
   고친다. 검사하는 내용(대상 표시, 원격 대상이면 연결 없이 종료 3, `--allow-remote`면 정리)은 그대로 둔다(2026-10-23 사용자 결정, 독립 검토 H1). 생성 정리 출력 줄은 `generation_days_rolled_up=<n> generation_rows_deleted=<n>`
 - [X] T044 [US6] `src/qello_knowledge/indexer/usage.py`·`indexer/cli.py`: `prune` 경로에 생성 장부 정리를 더하고 `main()`·`run_usage`에 생성 장부 팩토리 주입 자리(`generation_ledger_factory`, 기본 `PostgresGenerationLedger`)를 둔다.
   운영 워크플로 `.github/workflows/index-sync.yml:30`의 `qk-index usage prune --allow-remote`가 바뀌지 않고 생성 사용량도 정리해야 한다. T043 통과
+  (2026-10-25: 이 워크플로는 지웠다. 같은 명령을 서버 스크립트 `qk-sync`가 돈다, ADR-020·SCRUM-113)
 - [X] T045 [P] [US6] `tests/unit/config/test_gen_settings_registry.py`(research R-12): `QK_GEN_MODEL`·`QK_GEN_MAX_TOKENS`·`QK_GEN_TEMPERATURE`·`QK_GEN_TIMEOUT_SECONDS`·`QK_GEN_PROMPT_VERSION`가 질의·색인 진입점에 등록되고
   기본값·범위가 data-model 1절과 같음, `config/check.py`의 `generation_settings(settings) -> GenerationSettings | None`(불러온 설정을 바꾸는 하나뿐인 함수, `budget_settings` 꼴. T034·T048이 쓴다, 독립 검토 L6),
   생성 설정에 문제가 있을 때만 설정 검사 보고에 `CrossCheck`가 생기고 기본 설정이면 `checks`에 생성 항목이 없음(기존 `tests/unit/embedding/test_settings.py:20`·`:37`이 그대로 통과, 독립 검토 H2),

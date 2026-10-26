@@ -206,6 +206,7 @@ description: "QK-SYN-001 구현 작업 목록"
 - [X] T042 [P] [US5] `tests/unit/indexer/test_schedule_workflow.py`(FR-034~037, research R-14): `.github/workflows/index-sync.yml`을 줄 단위 텍스트로 읽어(새 의존성 없음) `schedule` cron `30 0 * * *`, `workflow_dispatch`,
   `if: vars.QK_SYNC_ENABLED == 'true'`, `permissions: contents: read`, `concurrency` `index-sync`·`cancel-in-progress: false`, `timeout-minutes: 30`, `persist-credentials: false`, `uv sync --locked --extra index --extra postgres`,
   `qk-index run --allow-remote --trigger schedule --json`, `if: always()`인 `usage prune --allow-remote`·`runs prune --allow-remote`, Secret 이름 `DATABASE_URL`·`QK_GITHUB_API_TOKEN`(→ `GITHUB_API_TOKEN`)·`CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`이 `secrets.`로만 쓰이고 값 모양 문자열이 없음
+  - 2026-10-25 SCRUM-113: 워크플로를 지우면서 이 시험도 지웠다(주기 실행은 ADR-020 systemd 타이머).
 - [X] T043 [US5] `src/qello_knowledge/sync/identity.py`·`run.py`: research R-10 (a)~(d) 점검(잠금 전과 잠금 뒤 두 번), 대상 자료원 목록(`FULL`·`TAKEDOWN_ONLY`, `--source` 선택), 수집 뒤 정체성 비교와 `ORIGIN_MISMATCH`·`ORIGIN_MISSING` 보류,
   첫 문서 쓰기 직전 `register_origin`. `sync_store.py`에 `register_origin`(종류 유일 제약 위반은 `StoreError`)
 - [X] T044 [US5] `src/qello_knowledge/adapters/postgres/sync_store.py`·`sync/run.py`: research R-06 잠금. `try_lock(source_kinds)`는 같은 연결에서 종류별 `pg_try_advisory_lock`과 전역 `qk-sync-index` `pg_try_advisory_lock_shared`(키는 고정 문자열의 `hashtext`나 상수),
@@ -217,6 +218,7 @@ description: "QK-SYN-001 구현 작업 목록"
   (필수 항목: 제공자, 확인 날짜, 결정 기록 경로) 확인(research R-13). 의존성 조립(`GitHubRepoFilesAdapter`·`HttpsTransport`, `WorkersAiRestProvider`, `PostgresUsageLedger`, `PostgresStore`, `PostgresSyncStore`)은 이 파일에서만 하고 주입 인자로 바꿀 수 있게 한다.
   종료 코드 research R-16(4와 5가 함께면 5)
 - [X] T047 [US5] `.github/workflows/index-sync.yml`: contracts/cli.md 5절 그대로. 저장소 변수 `QK_SYNC_ENABLED`가 없으면 작업이 건너뛰어진다는 주석과, Secret·변수 등록은 사람 단계 H07이라는 주석을 단다
+  - 2026-10-25 SCRUM-113: ADR-020으로 쓰지 않게 된 이 파일을 지웠다. 현재 정의는 contracts/cli.md 5절(systemd 타이머).
 
 **Checkpoint**: 전체 단위·로컬 DB 시험 통과.
 
@@ -256,7 +258,7 @@ description: "QK-SYN-001 구현 작업 목록"
   - `qk-index index activate iv-4c0bc4fcc642 --allow-remote`: 문서 79, 청크 1,291, 벡터 없는 청크 0, 실패 조건 없음. `index status`: active=current, matches=true.
 - [X] H07 GitHub Actions 무료 할당 확인, Secret 등록, 저장소 변수 `QK_SYNC_ENABLED=true`, 첫 예약 실행 결과 확인
   - 2026-10-23: 저장소가 공개라 GitHub Actions 셀프 호스티드 러너 대신 OCI 인스턴스의 systemd 타이머로 예약 실행한다(ADR-020, 사용자 결정). 이 항목의 "GitHub Actions 무료 할당 확인, Secret 등록,
-    `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다. 2026-10-23 타이머 설치(켜지 않음)와 비밀값 입력(사람)을 마쳤다.
+    `QK_SYNC_ENABLED`"는 타이머 구성·비밀값 파일·첫 타이머 실행 확인으로 바꾼다. `index-sync.yml`은 쓰지 않고 남겨 둔다(2026-10-25 SCRUM-113에서 지웠다). 2026-10-23 타이머 설치(켜지 않음)와 비밀값 입력(사람)을 마쳤다.
   - 2026-10-23 병합 뒤(`main` `59132b2`): #54의 `0006_generation_usage`를 운영 DB에 먼저 적용했다(`applied=1`, 재실행 `applied=0 skipped=6`). 서버 스크립트의 `usage prune`이 0006의 함수를 부르기 때문이다.
     `sudo systemctl start qk-sync.service` 1회: `sync-20261023T155324-1bbd7bfc` succeeded(UNCHANGED 79·SKIP 1, 제공자 호출 0, 0 Neurons, 정리 단계 성공, 종료 코드 0, 색인 약 68초).
     스크립트가 `--trigger schedule`을 고정하므로 이 수동 실행도 `trigger=schedule`로 남는다. 이어서 `sudo systemctl enable --now qk-sync.timer`(다음 실행 2026-10-24 00:30 UTC).
@@ -635,6 +637,7 @@ H04~H07은 운영 저장소가 정해진 뒤 1.G 완료 리뷰 전까지 한다.
 - 관찰(QK-EMB-001 범위): 미리 보기 예상 368.93 Neurons 대비 실제 894.50(약 2.42배, +142%)로 QK-EMB-001 SC-005 목표(±20%)를 벗어났다. 예상식(UTF-8 바이트 ÷ 3.5, 1,075 Neurons/백만 토큰)이
   영어·코드·표가 섞인 실제 문서의 토큰 수를 작게 잡는 것으로 보인다(QK-CHK-002 research R-03: 표에서 실제 토큰이 예상의 최대 2.30배) `(추론)`. 예산 판정은 정산된 실제 값으로 누적하므로
   초과를 막는 장치는 동작하지만, 실행 전 미리 보기와 예산 사전 판정은 실제보다 낙관적이다. 보정은 이 작업 범위 밖이며 사람 결정이 필요하다.
+  2026-10-25 SCRUM-114에서 예상 Neurons 전용 계수(1.4바이트/토큰)로 보정했다(QK-EMB-001 research R-04 보정). 청킹 판수는 그대로다.
 - H01의 요청 84회·218초와 달리 이번 두 회차는 83회·73초로 2026-10-20 측정과 같았다. H01의 차이는 일시적 재시도로 보인다 `(추론)`.
 
 ### H03 결과 (2026-10-21, Claude 세션, 사용자 지시)

@@ -13,7 +13,8 @@
 | `dimension` | 1024 | `qk.embedding.vector` 타입과 같아야 한다 |
 | `max_input_tokens` | 8192 | 넘으면 자르지 않고 `input_too_long`(FR-003) |
 | `neurons_per_million_tokens` | 1075 | 요금표 값(스파이크 3.2) |
-| `bytes_per_token_estimate` | 3.5 | 예상 계산용(R-04) |
+| `bytes_per_token_estimate` | 3.5 | 예상 토큰: 청크 나누기·묶음 나누기·입력 한도 판정(R-04). 바꾸면 청크 경계가 바뀐다 |
+| `neuron_bytes_per_token` | 1.4 | 예상 Neurons: 미리 보기·예산 예약·추정 기록(R-04 보정, 2026-10-25 SCRUM-114) |
 
 ### EmbedInput / EmbedRequest
 

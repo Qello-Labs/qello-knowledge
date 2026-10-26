@@ -231,6 +231,6 @@ T018 embedding_provider_contract.py
 | SC-002 | T035, T036 |
 | SC-003 | T028, T030 |
 | SC-004 | T015 |
-| SC-005 | T045, T046(사람 승인) |
+| SC-005 | T045, T046(사람 승인). 2026-10-25 SCRUM-114: 실제 문서 첫 색인 기록으로 예상 Neurons 계수를 보정했다(research R-04 보정) |
 | SC-006 | T014 |
 | SC-007 | T002, T018, T023 |
