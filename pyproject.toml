@@ -28,7 +28,6 @@ dev = [
     "pytest>=8",
     "ruff>=0.13",
     "psycopg[binary]>=3.2",
-    "workers-py",
 ]
 
 [build-system]
