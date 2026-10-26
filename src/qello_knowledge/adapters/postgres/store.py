@@ -7,7 +7,9 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterator, Mapping, Sequence
+import math
+import threading
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
@@ -41,6 +43,10 @@ from qello_knowledge.domain.store import (
 from qello_knowledge.ports.retrieval import ContextItem, ContextNeighbor, ContextResult, KeywordHit, KeywordSearchResult
 
 _INVALID = (errors.IntegrityError, errors.DataError)
+
+
+class StoreDeadline(StoreError):
+    """검색 호출에 남은 시간이 없거나 검색 중 마감에 닿았다."""
 
 
 def _vector_text(vector: Sequence[float]) -> str:
@@ -123,9 +129,10 @@ def _context_result(data: Mapping[str, Any]) -> ContextResult:
 class PostgresStore:
     """연결 하나를 쓴다. 스레드마다 따로 만든다."""
 
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, *, deadline: Callable[[], float] | None = None) -> None:
         self._url = url
         self._conn: psycopg.Connection | None = None
+        self._deadline = deadline
 
     def close(self) -> None:
         if self._conn is not None:
@@ -152,6 +159,57 @@ class PostgresStore:
             raise StoreUnavailable("저장소를 쓸 수 없다") from exc
         except psycopg.Error as exc:
             raise StoreError(f"저장소 오류: {exc.diag.sqlstate}") from exc
+
+    @contextmanager
+    def _search_db(self) -> Iterator[psycopg.Connection]:
+        if self._deadline is None:
+            with self._db() as conn:
+                yield conn
+            return
+        remaining = self._deadline()
+        new_connection = self._conn is None or self._conn.closed
+        if not math.isfinite(remaining) or remaining <= 0 or (new_connection and remaining < 10):
+            raise StoreDeadline("검색 마감")
+        expired = threading.Event()
+        lock = threading.Lock()
+        finished = False
+        try:
+            with self._db() as conn:
+                remaining = self._deadline()
+                if remaining <= 0:
+                    self.close()
+                    raise StoreDeadline("검색 마감")
+
+                def cancel() -> None:
+                    with lock:
+                        if finished:
+                            return
+                        expired.set()
+                        try:
+                            conn.cancel_safe(timeout=1)
+                        except Exception:
+                            # 취소 실패도 원문을 내보내지 않는다. 완료 뒤 마감 오류로 바꾼다.
+                            return
+
+                timer = threading.Timer(remaining, cancel)
+                timer.name = "qk-store-deadline"
+                timer.daemon = True
+                timer.start()
+                try:
+                    yield conn
+                finally:
+                    with lock:
+                        finished = True
+                    timer.cancel()
+                    timer.join()
+        except Exception:
+            if expired.is_set():
+                self.close()
+                raise StoreDeadline("검색 마감") from None
+            raise
+        if expired.is_set() or self._deadline() <= 0:
+            self.close()
+            raise StoreDeadline("검색 마감")
 
     def upsert_artifact(self, record: ArtifactRecord) -> int:
         validate_artifact(record)
@@ -267,7 +325,7 @@ class PostgresStore:
 
     def search_vector(self, query: Sequence[float], top_n: int, filters: SearchFilter = NO_FILTER) -> SearchResult:
         validate_vector(query)
-        with self._db() as conn:
+        with self._search_db() as conn:
             row = conn.execute(
                 "SELECT qk.search_vector(%s::vector, %s, %s, %s)",
                 (_vector_text(query), clamp_top_n(top_n), _kinds(filters.source_kinds), _kinds(filters.artifact_kinds)),
@@ -278,7 +336,7 @@ class PostgresStore:
     def search_keyword(self, query: str, top_n: int, filters: SearchFilter = NO_FILTER) -> SearchResult:
         if not query.strip():
             return SearchResult(status="ok")
-        with self._db() as conn:
+        with self._search_db() as conn:
             row = conn.execute(
                 "SELECT qk.search_keyword(%s, %s, %s, %s)",
                 (query, clamp_top_n(top_n), _kinds(filters.source_kinds), _kinds(filters.artifact_kinds)),
@@ -290,7 +348,7 @@ class PostgresStore:
         self, terms: Sequence[str], top_n: int, filters: SearchFilter = NO_FILTER
     ) -> KeywordSearchResult:
         """QK-RET-001 낱말 배열 키워드 검색(0005 `qk.search_keyword_terms`). 빈 배열도 불러 활성 인덱스를 확인한다."""
-        with self._db() as conn:
+        with self._search_db() as conn:
             row = conn.execute(
                 "SELECT qk.search_keyword_terms(%s::text[], %s, %s, %s)",
                 (list(terms), clamp_top_n(top_n), _kinds(filters.source_kinds), _kinds(filters.artifact_kinds)),
@@ -300,7 +358,7 @@ class PostgresStore:
 
     def chunk_context(self, center_ids: Sequence[int], before: int, after: int) -> ContextResult:
         """QK-RET-001 주변 청크 일괄 조회(0005 `qk.chunk_context`). 노출 조건을 다시 판정한다."""
-        with self._db() as conn:
+        with self._search_db() as conn:
             row = conn.execute(
                 "SELECT qk.chunk_context(%s::bigint[], %s, %s)", ([int(i) for i in center_ids], before, after)
             ).fetchone()
@@ -312,7 +370,7 @@ class PostgresStore:
 
         검색 경로(`retrieve`)는 부르지 않는다. 확인 명령과 평가가 쓴다.
         """
-        with self._db() as conn:
+        with self._search_db() as conn:
             rows = conn.execute(
                 "SELECT DISTINCT ON (s.source_name) s.source_name, s.origin_version"
                 " FROM qk.sync_run_source s JOIN qk.sync_run r ON r.run_id = s.run_id"
@@ -322,7 +380,7 @@ class PostgresStore:
         return {str(name): str(version) for name, version in rows}
 
     def chunk_neighbors(self, chunk_id: int, before: int, after: int) -> NeighborResult | None:
-        with self._db() as conn:
+        with self._search_db() as conn:
             row = conn.execute("SELECT qk.chunk_neighbors(%s, %s, %s)", (chunk_id, before, after)).fetchone()
         if row is None or row[0] is None:
             return None
