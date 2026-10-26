@@ -421,7 +421,7 @@ DB를 잃으면 2절 3~4번으로 다시 만들고 `qk-index run --allow-remote`
 ### 7.3 qk-query.service
 
 `<query-release-directory>`와 `<query-port>`를 승인한 릴리스 경로·비특권 포트로 바꾼다. 서버는 코드에서 루프백에만 바인딩한다.
-기존 qk-sync.service의 격리 항목을 포함하고 다음을 둔다. R-14가 참조한 `qk-sync-notify@.service` 원문은 현재 저장소에 없으므로 적용 전에 관리자가 그 유닛의 격리 설정과 대조한다.
+기존 qk-sync.service의 격리 항목을 포함하고 다음을 둔다. R-14가 참조한 2절의 `qk-sync-notify@.service` 격리 항목(`NoNewPrivileges`, `PrivateTmp`, `ProtectSystem=strict`, `ProtectHome`)을 모두 담고, 커널·제어 그룹 보호와 주소 체계·권한 제한, 메모리 상한을 더한다.
 
 ```ini
 # /etc/systemd/system/qk-query.service
