@@ -470,9 +470,13 @@ WantedBy=multi-user.target
 1. H00 뒤 원격 관리 터널 `<tunnel-id>`와 `cloudflared` 서비스를 준비한다. `cloudflared --version`으로 2025.7.0 이상인지 확인한다.
    터널 토큰은 서버의 전용 root 읽기 파일에 숨김 입력하고, 설치한 CLI의 도움말에서 지원하는 token-file 방식을 확인해 서비스에서 참조한다.
    토큰을 인자·이력·journal에 전달하는 방식은 쓰지 않는다. 공개 호스트명이나 호스트 ingress 규칙을 더하지 않는다. 서비스 상태와 터널 연결을 확인한다.
+   H01(2026-10-26) 구성: 서비스 `qk-cloudflared.service`(`DynamicUser=yes`, `LoadCredential=tunnel-token:/etc/qello-knowledge/cloudflared-token`,
+   `cloudflared --no-autoupdate tunnel --protocol quic run --token-file ${CREDENTIALS_DIRECTORY}/tunnel-token`, `MemoryMax=256M`). 토큰 파일(root:root 0600)은
+   `sudo /usr/local/sbin/qk-tunnel-token-setup`으로 숨김 입력한다. 로그의 `Registered tunnel connection ... protocol=quic`과 Cloudflare 쪽 `healthy`로 확인한다.
 2. Workers VPC Service `<vpc-service-id>`를 터널 `<tunnel-id>`와 대상 `<loopback-address>:<query-port>`에 연결하고, `wrangler.toml`의 `QUERY_SERVICE` 바인딩 placeholder를 사람이 바꾼다.
    Worker 설정은 `DISCORD_PUBLIC_KEY=<discord-public-key>`와 `QK_RELAY_TIMEOUT_SECONDS=<relay-timeout>`뿐이다. DB URL·Workers AI 토큰·봇 토큰은 두지 않는다.
-   `pywrangler deploy`는 사람이 인증하고 실행한다. Python VPC `fetch` 등의 미확인 API 꼴은 H01에서 확인한 뒤 운영으로 진행한다.
+   `pywrangler deploy`는 사람이 인증하고 실행한다. Python VPC `fetch` 등의 API 꼴은 H01에서 확인했다(tasks.md "H01 배포 확인").
+   실제 VPC Service ID는 저장소 밖 `wrangler.toml` 사본에 넣고 `-c`로 배포한다. 계정에 workers.dev 서브도메인이 없으면 비대화형 배포가 임의 이름으로 등록하므로, 배포 전에 대시보드에서 확인한다.
 3. Discord 개발자 포털에 `<worker-interactions-url>`을 등록하고 서명 확인을 통과한다. 허용 밖 채널에서는 비공개 안내만 오는지 확인한다.
 4. 운영 담당자의 로컬에서 `qk-query register-commands --env-file <local-register-config> --dry-run`으로 JSON을 확인한 뒤 같은 명령에서 `--dry-run`을 빼고 등록한다.
    봇 토큰은 로컬에서 숨김 입력한다. 서버 안의 기존 명령 목록을 통째로 바꾸므로 대상 `<application-id>`·`<guild-id>`를 사람이 확인한다.

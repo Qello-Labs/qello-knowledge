@@ -107,4 +107,9 @@ H00 문서는 위 두 줄이 해당한다. H01 시험 서비스를 더하면 `uv
 - 2026-10-26 사용자 결정: 위 수정을 위해 `worker.py`·`wrangler.toml`을 범위에 더한다. 수정 뒤 로컬 재시험: `/healthz` 200, 서명 없음·잘못된 서명 401, 서명된 PING `{"type":1}`,
   바인딩 없는 `/ask`는 대체 안내(type 4, 나만 보기)와 `relay_failed`·`error=AttributeError` 로그. VPC `fetch`와 `waitUntil`은 원격 바인딩이 있어야 해서 배포에서 확인한다.
   전체 검증(preflight·diff·ruff·`QK_REQUIRE_LOCALDB=1 pytest` 2,313 passed, 외부 2 제외) 통과. `worker.py`는 단위 시험이 가져오지 않는다.
+- 2026-10-27 사실(H01, 사람 인증·명령별 승인): 터널·`qk-cloudflared`(QUIC)·VPC Service·Worker 배포·수신 주소 등록·`/ask` 등록을 했고, 시험 `/ask` 3회가 중계·시작 확인·갱신까지 통과했다.
+  Worker CPU가 요청당 121~189 ms라 Free 한도(10 ms) 초과 위험을 H04로 넘긴다. 자세한 내용은 tasks.md "H01 배포 확인".
+- 2026-10-27 사실: 비대화형 `pywrangler deploy`가 workers.dev 서브도메인을 임의 이름으로 자동 등록했고, 사람이 수신 주소 등록 전에 팀 이름으로 바꿨다(계정 설정 변경, 비용 없음).
+- 2026-10-27 사실: 아래쪽 Herdr 패널 하나를 `exit`으로 실수로 닫았다(실행 중 작업 없음). 같은 위치에 새 패널을 열었다.
+- 2026-10-27 사실: 시험 서비스와 임시 파일을 지웠다. Workers AI·DB 호출 0, Neurons 0. 터널·Worker·수신 주소·명령은 H02에서 쓰려고 남긴다.
 - 2026-10-26 사실: `main`의 QK-CHK-001 계약이 `ADR-022-code-sources.md`를 만들 예정인데, ADR-022는 이미 `ADR-022-discord-query-path.md`가 쓰고 있다. 이 작업 범위 밖이라 그 작업 담당자에게 알린다.

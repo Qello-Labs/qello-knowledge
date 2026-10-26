@@ -296,7 +296,7 @@ description: "QK-BOT-001 구현 작업 목록"
 | 단계 | 내용 | 상태 | 비용·허락 |
 | --- | --- | --- | --- |
 | H00 | 운영 게이트 닫기: Cloudflare Tunnel 요금과 Worker·Tunnel 트래픽의 데이터 처리 정책(보존, 학습 사용)을 ADR-022 Data and cost에 URL과 함께 적는다. 인스턴스 바깥 방향 UDP 7844 읽기 전용 확인. 운영 색인·마이그레이션 역할의 `qk.embedding_usage` 소유 확인. 질의 서비스 전용 Workers AI 토큰 발급 계획(PR #62 계정 교체 결과와 맞춘다) | 2026-10-26 완료(아래 "H00 운영 게이트") | 없음. 유료·학습 사용·장기 보존이면 멈추고 결정 재검토 |
-| H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | H00 뒤 | 0 Neurons |
+| H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | 2026-10-27 완료(아래 "H01 배포 확인"). Worker CPU 초과 위험은 H04 | 0 Neurons |
 | H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | H01 뒤 | 0 Neurons |
 | H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | H02 뒤 | 0 Neurons |
 | H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | H02 뒤 | 0 Neurons |
@@ -655,3 +655,24 @@ US6:     T052, T053 (시험) → T054 → T055
 - 독립 검토(별도 에이전트, 읽기 전용, SDK 1.9.5·wrangler 4.149.0 소스 대조): 승인. High 0. Medium 1: VPC Service 바인딩이 `Fetcher`가 아니면 `/ask`가 대체 안내로 끝난다. 배포 첫 `/ask` 로그의 `error`로 확인하고 필요하면 그때 고친다.
   Low: 확인 범위보다 단정적인 문구(반영), 시간 초과 때 응답 본문 읽기가 중단되지 않음(동작 영향 없음, 유지). 번들의 import 추적에서 표준 라이브러리 밖 모듈 수준 import 0건.
 - 시험 서비스 `measurement/h01_probe.py`: 로컬에서 합성 키로 PING 200, 변조·오래된 서명 401, 다른 애플리케이션 거부, `/ask` → type 5·`X-QK-Run`, 다른 서명의 시작 확인 409, 시작 확인 204와 갱신 1회, 재시작 확인 409를 확인했다(Discord 전송은 가짜로 바꿔 외부 호출 0).
+
+### H01 배포 확인 (2026-10-26~27)
+
+- 조건: Cloudflare Qello 전용 계정, wrangler 4.149.0, Worker 호환 날짜 2026-10-26, 커밋 `c512170`의 `worker.py`·`wrangler.toml`. 실제 VPC Service ID를 넣은 배포 설정은 저장소 밖 사본에만 두었다.
+  시험 서비스 `measurement/h01_probe.py`(커밋 `2158f42`)를 공유 인스턴스에 임시 유닛(`nobody`, 메모리 상한 128M)으로 띄웠다. Workers AI·DB 호출 0, Neurons 0. 식별자·주소·키·토큰은 기록하지 않는다.
+- 공유 인스턴스: `cloudflared` 2026.10.4(Cloudflare 공식 apt 저장소)를 설치했다. 서비스 `qk-cloudflared.service`는 `DynamicUser`, 토큰을 `LoadCredential`로 받아 `--token-file`로 넘기고
+  `--protocol quic`으로 고정했다. 토큰은 사람이 숨김 입력했고(root:root 0600) 프로세스 인자에 없다. 설치 뒤 다른 서비스 재시작 0건(apt·journal 확인), 회의 봇 컨테이너·`qk-postgres`·`qk-sync.timer` 유지.
+- 터널: QUIC 연결 4개 등록, cloudflared 사전 점검 "Environment is healthy", Cloudflare 쪽 상태 `healthy`. quic-go UDP 수신 버퍼 증가 실패 경고가 있었다(`net.core.rmem_max`). 연결에는 영향이 없어 sysctl은 바꾸지 않았다.
+- Cloudflare: VPC Service(HTTP, `127.0.0.1:8787`, 터널 연결), Worker `qello-knowledge-relay` 배포(164개 모듈, gzip 189 KiB, 기동 681 ms), 비밀값 `DISCORD_PUBLIC_KEY`(사람이 숨김 입력).
+  비대화형 배포가 계정에 workers.dev 서브도메인이 없다며 작업 폴더 이름으로 서브도메인을 자동 등록했다. 수신 주소 등록 전에 사람이 대시보드에서 팀 이름으로 바꿨다. 이후 배포 전에는 서브도메인 존재를 먼저 확인한다.
+- Discord: `Qello Knowledge`를 시험 서버에 `applications.commands`로 설치했다. Interactions Endpoint URL 저장 때 Discord 검증 요청 2건이 서명된 PING 200(CPU 8 ms), 틀린 서명 401로 통과했다.
+  `/ask`를 서버 한정으로 등록했다(`register-commands`, 먼저 `--dry-run`. 로컬 `.env`의 봇 토큰 값이 비어 있어 이번 실행에만 숨김 입력하고 바로 지웠다). 역할 제한이 없어 서버의 모든 멤버에게 보인다.
+- `/ask` 3회(시험 문구): 3회 모두 Worker 200(`relayed`, VPC 왕복 404~459 ms, `error` 없음), 시험 서비스 type 5, 시작 확인 204(`start_failed` 0), 원 메시지 갱신 200(354~892 ms).
+  Discord가 받은 첫 응답의 Worker wall time 852~974 ms(3초 안). 독립 검토 Medium(VPC 바인딩이 `Fetcher`로 감싸지는가)은 실제 동작으로 해소됐다.
+- Workers Logs: `wrangler tail`의 요청 항목은 `cf`·`headers`·`method`·`url`뿐이고 본문이 없다. 헤더에는 서명·타임스탬프와 Cloudflare 기본 헤더가 있다. 저장되는 Workers Logs(Free 3일)도 같은 항목으로 본다 `(추론, 대시보드 미확인)`.
+- **위험(H04로 넘김)**: `/ask` 중계 요청의 Worker CPU가 121~189 ms다(Free 한도 10 ms의 12~19배). 문서상 가끔 넘는 것은 허용하지만 꾸준히 넘으면 Error 1102(`exceededCpu`)로 끊고,
+  그때는 대체 안내도 나가지 않고 Discord에 "응답하지 않음"이 뜬다. 이번 3회는 모두 `ok`였다. H04에서 10회 이상 재서 `exceededCpu`가 나면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다.
+  Python 안에서 줄이기, Workers Paid(월 고정비, ADR-008·C-05 승인 필요)도 대안이다. `/healthz` 첫 요청은 CPU 225 ms였다.
+- 정리: 시험 서비스 중지(임시 유닛 제거), `h01-probe.env`·값 입력 스크립트·`/usr/local/lib/qk-h01` 삭제, Bastion 세션 삭제. 남긴 것: 터널, `qk-cloudflared`, 터널 토큰 파일과 입력 스크립트 `/usr/local/sbin/qk-tunnel-token-setup`,
+  VPC Service, Worker, 수신 주소, `/ask` 명령. H02 전까지 `/ask`는 Worker 대체 안내("지금은 답할 수 없습니다", 나만 보기)를 받는다 `(추론, 중지 뒤 호출 미확인)`.
+- 남은 일: H02(실제 질의 서비스 구성), H03(SC-010), H04(CPU·첫 응답 측정), H05(실측). 사람 확인: 로컬 `.env` 권한이 644로 `tokens.md` 기록(600)과 다르다.
