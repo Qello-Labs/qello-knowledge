@@ -22,7 +22,7 @@
 
 ## Scope
 
-이번 주 범위는 명세와 결정 기록이다. 구현 범위는 명세 승인 뒤 이 계약에 더한다.
+명세·계획 단계에서 정한 범위와, 2026-10-26 plan 승인으로 더한 구현 범위다.
 
 - `TASK.md`
 - `specs/QK-BOT-001-<짧은 이름>/`: `spec.md`(이번 주), 승인 뒤 `plan.md`·`research.md`·`tasks.md` 등 Spec Kit 산출물
@@ -36,12 +36,25 @@
   - 질의 전체 시간과 Workers 한도(요청당 CPU, subrequest, 응답 뒤 처리 시간) 측정 방법, 넘을 때의 대안(QK-FND-001 research의 TypeScript 진입점)
   - `wrangler.toml`과 `DISCORD_BOT_TOKEN` 필요 여부
 
+구현 범위(2026-10-26 plan·ADR-022 사람 승인, plan "구현 Scope 승인이 필요한 것"):
+
+- `src/qello_knowledge/`: `domain/discord.py`, `discord/`, `adapters/discord/`, `query/`(`app.py`·`server.py`·`jobs.py`·`pipeline.py`·`worker.py`), `config/registry.py`
+- `src/qello_knowledge/adapters/postgres/store.py`: 선택 인자 `deadline`만 더한다(research R-06). 인자가 없으면 지금 동작 그대로
+- `src/qello_knowledge/adapters/postgres/migrations/0007_query_role.sql`: 역할 `qk_query`, 권한, `qk.embedding_usage` RLS(data-model 4절)
+- `tests/unit/discord/`, `tests/unit/query/`, `tests/unit/adapters/test_discord_webhook.py`, `tests/localdb/query/`, `tests/unit/test_boundaries.py`(`discord` 경계 추가)
+- `pyproject.toml`·`uv.lock`: 선택 의존성 묶음 `query`(`cryptography`)
+- `wrangler.toml`: 비밀값·서비스 ID는 placeholder
+- `.env.example`: 설정 생성기로 다시 만든다(손으로 고치지 않는다)
+- `docs/ops/oci-production-store.md`: 질의 서비스·`cloudflared`·`query.env`·되돌리기 절
+- `docs/sdd/decisions/ADR-022-discord-query-path.md`, ADR-008 링크 한 줄
+- `specs/QK-BOT-001-discord-ask/tasks.md`
+
 ## Explicit exclusions
 
-- 명세 승인 전 `src/`·`tests/`·`pyproject.toml`·`uv.lock`·마이그레이션·`wrangler.toml` 변경과 구현 PR.
+- 공유 인스턴스 변경(`qkquery` 계정, `qk-query.service`, `cloudflared`, `query.env`, DB 역할 로그인·마이그레이션 운영 적용), Cloudflare 계정 변경(터널, VPC Service, Worker 배포),
+  Discord 포털 변경(수신 주소, 명령 등록). 팀원(인스턴스 관리자) 동의(PR 리뷰) 뒤, 사람이 인증하고 명령마다 승인한 것만 한다.
 - 질의 로그·피드백 버튼·`/sources`·질의 원문 저장 옵션(QK-OBS-001), 스레드 대화·질의 재작성(QK-BOT-002), `/reindex`(QK-SYN-002), 질문 분류(QK-TRK-001), 요약 게시.
 - 검색·생성 동작 변경(QK-RET-001·QK-GEN-001 범위). 넘겨받은 결정 밖의 변경이 필요하면 따로 묻는다.
-- Workers 배포, Discord 애플리케이션 서버 설치·명령 등록, OCI 인스턴스 변경(HTTP RPC 계층, Tunnel 등). 명세·결정 승인과 팀원(인스턴스 관리자) 동의 뒤, 사람이 인증하고 명령마다 승인한 것만 한다.
 - `AGENTS.md`, `CLAUDE.md`, `.claude/**`, constitution, 로드맵 수정. 원본 자료원에 쓰기.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
 - 비밀값, 토큰, Discord Public Key·Application ID, `.env` 값, 접속 주소, 내부 도메인, OCI 계정 식별자, 비공개 원문, 질문·답변 원문은 기록하지 않는다.
@@ -60,6 +73,7 @@
 | --- | --- | --- |
 | `TASK.md`, `specs/QK-BOT-001-*/` | Byuntil | 사람 리뷰(명세 승인) |
 | 새 ADR(Workers ↔ DB 연결) | Byuntil | 사람 리뷰, 공유 인스턴스 구성 요소를 더하면 팀원(인스턴스 관리자) 확인 |
+| 구현(`src/`, `tests/`, `pyproject.toml`, `uv.lock`, 마이그레이션, `wrangler.toml`, `.env.example`, 운영 문서) | Byuntil | 사람 리뷰, 0007 운영 적용 전 팀원(인스턴스 관리자) 확인 |
 
 ## Existing user-owned changes
 
@@ -73,9 +87,11 @@ python scripts/preflight.py
 git diff --check
 uv run ruff check .
 uv run ruff format --check .
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
 
-구현 단계에서 더한다: `uv run qk-dev db up`, `QK_REQUIRE_LOCALDB=1 uv run pytest`, Workers 로컬 실행(`pywrangler dev`) 확인, 사람 확인 뒤 Discord 실측.
+사람 단계(quickstart 2~4절): Workers 로컬 실행(`pywrangler dev`) 확인, 운영 구성 뒤 Discord 실측. 실측 전에 예상 Neurons를 적는다.
 
 ## Completion criteria
 
@@ -89,3 +105,17 @@ uv run ruff format --check .
 - 2026-10-25 사실: 선행 WBS 1.10 QK-GEN-001(#53, PR #54 병합)과 1.9 QK-RET-001(#51, PR #52 병합)이 끝났다. 로드맵 상태 열은 1.8~1.10이 갱신되지 않은 상태다(로드맵 수정은 이 작업 범위 밖).
 - 2026-10-25 사실: 단계 게이트 0.G는 미완료 상태로 Phase 1을 계속 진행한다(2026-10-20 사용자 결정, Issue #53 기록).
 - 2026-10-25 사실: 기본 체크아웃이 다른 작업 브랜치로 바뀌어 있어, 이 작업은 별도 worktree에서 한다. 브랜치 이름 type은 이전 질의 트랙(#52, #54)처럼 명세와 구현을 한 브랜치에서 하는 `feat`로 했다.
+- 2026-10-25 사용자 결정(명세): 답변은 기본 공개 + "나만 보기" 선택 인자(Q1 C), Phase 1 사용자별 호출 제한 없음(Q2 A).
+- 2026-10-25 사실: 명세 독립 검토를 오른쪽 Herdr 패널의 Codex(읽기 전용)로 했다. 1차 변경 요청 11건 → 재검토 변경 요청 5건 → 2차 재검토 승인(명세 검토 범위). 명세 커밋 `ee4e724`.
+- 2026-10-25 사용자 결정(H1): Workers `waitUntil` 30초와 생성 45초 충돌은 명세에 마감 조건만 두고 실행 방식은 계획 단계에서 정한다.
+- 2026-10-25 사용자 결정(계획): Cloudflare Worker는 서명 검사·중계만 하고, 검색·생성은 OCI 공유 인스턴스의 질의 서비스가 기존 코드로 실행한다. 연결은 Workers VPC + Cloudflare Tunnel
+  (공인 포트·공개 호스트명 없음). ADR-008 일부 개정이라 ADR-022(Proposed)를 쓰고, 승인과 팀원(인스턴스 관리자) 동의를 PR 리뷰로 받는다. 이 결정을 spec에 먼저 반영했다(C-11).
+- 2026-10-26 사실: 계획 독립 검토를 오른쪽 Herdr 패널의 Codex(읽기 전용)로 네 차례 했다. 변경 요청 12건 → 6건 → 3건 → 승인(계획 범위, 비차단 L1 반영). 이력은 plan "독립 검토 이력".
+  반영하면서 spec의 FR-007·FR-008·FR-009·FR-010·FR-016, US1-1·US1-5, SC-011·SC-013, Edge Cases, Assumptions를 고쳤다(C-11).
+- 2026-10-25 사실: plan·research·data-model·contracts·quickstart와 ADR-022 초안을 썼다. 구현 Scope 추가(src·tests·pyproject·마이그레이션·wrangler·운영 문서)는 plan 승인 뒤 사람 승인으로
+  이 계약에 더한다(plan "구현 Scope 승인이 필요한 것").
+- 2026-10-26 사용자 결정: plan과 ADR-022 초안을 승인하고, plan "구현 Scope 승인이 필요한 것" 표의 저장소 항목 전부를 Scope에 더했다. 공유 인스턴스·Cloudflare·Discord 변경은 제외로 남긴다.
+  ADR-022 상태(Accepted)와 팀원(인스턴스 관리자) 동의는 PR 리뷰로 받는다. 운영 게이트(Tunnel 요금·데이터 처리 정책, UDP 7844, 전용 Workers AI 토큰, 색인 역할 소유권 확인)는 운영 구성 전에 닫는다.
+- 2026-10-26 사용자 결정: 중복 판정 상태를 질의 서비스 메모리에 두는 위험(research R-10, spec FR-010·SC-011 예외)을 받아들인다.
+- 2026-10-26 사실: 그사이 `origin/main`에 #59(예약 동기화 워크플로 삭제)와 #60(임베딩 Neurons 예상 보정)이 병합됐다. 계획 산출물을 커밋한 뒤 rebase로 반영한다.
+  열린 PR #62(Workers AI 토큰 Qello 전용 계정 교체)는 R-08 전용 토큰 발급과 겹칠 수 있어 운영 구성 때 다시 본다.
