@@ -699,3 +699,20 @@ US6:     T052, T053 (시험) → T054 → T055
 - 판정(M-02): Worker CPU가 Free 한도를 **꾸준히** 넘는다(23/23). research R-13의 대안 발동 조건("자주 넘으면")에 해당하므로 중계만 TypeScript로 옮기는 안을 사람 결정으로 올린다.
   대안: Python 안에서 줄이기(PING 8 ms가 하한에 가까워 10 ms 안쪽 보장은 어렵다고 본다 `(추론)`), Workers Paid(월 고정비, ADR-008·C-05 승인 필요).
 - 미측정: PING(연결 확인) 10회(Discord는 수신 주소 저장 때만 보낸다), 대시보드 Worker 지표, 실제 질의 서비스 경로. 정리: 시험 서비스 중지·임시 파일 삭제·Bastion 세션 삭제.
+
+### 중계 Worker TypeScript 이전 (2026-10-27, ADR-024 Proposed)
+
+- 사용자 결정: H04 일부 결과로 research R-13 대안(B)을 택했다. Python Worker 코드는 지우고 계약 시험을 TS로 옮긴다. 시험은 `node --test`(npm 의존성 0), CI에 `relay` job을 더한다. 결정 기록은 ADR-024.
+- 변경: `workers/relay/relay.ts`(순수 판단), `workers/relay/index.ts`(진입점, 공개 키 isolate 캐시, `AbortSignal.timeout`과 경쟁 타이머로 중계 제한 시간 보장), `workers/relay/relay.test.ts`(14개).
+  `wrangler.toml`은 `main = "workers/relay/index.ts"`, `python_workers`·`base_dir` 제거. 삭제: `query/worker.py`, `discord/relay.py`, `test_bot_relay.py`. `signature_headers`는 `discord/interactions.py`로 옮겼다.
+  개발 의존성 `workers-py` 제거(`uv.lock`의 패키지 항목 24개 → 16개, `workers-py`와 그 의존성 8개).
+- 시험 이동: 이전 Python 계약 시험 5개(precheck·PING, 실패 대체 안내 3, 중계·시작 확인·기록 허용 목록)의 기대값을 TS 시험으로 옮기고, 진입점 시험 7개(healthz, 경로·크기·서명 거부, PING, 중계와 시작 확인,
+  즉시 안내, 실패·시간 초과 기록, 시작 확인 실패 기록)를 실제 Ed25519 서명과 가짜 VPC 바인딩·`waitUntil`로 더했다. RED(모듈 없음) → GREEN 확인.
+- 검증: `node --test workers/relay/relay.test.ts` 14 passed, `QK_REQUIRE_LOCALDB=1 uv run pytest` 2,309 passed(외부 2 제외, 이전 2,313에서 옮긴 5개 빠지고 1개 더함), ruff check·format, preflight, `git diff --check` 통과.
+  로컬 `wrangler dev`(workerd, 호환 날짜 2026-10-13로 낮춤, 합성 키, 외부 호출 0): `/healthz` 200, 서명 없음·잘못된 서명 401, 서명된 PING `{"type":1}`, 바인딩 없는 `/ask` → 대체 안내와 `relay_failed`·`error=TypeError`.
+- 독립 검토(별도 에이전트, 읽기 전용, Node 24·esbuild로 재현): 변경 요청 H1·M1·L4건 → 반영.
+  H1: CI의 `node --test workers/relay/`(디렉터리 인자)가 Node 24에서 실패 → 시험 파일 경로로 바꿈. M1: 응답 헤더 대기와 본문 읽기에 제한 시간이 따로 걸려 최악 2배 → 한 번의 제한 시간으로 묶음
+  (시험을 먼저 더해 1.9초 RED 확인 뒤 GREEN). L1: ADR-024의 로컬 시간 비교 문장(CPU가 아닌 클라이언트 측정 시간) 정정. L2: `uv.lock` 빠진 패키지 수 정정. L3: ADR-022의 지운 파일 참조 정정.
+  L4: 숫자가 아닌 Content-Length 400과 본문 읽기 시간 초과 시험 추가(14개). 동작 동등성·healthz·보안 경로 결함 없음.
+  재검토: 승인(High·Medium 0). 선택 Low(시간 시험 상한 1,400 → 1,700 ms, 회귀 1.9초와 간격 유지)를 반영했다. Node 24·26 모두 14 passed.
+- 남은 확인: 재배포와 운영 Worker CPU 재측정(H04), 타입 검사는 하지 않는다(ADR-024 Negative).

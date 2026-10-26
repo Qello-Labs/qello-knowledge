@@ -41,6 +41,15 @@
 - H04 일부(2026-10-27 사용자 승인): 시험 서비스에 거부 경로 흉내(`나만_보기`를 켜면 type 4) 추가, 시험 서비스 재배치(공유 인스턴스 임시 유닛, 값 숨김 입력), 인스턴스 자원 기준선 10분 수집(읽기 전용),
   시험 채널 `/ask` 허용·거부 경로 각 10회 이상, `wrangler tail`로 요청별 CPU·wall 기록, 측정 뒤 시험 서비스 중지
 - QK-CHK-001 명세의 코드 자료원 결정 기록 번호를 `ADR-022`에서 `ADR-023`으로 정정(`specs/QK-CHK-001-code-chunker/` plan·quickstart·research·tasks, 2026-10-27 사용자 요청)
+- 중계 Worker를 TypeScript로 옮김(2026-10-27 사용자 결정, H04 일부 결과·research R-13 대안):
+  - 새 파일 `workers/relay/relay.ts`(순수 판단), `workers/relay/index.ts`(Worker 진입점), `workers/relay/relay.test.ts`(`node --test`, npm 의존성 없음)
+  - `wrangler.toml`: `main`을 TS 진입점으로, `python_workers`·`base_dir` 제거
+  - 삭제: `src/qello_knowledge/query/worker.py`, `src/qello_knowledge/discord/relay.py`, `tests/unit/discord/test_bot_relay.py`(같은 기대값을 TS 시험으로 옮김).
+    질의 서비스가 쓰던 `signature_headers`는 `discord/interactions.py`로 옮기고(같은 값의 `MAX_BODY_BYTES`가 이미 있다) `query/app.py` 가져오기와 `tests/unit/discord/test_bot_interactions.py`에 시험 1개를 더한다
+  - `pyproject.toml`·`uv.lock`: 개발 의존성 `workers-py` 제거
+  - `.github/workflows/ci.yml`: TS 중계 시험(`node --test workers/relay/relay.test.ts`) 한 단계 추가
+  - 결정 기록 새 파일 `docs/sdd/decisions/ADR-024-ts-relay-worker.md`, ADR-022에 링크 한 줄, 운영 문서 7.4·quickstart의 배포 명령
+  - TS Worker 재배포와 H04 Worker CPU 재측정(시험 서비스 임시 재배치, 사람 인증·명령별 승인)
 - H01 로컬 확인으로 찾은 Worker 수정(2026-10-26 사용자 승인으로 더함):
   - `src/qello_knowledge/query/worker.py`: Python Workers SDK의 요청·응답 본문(`bytes()`), VPC 바인딩 `fetch(url, **kwargs)`, `headers.get`, `waitUntil` 프록시. 실패 로그에 예외 클래스 이름만 더함
   - `wrangler.toml`: `base_dir = "src"`
@@ -49,7 +58,7 @@
 
 - 실제 질의 서비스 구성(`qkquery`, `qk-query.service`, 질의 릴리스, `query.env`, `qk_query` 로그인·암호, 전용 토큰 서버 배치)과 SC-010 외부 접속 확인은 H02·H03이다.
   OCI 보안 목록·호스트 방화벽 변경, 공개 호스트명·ingress 규칙 추가, Cloudflare 유료 기능(Argo 등) 켜기는 하지 않는다.
-- `src/`(아래 Worker 수정 제외), `tests/`, 마이그레이션 변경. H01에서 더 수정이 필요해지면 멈추고 따로 묻는다.
+- `src/`·`tests/`(아래 Worker 수정·TS 이전 제외), 마이그레이션 변경. 더 수정이 필요해지면 멈추고 따로 묻는다.
 - `wrangler.toml`의 실제 VPC Service ID는 저장소에 커밋하지 않는다(추적하지 않는 로컬 사본으로 배포).
 - `AGENTS.md`, `CLAUDE.md`, `.claude/**`, constitution, 로드맵 수정. 원본 자료원에 쓰기. Jira 상태 변경.
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
@@ -83,6 +92,7 @@ git diff --check
 ```
 
 H00 문서는 위 두 줄이 해당한다. H01 시험 서비스를 더하면 `uv run ruff check .`와 `uv run ruff format --check .`도 실행한다.
+TS 중계를 더한 뒤에는 AGENTS.md 7절 기본 검증 전부와 `node --test workers/relay/relay.test.ts`를 실행한다.
 
 ## Completion criteria
 
@@ -124,3 +134,5 @@ H00 문서는 위 두 줄이 해당한다. H01 시험 서비스를 더하면 `uv
 - 2026-10-27 사실(H04 일부, 사람 인증·명령별 승인): `/ask` 23건(거부 흉내 10, 허용 13) 모두 `ok`였지만 Worker CPU가 23/23건 10 ms를 넘었다(p50 31 ms, p95 167 ms, 최대 250 ms).
   첫 응답(중계 왕복) p50 366 ms·최대 1,146 ms로 3초 안. 인스턴스 기준선은 가용 약 4.5 GB, load 0.2 이하, 메모리 부족 종료 0. 자세한 내용은 tasks.md "H04 일부 측정".
   R-13 대안 발동 조건에 해당해 중계를 TypeScript로 옮길지 사람 결정이 필요하다.
+- 2026-10-27 사용자 결정: 중계를 TypeScript로 옮긴다(B). Python Worker 코드는 지우고 계약 시험을 TS로 옮긴다. 시험은 `node --test`(npm 의존성 0, 타입 검사 없음)로 하고 CI에 한 단계 더한다.
+  결정 기록은 새 ADR-024로 쓴다. 시험 이동은 같은 기대값을 TS 시험으로 옮기는 것이며 검증 통과를 위한 시험 삭제가 아니다(AGENTS.md 9절).
