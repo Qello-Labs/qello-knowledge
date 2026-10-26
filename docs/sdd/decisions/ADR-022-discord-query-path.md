@@ -6,6 +6,8 @@
 > Status: Accepted
 >
 > ADR-008의 "질의응답은 Cloudflare Workers에서 실행한다"를 일부 고친다. ADR-008의 저장 위치(OCI 공유 인스턴스)와 추가 고정비 상한(월 0원)은 그대로다.
+>
+> 2026-10-27: Worker 구현 언어를 TypeScript로 바꾸는 안을 [ADR-024](ADR-024-ts-relay-worker.md)로 제안했다(Python Worker CPU가 Free 한도 초과).
 
 ## Context
 
@@ -74,7 +76,7 @@ H00 데이터 처리·요금 확인(조회일 2026-10-26):
   - 명시 문장 없음: Worker·Tunnel 트래픽을 AI 학습에 쓰지 않는다는 문장은 약관·DPA에 없다(학습 금지 명시는 Workers AI 문서뿐). 약관 §2.5.5는 Cloudflare가 트래픽에서 만든 통계·분석·모델
     (Network Data)을 서비스 개선에 쓸 수 있게 한다. 약관·DPA에 트래픽 보존 기간 문장은 없고, DPA Annex 1은 처리 기간을 계약 기간으로 둔다.
   - 구체적으로 남는 곳: Workers Logs는 새 Worker에서 기본으로 켜지고, 호출마다 요청 메타데이터·헤더와 `console.log` 출력을 Free 플랜에서 3일 보존한다. 요청 본문을 남긴다는 문장은 없다.
-    이 Worker의 출력은 결과 종류와 경과 시간뿐이다(`query/worker.py`).
+    이 Worker의 출력은 결과 종류와 경과 시간(실패 때 예외 이름)뿐이다(`workers/relay/index.ts`, ADR-024).
   - 사용자 결정(2026-10-26): 목적 제한 조항을 근거로 받아들인다. Workers Logs는 H01~H05 동안 기본값(3일 보존)으로 둔다. H01에서 로그에 본문이 없는지 실제로 확인하고,
     H05 뒤 `[observability.logs] invocation_logs = false`로 바꿀지 다시 정한다.
 - 무료 한도와 예상 사용량: Workers Free 하루 100,000 요청 안(하루 질문 50건 × 요청 1~2개). Workers VPC는 베타 동안 무료. Cloudflare Tunnel의 나가는 연결 기능은 모든 조직이 무료로 쓴다
