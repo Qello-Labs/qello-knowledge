@@ -299,7 +299,7 @@ description: "QK-BOT-001 구현 작업 목록"
 | H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | 2026-10-27 완료(아래 "H01 배포 확인"). Worker CPU 초과 위험은 H04 | 0 Neurons |
 | H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | 2026-10-27 완료(아래 "H02 질의 서비스 구성") | 0 Neurons |
 | H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | 2026-10-27 완료(아래 "H03 외부 접속 차단 확인") | 0 Neurons |
-| H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | 일부 2026-10-27(아래 "H04 일부 측정", TS 재측정 "H04 TS 중계 재측정"으로 M-02 명령 경로 통과). M-03 실제 질의 서비스와 `qk-query` 자원은 H02 뒤 | 0 Neurons |
+| H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | 2026-10-27 완료(아래 "H04 일부 측정", "H04 TS 중계 재측정", "H04 실제 질의 서비스 기준 측정"). Discord PING 10회는 미측정 | 0 Neurons |
 | H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다. 실측 동안 인스턴스 자원(아래 "인스턴스 자원 기록")을 함께 잰다 | H04 뒤 | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
 
 ---
@@ -343,7 +343,7 @@ Workers AI, 인스턴스는 DB 질의 2~3회와 중계, 동시 실행 2)은 아�
 | --- | --- | --- | --- |
 | 인스턴스 가용 메모리 | `free -m`의 available | 4,505~4,536 MB(2026-10-26, 질의 없음 10분 20회) | 미측정 |
 | 인스턴스 CPU | `uptime`의 1분 load average, `mpstat 5`(설치돼 있으면)의 사용률 | load 0.00~0.20 | 미측정 |
-| 질의 서비스 메모리 | `systemctl show qk-query -p MemoryCurrent`를 5초마다 기록한 최대값(`MemoryMax=512M` 대비 %). `memory.peak`가 있으면 그 값 | 미측정(H02 뒤. H04 일부 때는 시험 서비스 13 MB) | 미측정 |
+| 질의 서비스 메모리 | `systemctl show qk-query -p MemoryCurrent`를 5초마다 기록한 최대값(`MemoryMax=512M` 대비 %). `memory.peak`가 있으면 그 값 | 33 MB(약 6%, 2026-10-27 질의 없음 10분 120회). 질의 없는 동안 CPU 750 ms/10분 | 미측정 |
 | 질의 서비스 CPU 시간 | `systemctl show qk-query -p CPUUsageNSec`의 실측 전후 차이 ÷ 질문 수 | 해당 없음 | 미측정(질문당 ms) |
 | 터널(`cloudflared`) 메모리·CPU | 같은 방법으로 `cloudflared` 서비스 | `qk-cloudflared` 14 MB, CPU 882 ms/10분(약 0.15%) | 미측정 |
 | DB 컨테이너 | `docker stats --no-stream --format '{{.Name}} {{.CPUPerc}} {{.MemUsage}}'`의 `qk-postgres` 행(상한 1.5 GB 대비 %) | CPU 0~3.1%, 262 MiB(약 17%) | 미측정 |
@@ -762,3 +762,15 @@ US6:     T052, T053 (시험) → T054 → T055
 - 해석: 보안 목록이 22번만 받고(H00·운영 문서 1절), 그 안쪽에서도 DB 컨테이너는 `127.0.0.1:5432`, 질의 서비스는 `127.0.0.1:8787`에만 묶여 있다(H02 재확인). 두 겹 모두 바깥 접속을 막는다.
   안쪽 경로(질의 서비스 healthz, 터널 경유 Worker 중계)는 H01·H02에서 동작을 확인했다.
 - 판정: SC-010 통과. 비용 0, 서버 설정 변경 없음.
+
+### H04 실제 질의 서비스 기준 측정 (2026-10-27)
+
+- 조건: H02의 실제 질의 서비스(`qk-query`, main `3a5a98e`)와 TS Worker. 서버 자원은 Bastion 세션에서 읽기 전용으로 5초마다 기록했다(A구간 질의 없음 10분 120회, B구간 8.5분 96회, `docker stats`는 30초마다).
+  B구간에 사람이 허용 밖 채널에서 시험 문구로 `/ask` 10회(4~5초 간격)를 보냈다. Worker는 `wrangler tail`로 기록했다. 0 Neurons(검색·생성 호출 0).
+- M-03(첫 응답): 질의 서비스의 첫 응답 결정 `first_response` 0 ms(10/10), 검색·생성·전송 호출 0, `access=channel_outside`·`status=access_denied`·나만 보기.
+  Worker 중계 왕복 p50 343 ms·p95 367 ms·최대 376 ms, Worker wall 최대 377 ms로 3초 마감 안이다. 왕복 시간은 대부분 Worker ↔ 터널 ↔ 인스턴스 네트워크다 `(추론, 질의 서비스 결정 0 ms)`.
+- M-02(Worker CPU, 실제 질의 서비스 경로): 10건 p50 1 ms·p95 3 ms·최대 3 ms, 10 ms 초과 0, outcome 모두 `ok`. 첫 요청은 앞선 요청 뒤 약 40분 쉰 다음이라 새 isolate일 가능성이 크다 `(추론)`. 그 요청 CPU는 3 ms였다.
+- 자원(A → B): 가용 메모리 4,487~4,516 → 4,486~4,513 MB, load 0~0.12 → 0~0.51, `qk-query` 33 → 33 MB(상한 512 MB), `qk-query` CPU 750 → 613 ms(구간 합), `qk-cloudflared` 14 MB,
+  `qk-postgres` CPU 0~3.1%·262 MiB, 회의 봇 1 CPU 0~0.03%·120 MiB, 회의 봇 2 CPU 0.04~0.74%·424~427 MiB. `qk-query` 재시작 0, 메모리 부족 종료 0줄, 컨테이너 재시작 0.
+- 판정: 허용 밖 경로에서 M-02·M-03 통과. 공유 인스턴스 부담은 질의 없음과 차이를 보기 어렵다. 질의 역할 DB 연결 수와 검색·생성 중 자원은 허용 경로가 있어야 하므로 H05에서 잰다.
+- 미측정: Discord PING(연결 확인) 10회. Discord는 수신 주소를 저장할 때만 PING을 보내 반복하기 어렵다. H01의 PING 2건(Python Worker)과 TS Worker 진입점 시험으로 갈음하고, 필요하면 수신 주소를 다시 저장해 잰다.
