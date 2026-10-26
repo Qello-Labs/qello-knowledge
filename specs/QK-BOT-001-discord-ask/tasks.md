@@ -295,7 +295,7 @@ description: "QK-BOT-001 구현 작업 목록"
 
 | 단계 | 내용 | 상태 | 비용·허락 |
 | --- | --- | --- | --- |
-| H00 | 운영 게이트 닫기: Cloudflare Tunnel 요금과 Worker·Tunnel 트래픽의 데이터 처리 정책(보존, 학습 사용)을 ADR-022 Data and cost에 URL과 함께 적는다. 인스턴스 바깥 방향 UDP 7844 읽기 전용 확인. 운영 색인·마이그레이션 역할의 `qk.embedding_usage` 소유 확인. 질의 서비스 전용 Workers AI 토큰 발급 계획(PR #62 계정 교체 결과와 맞춘다) | 구현 뒤 | 없음. 유료·학습 사용·장기 보존이면 멈추고 결정 재검토 |
+| H00 | 운영 게이트 닫기: Cloudflare Tunnel 요금과 Worker·Tunnel 트래픽의 데이터 처리 정책(보존, 학습 사용)을 ADR-022 Data and cost에 URL과 함께 적는다. 인스턴스 바깥 방향 UDP 7844 읽기 전용 확인. 운영 색인·마이그레이션 역할의 `qk.embedding_usage` 소유 확인. 질의 서비스 전용 Workers AI 토큰 발급 계획(PR #62 계정 교체 결과와 맞춘다) | 2026-10-26 완료(아래 "H00 운영 게이트") | 없음. 유료·학습 사용·장기 보존이면 멈추고 결정 재검토 |
 | H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | H00 뒤 | 0 Neurons |
 | H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | H01 뒤 | 0 Neurons |
 | H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | H02 뒤 | 0 Neurons |
@@ -628,3 +628,15 @@ US6:     T052, T053 (시험) → T054 → T055
 - 별도 운영 검증: 검증 에이전트가 systemd 상태와 이번 실행 ID의 결과를 직접 조회해 위 성공·건수·0 Neurons를 재확인했다. 활성 인덱스·모델·청킹 값도 운영 DB에서 조회했다.
 - 이번 세션 로컬 검증: `python3 scripts/preflight.py`, `git diff --check`, `uv run --no-sync ruff check --no-cache .`, `uv run --no-sync ruff format --check --no-cache .`, `uv run --no-sync qk-dev db up`, `QK_REQUIRE_LOCALDB=1 uv run --no-sync pytest` 통과(2,313 passed, 외부 2 deselected).
 - 남은 단계: H00의 소유권 확인과 승인 기록만 닫았다. Tunnel 요금·Worker/Tunnel 데이터 처리 정책, UDP 7844, 질의 전용 토큰 계획과 H01~H05는 미완료다. 이번 운영 확인은 Discord 전체 경로·Workers 런타임 검증을 대신하지 않는다. PR 병합·Jira 완료 처리는 하지 않았다.
+
+### H00 운영 게이트 (2026-10-26, PR #64 병합 뒤)
+
+- 작업 위치: 브랜치 `docs/SCRUM-115-gh-58-discord-ask-ops`(최신 `main` `3a5a98e`에서 분기). 이 단계는 읽기 전용 확인과 문서 기록만 했다.
+- 요금·데이터 처리: 공식 문서 근거와 판단은 ADR-022 Data and cost·Evidence에 적었다. Tunnel 나가는 연결은 무료다. Worker·Tunnel 트래픽은 약관·DPA의 목적 제한 조항만 있고 학습 금지 명시 문장은 없다.
+  사용자 결정: 이 수준을 받아들이고, Workers Logs(Free 3일 보존)는 H01~H05 동안 기본값으로 둔다. H01에서 로그에 요청 본문이 없는지 확인하고, H05 뒤 `invocation_logs` 끄기를 다시 정한다.
+- UDP 7844: OCI CLI(`qello-team`, 다시 인증한 세션)로 서브넷 보안 목록과 NSG egress를 조회했다. 이어 Bastion 관리형 SSH 세션(TTL 30분, 확인 뒤 삭제)으로 호스트 방화벽을 조회했다.
+  보안 목록 egress는 모든 프로토콜·`0.0.0.0/0`·stateful 허용이고 NSG는 없다. iptables·ip6tables OUTPUT 정책은 ACCEPT이고, UDP·7844를 막는 규칙이 없다. nftables output 훅은 모두 accept, ufw는 꺼져 있다.
+  방화벽·보안 목록은 바꾸지 않았다. 식별자·주소는 출력에서 가렸다. 실제 QUIC 연결은 H01에서 확인한다.
+- 전용 토큰: 사용자가 `qk-workers-ai-query-prod`(Qello 전용 계정 소유, Workers AI만, TTL 365일)를 만들고 verify `active`를 확인했다. 값·계정 ID는 대화·저장소에 없다. 서버 배치는 H02다(`docs/sdd/research/tokens.md` 6·7절).
+- 비용: 0 Neurons, 외부 모델 호출 0건.
+- 다음: H01(시험 질의 서비스로 터널·VPC Service·Worker 배포, Discord 수신 주소 서명 확인). 공유 인스턴스·Cloudflare·Discord를 바꾸므로 사람이 인증하고 명령마다 승인한다.
