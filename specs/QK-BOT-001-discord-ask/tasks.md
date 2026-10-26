@@ -612,3 +612,19 @@ US6:     T052, T053 (시험) → T054 → T055
   검토가 받아들인 한계: 연결 전 DNS·TLS 작업은 강제 종료할 수 없어 남는 전송 스레드가 그 인스턴스의 수명 자리 수(C, 기본 6)까지 실제 반환 때까지 남을 수 있고, 모두 남으면 회복 전 추가 전송은 실패한다(research R-05). FR-008은 모든 기저 스레드의 종료 보장이 아니다.
   수정 뒤 오케스트레이터 검증(샌드박스 밖): `QK_REQUIRE_LOCALDB=1` 전체 2,313 passed(외부 2 제외), preflight·ruff·format·`git diff --check` 통과. 같은 세션(오케스트레이터)이 앞서 quickstart 2절 근거를 시험 내용 확인 없이 쓴 오류는 M3으로 잡혀 고쳤다.
 - 2026-10-26 사용자 요청: 사람 단계 H04·H05에 인스턴스 자원 기록(가용 메모리, CPU, 질의 서비스·터널·DB 컨테이너 메모리, 질의 역할 DB 연결 수, 회의 봇 영향, 메모리 부족 종료, 동기화와 겹침)과 판정 기준을 더했다. 부담이 작다는 판단은 아직 추론이며 이 기록으로 닫는다.
+
+
+### PR #64 병합 전 운영 확인 (2026-10-26)
+
+- 사용자 요청 범위: PR 승인 기록, 두 운영 연결의 표 소유권 확인, 0007 적용·재실행, 적용 뒤 수동 동기화 확인이다. 질의 서비스·Cloudflare Tunnel·Worker·Discord 배포와 로그인·암호 설정은 제외한다.
+- 승인 근거: tkv00의 PR #64 APPROVED 리뷰(마지막 `pullrequestreview-5649650760`). 기존 ADR-008·020의 팀원·OCI 계정 소유자 기록과 대조하고, ADR-022를 Accepted로 기록했다. 별도 검증 에이전트가 PR 원본 API와 문서 diff를 확인했다.
+- 운영 연결: 기존 OCI 인증 만료는 사람이 재인증해 해소했다. 승인된 Bastion 관리 SSH 세션과 터널에서 색인·마이그레이션 연결을 각각 확인했다. 두 연결 모두 실제 표 소유자이며 비슈퍼유저이고, 같은 DB를 가리켰다. 역할·소유자 이름과 접속 값은 기록하지 않았다.
+- 적용 전: 질의 역할이 없고 기존 RLS·FORCE가 비활성인 것을 확인했다. 관리 자격 증명은 기존 서버 설정에서 SSH로 받아 프로세스 메모리에서만 사용했다. 로컬 자격 증명 파일을 만들지 않고, 명시적 `--env-file /dev/null`과 메모리의 `DATABASE_URL`로 CLI를 실행했다.
+- 운영 `qk-migrate --dry-run`: `target=remote`, `pending 0007 query_role`, `applied=0 skipped=6 pending=1`. 적용: `apply 0007 query_role ok`, `applied=1 skipped=6`. 재실행: `applied=0 skipped=7`.
+- 적용 뒤: RLS 활성·FORCE 비활성·질의 역할 NOLOGIN을 확인하고 관리 터널을 닫았다. 별도 검증 에이전트가 실제 운영 DB의 마이그레이션 체크섬 전체 일치, RLS 상태, NOLOGIN·NOSUPERUSER·NOBYPASSRLS, 예상 정책 이름 2개를 읽기 전용 조회로 확인했다. 정책 표현 자체는 별도로 조회하지 않았으며 적용 SQL 체크섬과 로컬 역할 시험이 근거다.
+- 동기화 preview: `target=remote`, 실행 가능, 추가 임베딩 0건, 예상 0 Neurons, 당일 색인 사용 0·잔여 5,000 Neurons. 임시 점검 도우미의 uv 경로 오류로 첫 preview는 실행하지 못했고, 실제 `/usr/local/bin/uv` 경로를 확인해 다시 실행한 결과다. 운영 코드·서비스 설정은 고치지 않았다.
+- 동기화 1회: `sudo systemctl start qk-sync.service`로 시작했다. 2026-10-26 09:43:23~09:44:34 UTC, `Result=success`, `ExecMainStatus=0`, 종료 뒤 inactive/dead. 새 systemd 실행 ID의 journal만 조회한 결과는 `run_id=sync-20261026T094324-88367c1a`, `status=succeeded`, `exit_code=0`, 문서 `UNCHANGED=79`, `SKIP=1`, 제공자 호출 0·사용/추정 0 Neurons다. 추가 임베딩이 없어 이번 실행은 새 사용량 INSERT를 실측한 증거는 아니다.
+- 조건: 운영 DB에서 직접 확인한 활성 인덱스는 `iv-4c0bc4fcc642`, 임베딩 모델은 `@cf/baai/bge-m3`이고 청킹 `chk-md-20d966f730bb`, 보안 규칙 `sec-7222e5dd1d6e` 유지. 질문 평가 세트·정답 라벨은 해당 없음(평가 미실행). 기존 타이머는 active, 다음 실행은 2026-10-27 00:30 UTC다.
+- 별도 운영 검증: 검증 에이전트가 systemd 상태와 이번 실행 ID의 결과를 직접 조회해 위 성공·건수·0 Neurons를 재확인했다. 활성 인덱스·모델·청킹 값도 운영 DB에서 조회했다.
+- 이번 세션 로컬 검증: `python3 scripts/preflight.py`, `git diff --check`, `uv run --no-sync ruff check --no-cache .`, `uv run --no-sync ruff format --check --no-cache .`, `uv run --no-sync qk-dev db up`, `QK_REQUIRE_LOCALDB=1 uv run --no-sync pytest` 통과(2,313 passed, 외부 2 deselected).
+- 남은 단계: H00의 소유권 확인과 승인 기록만 닫았다. Tunnel 요금·Worker/Tunnel 데이터 처리 정책, UDP 7844, 질의 전용 토큰 계획과 H01~H05는 미완료다. 이번 운영 확인은 Discord 전체 경로·Workers 런타임 검증을 대신하지 않는다. PR 병합·Jira 완료 처리는 하지 않았다.

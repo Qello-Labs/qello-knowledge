@@ -127,3 +127,9 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-26 사용자 결정: 연결 전 DNS·TLS 작업 중인 전송 스레드가 수명 자리 수(C, 기본 6)까지 실제 반환 때까지 남을 수 있는 한계를 받아들인다(research R-05). 운영 실측(H05)에서 빈도를 본다.
 - 2026-10-26 사실(검증, 샌드박스 밖): `QK_REQUIRE_LOCALDB=1 uv run pytest`에 해당하는 전체 2,313 passed(외부 2 제외), `python scripts/preflight.py`·`ruff check`·`ruff format --check`·`git diff --check` 통과, `qk-migrate` 두 번(로컬, 두 번째 `applied=0`).
   실행하지 않은 것: Workers 런타임 확인(`pywrangler dev`, H01), 운영 구성·실측(H00~H05). 운영 DB에는 0007을 적용하지 않았다. 외부 API 호출 0, Neurons 0.
+
+- 2026-10-26 사용자 요청: PR #64 병합 전 ADR-022 승인 기록, 운영 색인·마이그레이션 연결의 표 소유자 확인, 운영 0007 적용(dry-run → 적용 → 재실행), 적용 뒤 동기화 확인을 진행한다. 이 요청 범위에서 운영 DB 마이그레이션과 동기화 확인을 허용하며, 질의 서비스·터널 배포와 로그인·암호 설정은 진행하지 않는다.
+- 2026-10-26 사실: PR #64의 tkv00 APPROVED 리뷰(마지막 승인 기록 `pullrequestreview-5649650760`)를 확인했다. ADR-008·ADR-020 Approval은 tkv00를 팀원·OCI 계정 소유자로 기록한다. ADR-022를 Accepted로 갱신하고 공유 인스턴스 구성 동의의 근거를 연결했다. 기존 OCI `qello-team` CLI 세션 만료는 사람이 재인증해 해소했다.
+- 2026-10-26 사실(병합 전 운영 확인): 승인된 Bastion 관리 연결에서 운영 색인·마이그레이션 연결을 각각 조회해 두 연결 모두 `qk.embedding_usage` 소유자임을 확인했다(두 연결 모두 비슈퍼유저). 0007 단독 대기 → `apply 0007 query_role ok` → `applied=0 skipped=7`을 확인했다. 별도 검증 에이전트가 운영 DB 체크섬·RLS·NOLOGIN·정책 이름을 실제 읽기 전용 조회로 재확인했다. 기존 데이터·로그인·암호·상주 서비스 구성은 바꾸지 않았다.
+- 2026-10-26 사실(동기화): preview는 추가 임베딩 0건·예상 0 Neurons·예산 잔여 5,000으로 실행 가능했다. 이어 수동 `qk-sync.service`가 09:43:23~09:44:34 UTC 실행되어 `Result=success`, `ExecMainStatus=0`으로 끝났다. 이번 실행 ID로 한정한 결과는 `succeeded`, 문서 79건 유지·1건 제외, 임베딩 제공자 호출 0·사용 0 Neurons다. 다음 예약은 2026-10-27 00:30 UTC다. 자세한 실행 조건과 남은 사람 단계는 tasks.md의 병합 전 운영 확인 기록을 따른다.
+- 2026-10-26 사실(이번 세션 로컬 검증): preflight·diff·ruff check·ruff format 검사, 로컬 DB 준비, `QK_REQUIRE_LOCALDB=1 uv run --no-sync pytest`가 통과했다(2,313 passed, 외부 2 deselected). 운영 배포·Discord 실측은 실행하지 않았다.

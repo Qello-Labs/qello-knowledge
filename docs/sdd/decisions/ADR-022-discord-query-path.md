@@ -3,7 +3,7 @@
 > Created at: `2026-10-25`
 > Jira 이슈: `https://tkv123.atlassian.net/browse/SCRUM-115`
 > 기능명세서 ID: `QK-BOT-001` (research R-01·R-02·R-07·R-08·R-12·R-14)
-> Status: Proposed
+> Status: Accepted
 >
 > ADR-008의 "질의응답은 Cloudflare Workers에서 실행한다"를 일부 고친다. ADR-008의 저장 위치(OCI 공유 인스턴스)와 추가 고정비 상한(월 0원)은 그대로다.
 
@@ -97,5 +97,7 @@ Cloudflare Tunnel로 공인 포트·공개 호스트명 없이 잇는다.
 
 ## Approval
 
-- Approvers: (PR 리뷰. 공유 인스턴스 구성 요소 추가는 팀원(인스턴스 관리자) 확인)
-- Approved at:
+- Approvers: PR #64 리뷰어 tkv00(팀원, OCI 계정 소유자·인스턴스 관리자. ADR-008·ADR-020 Approval의 역할 기록)
+- Approved at: 2026-10-26 PR #64 리뷰 승인(APPROVED, [마지막 승인 기록](https://github.com/Qello-Labs/qello-knowledge/pull/64#pullrequestreview-5649650760)).
+  PR 본문에서 요청한 ADR-008 일부 개정과 공유 인스턴스 구성 요소(`qk-query.service`, `cloudflared`, 전용 사용자 `qkquery`, DB 역할 `qk_query`) 추가 동의를 이 승인으로 기록한다.
+  운영 구성 전 Data and cost의 미확인 항목을 닫는 조건은 유지한다. 이 세션은 사람의 리뷰를 기록하며 결정을 스스로 승인하지 않는다.

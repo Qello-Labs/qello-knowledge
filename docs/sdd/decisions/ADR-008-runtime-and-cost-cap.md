@@ -4,7 +4,7 @@
 > ClickUp 작업: 해당 없음: 초기 세팅 단계 예외(WBS 0.9)
 > 기능명세서 ID: 해당 없음: Phase 0 준비 작업
 > Status: Accepted
-> 질의 경로 실행 위치는 [ADR-022](ADR-022-discord-query-path.md)가 일부 고친다(Proposed).
+> 질의 경로 실행 위치는 [ADR-022](ADR-022-discord-query-path.md)가 일부 고친다(Accepted).
 
 ## Context
 
