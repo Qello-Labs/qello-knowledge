@@ -101,6 +101,26 @@ Worker가 질의 서비스에서 답을 못 받으면 Worker가 유형 4, 플래
   확인), 직접 `purpose = 'index'` INSERT, 문서·청크·임베딩·인덱스 버전 쓰기·지우기, 사용량 기존 행 `UPDATE`·`DELETE`, daily 표 쓰기, 정산·정리 함수, `qk.sync_*` 읽기·쓰기, `CREATE`·`ALTER`.
   또 기존 색인 시험이 소유자 역할로 그대로 통과하는지(RLS가 소유자에 영향 없음) 확인한다.
 
+### 0007 권한 대조 기록 (2026-10-26, T050)
+
+0002·0005의 검색·문맥 함수와 0003·0006의 사용량 함수를 본문까지 대조했다. 모두 호출자 권한으로 실행한다.
+
+| 경로 | 실제 표·보조 함수 | 0007 권한 |
+| --- | --- | --- |
+| 검색·문맥 | `index_version`, `artifact`, `chunk`; 벡터 검색은 `embedding`도 읽음. 위 검색 보조 함수 사용 | 네 표 SELECT, 위 검색·문맥 함수 EXECUTE |
+| 질의 임베딩 기록·오늘 합계 | `embedding_usage` INSERT/SELECT, `embedding_utc_day()`, `embedding_amount(qk.embedding_usage)`, `embedding_used(date,text)` | INSERT/SELECT와 이 세 보조 함수 EXECUTE를 명시 |
+| 생성 기록·오늘 합계 | `generation_usage` INSERT/SELECT, 위 임베딩 합계 보조 함수로 질의·색인 사용량도 읽음 | INSERT/SELECT, 생성 함수 EXECUTE와 위 보조 함수 권한 |
+| 식별 열 기본값 | `embedding_usage_id_seq`, `generation_usage_id_seq` | 두 시퀀스 USAGE만. SELECT·UPDATE, 인덱스 표 시퀀스 권한 없음 |
+| 일별 집계 | 오늘 합계 함수는 daily 표를 읽지 않음. daily 쓰기는 prune 함수에만 있음 | 승인된 집계 읽기 계약에 따라 두 daily 표 SELECT 유지, 쓰기 없음 |
+
+대조 결과 빠진 표·시퀀스 권한이나 승인 목록 밖 추가 권한은 없다. 기존 목록의 "보조 함수"를 위 세 이름으로 구체화하고, 두 사용량 시퀀스의 USAGE를 확정했다.
+확장 연산자·함수와 DB CONNECT는 기존 PUBLIC 권한을 사용하며 새 grant를 더하지 않는다. PUBLIC EXECUTE를 유지하므로 reserve·settle·prune에 대한 **명시적 grant가 없음**과
+실행 자체의 허용 여부는 다르다. reserve의 index INSERT는 RLS, settle·prune은 표 변경 권한에서 막힌다. 운영에서 PUBLIC 기본 권한을 따로 거뒀다면 관리자와 재검토한다.
+로컬 DB RED 뒤 0007을 작성했다. 2026-10-26 오케스트레이터가 역할 시험 40 passed와 전체 2,264 passed·2 deselected로 GREEN·기존 localdb 회귀를 확인했다. 운영 적용·운영 소유권 확인은 하지 않았다.
+2026-10-26 오케스트레이터 확인: 로컬 supabase/postgres 17.11의 `postgres`는 `rolsuper=false`다. 표 소유자로 실행한 색인 쓰기·RLS 비강제 시험은 통과했다.
+소유자가 마이그레이션 역할이면 슈퍼유저가 아니어도 위 RLS 우회 전제는 성립한다. H00에서는 운영 마이그레이션 역할의 속성과 실제 표 소유권을 함께 확인한다.
+PG16+에서 역할 생성자의 ADMIN만으로 SET ROLE을 할 수는 없으므로 시험에만 임시 SET 멤버십을 부여하고 트랜잭션을 강제 롤백한다. 0007에는 멤버십 grant를 더하지 않는다.
+
 ## 5. 질의 작업과 실행
 
 **`QueryJob`**: `run_id`(질의 실행 식별자, 질의 서비스가 만듦, `GenerationRequest.run_id`로 넘김), `interaction`(토큰·질문 포함, 메모리에만), `received_at`(단조 시계), `query_deadline`, `notice_deadline`.
