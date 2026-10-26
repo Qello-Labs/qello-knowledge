@@ -1,87 +1,77 @@
-# Task Contract: 임베딩 Neurons 예상식 보정 (QK-EMB-001 SC-005 후속)
+# Task Contract: Workers AI 토큰을 Qello 전용 Cloudflare 계정으로 교체
 
-> Generated at: `2026-10-25`
+> Generated at: `2026-10-26`
 >
 > 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-114` / https://tkv123.atlassian.net/browse/SCRUM-114 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: `QK-EMB-001` / `specs/QK-EMB-001-embedding-provider-budget/` (SC-005, FR-023, research R-04)
+- Jira 이슈: `SCRUM-117` / https://tkv123.atlassian.net/browse/SCRUM-117 (상위 `SCRUM-42` 팀 RAG 구축, GitHub Issue 폼으로 자동 생성)
+- 기능명세서 ID / 링크: 해당 없음: 운영 자격 증명 교체 작업이다
 - 팀 스프린트 ID: `QELLO-S2026-W43`
-- GitHub Issue: 해당 없음
-- Branch: `fix/SCRUM-114-neuron-estimate-calibration`
-- Base branch: `main`. 2026-10-25 `origin/main` `f11e146`(#56 병합)에서 분기했다
+- GitHub Issue: `#61`
+- Branch: `chore/SCRUM-117-gh-61-cloudflare-token-rotation`
+- Base branch: `main`. 2026-10-26 `origin/main` `d7c9e3f`(#60 병합)에서 별도 worktree로 분기했다
+- 이전 계약: `d7c9e3f`의 `TASK.md`(SCRUM-114). 그 Decisions 기록은 git 이력에 남긴다
 
 ## Objective
 
-- 미리 보기, 예산 예약, 제공자 값이 없을 때의 추정 기록이 쓰는 예상 Neurons가 실제에 가깝게 나오게 한다. 지금은 실제의 약 41%로 낮게 잡는다(첫 색인 예상 368.93, 실제 894.50).
-- 청크 나누기와 묶음 나누기는 바꾸지 않는다. 청킹 판수와 인덱스 버전이 그대로다.
+- Workers AI 토큰을 Qello 전용 Cloudflare 계정의 계정 소유 토큰으로 옮긴 사실과 확인 결과를 기록한다.
+- 서버 교체가 별도 이슈 없이 이뤄진 것을 이 이슈로 바로잡는다.
 
 ## Scope
 
 - `TASK.md`
-- `src/qello_knowledge/domain/embedding.py`: `ModelSpec`에 Neurons 예상 전용 바이트/토큰 계수를 더한다(bge-m3 값은 아래 분석으로 정한다. 기본안 1.4)
-- `src/qello_knowledge/embedding/estimate.py`: `estimated_neurons`와 `estimate_basis`가 새 계수를 쓴다. `estimated_tokens`(청크 나누기·묶음 나누기·입력 한도 판정)는 지금 계수(3.5) 그대로
-- `tests/unit/embedding/`: 새 계수 시험을 더하고, 3.5로 계산한 예상 Neurons 기댓값을 새 계수로 고친다. 청크 나누기 쪽 3.5 기댓값과 청킹 판수 시험(`chk-md-20d966f730bb`)은 그대로 둔다
-- `specs/QK-EMB-001-embedding-provider-budget/`: `research.md` R-04에 보정 결정과 근거(표본·조건), `data-model.md` `ModelSpec`, `tasks.md`에 후속 기록
-- `specs/QK-SYN-001-incremental-sync/tasks.md` H06 관찰에 이 작업 링크 한 줄
-- 사용량 기록 읽기 전용 분석(로컬 DB. 필요하면 사람이 인증한 터널로 운영 DB 읽기 전용 조회)
+- `docs/sdd/research/tokens.md`: 6절 보관 위치·이름, 7절 확인 결과(값·계정 식별자 없음)
+- 이미 끝난 운영 변경(사람이 값 입력, 기록만 한다): 서버 `/etc/qello-knowledge/sync.env`의 `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`, 로컬 `.env`의 같은 두 값
 
 ## Explicit exclusions
 
-- 청크 나누기 계수(3.5)·청킹 규칙·청킹 판수·인덱스 버전·재임베딩
-- 묶음 나누기(`make_batches`)와 입력 한도 초과 판정(`over_limit`)의 토큰 추정. 실제 토큰이 예상보다 많다는 사실이 이 둘에도 영향을 줄 수 있으나 별도 이슈로 본다(아래 위험)
-- 새 임베딩 실측(Neurons 소비), 새 자료원, 하루 예산 값(`QK_EMBED_*`) 변경
-- `AGENTS.md`, `CLAUDE.md`, `.claude/**`, constitution, 로드맵 수정. 원본 자료원에 쓰기
-- 공유 DB 쓰기·초기화, 인덱스 전체 삭제, 유료 과금 설정 변경
-- 비밀값, 토큰, `.env` 값, 접속 주소, 비공개 원문은 기록하지 않는다
+- `src/`·`tests/`·`pyproject.toml`·`uv.lock`·마이그레이션·`.github/workflows/` 변경.
+- 질의 서비스용 `qk-workers-ai-query-prod`, Worker·Tunnel·Workers VPC 생성(QK-BOT-001, ADR-022).
+- 임베딩 모델·인덱스 변경, 재색인.
+- `AGENTS.md`, `CLAUDE.md`, `.claude/**`, constitution, 로드맵 수정. 원본 자료원에 쓰기.
+- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
+- 비밀값, 토큰, `.env` 값, 계정 ID, 접속 주소, OCI 계정 식별자는 기록하지 않는다.
 
 ## Data and cost impact
 
 - 새로 읽는 자료원: 해당 없음
-- 외부 API로 보내는 데이터: 해당 없음(기존 사용량 기록만 읽는다)
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
-- 인덱스 버전 변경: 없음(`iv-4c0bc4fcc642`, `chk-md-20d966f730bb` 유지)
-- 동작 영향: 예상 Neurons가 약 2.5배 커진다. 예산 사전 판정(`runnable`)이 더 보수적이 된다. 하루 색인 예산 5,000 기준 전체 색인 예상 약 920은 여전히 한도 안이다
+- 외부 API로 보내는 데이터: 바뀌지 않는다(같은 Workers AI 모델, 계정만 바뀜)
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 확인에 0.01 Neurons를 썼다. 무료 할당은 새 계정 기준(하루 10,000 Neurons)
+- 인덱스 버전 변경: 없음(`iv-4c0bc4fcc642` 유지)
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `src/qello_knowledge/domain/embedding.py`, `src/qello_knowledge/embedding/estimate.py`, `tests/unit/embedding/**` | Byuntil | 사람 리뷰 |
-| `specs/QK-EMB-001-embedding-provider-budget/**`, QK-SYN-001 tasks 한 줄 | Byuntil | 사람 리뷰 |
+| `TASK.md`, `docs/sdd/research/tokens.md` | Byuntil | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-25 `origin/main`(`f11e146`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-26 `origin/main`(`d7c9e3f`)에서 별도 worktree(`../qello-knowledge-cf-rotation`)로 브랜치를 만들 때 `git status --short` 결과: 변경 없음.
+  기본 체크아웃은 다른 작업(`fix/SCRUM-114-neuron-estimate-calibration`)이 쓰고 있어 건드리지 않았다.
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
-uv run ruff check .
-uv run ruff format --check .
-uv run qk-dev db up
-QK_REQUIRE_LOCALDB=1 uv run pytest
 ```
-
-보정 근거 분석(읽기 전용): 정산·실측된 색인 호출의 입력 바이트와 제공자 Neurons로 계수를 정하고, 같은 기록에서 일부 호출만 고른 작은 실행의 예상 오차 분포를 함께 적는다.
 
 ## Completion criteria
 
-- 새 계수로 다시 계산한 첫 색인 예상이 실제 894.50의 ±20% 안이다(SC-005) — research R-04 보정 기록(표본 수, 기간, 모델, 인덱스 버전)
-- 청킹 판수와 인덱스 버전이 바뀌지 않는다 — `chk-md-20d966f730bb` 시험, `index status`
-- 미리 보기·예산 예약이 새 계수를 쓰고 기본 검증이 통과한다 — 단위 시험, pytest, PR CI
+- 서버·로컬 새 토큰이 동작한다 — 서버: 예약 실행 성공, 벡터 검색 1회 임베딩 성공(측정 0.01 Neurons). 로컬: 계정 소유 토큰 확인 `active`
+- 기존 계정 토큰이 지워졌다 — 사용자가 기존 계정 대시보드에서 확인
+- 교체 기록이 tokens.md에 남는다(값 없음) — 이 PR 리뷰
 
 ## Decisions
 
-- 2026-10-25 사실: Jira `SCRUM-114`를 사용자 요청으로 만들었다(SCRUM-42 하위 작업, 레이블 `bug`·`team-backend`).
-- 2026-10-25 사용자 결정: 청크 나누기 계수는 두고 Neurons 예상 전용 계수를 분리한다. 값은 기존 사용량 기록으로 정하고 새 실측은 하지 않는다.
-- 2026-10-25 사실(읽기 전용, 로컬 DB `qk.embedding_usage`): 정산·실측 색인 호출 92건은 2026-10-21 로컬 첫 색인 `sync-20261021T091615-e8441b58` 한 실행이다.
-  입력 1,291개·1,199,214바이트, 예상 368.93, 실제 894.50(운영 첫 색인도 청크 1,291개·894.50 Neurons로 같다. 운영 입력 바이트는 확인하지 않았다). 실제 환산 1.441바이트/토큰(1,075 Neurons/백만 토큰 기준).
-  호출별 바이트/토큰은 최소 0.39·p10 1.12·중앙 1.80·p90 3.07·최대 4.58로 흩어진다. 호출당·입력당 고정 비용 항을 더해도 맞춤이 나아지지 않는다(계수 음수).
-  같은 비율로 호출 30개를 무작위로 고른 작은 실행은 97%가 ±20% 안, 10개는 71%, 3개는 40%다. 표본은 실행 1개(자료원 `dnd-backend-docs`)뿐이다.
-- 기본안: 계수 1.4(전체 색인 예상 약 921, +3%). 작은 실행의 오차가 크므로 SC-005 판정은 전체 색인 규모로 한다. 값과 판정 단위는 리뷰에서 확인한다.
-- 2026-10-25 사용자 결정: 이 계약대로 진행한다. 계수 기본안 1.4와 SC-005를 전체 색인 규모로 판정하는 방식을 받아들였다.
+- 2026-10-26 사용자 결정: Qello 전용 Cloudflare 계정을 새로 만들고, Workers AI 토큰을 쓰는 곳마다 나눈다. 이번에는 `qk-workers-ai-index-prod`(서버)와 `qk-workers-ai-dev`(로컬) 두 개.
+- 2026-10-26 사용자 결정: 예약 실행(00:30 UTC) 전에 교체한다.
+- 2026-10-26 사실: 오른쪽 Herdr 패널의 Codex가 사용자와 함께 서버 `sync.env` 두 값을 숨김 입력으로 교체했다(파일 시각 10-25 17:02 UTC, root:qksync 0640 유지). 모델 조회 HTTP 200.
+  이때 별도 Jira 이슈 없이 SCRUM-114 계약 아래에서 진행됐다. 이 이슈(SCRUM-117, #61)로 기록을 옮긴다.
+- 2026-10-26 사실: 예약 실행 `sync-20261026T003032-b9cadf41` succeeded(UNCHANGED 79·SKIP 1, 임베딩 호출 0). 같은 실행 뒤 `qk-sync-notify@*` 로그 0줄(SCRUM-108 완료 조건 증빙과 겹침).
+- 2026-10-26 사실(사용자 재인증 뒤 Bastion 세션, 읽기 전용 + 임베딩 1회): `qksync` 환경 벡터 검색 1회 종료 코드 0, 임베딩 호출 1, `qk-index usage` 질의 0.01 Neurons(측정값).
+  서버 비밀값 파일 가운데 토큰 이름·`cfat_` 형식이 든 파일은 `sync.env` 하나. 교체 중 임시 파일 없음. 로컬 임시 스크립트(비밀값 없음)는 지웠다.
+- 2026-10-26 사실: 사용자가 로컬 `.env`를 교체하고 계정 소유 토큰 확인으로 `active`를 확인했다.
