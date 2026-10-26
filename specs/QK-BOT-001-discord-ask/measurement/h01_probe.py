@@ -1,7 +1,8 @@
-"""H01(M-01) 시험 질의 서비스. Worker 중계 경로만 확인하고 검색·생성·DB·Workers AI를 부르지 않는다.
+"""H01(M-01)·H04(M-02) 시험 질의 서비스. Worker 중계 경로만 확인하고 검색·생성·DB·Workers AI를 부르지 않는다.
 
 질의 서비스와 같은 `127.0.0.1:8787`에서 받는다. `/ask` 요청에는 나만 보기 지연 응답과 `X-QK-Run`을 주고,
 그 실행의 시작 확인이 오면 `204` 뒤 원 메시지를 연결 확인 문구로 한 번 갱신한다. 서명은 다시 검사한다(research R-04).
+`나만_보기`를 켠 요청에는 허용 밖 채널처럼 시작 확인 없는 즉시 안내(type 4)로 답한다(H04 거부 경로 흉내).
 기록에는 경로·상태·경과 시간만 남기고 본문·토큰·서명을 남기지 않는다.
 
 실행(공유 인스턴스, 비특권 임시 실행. 값은 기록하지 않는다):
@@ -29,8 +30,9 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 HOST, PORT = "127.0.0.1", 8787
 MAX_BODY_BYTES = 65536
-MAX_RUNS = 20
+MAX_RUNS = 40
 NOTICE = "H01 연결 확인: Worker → Tunnel → 시험 서비스 중계와 시작 확인이 동작했습니다. (시험 응답)"
+DENY_NOTICE = "H04 거부 경로 시험: 시작 확인 없는 즉시 안내입니다. (시험 응답)"
 
 
 def log(**fields) -> None:
@@ -61,6 +63,9 @@ class Probe:
             return 200, {"type": 1}, {}
         if payload.get("type") != 2 or str(payload.get("application_id")) != self.application_id:
             return 200, {"type": 4, "data": {"content": "지원하지 않는 요청입니다.", "flags": 64}}, {}
+        options = (payload.get("data") or {}).get("options") or []
+        if any(item.get("name") == "나만_보기" and item.get("value") is True for item in options):
+            return 200, {"type": 4, "data": {"content": DENY_NOTICE, "flags": 64}}, {}
         run_id = f"h01-{secrets.token_hex(4)}"
         with self.lock:
             if len(self.runs) >= MAX_RUNS:
