@@ -290,7 +290,7 @@ PyPI 휠 목록은 PyPI JSON API를 읽기 전용으로 조회해 확인했다(�
   - 범위 겹침 확인(spec US7-2): 두 단계로 확인한다.
     - 실측: 고정 커밋 트리를 `domain/scope.py:in_scope`로 두 패턴 집합에 맞춰 셌다. `dnd-backend-docs` 80개, `dnd-backend-code` 776개, 겹침 0개였다. Android 본문은 216개다.
     - 단위 시험: 같은 저장소 자료원 쌍의 포함 패턴 확장자 집합이 서로 겹치지 않는지 검사한다(문서 `.md` 대 코드 `.java`). 경로 목록을 고정값으로 저장하지 않아도 된다(plan 검토 L12).
-  - 결정 기록: `docs/sdd/decisions/ADR-022-code-sources.md`. `ADR-021`은 진행 중인 `origin/chore/SCRUM-108-sync-failure-alert` 브랜치의 `ADR-021-sync-failure-alert.md`가 쓰고 있다.
+  - 결정 기록: `docs/sdd/decisions/ADR-023-code-sources.md`. `ADR-021`은 진행 중인 `origin/chore/SCRUM-108-sync-failure-alert` 브랜치의 `ADR-021-sync-failure-alert.md`가 쓰고 있다. `ADR-022`는 QK-BOT-001의 `ADR-022-discord-query-path.md`가 먼저 써서 2026-10-27에 `ADR-023`으로 정정했다.
     2026-10-26 사용자 결정으로 022를 쓰고, 병합 순서를 정할 때 번호를 다시 확인한다. 구현 단계에서 `templates/decision-record.md` 형식으로 쓴다. 담을 것은 다음과 같다.
     - spec FR-034 항목, 본문만 첫 활성화 권고(2026-10-26 사용자 결정), R-02 비용(보수 약 3,000 Neurons, 테스트 포함 약 7,000)
     - 선행 조건: spec FR-036의 자료원별 식별 명세(별도 세션 초안 QK-SYN-005), QK-STO-002
