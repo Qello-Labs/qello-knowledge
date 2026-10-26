@@ -119,3 +119,11 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-26 사용자 결정: 중복 판정 상태를 질의 서비스 메모리에 두는 위험(research R-10, spec FR-010·SC-011 예외)을 받아들인다.
 - 2026-10-26 사실: 그사이 `origin/main`에 #59(예약 동기화 워크플로 삭제)와 #60(임베딩 Neurons 예상 보정)이 병합됐다. 계획 산출물을 커밋한 뒤 rebase로 반영한다.
   열린 PR #62(Workers AI 토큰 Qello 전용 계정 교체)는 R-08 전용 토큰 발급과 겹칠 수 있어 운영 구성 때 다시 본다.
+- 2026-10-26 사실: tasks.md(61개)를 사람이 승인했고(plan에 없던 `Entrypoint.REGISTER`, 순수 중계 판단 `discord/relay.py`, 진입점 계약 시험 기대값 예외 포함), 구현은 Herdr 오른쪽 패널의 Codex(실행 에이전트, `sandbox_mode=workspace-write`)가 했다.
+  샌드박스가 루프백·로컬 DB·`.env.example` 접근을 막아, 그런 시험의 RED·GREEN과 전체 검증·preflight·`uv lock`은 오케스트레이터(Claude Code)가 샌드박스 밖에서 실행했다.
+- 2026-10-26 사용자 결정: 공용 시험 도우미 `tests/unit/fakes.py::valid_environ()`에 합성 `QK_DISCORD_GUILD_ID` 한 줄을 더하는 기존 시험 예외를 허용했다.
+- 2026-10-26 사용자 결정: quickstart 2절 로컬 `serve` 확인은 실제 Discord로 갱신을 보내므로 하지 않고, 실제 루프백 서버에 가짜를 주입한 시험(`test_bot_http_integration.py`)과 `register-commands --dry-run`으로 대신한다.
+- 2026-10-26 사실: 독립 검토(T060)는 별도 읽기 전용 Codex 세션이 했다. 변경 요청 M3 → 변경 요청 M2 → 승인(H·M·L 0). 이력은 tasks.md 실행 기록.
+- 2026-10-26 사용자 결정: 연결 전 DNS·TLS 작업 중인 전송 스레드가 수명 자리 수(C, 기본 6)까지 실제 반환 때까지 남을 수 있는 한계를 받아들인다(research R-05). 운영 실측(H05)에서 빈도를 본다.
+- 2026-10-26 사실(검증, 샌드박스 밖): `QK_REQUIRE_LOCALDB=1 uv run pytest`에 해당하는 전체 2,313 passed(외부 2 제외), `python scripts/preflight.py`·`ruff check`·`ruff format --check`·`git diff --check` 통과, `qk-migrate` 두 번(로컬, 두 번째 `applied=0`).
+  실행하지 않은 것: Workers 런타임 확인(`pywrangler dev`, H01), 운영 구성·실측(H00~H05). 운영 DB에는 0007을 적용하지 않았다. 외부 API 호출 0, Neurons 0.
