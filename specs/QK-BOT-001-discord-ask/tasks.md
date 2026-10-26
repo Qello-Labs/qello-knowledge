@@ -277,12 +277,12 @@ description: "QK-BOT-001 구현 작업 목록"
 
 ## Phase 9: Polish & Cross-Cutting
 
-- [ ] T056 `.env.example`을 `uv run python -m qello_knowledge.config.example`로 다시 만든다(손으로 고치지 않는다). `tests/unit/config/test_example_file.py` 통과
-- [ ] T057 [P] `docs/sdd/decisions/ADR-008-runtime-and-cost-cap.md`에 "질의 경로 실행 위치는 ADR-022가 일부 고친다(Proposed)" 링크 한 줄을 더한다. ADR-022 상태는 PR 리뷰 뒤 사람이 Accepted로 바꾼다
-- [ ] T058 경계·회귀 확인: `uv run pytest tests/unit/test_boundaries.py`, 기존 QK-EMB-001·QK-RET-001·QK-GEN-001·QK-SEC-001·QK-STO-001·QK-SYN-001 시험 전부 통과, `uv run qk-migrate` 두 번(대상 `target=local` 확인, 두 번째 `applied=0`),
+- [X] T056 `.env.example`을 `uv run python -m qello_knowledge.config.example`로 다시 만든다(손으로 고치지 않는다). `tests/unit/config/test_example_file.py` 통과
+- [X] T057 [P] `docs/sdd/decisions/ADR-008-runtime-and-cost-cap.md`에 "질의 경로 실행 위치는 ADR-022가 일부 고친다(Proposed)" 링크 한 줄을 더한다. ADR-022 상태는 PR 리뷰 뒤 사람이 Accepted로 바꾼다
+- [X] T058 경계·회귀 확인: `uv run pytest tests/unit/test_boundaries.py`, 기존 QK-EMB-001·QK-RET-001·QK-GEN-001·QK-SEC-001·QK-STO-001·QK-SYN-001 시험 전부 통과, `uv run qk-migrate` 두 번(대상 `target=local` 확인, 두 번째 `applied=0`),
   `git diff origin/main --stat -- src/qello_knowledge/retrieval src/qello_knowledge/generation src/qello_knowledge/embedding src/qello_knowledge/security src/qello_knowledge/indexer src/qello_knowledge/adapters/workers_ai src/qello_knowledge/adapters/postgres/migrations/000[1-6]*`가
   비어 있음(바꾸지 않기로 한 파일)
-- [ ] T059 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`)과
+- [X] T059 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`)과
   2절 로컬 질의 서비스 확인(가짜 제공자, 외부 호출 0건). 결과를 "실행 기록"에 적고 체크 표시를 갱신한다
 - [ ] T060 독립 검토(다른 지침을 받은 별도 에이전트, AGENTS.md 2절)로 diff·시험 결과를 확인받고, 지적 반영 이력을 "실행 기록"에 남긴다
 - [ ] T061 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
@@ -557,3 +557,23 @@ US6:     T052, T053 (시험) → T054 → T055
   앞의 39건 권한 실패와 DB GREEN 대기 상태는 이 결과로 해소됐다. 0007에 마이그레이션 역할 멤버십을 추가하지 않았다. 이번 재실행 결과는 오케스트레이터가 전달한 증거이며 실행 에이전트의 자체 승인이나 운영 검증을 뜻하지 않는다.
   preflight는 앞선 오케스트레이터 실행에서 통과했고, 이후 변경은 시험의 임시 멤버십 준비와 문서 기록이다. 해당 변경의 수집·ruff·format·diff 검사는 통과했다. 최종 기록 갱신 뒤 전체 ruff check·format(530 files)·git diff --check와 이번 수정 3개 파일의 비밀값 규칙 보조 검사(검출 0건)도 통과했다.
   US5~US6 T048~T055를 완료했다. Polish T056~T061과 사람 단계 H00~H05는 시작하지 않았으며 운영 적용·네트워크 호출·커밋·push는 하지 않았다.
+
+- 2026-10-26 Phase 9 T056~T059 시작: git log의 `9361991`~`783cce3` 네 커밋, 작업 브랜치, 시작 시 깨끗한 작업 트리를 확인했다.
+  이번 범위는 T056~T059뿐이며 T060 독립 검토·T061 TASK.md/PR 초안은 하지 않는다. 기록은 기존 tasks.md에만 남긴다.
+- 2026-10-26 T056 완료: `.venv/bin/python -m qello_knowledge.config.example`을 실행했다. `.env.example` 내용은 열거나 출력하지 않았다.
+  `git status --short -- .env.example`에 변경이 없었고 `.venv/bin/python -m pytest tests/unit/config/test_example_file.py -q` **1 passed**로 생성 결과를 확인했다. 손으로 고치지 않았다.
+- 2026-10-26 T057 완료: ADR-008에 "질의 경로 실행 위치는 ADR-022가 일부 고친다(Proposed)" 링크 한 줄만 추가했다. ADR-022는 Proposed를 유지하고 변경하지 않았다.
+- 2026-10-26 T058 부분 확인: `.venv/bin/python -m pytest tests/unit/test_boundaries.py -q` **47 passed**.
+  tasks.md의 변경 금지 경로 목록 그대로 `git diff origin/main --stat -- src/qello_knowledge/retrieval src/qello_knowledge/generation src/qello_knowledge/embedding src/qello_knowledge/security src/qello_knowledge/indexer src/qello_knowledge/adapters/workers_ai 'src/qello_knowledge/adapters/postgres/migrations/000[1-6]*'`를 실행해 출력이 비어 있음을 확인했다.
+  네트워크 갱신 없이 로컬 origin/main을 사용했다. qk-migrate 두 번(target=local, 두 번째 applied=0)과 기존 localdb 회귀는 오케스트레이터 실행이 남아 T058은 [ ]로 유지한다.
+- 2026-10-26 T059 부분 확인: `.venv/bin/python -m pytest tests/unit -q --tb=short` 결과 **1,946 passed, 2 failed in 3.13s**.
+  실패는 기존 `tests/unit/query/test_server.py::test_serve_answers_healthz_on_loopback`, `tests/unit/test_conftest_guards.py::test_loopback_connection_is_allowed`뿐이며 둘 다 socket.bind PermissionError(샌드박스)다. 기존 시험을 수정하거나 skip하지 않았다.
+  `.venv/bin/ruff check .`, `.venv/bin/ruff format --check .`(530 files), `git diff --check`는 통과했다. preflight·DB 구동·마이그레이션·로컬 DB 시험과 quickstart 2절 로컬 서비스 확인은 여기서 실행하지 않았다.
+  quickstart 2절의 기본 serve는 실제 제공자·Discord 웹훅을 조립하므로 오케스트레이터가 가짜 파이프라인·전송을 주입한 시험 하네스에서 확인해야 한다. env 파일만으로 가짜 모드가 선택된다고 가정하지 않는다.
+  연결 확인 PONG, 허용 요청 처리 중 응답·시작 확인·가짜 수신부 갱신, 시작 확인 누락 NOT_STARTED, 등록 dry-run까지 외부 API 0건으로 확인할 몫이 남아 T059는 [ ]로 유지한다.
+  오케스트레이터 명령(모두 로컬 합성 시험 설정만): 필요하면 `.venv/bin/qk-dev db up`; `.venv/bin/qk-migrate --env-file <local-test-config>` 두 번; `QK_REQUIRE_LOCALDB=1 .venv/bin/python -m pytest`; `.venv/bin/python scripts/preflight.py`.
+  quickstart 2절 명령은 가짜 주입 하네스에서 `.venv/bin/qk-query serve --port 8787 --env-file <local-test-config>`, 별도 셸에서 `.venv/bin/qk-query register-commands --env-file <local-register-test-config> --dry-run`이다. 실제 명령 등록·운영 구성은 하지 않는다.
+  이번 세션의 최종 상태는 남은 필수 검증 때문에 BLOCKED다. T056·T057만 [X]로 갱신하며 네트워크·외부 API·커밋·push·PR은 실행하지 않았다. 이 기록은 독립 검토·사람 승인을 대신하지 않는다.
+- 2026-10-26 T058·T059 오케스트레이터 몫(샌드박스 밖): `DATABASE_URL`을 비운 빈 env 파일로 `qk-migrate --dry-run`이 `target=local`임을 확인한 뒤 두 번 실행했다. 첫 번째 `applied=3 skipped=4`(로컬 개발 DB가 0004에 멈춰 있어 0005~0007 적용), 두 번째 `applied=0 skipped=7`. `QK_REQUIRE_LOCALDB=1` 전체 2,264 passed(외부 2 제외), preflight·ruff·format·`git diff --check` 통과. `qk-query register-commands --dry-run`(합성 애플리케이션·서버 ID, 봇 토큰 없음)이 외부 호출 없이 contracts/discord-outbound.md 2절과 같은 JSON을 내고 종료 코드 0.
+- 2026-10-26 발견(T059): quickstart 2절의 `qk-query serve` 로컬 확인은 지금 실행할 수 없다. `serve`는 실제 검색·생성·Discord 전송을 조립하고 가짜 제공자 선택이 없어, 시작 확인을 보내지 않아도 5초 뒤 실제 Discord로 `PATCH`가 나간다(외부 호출). 그래서 실행하지 않았다. 같은 경로(서명한 PING·`/ask`·시작 확인·시작 확인 누락)는 루프백 서버에 가짜를 주입한 `tests/unit/query/test_bot_server_runtime.py`가 확인한다. 처리 방법은 사람 결정으로 남긴다.
+- 2026-10-26 사용자 결정(T059 발견): quickstart 2절을 시험 기반 확인(`test_bot_server_runtime.py` 등 + `register-commands --dry-run`)으로 고쳤다. `serve`에 가짜 제공자 모드는 더하지 않는다. 고친 2절의 시험과 dry-run은 위 실행에서 통과했다.
