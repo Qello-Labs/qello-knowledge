@@ -30,7 +30,8 @@ def test_invalid_secret_reports_name_only() -> None:
 
 
 def test_query_passes_without_index_only_settings() -> None:
-    environ = {k: v for k, v in valid_environ().items() if not k.startswith(("GITHUB_", "CLOUDFLARE_"))}
+    environ = {k: v for k, v in valid_environ().items() if not k.startswith("GITHUB_")}
+    environ["QK_DISCORD_GUILD_ID"] = "9" * 18
     assert _report(Entrypoint.QUERY, environ).ok
 
 

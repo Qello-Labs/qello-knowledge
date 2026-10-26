@@ -16,6 +16,8 @@ from urllib.parse import urlsplit
 class Entrypoint(StrEnum):
     QUERY = "query"
     INDEX = "index"
+    RELAY = "relay"
+    REGISTER = "register"
 
 
 BOTH = frozenset({Entrypoint.QUERY, Entrypoint.INDEX})
@@ -62,6 +64,23 @@ GEN_TIMEOUT = _pattern(r"[1-9]|[1-5][0-9]|60", "1 이상 60 이하 정수(초)")
 GEN_PROMPT = _pattern(r"gen-p1|gen-base", "`gen-p1` 또는 `gen-base`")
 
 
+def _integer_range(low: int, high: int) -> Rule:
+    return Rule(f"{low} 이상 {high} 이하 정수", lambda v: bool(re.fullmatch(r"[0-9]+", v)) and low <= int(v) <= high)
+
+
+def _snowflake_list(value: str) -> bool:
+    if value == "":
+        return True
+    parts = value.split(",")
+    return all(DIGITS_17_20(part) for part in parts) and len(parts) == len(set(parts))
+
+
+SNOWFLAKE_LIST = Rule("쉼표로 나눈 중복·공백 없는 숫자 17~20자리 목록(빈 값 허용)", _snowflake_list)
+RELAY_TIMEOUT = Rule(
+    "0.5 이상 2.8 이하 초", lambda v: bool(re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", v)) and 0.5 <= float(v) <= 2.8
+)
+
+
 @dataclass(frozen=True)
 class SettingSpec:
     name: str
@@ -104,8 +123,8 @@ SETTINGS: tuple[SettingSpec, ...] = (
     ),
     SettingSpec(
         name="CLOUDFLARE_API_TOKEN",
-        description="Workers 밖 색인에서 Workers AI REST를 부를 때 쓰는 토큰",
-        entrypoints=frozenset({Entrypoint.INDEX}),
+        description="색인·질의 서비스가 Workers AI REST를 부를 때 쓰는 전용 토큰",
+        entrypoints=BOTH,
         required=True,
         secret=True,
         rule=NO_SPACE_40,
@@ -113,7 +132,7 @@ SETTINGS: tuple[SettingSpec, ...] = (
     SettingSpec(
         name="CLOUDFLARE_ACCOUNT_ID",
         description="Workers AI REST 호출에 쓰는 Cloudflare 계정 ID",
-        entrypoints=frozenset({Entrypoint.INDEX}),
+        entrypoints=BOTH,
         required=True,
         secret=False,
         rule=HEX_32,
@@ -121,7 +140,7 @@ SETTINGS: tuple[SettingSpec, ...] = (
     SettingSpec(
         name="DISCORD_APPLICATION_ID",
         description="Discord 애플리케이션 ID",
-        entrypoints=frozenset({Entrypoint.QUERY}),
+        entrypoints=frozenset({Entrypoint.QUERY, Entrypoint.REGISTER}),
         required=True,
         secret=False,
         rule=DIGITS_17_20,
@@ -129,18 +148,68 @@ SETTINGS: tuple[SettingSpec, ...] = (
     SettingSpec(
         name="DISCORD_PUBLIC_KEY",
         description="Discord 상호작용 요청 서명 검증용 공개 키",
-        entrypoints=frozenset({Entrypoint.QUERY}),
+        entrypoints=frozenset({Entrypoint.QUERY, Entrypoint.RELAY}),
         required=True,
         secret=False,
         rule=HEX_64,
     ),
     SettingSpec(
         name="DISCORD_BOT_TOKEN",
-        description="Discord 봇 토큰. HTTP 상호작용만 쓰면 필요 없다(QK-BOT-001에서 확정)",
-        entrypoints=frozenset({Entrypoint.QUERY}),
-        required=False,
+        description="명령 등록 전용 Discord 봇 토큰. 질의 경로에는 두지 않는다",
+        entrypoints=frozenset({Entrypoint.REGISTER}),
+        required=True,
         secret=True,
         rule=NO_SPACE_50,
+    ),
+    SettingSpec(
+        "QK_DISCORD_GUILD_ID",
+        "명령을 쓰는 Discord 서버 ID",
+        frozenset({Entrypoint.QUERY, Entrypoint.REGISTER}),
+        True,
+        False,
+        DIGITS_17_20,
+    ),
+    SettingSpec(
+        "QK_RELAY_TIMEOUT_SECONDS",
+        "중계 제한 시간(초)",
+        frozenset({Entrypoint.RELAY}),
+        False,
+        False,
+        RELAY_TIMEOUT,
+        "2.5",
+    ),
+    SettingSpec(
+        "QK_DISCORD_ALLOWED_CHANNELS",
+        "허용 채널 목록. 비면 모든 요청을 거부한다",
+        frozenset({Entrypoint.QUERY}),
+        False,
+        False,
+        SNOWFLAKE_LIST,
+        "",
+    ),
+    SettingSpec(
+        "QK_DISCORD_ALLOWED_ROLES",
+        "허용 역할 목록. 비면 역할 제한 없음",
+        frozenset({Entrypoint.QUERY}),
+        False,
+        False,
+        SNOWFLAKE_LIST,
+        "",
+    ),
+    *tuple(
+        SettingSpec(name, description, frozenset({Entrypoint.QUERY}), False, False, _integer_range(low, high), default)
+        for name, description, low, high, default in (
+            ("QK_QUERY_DEADLINE_SECONDS", "질의 마감(초)", 15, 120, "55"),
+            ("QK_QUERY_START_WAIT_SECONDS", "시작 확인 대기(초)", 4, 10, "5"),
+            ("QK_QUERY_MIN_START_SECONDS", "실행에 필요한 최소 남은 시간(초)", 8, 60, "15"),
+            ("QK_QUERY_NOTICE_GRACE_SECONDS", "안내 전달 여유(초)", 1, 30, "5"),
+            ("QK_QUERY_CALL_LIMIT", "질의 외부 호출 상한", 11, 50, "20"),
+            ("QK_DISCORD_MAX_MESSAGES", "답변 메시지 수 상한", 2, 10, "4"),
+            ("QK_DISCORD_TITLE_MAX_CHARS", "출처 제목 길이 상한", 20, 200, "80"),
+            ("QK_DISCORD_LINK_MAX_CHARS", "출처 링크 길이 상한", 50, 1000, "300"),
+            ("QK_QUERY_WORKERS", "동시 검색·생성 실행 자리", 1, 8, "2"),
+            ("QK_QUERY_QUEUE_SIZE", "수명 자리의 추가 대기 크기", 1, 16, "4"),
+        )
     ),
     SettingSpec(
         name="QK_LOG_LEVEL",

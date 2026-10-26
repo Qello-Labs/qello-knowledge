@@ -83,7 +83,7 @@
 ### Negative / risks
 
 - GitHub는 실행 기록을 보여 주지 않는다. OCI Bastion 세션으로 `journalctl`과 `qk-index runs list`를 쓴다.
-- 실행이 실패해도 GitHub는 메일을 보내지 않는다. 실패 알림은 후속 작업이다.
+- 실행이 실패해도 GitHub는 메일을 보내지 않는다. 실패 알림은 후속 작업이다([ADR-021](ADR-021-sync-failure-alert.md)).
 - 수동 실행에는 OCI Bastion 세션과 `systemctl start`가 필요하다.
 - 토큰은 팀원이 소유한 인스턴스의 파일에 있다. 팀원은 이 파일을 읽을 수 있다.
 - 매 실행은 최신 `main`을 받아 실행한다. `main`의 나쁜 변경은 인스턴스에서 실행된다. 이 위험은 러너와 같다.
