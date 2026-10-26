@@ -1,11 +1,8 @@
-# QK-FND-001 research R-01의 pywrangler/Python Workers 설정.
-# Workers VPC TOML·VPC fetch·waitUntil의 배포 동작은 H01에서 확인한다.
+# Discord 중계 Worker(ADR-022, ADR-024). TypeScript 진입점을 wrangler가 그대로 묶는다(npm 의존성 없음).
+# 실제 VPC Service ID는 저장소 밖 사본에 넣고 `npx wrangler deploy -c <사본>`으로 배포한다.
 name = "qello-knowledge-relay"
-main = "src/qello_knowledge/query/worker.py"
-# main 파일 폴더만 묶이지 않게 src를 모듈 기준으로 둔다(qello_knowledge 패키지 전체, H01 로컬 확인).
-base_dir = "src"
+main = "workers/relay/index.ts"
 compatibility_date = "2026-10-26"
-compatibility_flags = ["python_workers"]
 
 [[vpc_services]]
 binding = "QUERY_SERVICE"

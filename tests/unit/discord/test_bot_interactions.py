@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from qello_knowledge.discord.interactions import deferred, notice, parse, pong
+from qello_knowledge.discord.interactions import deferred, notice, parse, pong, signature_headers
 from qello_knowledge.domain.discord import ChannelKind, InteractionKind
 from tests.unit.discord.bot_builders import CHANNEL, GUILD, ROLE, TOKEN, ask, component, other_command, ping
 
@@ -86,3 +86,12 @@ def test_bot_user_fields_are_ignored_and_body_boundary():
     assert not hasattr(item, "user_id") and not hasattr(item, "username")
     body = ask("q")
     assert parse(body + b" " * (65536 - len(body))).kind is InteractionKind.COMMAND
+
+
+def test_bot_signature_headers_are_case_insensitive():
+    # 중계 Worker가 TypeScript로 옮겨 가며(ADR-024) 질의 서비스용으로 남긴 함수다.
+    assert signature_headers({"x-signature-ed25519": "s", "X-SIGNATURE-TIMESTAMP": "1"}) == {
+        "X-Signature-Ed25519": "s",
+        "X-Signature-Timestamp": "1",
+    }
+    assert signature_headers({}) == {"X-Signature-Ed25519": "", "X-Signature-Timestamp": ""}

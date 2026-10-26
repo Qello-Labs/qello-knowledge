@@ -9,9 +9,8 @@ from datetime import UTC, datetime
 from time import time
 
 from qello_knowledge.config.check import CheckReport
-from qello_knowledge.discord.interactions import notice, parse, pong
+from qello_knowledge.discord.interactions import MAX_BODY_BYTES, notice, parse, pong, signature_headers
 from qello_knowledge.discord.notices import FIXED_NOTICES, failure_notice
-from qello_knowledge.discord.relay import MAX_BODY_BYTES, signature_headers
 from qello_knowledge.discord.signature import verify
 from qello_knowledge.domain.discord import AccessDecision, InteractionKind, QueryRunLog
 
