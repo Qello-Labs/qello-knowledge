@@ -34,6 +34,7 @@ class CheckReport:
     items: tuple[tuple[str, SettingStatus], ...]
     ok: bool
     checks: tuple[CrossCheck, ...] = ()
+    warnings: tuple[str, ...] = ()
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -41,6 +42,7 @@ class CheckReport:
             "ok": self.ok,
             "items": [{"name": name, "status": status.value} for name, status in self.items],
             "checks": [{"name": c.name, "ok": c.ok, "detail": c.detail} for c in self.checks],
+            "warnings": list(self.warnings),
         }
 
     def to_json(self) -> str:
@@ -50,6 +52,7 @@ class CheckReport:
         lines = [f"설정 점검: {self.entrypoint.value}"]
         lines += [f"  {status.value:<8} {name}" for name, status in self.items]
         lines += [f"  {'OK' if c.ok else 'FAIL':<8} {c.name} ({c.detail})" for c in self.checks]
+        lines += [f"  WARNING  {name}" for name in self.warnings]
         missing = sum(1 for _, status in self.items if status is SettingStatus.MISSING)
         invalid = sum(1 for _, status in self.items if status is SettingStatus.INVALID)
         verdict = "통과" if self.ok else "실패"
@@ -126,5 +129,34 @@ def build_report(settings: Settings) -> CheckReport:
         elif item.status is SettingStatus.MISSING and item.spec.required:
             ok = False
     checks = tuple(check for check in (_budget_check(settings), _generation_check(settings)) if check is not None)
+    checks += _query_checks(settings)
     ok = ok and all(check.ok for check in checks)
-    return CheckReport(settings.entrypoint, tuple(items), ok, checks)
+    warnings = ()
+    if settings.entrypoint is Entrypoint.QUERY and not _text(settings, "QK_DISCORD_ALLOWED_CHANNELS"):
+        warnings = ("QK_DISCORD_ALLOWED_CHANNELS",)
+    return CheckReport(settings.entrypoint, tuple(items), ok, checks, warnings)
+
+
+def _query_checks(settings: Settings) -> tuple[CrossCheck, ...]:
+    if settings.entrypoint is not Entrypoint.QUERY:
+        return ()
+    names = (
+        "QK_QUERY_DEADLINE_SECONDS",
+        "QK_QUERY_NOTICE_GRACE_SECONDS",
+        "QK_GEN_TIMEOUT_SECONDS",
+        "QK_QUERY_MIN_START_SECONDS",
+        "QK_QUERY_CALL_LIMIT",
+        "QK_DISCORD_MAX_MESSAGES",
+    )
+    values = [_text(settings, name) for name in names]
+    if any(v is None for v in values):
+        return ()
+    deadline, grace, timeout, minimum, calls, messages = (int(v) for v in values)
+    rules = (
+        ("notice_before_token_expiry", deadline + grace < 900),
+        ("generation_fits_query", 2 * timeout + 5 <= deadline),
+        ("minimum_start_before_deadline", minimum < deadline),
+        ("query_call_limit", calls >= 7 + 4 + messages * 2),
+    )
+    # 통과 항목은 기존 보고 꼴을 유지한다(_generation_check와 같은 방식).
+    return tuple(CrossCheck(name, False, name) for name, valid in rules if not valid)

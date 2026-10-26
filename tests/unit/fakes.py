@@ -26,6 +26,7 @@ def valid_environ() -> dict[str, str]:
         "CLOUDFLARE_API_TOKEN": "c" * 40,
         "CLOUDFLARE_ACCOUNT_ID": "a" * 32,
         "DISCORD_APPLICATION_ID": "1" * 18,
+        "QK_DISCORD_GUILD_ID": "900000000000000006",
         "DISCORD_PUBLIC_KEY": "f" * 64,
         "DISCORD_BOT_TOKEN": "d" * 60,
     }

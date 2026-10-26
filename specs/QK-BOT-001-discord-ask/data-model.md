@@ -9,10 +9,10 @@
 | 이름 | 진입점 | 필수 | 비밀 | 규칙·초기값 | spec |
 | --- | --- | --- | --- | --- | --- |
 | `DISCORD_PUBLIC_KEY` | relay, query | 예 | 아니오 | 64자 16진(기존) | FR-001 |
-| `DISCORD_APPLICATION_ID` | query | 예 | 아니오 | 17~20자리 숫자(기존) | FR-022, 웹후크 경로 |
-| `DISCORD_BOT_TOKEN` | (질의 경로에서 뺌) 명령 등록 명령만 | 등록 때만 | 예 | 기존 규칙 | R-12 |
+| `DISCORD_APPLICATION_ID` | query, register | 예 | 아니오 | 17~20자리 숫자(기존) | FR-022, 웹후크 경로 |
+| `DISCORD_BOT_TOKEN` | register(명령 등록 명령만) | 등록 때만 | 예 | 기존 규칙 | R-12 |
 | `QK_RELAY_TIMEOUT_SECONDS` | relay | 아니오 | 아니오 | 0.5~2.8, 2.5 | FR-011 마지막 행 |
-| `QK_DISCORD_GUILD_ID` | query | 예 | 아니오 | 17~20자리 숫자 | FR-004 |
+| `QK_DISCORD_GUILD_ID` | query, register | 예 | 아니오 | 17~20자리 숫자 | FR-004 |
 | `QK_DISCORD_ALLOWED_CHANNELS` | query | 아니오 | 아니오 | 쉼표로 나눈 17~20자리 숫자 목록. 비면 모두 거부하고 설정 검사가 경고 | FR-004, FR-023 |
 | `QK_DISCORD_ALLOWED_ROLES` | query | 아니오 | 아니오 | 같은 꼴. 비면 역할 제한 없음 | FR-004 |
 | `QK_QUERY_DEADLINE_SECONDS` | query | 아니오 | 아니오 | 15~120, 55 | FR-008, research R-06 |
