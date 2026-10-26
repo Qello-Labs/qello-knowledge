@@ -345,3 +345,143 @@ DB를 잃으면 2절 3~4번으로 다시 만들고 `qk-index run --allow-remote`
 - 마이그레이션 순서: 예약 실행은 매번 최신 `main`을 받아 실행하고 마이그레이션은 돌리지 않는다. 새 마이그레이션이 든 PR은 병합 전에 2절 4번으로 운영 DB에 적용한다.
   적용하지 않으면 새 코드가 없는 테이블·함수를 불러 실행이 실패한다(2026-10-23 `0006_generation_usage`: `usage prune`이 실패할 뻔했다).
 - 자원: Bastion 세션으로 `free -h`, `df -h /`, `sudo docker stats --no-stream`.
+
+## 7. Discord 질의 서비스 (ADR-022, 사람 단계 H00~H03)
+
+아래는 적용 전 절차다. 이 문서 작성으로 운영 구성·배포를 실행하지 않았다. 주소·토큰·계정 및 서비스 식별자는 `<...>`로만 표현한다.
+근거는 [ADR-022](../sdd/decisions/ADR-022-discord-query-path.md), [research R-02·R-14](../../specs/QK-BOT-001-discord-ask/research.md),
+[quickstart 3절](../../specs/QK-BOT-001-discord-ask/quickstart.md)이다. 각 명령은 사람이 인증하고 개별 승인한 뒤 실행한다.
+
+### 7.1 시작 전 확인
+
+- PR 리뷰에서 ADR-022 Accepted와 인스턴스 관리자 동의를 받는다. 제안 상태로 운영을 바꾸지 않는다.
+- H00에서 Tunnel 요금, Worker·Tunnel 트래픽의 보존·학습 사용 정책을 공식 문서 URL과 함께 ADR-022 Data and cost에 기록한다. 유료 설정이나 미합의 데이터 처리가 필요하면 멈춘다.
+- 인스턴스 바깥 방향 UDP 7844(QUIC)를 OCI egress·호스트 방화벽에서 읽기 전용으로 확인한다. 열 수 없으면 ADR-022의 대안을 재검토한다. 들어오는 DB·질의 포트와 공개 호스트명은 만들지 않는다.
+- 운영 색인과 마이그레이션 연결 역할이 `qk.embedding_usage` 소유자나 슈퍼유저인지 관리자가 확인한다. 아래 조회는 승인한 관리 연결 안에서만 실행하고 값은 기록하지 않는다.
+
+  ```sql
+  SELECT current_user, c.relowner::regrole AS table_owner, r.rolsuper
+  FROM pg_class c JOIN pg_roles r ON r.rolname = current_user
+  WHERE c.oid = 'qk.embedding_usage'::regclass;
+  ```
+
+  두 연결을 각각 확인한다. 단순히 소유자 역할의 멤버라는 사실로 RLS 우회를 가정하지 않는다. 소유자·슈퍼유저가 아니면 필요한 정책을 별도로 승인받기 전 0007을 적용하지 않는다.
+- 질의 서비스 전용 Workers AI 토큰은 PR #62 계정 교체 결과에 맞춘다. 기존 색인 토큰을 재사용하지 않는다. 봇 토큰은 운영 담당자의 로컬 등록 환경에만 둔다.
+
+### 7.2 역할·릴리스·비밀값 준비
+
+1. 코드가 main에 병합되기 **전**, 2절의 승인된 관리 터널로 마이그레이션을 적용한다. 관리 자격 증명 파일은 질의용 파일과 분리한다.
+
+   ```bash
+   uv run qk-migrate --env-file <migration-config-file> --dry-run
+   uv run qk-migrate --env-file <migration-config-file>
+   uv run qk-migrate --env-file <migration-config-file>
+   ```
+
+   두 번째 적용은 `applied=0`인지 확인한다. 0001~0006은 수정하지 않는다. 0007은 `qk_query NOLOGIN`, 최소 권한, 사용량 RLS만 더하고 PUBLIC EXECUTE를 거두지 않는다.
+   승인한 관리 연결에서 `ALTER ROLE qk_query LOGIN;` 뒤 psql의 `\password qk_query`로 암호를 숨김 입력한다. 암호 리터럴·접속 URL을 명령행이나 SQL 이력에 넣지 않는다.
+2. 관리자가 `qkquery` 시스템 사용자(로그인 셸 없음, sudo·docker 그룹 없음)를 만들고 기존 서비스와 권한을 분리한다. 이미 있으면 소속 그룹과 셸부터 확인한다.
+   승인된 커밋의 별도 질의 릴리스 `<query-release-directory>`를 준비해 그 안에서 `uv sync --locked --extra query --extra postgres`를 실행한다.
+   릴리스는 관리자 소유, `qkquery`에는 코드·설정·가상환경 읽기와 실행만 준다. `qksync`가 매일 갱신하는 체크아웃·가상환경을 공유하지 않는다(동기화의 의존성 정리가 query 의존성을 제거할 수 있다).
+3. `/etc/qello-knowledge/query.env`는 root:qkquery, 0640이다. 값은 `getpass`로 터미널에서 숨겨 입력하고 원자적으로 교체한다. 아래 스크립트도 **사람이 서버에서만** 실행한다.
+
+   ```bash
+   sudo install -d -o root -g root -m 0755 /etc/qello-knowledge
+   sudo python3 - <<'PY'
+   import getpass
+   import grp
+   import os
+   import tempfile
+
+   names = ("DATABASE_URL", "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID",
+            "DISCORD_PUBLIC_KEY", "DISCORD_APPLICATION_ID", "QK_DISCORD_GUILD_ID",
+            "QK_DISCORD_ALLOWED_CHANNELS", "QK_DISCORD_ALLOWED_ROLES")
+   values = {name: getpass.getpass(name + ": ") for name in names}
+   if any("\n" in value or "\r" in value for value in values.values()):
+       raise SystemExit("여러 줄 값은 허용하지 않습니다")
+   pending = None
+   try:
+       with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir="/etc/qello-knowledge", delete=False) as output:
+           pending = output.name
+           os.fchown(output.fileno(), 0, grp.getgrnam("qkquery").gr_gid)
+           os.fchmod(output.fileno(), 0o640)
+           for name, value in values.items():
+               output.write(name + "=" + value + "\n")
+       os.replace(pending, "/etc/qello-knowledge/query.env")
+       pending = None
+   finally:
+       if pending is not None:
+           os.unlink(pending)
+   PY
+   ```
+
+   `DATABASE_URL`은 `qk_query`로 루프백 DB에 붙는다. 허용 채널은 빈 값이면 전부 거부하며 역할 목록은 비우면 역할 제한이 없다. `DISCORD_BOT_TOKEN`·터널 토큰은 이 파일에 넣지 않는다.
+   파일 내용을 출력하지 않고 소유자·모드만 확인한다. 설정 검사는 릴리스의 `qk-query check --env-file /etc/qello-knowledge/query.env`로 값 없이 이름·상태만 확인한다.
+
+### 7.3 qk-query.service
+
+`<query-release-directory>`와 `<query-port>`를 승인한 릴리스 경로·비특권 포트로 바꾼다. 서버는 코드에서 루프백에만 바인딩한다.
+기존 qk-sync.service의 격리 항목을 포함하고 다음을 둔다. R-14가 참조한 `qk-sync-notify@.service` 원문은 현재 저장소에 없으므로 적용 전에 관리자가 그 유닛의 격리 설정과 대조한다.
+
+```ini
+# /etc/systemd/system/qk-query.service
+[Unit]
+Description=Qello Knowledge Discord query service
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=qkquery
+Group=qkquery
+WorkingDirectory=<query-release-directory>
+EnvironmentFile=/etc/qello-knowledge/query.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=<query-release-directory>/.venv/bin/qk-query serve --port <query-port> --env-file /etc/qello-knowledge/query.env
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=65
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+UMask=0077
+Nice=10
+MemoryMax=512M
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+쓰기 경로는 필요 없다. 메모리 상한은 공유 인스턴스 관리자와 확인할 초기값이며 실측값이 아니다.
+`systemd-analyze verify /etc/systemd/system/qk-query.service` → `systemctl daemon-reload` → `systemctl enable --now qk-query.service` 순으로 실행한다.
+`systemctl status qk-query.service`와 루프백의 `GET /healthz` 성공을 확인한다. journal의 일반 질의 로그는 원문 없는 JSON 한 줄이다.
+
+### 7.4 Tunnel·Worker·Discord와 외부 접속 차단 확인
+
+1. H00 뒤 원격 관리 터널 `<tunnel-id>`와 `cloudflared` 서비스를 준비한다. `cloudflared --version`으로 2025.7.0 이상인지 확인한다.
+   터널 토큰은 서버의 전용 root 읽기 파일에 숨김 입력하고, 설치한 CLI의 도움말에서 지원하는 token-file 방식을 확인해 서비스에서 참조한다.
+   토큰을 인자·이력·journal에 전달하는 방식은 쓰지 않는다. 공개 호스트명이나 호스트 ingress 규칙을 더하지 않는다. 서비스 상태와 터널 연결을 확인한다.
+2. Workers VPC Service `<vpc-service-id>`를 터널 `<tunnel-id>`와 대상 `<loopback-address>:<query-port>`에 연결하고, `wrangler.toml`의 `QUERY_SERVICE` 바인딩 placeholder를 사람이 바꾼다.
+   Worker 설정은 `DISCORD_PUBLIC_KEY=<discord-public-key>`와 `QK_RELAY_TIMEOUT_SECONDS=<relay-timeout>`뿐이다. DB URL·Workers AI 토큰·봇 토큰은 두지 않는다.
+   `pywrangler deploy`는 사람이 인증하고 실행한다. Python VPC `fetch` 등의 미확인 API 꼴은 H01에서 확인한 뒤 운영으로 진행한다.
+3. Discord 개발자 포털에 `<worker-interactions-url>`을 등록하고 서명 확인을 통과한다. 허용 밖 채널에서는 비공개 안내만 오는지 확인한다.
+4. 운영 담당자의 로컬에서 `qk-query register-commands --env-file <local-register-config> --dry-run`으로 JSON을 확인한 뒤 같은 명령에서 `--dry-run`을 빼고 등록한다.
+   봇 토큰은 로컬에서 숨김 입력한다. 서버 안의 기존 명령 목록을 통째로 바꾸므로 대상 `<application-id>`·`<guild-id>`를 사람이 확인한다.
+5. SC-010은 인스턴스 밖 승인된 위치에서 `<instance-public-address>:<db-port>`와 `<instance-public-address>:<query-port>`로 접속이 실패하는지 확인한다.
+   밖에서는 실패하고 안쪽 healthz·터널 경유는 성공하는 결과를 모두 기록한다(주소·ID 가림). 이 절차 작성 시점에는 모두 미실행이다.
+
+### 7.5 되돌리기
+
+관리자가 Discord 수신 주소를 해제해 새 요청을 멈추고, 진행 중 요청을 정리한 뒤 qk-query.service와 이번 질의 전용 cloudflared 서비스를 중지·비활성화한다.
+다른 서비스가 공유하는 터널은 중지하지 않는다. Worker·VPC Service·터널 연결과 전용 토큰은 사람 승인 뒤 해제하고, query.env를 제거한다.
+관리 연결에서 `ALTER ROLE qk_query NOLOGIN;`으로 새 DB 로그인을 막는다(이미 열린 연결을 끊는 명령은 아니므로 질의 서비스를 먼저 중지한다).
+0007·사용량 기록·RLS는 유지하고 데이터 삭제나 기존 마이그레이션 변경으로 되돌리지 않는다. qk-sync의 코드·설정·역할을 건드리지 않으며 기존 색인 성공을 별도로 확인한다.
