@@ -29,10 +29,10 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 ## 2. 로컬 질의 서비스 확인 (외부 호출 0건)
 
 `qk-query serve`는 실제 검색·생성·Discord 전송을 조립하고 가짜 제공자 선택이 없다. 시작 확인을 보내지 않아도 시작 대기 뒤 실제 Discord로 갱신을 보내므로, 로컬에서 `serve`를 띄워
-확인하지 않는다(2026-10-26 사용자 결정). 같은 경로는 루프백 서버에 가짜 검색·생성·Discord 전송을 주입한 시험이 확인한다.
+확인하지 않는다(2026-10-26 사용자 결정). 실제 루프백 HTTP 경로는 `make_server`가 만든 서버에 가짜 검색·생성·Discord 전송을 주입한 시험이 확인한다.
 
 ```bash
-uv run pytest tests/unit/query/test_bot_server_runtime.py tests/unit/query/test_bot_first_response.py tests/unit/query/test_bot_start_confirm.py
+.venv/bin/python -m pytest tests/unit/query/test_bot_http_integration.py tests/unit/query/test_bot_first_response.py tests/unit/query/test_bot_start_confirm.py
 uv run qk-query register-commands --env-file <합성 애플리케이션·서버 ID만 둔 env> --dry-run
 ```
 
@@ -41,7 +41,8 @@ uv run qk-query register-commands --env-file <합성 애플리케이션·서버 
   전송에 갱신 메시지가 도착한다. Neurons 0.
 - 시작 확인을 보내지 않으면 시작 대기(기본 5초) 뒤 가짜 전송에 "요청을 처리하지 못했습니다…" 안내 하나만 오고 검색·생성 호출은 0회다(`NOT_STARTED`).
 - `register-commands --dry-run`은 봇 토큰 없이 보낼 JSON만 출력하고 호출하지 않는다(contracts/discord-outbound.md 2절).
-- 이 시험은 루프백 소켓을 열므로 Codex 샌드박스 안에서는 권한 오류로 실패한다. 샌드박스 밖에서 돌린다.
+- `test_bot_http_integration.py`는 실제 `ThreadingHTTPServer`와 HTTP 요청으로 위 경로와 서명 오류 `401`을 확인한다. 나머지 두 시험은 단위 경계 확인이다. 이전의 `test_bot_server_runtime.py`는 서버를 모킹하므로 루프백 통합 증빙이 아니다.
+- 루프백 시험은 Codex 샌드박스 안에서는 권한 오류로 실패한다. 샌드박스 밖에서 돌린다.
 
 ## 3. 운영 구성 (사람 단계, 명령마다 승인)
 
