@@ -12,6 +12,8 @@ dependencies = []
 index = ["markdown-it-py==4.2.0"]
 # 색인 CLI와 마이그레이션 실행기만 쓴다. 질의응답 번들에는 넣지 않는다(QK-STO-001 research R-09).
 postgres = ["psycopg[binary]>=3.2"]
+# 질의 서비스만 쓴다. Worker 번들에는 넣지 않는다(QK-BOT-001 research R-04).
+query = ["cryptography>=43"]
 
 [project.scripts]
 qk-index = "qello_knowledge.indexer.cli:main"
@@ -21,6 +23,7 @@ qk-migrate = "qello_knowledge.adapters.postgres.migrate:main"
 
 [dependency-groups]
 dev = [
+    "cryptography>=43",
     "markdown-it-py==4.2.0",
     "pytest>=8",
     "ruff>=0.13",
