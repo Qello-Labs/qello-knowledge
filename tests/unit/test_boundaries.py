@@ -250,6 +250,80 @@ def test_domain_must_not_import_retrieval(tmp_path):
 GENERATION_ALLOWED = ("qello_knowledge.domain", "qello_knowledge.ports", "qello_knowledge.generation")
 
 
+@pytest.mark.parametrize(
+    ("part", "filename", "statement"),
+    [
+        ("discord", "bad.py", "from qello_knowledge.adapters import discord"),
+        ("discord", "bad.py", "from qello_knowledge import security"),
+        ("discord", "bad.py", "import qello_knowledge.retrieval"),
+        ("discord", "bad.py", "import qello_knowledge.generation"),
+        ("discord", "bad.py", "import psycopg"),
+        ("discord", "bad.py", "import urllib.request"),
+        ("discord", "render.py", "import cryptography"),
+        ("discord", "bad.py", "from . import notices"),
+        ("adapters/discord", "bad.py", "import qello_knowledge.discord"),
+        ("adapters/discord", "bad.py", "from .. import http"),
+    ],
+)
+def test_bot_discord_import_violations(tmp_path, part, filename, statement):
+    root = tmp_path / "qello_knowledge"
+    (root / part).mkdir(parents=True)
+    (root / part / filename).write_text(statement)
+    assert len(bot_discord_violations(root)) == 1
+
+
+def test_bot_discord_import_allowances(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    (root / "discord").mkdir(parents=True)
+    (root / "adapters/discord").mkdir(parents=True)
+    (root / "discord/signature.py").write_text(
+        "from cryptography.exceptions import InvalidSignature\n"
+        "from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey\n"
+        "from qello_knowledge.domain import discord\nfrom qello_knowledge.discord import notices\n"
+    )
+    (root / "adapters/discord/webhook.py").write_text(
+        "import urllib.request\nfrom qello_knowledge.domain.discord import RenderedReply\n"
+    )
+    assert bot_discord_violations(root) == []
+
+
+def test_bot_discord_dependencies_are_isolated():
+    assert bot_discord_violations(PACKAGE) == []
+
+
+def bot_discord_violations(root: Path) -> list[str]:
+    problems = []
+    for part in ("discord", "adapters/discord"):
+        prefixes = ("qello_knowledge.domain",)
+        if part == "discord":
+            prefixes += ("qello_knowledge.discord",)
+        for path in sorted((root / part).rglob("*.py")):
+            relative = path.relative_to(root).as_posix()
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                modules = []
+                if isinstance(node, ast.Import):
+                    modules = [alias.name for alias in node.names]
+                elif isinstance(node, ast.ImportFrom):
+                    if node.level:
+                        problems.append(f"{relative}:{node.lineno}: 상대 경로 가져오기")
+                        continue
+                    module = node.module or ""
+                    modules = [module + "." + a.name for a in node.names] if module == "qello_knowledge" else [module]
+                for module in modules:
+                    top = module.split(".")[0]
+                    stdlib = top in sys.stdlib_module_names or top == "__future__"
+                    if part == "discord" and top in {"urllib", "http", "socket", "httpx"}:
+                        stdlib = False
+                    backend = relative == "discord/signature.py" and module in {
+                        "cryptography.exceptions",
+                        "cryptography.hazmat.primitives.asymmetric.ed25519",
+                    }
+                    if stdlib or backend or any(module == p or module.startswith(p + ".") for p in prefixes):
+                        continue
+                    problems.append(f"{relative}:{node.lineno}: {module}")
+    return problems
+
+
 def generation_violations(root: Path) -> list[str]:
     problems = []
     for path in sorted((root / "generation").rglob("*.py")):
