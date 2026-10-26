@@ -18,6 +18,7 @@ BODY_OMITTED = "(답변이 길어 일부를 생략했습니다.)"
 LONG_LINK_OMITTED = "(긴 링크 생략)"
 SOURCE_ITEM_FIXED_CHARS = len("[S20]  · <> · 버전  · 수정 2000-12-31 · 수집 2000-12-31 23:59 KST\n")
 FENCE = re.compile(r"```([^\n`]*)\n?")
+FENCE_LANGUAGE_MAX_CHARS = 80
 
 
 def source_item_max_chars(title_max_chars: int, link_max_chars: int) -> int:
@@ -64,9 +65,28 @@ def _link_spans(text):
 
 def _shorten_long_links(text):
     for start, end in reversed(_link_spans(text)):
-        if end - start > MESSAGE_LIMIT:
+        language = _language_after(text[:start], None)
+        # 코드 블록 안의 링크는 다시 여는 펜스와 닫는 펜스 자리도 필요하다.
+        wrapper = len(f"```{language}\n") + len("\n```") if language is not None else 0
+        if end - start > MESSAGE_LIMIT - wrapper:
             text = text[:start] + LONG_LINK_OMITTED + text[end:]
     return text
+
+
+def _fit_fence_languages(text):
+    language = None
+
+    def fit(match):
+        nonlocal language
+        opening = language is None
+        language = match.group(1).strip() if opening else None
+        # 줄바꿈까지 있는 여는 펜스의 언어 표시만 줄인다. 한 줄 코드와 닫는
+        # 펜스 뒤 글은 본문이므로 그대로 둔다.
+        if not opening or not match.group().endswith("\n") or len(match.group(1)) <= FENCE_LANGUAGE_MAX_CHARS:
+            return match.group()
+        return "```" + match.group(1)[:FENCE_LANGUAGE_MAX_CHARS] + "\n"
+
+    return FENCE.sub(fit, text)
 
 
 def _protected_spans(text):
@@ -104,7 +124,7 @@ def _close_fence(text, language):
 
 
 def _split_body(text, max_messages):
-    text = _shorten_long_links(text)
+    text = _shorten_long_links(_fit_fence_languages(text))
     spans = _protected_spans(text)
     messages, position, language = [], 0, None
     for slot in range(max_messages):
@@ -127,7 +147,15 @@ def _split_body(text, max_messages):
             next_language = _language_after(part, language)
             suffix = _close_fence(part, next_language)
         if cut <= position:
-            raise ValueError("메시지 하나에 담을 수 없는 서식 표시")
+            # 마지막 메시지의 생략 안내 때문에 보호된 링크가 더는 안 들어갈 수 있다.
+            link = next(((start, end) for start, end in _link_spans(text) if start == position), None)
+            if link is not None:
+                start, end = link
+                text = text[:start] + LONG_LINK_OMITTED + text[end:]
+                return _split_body(text, max_messages)
+            # 펜스·Source ID·무력화 글은 중간에서 자르지 않고 남은 본문을 생략한다.
+            omitted = prefix + _close_fence("", language) + "\n\n" + BODY_OMITTED
+            return tuple(messages + [omitted]), True
         messages.append(prefix + part + suffix + notice)
         if last:
             return tuple(messages), True
