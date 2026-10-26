@@ -1,7 +1,9 @@
 # QK-FND-001 research R-01의 pywrangler/Python Workers 설정.
-# Workers VPC TOML·FFI·fetch·waitUntil은 미확인(H01에서 확인).
+# Workers VPC TOML·VPC fetch·waitUntil의 배포 동작은 H01에서 확인한다.
 name = "qello-knowledge-relay"
 main = "src/qello_knowledge/query/worker.py"
+# main 파일 폴더만 묶이지 않게 src를 모듈 기준으로 둔다(qello_knowledge 패키지 전체, H01 로컬 확인).
+base_dir = "src"
 compatibility_date = "2026-10-26"
 compatibility_flags = ["python_workers"]
 
