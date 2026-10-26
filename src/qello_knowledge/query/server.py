@@ -19,6 +19,10 @@ from qello_knowledge.query.app import DiscordApp, handle
 HOST = "127.0.0.1"
 
 
+def write_run_log(record):
+    sys.stderr.write(record.to_json() + "\n")
+
+
 class _Handler(BaseHTTPRequestHandler):
     def __init__(self, *args, report: Callable[[], CheckReport], app=None, **kwargs) -> None:
         self._report = report
@@ -56,7 +60,7 @@ class _Handler(BaseHTTPRequestHandler):
     do_DELETE = _respond
 
     def log_message(self, format: str, *args: object) -> None:  # noqa: A002 - 표준 라이브러리 시그니처
-        sys.stderr.write(f"{self.command} HTTP\n")
+        return  # 서명 거부는 무기록, 나머지 질의는 QueryRunLog 한 줄로만 쓴다.
 
 
 def make_server(port: int, env_file: Path | None, *, app=None, report=None) -> ThreadingHTTPServer:
@@ -71,6 +75,8 @@ def make_server(port: int, env_file: Path | None, *, app=None, report=None) -> T
 def create_app(settings):
     from qello_knowledge.adapters.discord.webhook import DiscordWebhook
     from qello_knowledge.config.loader import SecretValue
+    from qello_knowledge.discord.access import AccessPolicy
+    from qello_knowledge.indexer.embedding import security_outgoing_check
     from qello_knowledge.query.jobs import QueryJobs
     from qello_knowledge.query.pipeline import configured_pipeline
     from qello_knowledge.security.policy import load_policy
@@ -97,8 +103,21 @@ def create_app(settings):
         min_start=int(settings.get("QK_QUERY_MIN_START_SECONDS")),
         deadline_seconds=int(settings.get("QK_QUERY_DEADLINE_SECONDS")),
         notice_grace=int(settings.get("QK_QUERY_NOTICE_GRACE_SECONDS")),
+        on_finished=write_run_log,
     )
-    return DiscordApp(str(settings.get("DISCORD_PUBLIC_KEY")), jobs)
+    access = AccessPolicy(
+        settings.get("QK_DISCORD_GUILD_ID"),
+        tuple(filter(None, settings.get("QK_DISCORD_ALLOWED_CHANNELS").split(","))),
+        tuple(filter(None, settings.get("QK_DISCORD_ALLOWED_ROLES").split(","))),
+    )
+    check = security_outgoing_check(policy)
+    return DiscordApp(
+        str(settings.get("DISCORD_PUBLIC_KEY")),
+        jobs,
+        access_check=access.check,
+        outgoing_check=lambda item: not check(item.question or "", None),
+        on_response=write_run_log,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+import re
 import secrets
 import threading
 from collections import deque
@@ -12,7 +14,36 @@ from time import monotonic
 
 from qello_knowledge.discord.interactions import deferred, notice
 from qello_knowledge.discord.notices import FIXED_NOTICES, failure_notice
-from qello_knowledge.domain.discord import DedupEntry, DedupStage, Interaction, QueryJob, QueryStage, RenderedReply
+from qello_knowledge.domain.discord import (
+    DedupEntry,
+    DedupStage,
+    Interaction,
+    QueryJob,
+    QueryRunLog,
+    QueryStage,
+    RenderedReply,
+)
+from qello_knowledge.domain.generation import GenerationFailure, GenerationStatus
+from qello_knowledge.domain.retrieval import RetrievalFailure
+
+
+def _safe_failure(value):
+    allowed = {f.value for f in (*GenerationFailure, *RetrievalFailure, *QueryStage)}
+    allowed.update({"deadline", "timeout", "connection", "unexpected", "http"})
+    return value if isinstance(value, str) and (value in allowed or re.fullmatch(r"http_[0-9]{3}", value)) else None
+
+
+def _numbers(summary):
+    names = {"external_calls", "generation_calls", "neurons", "measured", "attempts"}
+    return (
+        {
+            name: value
+            for name, value in summary.items()
+            if name in names and type(value) in (int, float, bool) and math.isfinite(value)
+        }
+        if isinstance(summary, dict)
+        else {}
+    )
 
 
 @dataclass
@@ -41,10 +72,12 @@ class QueryJobs:
         executor=None,
         delivery_executor=None,
         autostart=True,
+        on_finished=None,
     ):
         self.capacity = workers + queue_size
         self._workers = workers
         self._pipeline, self._deliver, self._clock = pipeline, deliver, clock
+        self._on_finished = on_finished
         self._start_wait, self._min_start = start_wait, min_start
         self._deadline, self._grace = deadline_seconds, notice_grace
         self._executor = (
@@ -198,8 +231,11 @@ class QueryJobs:
 
     def _send(self, state, reply):
         terminal = QueryStage.UNDELIVERED
+        result = None
+        started = self._clock()
         try:
-            terminal = self._deliver(state.job, reply).stage
+            result = self._deliver(state.job, reply)
+            terminal = result.stage
         except Exception:
             terminal = QueryStage.UNDELIVERED  # 경계 밖 전송 예외의 원문은 기록하지 않는다.
         finally:
@@ -211,6 +247,30 @@ class QueryJobs:
                 self._dedup[state.job.interaction.interaction_id] = DedupEntry(
                     state.job.interaction.interaction_id, DedupStage.DONE, expires
                 )
+        if self._on_finished is not None:
+            status = state.outcome.value if state.outcome is not None else getattr(reply, "status", "answered")
+            if terminal is QueryStage.UNDELIVERED:
+                status = terminal.value
+            if status not in {s.value for s in (*GenerationStatus, *QueryStage)}:
+                status = "failed"
+            record = QueryRunLog(
+                state.job.run_id,
+                "allowed",
+                state.job.interaction.private,
+                status,
+                failure=_safe_failure(state.outcome.value if state.outcome else getattr(reply, "failure", None)),
+                timings_ms={"deliver": max(0, int((self._clock() - started) * 1000))},
+                calls={"deliver": getattr(result, "calls", 0)},
+                deliver_retries=getattr(result, "retries", 0),
+                deliver_failure=_safe_failure(getattr(result, "failure", None))
+                or ("connection" if terminal is QueryStage.UNDELIVERED else None),
+                retrieval_summary=_numbers(getattr(reply, "retrieval_summary", {})),
+                generation_summary=_numbers(getattr(reply, "generation_summary", {})),
+            )
+            try:
+                self._on_finished(record)
+            except Exception:
+                return  # 기록 출력 실패도 요청 원문을 오류로 내보내지 않는다.
 
     def _watch(self):
         while not self._stop.is_set():

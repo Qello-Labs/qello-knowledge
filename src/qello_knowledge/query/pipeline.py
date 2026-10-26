@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import math
 from contextlib import ExitStack
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from time import monotonic, sleep
 
 from qello_knowledge.config.check import budget_settings, generation_settings
 from qello_knowledge.discord.render import render
-from qello_knowledge.domain.discord import QueryStage
+from qello_knowledge.domain.discord import QueryStage, RenderedReply
 from qello_knowledge.domain.generation import GenerationRequest, GenerationSettings
-from qello_knowledge.domain.retrieval import RetrievalRequest, RetrievalSettings
+from qello_knowledge.domain.retrieval import RetrievalFailure, RetrievalRequest, RetrievalSettings
 from qello_knowledge.domain.source_config import RetryPolicy
 from qello_knowledge.generation import GenerationDeps, generate
 from qello_knowledge.indexer.search_cli import query_retry_delay
@@ -58,6 +58,14 @@ class QueryParts:
     ledger: object
     outgoing_check: object
     closers: tuple = ()
+
+
+@dataclass(frozen=True)
+class QueryReply(RenderedReply):
+    status: str = "answered"
+    failure: str | None = None
+    retrieval_summary: dict = field(default_factory=dict, repr=False)
+    generation_summary: dict = field(default_factory=dict, repr=False)
 
 
 class _DeadlineStore:
@@ -196,13 +204,40 @@ class QueryPipeline:
             if answer.summary.generation_calls > 4:
                 raise ValueError("생성 호출 상한")
             stage(QueryStage.RENDERING)
-            reply = self._render(answer, private=job.interaction.private, **self._render_options)
+            reply = self._render(
+                answer,
+                private=job.interaction.private,
+                run_id=job.run_id,
+                question_max_chars=self._retrieval.question_max_chars,
+                **self._render_options,
+            )
             if (
                 result.summary.external_calls + answer.summary.generation_calls + len(reply.messages) * 2
                 > self._call_limit
             ):
                 raise ValueError("질의 호출 상한")
-            return reply
+            failure = answer.summary.failure
+            failure = failure.value if failure is not None else answer.summary.retrieval_failure
+            if (
+                failure is not None
+                and failure not in set(RetrievalFailure)
+                and failure != getattr(answer.summary.failure, "value", None)
+            ):
+                failure = "unexpected"
+            return QueryReply(
+                reply.messages,
+                reply.ephemeral,
+                reply.body_truncated,
+                answer.status.value,
+                failure,
+                {"external_calls": result.summary.external_calls},
+                {
+                    "generation_calls": answer.summary.generation_calls,
+                    "neurons": answer.summary.neurons,
+                    "measured": answer.summary.measured,
+                    "attempts": answer.summary.attempts,
+                },
+            )
         finally:
             # 늦게 끝난 생성도 사용량을 먼저 기록한 뒤 연결을 닫는다.
             close_failed = False

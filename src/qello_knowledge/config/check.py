@@ -130,6 +130,9 @@ def build_report(settings: Settings) -> CheckReport:
             ok = False
     checks = tuple(check for check in (_budget_check(settings), _generation_check(settings)) if check is not None)
     checks += _query_checks(settings)
+    source_check = _source_list_check(settings)
+    if source_check is not None:
+        checks += (source_check,)
     ok = ok and all(check.ok for check in checks)
     warnings = ()
     if settings.entrypoint is Entrypoint.QUERY and not _text(settings, "QK_DISCORD_ALLOWED_CHANNELS"):
@@ -160,3 +163,21 @@ def _query_checks(settings: Settings) -> tuple[CrossCheck, ...]:
     )
     # 통과 항목은 기존 보고 꼴을 유지한다(_generation_check와 같은 방식).
     return tuple(CrossCheck(name, False, name) for name, valid in rules if not valid)
+
+
+def _source_list_check(settings: Settings) -> CrossCheck | None:
+    from qello_knowledge.discord.render import source_capacity
+
+    if settings.entrypoint is not Entrypoint.QUERY:
+        return None
+    values = [
+        _text(settings, name)
+        for name in ("QK_DISCORD_TITLE_MAX_CHARS", "QK_DISCORD_LINK_MAX_CHARS", "QK_DISCORD_MAX_MESSAGES")
+    ]
+    if any(value is None for value in values):
+        return None
+    title, link, messages = (int(value) for value in values)
+    items, required = source_capacity(title, link, expand_top=RetrievalSettings().expand_top)
+    if items < 1 or required > messages - 1:
+        return CrossCheck("discord_source_capacity", False, "discord_source_capacity")
+    return None
