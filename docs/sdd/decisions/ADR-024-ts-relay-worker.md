@@ -20,7 +20,7 @@ Discord 중계 Worker를 npm 의존성 없는 TypeScript(`workers/relay/`)로 �
 
 ## Rationale
 
-- **CPU 한도.** JS Worker는 Pyodide 기동과 Python↔JS 변환이 없어 요청당 CPU가 크게 줄 것으로 본다 `(추론)`. 운영 CPU는 재배포 뒤 H04로 다시 잰다.
+- **CPU 한도.** JS Worker는 Pyodide 기동과 Python↔JS 변환이 없다. 재배포 뒤 운영 재측정에서 요청당 CPU가 최대 5 ms로 Free 한도 안이었다(Evidence).
 - **작은 이전 범위.** 옮길 것은 이전 `discord/relay.py`(약 90줄)와 `query/worker.py`(약 140줄)의 계약뿐이다. 질의 서비스와 검색·생성 계약은 바뀌지 않는다.
 - **의존성 없음.** 런타임 표준 API(Web Crypto Ed25519, `fetch`, `AbortSignal.timeout`)만 쓴다. 시험은 Node 내장 `node --test`와 타입 제거 실행으로 돌려 `package.json`·잠금 파일이 없다.
 - **같은 계약.** 이전 Python 계약 시험의 기대값을 TS 시험으로 옮기고, Worker 진입점을 실제 Ed25519 서명과 가짜 VPC 바인딩·`waitUntil`로 끝까지 돌린다.
@@ -41,17 +41,19 @@ Discord 중계 Worker를 npm 의존성 없는 TypeScript(`workers/relay/`)로 �
 - 로컬 확인(2026-10-27, wrangler 4.149.0, 로컬 workerd 호환 날짜 2026-10-13, 합성 Ed25519 키, 외부 호출 0): `/healthz` 200, 서명 없음·잘못된 서명 401, 서명된 PING `{"type":1}`,
   바인딩 없는 `/ask` → 대체 안내와 `{"kind":"relay_failed","error":"TypeError"}`
 
+- 운영 재측정(2026-10-27, tasks.md "H04 TS 중계 재측정"): 재배포한 TS Worker의 `/ask` 30건 CPU p50 2 ms·p95 5 ms·최대 5 ms, 10 ms 초과 0/30(Python은 23/23 초과). 업로드 8.4 KiB, 기동 2 ms.
+
 ## Data and cost
 
 - 외부로 전송되는 데이터: ADR-022와 같다. 언어만 바뀌고 Worker가 보는 데이터와 기록 항목(결과 종류·경과 시간·예외 이름)은 같다.
-- 무료 한도와 예상 사용량: Workers Free 안. 재배포 뒤 요청별 CPU가 10 ms 안인지 다시 잰다. Neurons 영향 없음.
+- 무료 한도와 예상 사용량: Workers Free 안. 재측정 요청별 CPU 최대 5 ms(한도 10 ms). Neurons 영향 없음.
 - 교체 시 영향: 인덱스 버전·임베딩 변경 없음. 개발 의존성 `workers-py`와 그 의존성 제거(`uv.lock` 패키지 항목 24개 → 16개).
 
 ## Consequences
 
 ### Positive
 
-- Worker CPU 한도 초과로 Discord가 "응답하지 않음"을 띄울 위험이 줄어든다(재측정으로 확인).
+- Worker CPU 한도 초과로 Discord가 "응답하지 않음"을 띄울 위험이 줄었다(재측정 0/30 초과).
 - Worker 기동이 빨라진다(Python 기동 681 ms가 없어진다).
 
 ### Negative / risks
