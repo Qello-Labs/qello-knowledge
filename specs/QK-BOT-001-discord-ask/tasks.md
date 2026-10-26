@@ -640,3 +640,18 @@ US6:     T052, T053 (시험) → T054 → T055
 - 전용 토큰: 사용자가 `qk-workers-ai-query-prod`(Qello 전용 계정 소유, Workers AI만, TTL 365일)를 만들고 verify `active`를 확인했다. 값·계정 ID는 대화·저장소에 없다. 서버 배치는 H02다(`docs/sdd/research/tokens.md` 6·7절).
 - 비용: 0 Neurons, 외부 모델 호출 0건.
 - 다음: H01(시험 질의 서비스로 터널·VPC Service·Worker 배포, Discord 수신 주소 서명 확인). 공유 인스턴스·Cloudflare·Discord를 바꾸므로 사람이 인증하고 명령마다 승인한다.
+
+### H01 Worker 로컬 확인 (2026-10-26)
+
+- 조건: 저장소 밖 사본(`pywrangler sync`·`dev`, wrangler 4.149.0 고정)에서 실행했다. VPC 바인딩은 원격이 필요해 로컬 설정 사본에서만 뺐다. 로컬 workerd가 호환 날짜 2026-10-13까지라 `--compatibility-date 2026-10-13`으로 낮췄다(배포는 2026-10-26 그대로). 합성 Ed25519 키, 외부 호출 0, Neurons 0.
+- 찾은 문제(원래 코드):
+  - `wrangler.toml`에 `base_dir`가 없어 번들에 `query/` 폴더 파일만 들어갔다. `qello_knowledge.config`·`discord`를 가져오지 못한다.
+  - 모든 요청이 500(`'Request' object has no attribute 'arrayBuffer'`).
+  - SDK 소스 기준(추론): SDK는 JS 클래스 이름이 `Fetcher`인 바인딩을 감싸 `fetch(url, **kwargs)`로 받고, 그 응답은 `bytes()`·`headers.get`을 쓴다. VPC Service 바인딩이 `Fetcher`인지는 소스로 확인할 수 없어 배포에서 확인한다.
+    `waitUntil`은 SDK ASGI 구현처럼 작업 프록시를 넘긴다.
+- 수정: `worker.py`(본문 `bytes()`, `fetch` 키워드 인자, `headers.get`, `waitUntil` 프록시와 정리, 실패 로그에 예외 클래스 이름만), `wrangler.toml`(`base_dir = "src"`, 번들 164개 모듈 약 710 KiB).
+- 수정 뒤 로컬 결과: `/healthz` 200, 서명 없음·잘못된 서명 401, 서명된 PING `{"type":1}`(Web Crypto Ed25519 FFI 동작), 바인딩 없는 `/ask` → 대체 안내 type 4(나만 보기), 로그 `{"kind": "relay_failed", "error": "AttributeError"}`.
+- 남은 확인(배포): VPC 바인딩 `fetch`의 요청 본문 전달, 응답 헤더 `X-QK-Run`, `waitUntil` 시작 확인 204, 호환 날짜 2026-10-26 배포.
+- 독립 검토(별도 에이전트, 읽기 전용, SDK 1.9.5·wrangler 4.149.0 소스 대조): 승인. High 0. Medium 1: VPC Service 바인딩이 `Fetcher`가 아니면 `/ask`가 대체 안내로 끝난다. 배포 첫 `/ask` 로그의 `error`로 확인하고 필요하면 그때 고친다.
+  Low: 확인 범위보다 단정적인 문구(반영), 시간 초과 때 응답 본문 읽기가 중단되지 않음(동작 영향 없음, 유지). 번들의 import 추적에서 표준 라이브러리 밖 모듈 수준 import 0건.
+- 시험 서비스 `measurement/h01_probe.py`: 로컬에서 합성 키로 PING 200, 변조·오래된 서명 401, 다른 애플리케이션 거부, `/ask` → type 5·`X-QK-Run`, 다른 서명의 시작 확인 409, 시작 확인 204와 갱신 1회, 재시작 확인 409를 확인했다(Discord 전송은 가짜로 바꿔 외부 호출 0).
