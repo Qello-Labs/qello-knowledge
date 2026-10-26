@@ -299,7 +299,7 @@ description: "QK-BOT-001 구현 작업 목록"
 | H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | 2026-10-27 완료(아래 "H01 배포 확인"). Worker CPU 초과 위험은 H04 | 0 Neurons |
 | H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | H01 뒤 | 0 Neurons |
 | H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | H02 뒤 | 0 Neurons |
-| H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | H02 뒤 | 0 Neurons |
+| H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | 일부 2026-10-27(아래 "H04 일부 측정"). M-03 실제 질의 서비스와 `qk-query` 자원은 H02 뒤 | 0 Neurons |
 | H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다. 실측 동안 인스턴스 자원(아래 "인스턴스 자원 기록")을 함께 잰다 | H04 뒤 | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
 
 ---
@@ -341,14 +341,14 @@ Workers AI, 인스턴스는 DB 질의 2~3회와 중계, 동시 실행 2)은 아�
 
 | 항목 | 재는 방법(읽기 전용) | 기준선(H04, 질의 없음 10분) | 실측 중(H05) 최대 |
 | --- | --- | --- | --- |
-| 인스턴스 가용 메모리 | `free -m`의 available | 미측정 | 미측정 |
-| 인스턴스 CPU | `uptime`의 1분 load average, `mpstat 5`(설치돼 있으면)의 사용률 | 미측정 | 미측정 |
-| 질의 서비스 메모리 | `systemctl show qk-query -p MemoryCurrent`를 5초마다 기록한 최대값(`MemoryMax=512M` 대비 %). `memory.peak`가 있으면 그 값 | 미측정 | 미측정 |
+| 인스턴스 가용 메모리 | `free -m`의 available | 4,505~4,536 MB(2026-10-26, 질의 없음 10분 20회) | 미측정 |
+| 인스턴스 CPU | `uptime`의 1분 load average, `mpstat 5`(설치돼 있으면)의 사용률 | load 0.00~0.20 | 미측정 |
+| 질의 서비스 메모리 | `systemctl show qk-query -p MemoryCurrent`를 5초마다 기록한 최대값(`MemoryMax=512M` 대비 %). `memory.peak`가 있으면 그 값 | 미측정(H02 뒤. H04 일부 때는 시험 서비스 13 MB) | 미측정 |
 | 질의 서비스 CPU 시간 | `systemctl show qk-query -p CPUUsageNSec`의 실측 전후 차이 ÷ 질문 수 | 해당 없음 | 미측정(질문당 ms) |
-| 터널(`cloudflared`) 메모리·CPU | 같은 방법으로 `cloudflared` 서비스 | 미측정 | 미측정 |
-| DB 컨테이너 | `docker stats --no-stream --format '{{.Name}} {{.CPUPerc}} {{.MemUsage}}'`의 `qk-postgres` 행(상한 1.5 GB 대비 %) | 미측정 | 미측정 |
-| 질의 역할 DB 연결 수 | 승인한 관리 연결에서 `SELECT count(*) FROM pg_stat_activity WHERE usename = 'qk_query'` | 미측정 | 미측정(실행 자리 수 이하여야 함) |
-| 회의 봇 영향 | 같은 `docker stats`의 회의 봇 컨테이너 행(이름은 기록하지 않고 "회의 봇 1·2"로), 실측 동안 재시작 수(`docker ps`의 STATUS) | 미측정 | 미측정 |
+| 터널(`cloudflared`) 메모리·CPU | 같은 방법으로 `cloudflared` 서비스 | `qk-cloudflared` 14 MB, CPU 882 ms/10분(약 0.15%) | 미측정 |
+| DB 컨테이너 | `docker stats --no-stream --format '{{.Name}} {{.CPUPerc}} {{.MemUsage}}'`의 `qk-postgres` 행(상한 1.5 GB 대비 %) | CPU 0~3.1%, 262 MiB(약 17%) | 미측정 |
+| 질의 역할 DB 연결 수 | 승인한 관리 연결에서 `SELECT count(*) FROM pg_stat_activity WHERE usename = 'qk_query'` | 미측정(H02 뒤, `qk_query` 로그인 전) | 미측정(실행 자리 수 이하여야 함) |
+| 회의 봇 영향 | 같은 `docker stats`의 회의 봇 컨테이너 행(이름은 기록하지 않고 "회의 봇 1·2"로), 실측 동안 재시작 수(`docker ps`의 STATUS) | 회의 봇 1: CPU 0~0.06%, 120 MiB. 회의 봇 2: CPU 0.04~0.62%, 430 MiB. 재시작 0 | 미측정 |
 | 메모리 부족 종료 | 실측 시간대의 `journalctl -k --since <start>`에서 'out of memory' 줄 수(`grep -ci`) | 해당 없음 | 미측정(0이어야 함) |
 | 동기화와 겹침(선택) | 예약 동기화(00:30 UTC)가 도는 동안 질문 1~2개를 넣어 retrieve ms·갱신까지 ms를 평소 값과 비교. 질문 세트 안의 번호로 하고 Neurons를 따로 늘리지 않는다 | 해당 없음 | 미측정 |
 
@@ -676,3 +676,26 @@ US6:     T052, T053 (시험) → T054 → T055
 - 정리: 시험 서비스 중지(임시 유닛 제거), `h01-probe.env`·값 입력 스크립트·`/usr/local/lib/qk-h01` 삭제, Bastion 세션 삭제. 남긴 것: 터널, `qk-cloudflared`, 터널 토큰 파일과 입력 스크립트 `/usr/local/sbin/qk-tunnel-token-setup`,
   VPC Service, Worker, 수신 주소, `/ask` 명령. H02 전까지 `/ask`는 Worker 대체 안내("지금은 답할 수 없습니다", 나만 보기)를 받는다 `(추론, 중지 뒤 호출 미확인)`.
 - 남은 일: H02(실제 질의 서비스 구성), H03(SC-010), H04(CPU·첫 응답 측정), H05(실측). 사람 확인: 로컬 `.env` 권한이 644로 `tokens.md` 기록(600)과 다르다.
+
+### H04 일부 측정 (2026-10-27, H02 전)
+
+- 조건: H01과 같은 Worker(커밋 `c512170`)·터널·VPC Service. 시험 서비스(커밋 대기 중인 거부 경로 흉내 포함)를 임시 유닛으로 다시 띄웠다. 시험 채널에서 사람이 시험 문구로 `/ask`를 보냈다.
+  Worker 기록은 `wrangler tail`의 요청별 `cpuTime`·`wallTime`과 Worker 로그(`relayed`, 중계 왕복 ms)다. Workers AI·DB 호출 0, Neurons 0.
+- 표본: 23건. 거부 경로 흉내(`나만_보기` 켬 → 시험 서비스 type 4, 시작 확인 없음) 10건, 허용 경로(type 5 + 시작 확인 204 + 원 메시지 갱신 200) 13건. 23건 모두 outcome `ok`, `exceededCpu`·Worker `error` 0건.
+  시험 서비스 기록과 건수가 같다(type 4 10, type 5 13, 시작 확인 204 13, 갱신 200 13, 갱신 p50 371 ms·최대 829 ms).
+
+| 경로 | n | Worker CPU p50 / p95 / 최소 / 최대 (ms) | 10 ms 초과 | 중계 왕복 p50 / p95 / 최대 (ms) |
+| --- | --- | --- | --- | --- |
+| 거부 흉내(type 4) | 10 | 29.5 / 155.5 / 18 / 250 | 10/10 | 357 / 841 / 1,146 |
+| 허용(type 5 + 시작 확인) | 13 | 37 / 144 / 21 / 172 | 13/13 | 369 / 381 / 382 |
+| 전체 | 23 | 31 / 167 / 18 / 250 | 23/23 | 366 / 460 / 1,146 |
+
+- 해석: 따뜻한 isolate에서도 CPU가 18~52 ms로 Free 한도(10 ms)의 2~5배이고, 새 isolate로 보이는 요청(첫 요청 250 ms, 46초 쉰 뒤 연속 3건 108~172 ms)은 10~25배다. 이번 표본에서는 끊기지 않았지만
+  문서상 "꾸준히" 넘으면 1102로 끊는 조건에 해당한다. 허용 경로 CPU에는 `waitUntil` 시작 확인 처리도 들어 있다 `(추론)`. 비교로 서명 검사만 하는 PING은 8 ms(H01, 1건)였다.
+- 첫 응답 시간: Discord가 기다리는 첫 응답은 Worker가 시험 서비스 응답을 받아 돌려주는 시점이다. 중계 왕복 p50 366 ms·p95 460 ms·최대 1,146 ms, Worker wall(거부 흉내) 최대 1,164 ms로 3초 안이다.
+  실제 질의 서비스의 첫 응답 결정(M-03)은 H02 뒤에 잰다.
+- 인스턴스 기준선(질의 없음 10분, 30초 간격 20회): 위 "인스턴스 자원 기록" 표 기준선 열. 측정 시간대(기준선 시작부터 `/ask` 뒤까지) 커널 로그의 메모리 부족 종료 0줄. 측정 뒤 가용 4,526 MB, load 0.15.
+  첫 수집 스크립트의 메모리 부족 종료 집계는 시각 형식 오류로 무효였고, 같은 구간을 다시 조회한 값이 위 0줄이다.
+- 판정(M-02): Worker CPU가 Free 한도를 **꾸준히** 넘는다(23/23). research R-13의 대안 발동 조건("자주 넘으면")에 해당하므로 중계만 TypeScript로 옮기는 안을 사람 결정으로 올린다.
+  대안: Python 안에서 줄이기(PING 8 ms가 하한에 가까워 10 ms 안쪽 보장은 어렵다고 본다 `(추론)`), Workers Paid(월 고정비, ADR-008·C-05 승인 필요).
+- 미측정: PING(연결 확인) 10회(Discord는 수신 주소 저장 때만 보낸다), 대시보드 Worker 지표, 실제 질의 서비스 경로. 정리: 시험 서비스 중지·임시 파일 삭제·Bastion 세션 삭제.

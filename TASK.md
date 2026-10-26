@@ -19,7 +19,9 @@
 - #58의 남은 완료 조건(허용 채널 `/ask` 실측)으로 가는 사람 단계 가운데 H00 운영 게이트를 닫고 근거를 기록한다(`specs/QK-BOT-001-discord-ask/tasks.md` 사람 단계).
 - H01(M-01): 시험 질의 서비스(연결 확인만 응답)로 Tunnel·Workers VPC Service·Worker 배포와 Discord 수신 주소 등록을 해 Python Worker의 미확인 런타임 API를 확인한다
   (요청 본문·Web Crypto 서명 검사·VPC 바인딩 `fetch`·`waitUntil`·`[[vpc_services]]` 설정·`pywrangler` 번들). 2026-10-26 사용자 요청으로 범위에 더했다.
-- H02 이후(실제 질의 서비스 구성·실측)는 H01 결과를 보고 사람이 이 계약에 더한다.
+- H04 일부(M-02 Worker CPU, 시험 서비스 기준 첫 응답 시간, 인스턴스 자원 기준선): H01에서 Worker CPU가 Free 한도를 크게 넘어 H02 전에 먼저 잰다(2026-10-27 사용자 결정).
+  M-03의 실제 질의 서비스 첫 응답과 `qk-query` 자원 항목은 H02 뒤에 잰다.
+- H02 이후(실제 질의 서비스 구성·실측)는 H04 일부 결과를 보고 사람이 이 계약에 더한다.
 
 ## Scope
 
@@ -36,6 +38,9 @@
   - 공유 인스턴스: `cloudflared` 설치와 서비스(터널 토큰은 root 전용 파일에 숨김 입력), 시험 질의 서비스의 임시 실행(`systemd-run`, 비특권 사용자, H01 끝나면 중지)
   - Discord(`Qello Knowledge` 애플리케이션): Interactions Endpoint URL 등록, 서버 한정 `/ask` 명령 등록(`register-commands`, 먼저 `--dry-run`. 봇 토큰은 사용자 로컬 `.env`)
   - 시험 채널에서 `/ask` 소수 호출로 중계·시작 확인 경로 확인, Workers Logs에 요청 본문이 없는지 확인
+- H04 일부(2026-10-27 사용자 승인): 시험 서비스에 거부 경로 흉내(`나만_보기`를 켜면 type 4) 추가, 시험 서비스 재배치(공유 인스턴스 임시 유닛, 값 숨김 입력), 인스턴스 자원 기준선 10분 수집(읽기 전용),
+  시험 채널 `/ask` 허용·거부 경로 각 10회 이상, `wrangler tail`로 요청별 CPU·wall 기록, 측정 뒤 시험 서비스 중지
+- QK-CHK-001 명세의 코드 자료원 결정 기록 번호를 `ADR-022`에서 `ADR-023`으로 정정(`specs/QK-CHK-001-code-chunker/` plan·quickstart·research·tasks, 2026-10-27 사용자 요청)
 - H01 로컬 확인으로 찾은 Worker 수정(2026-10-26 사용자 승인으로 더함):
   - `src/qello_knowledge/query/worker.py`: Python Workers SDK의 요청·응답 본문(`bytes()`), VPC 바인딩 `fetch(url, **kwargs)`, `headers.get`, `waitUntil` 프록시. 실패 로그에 예외 클래스 이름만 더함
   - `wrangler.toml`: `base_dir = "src"`
@@ -113,3 +118,9 @@ H00 문서는 위 두 줄이 해당한다. H01 시험 서비스를 더하면 `uv
 - 2026-10-27 사실: 아래쪽 Herdr 패널 하나를 `exit`으로 실수로 닫았다(실행 중 작업 없음). 같은 위치에 새 패널을 열었다.
 - 2026-10-27 사실: 시험 서비스와 임시 파일을 지웠다. Workers AI·DB 호출 0, Neurons 0. 터널·Worker·수신 주소·명령은 H02에서 쓰려고 남긴다.
 - 2026-10-26 사실: `main`의 QK-CHK-001 계약이 `ADR-022-code-sources.md`를 만들 예정인데, ADR-022는 이미 `ADR-022-discord-query-path.md`가 쓰고 있다. 이 작업 범위 밖이라 그 작업 담당자에게 알린다.
+- 2026-10-27 사용자 결정: QK-CHK-001 쪽 번호를 바꾼다. 명세 네 파일의 코드 자료원 ADR 언급 14곳을 `ADR-023`으로 고쳤다(모든 원격 브랜치에서 ADR-023 미사용 확인). QK-CHK-001 구현 브랜치 담당자에게 알린다.
+- 2026-10-27 사용자 요청: 로컬 `qello-knowledge/.env` 권한을 644에서 600으로 되돌렸다(내용은 읽지 않음).
+- 2026-10-27 사용자 결정: H02 전에 H04 일부(Worker CPU)를 먼저 잰다.
+- 2026-10-27 사실(H04 일부, 사람 인증·명령별 승인): `/ask` 23건(거부 흉내 10, 허용 13) 모두 `ok`였지만 Worker CPU가 23/23건 10 ms를 넘었다(p50 31 ms, p95 167 ms, 최대 250 ms).
+  첫 응답(중계 왕복) p50 366 ms·최대 1,146 ms로 3초 안. 인스턴스 기준선은 가용 약 4.5 GB, load 0.2 이하, 메모리 부족 종료 0. 자세한 내용은 tasks.md "H04 일부 측정".
+  R-13 대안 발동 조건에 해당해 중계를 TypeScript로 옮길지 사람 결정이 필요하다.
