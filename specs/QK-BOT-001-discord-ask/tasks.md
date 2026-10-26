@@ -238,16 +238,16 @@ description: "QK-BOT-001 구현 작업 목록"
 
 **Independent Test**: 로컬 DB에서 `qk_query`로 허용·거부 목록을 확인한다(spec US5 Independent Test 로컬 부분). 공인 주소 접속 시험은 사람 단계 H03.
 
-- [ ] T048 [P] [US5] `tests/localdb/query/test_bot_query_role.py`(data-model 4절, spec FR-019, SC-010 로컬 부분): 마이그레이션 뒤 시험 안에서 `qk_query`에 시험용 로그인을 준(`SET ROLE qk_query`로 대신해도 된다) 연결로
+- [X] T048 [P] [US5] `tests/localdb/query/test_bot_query_role.py`(data-model 4절, spec FR-019, SC-010 로컬 부분): 마이그레이션 뒤 시험 안에서 `qk_query`에 시험용 로그인을 준(`SET ROLE qk_query`로 대신해도 된다) 연결로
   성공: 검색·문맥 함수(`qk.search_vector`, `qk.search_keyword`, `qk.search_keyword_terms`, `qk.chunk_context`, `qk.chunk_neighbors`), `qk.embedding_record`(`purpose = 'query'`), `qk.embedding_usage_today`, `qk.generation_record`,
   `qk.generation_usage_today`, 저장소 검색 경로(`PostgresStore`) 한 번. 거부: 예산이 충분한 값으로 부른 `qk.embedding_reserve`(INSERT 분기까지 가서 RLS 거부), 직접 `purpose = 'index'` INSERT, `qk.artifact`·`qk.chunk`·`qk.embedding`·`qk.index_version`
   쓰기·지우기, 사용량 기존 행 `UPDATE`·`DELETE`, `qk.embedding_usage_daily`·`qk.generation_usage_daily` 쓰기, 정산(`qk.embedding_settle`)·정리(`*_prune`) 함수, `qk.sync_*` 읽기·쓰기, `CREATE`·`ALTER`. 소유자 역할로 `qk.embedding_reserve`와
   `purpose = 'index'` 기록이 그대로 됨(RLS가 소유자에 영향 없음). 마이그레이션을 두 번 실행해도 같음
-- [ ] T049 [P] [US5] `tests/unit/query/test_bot_store_unavailable.py`(spec US5-4, FR-020): 저장소 연결 실패·질의 시간 초과를 넣으면 질의 마감 안에 "지금은 자료를 검색할 수 없습니다…" 안내로 갱신, 검색 재시도는 마감 안에서만
-- [ ] T050 [US5] `src/qello_knowledge/adapters/postgres/migrations/0007_query_role.sql`: `NOLOGIN` 역할 `qk_query`(이미 있으면 만들지 않음), data-model 4절 권한 목록 그대로, `qk.embedding_usage`에 `ENABLE ROW LEVEL SECURITY`와
+- [X] T049 [P] [US5] `tests/unit/query/test_bot_store_unavailable.py`(spec US5-4, FR-020): 저장소 연결 실패·질의 시간 초과를 넣으면 질의 마감 안에 "지금은 자료를 검색할 수 없습니다…" 안내로 갱신, 검색 재시도는 마감 안에서만
+- [X] T050 [US5] `src/qello_knowledge/adapters/postgres/migrations/0007_query_role.sql`: `NOLOGIN` 역할 `qk_query`(이미 있으면 만들지 않음), data-model 4절 권한 목록 그대로, `qk.embedding_usage`에 `ENABLE ROW LEVEL SECURITY`와
   `FOR SELECT TO qk_query USING (true)`, `FOR INSERT TO qk_query WITH CHECK (purpose = 'query')` 정책. `FORCE ROW LEVEL SECURITY`를 쓰지 않고, `PUBLIC`의 함수 `EXECUTE`를 거두지 않으며, `UPDATE`·`DELETE` 정책을 두지 않는다.
   권한 목록을 함수가 실제로 쓰는 표·시퀀스와 대조한 결과(빠진 권한, 더한 권한)를 data-model 4절과 "실행 기록"에 적는다. 운영 적용은 사람 단계(H02)다
-- [ ] T051 [US5] `docs/ops/oci-production-store.md`: 질의 서비스 절을 더한다(quickstart 3절과 research R-14). 전제(ADR-022 승인, 팀원 동의, Tunnel 요금·데이터 처리 정책 기록, 바깥 방향 UDP 7844 읽기 전용 확인,
+- [X] T051 [US5] `docs/ops/oci-production-store.md`: 질의 서비스 절을 더한다(quickstart 3절과 research R-14). 전제(ADR-022 승인, 팀원 동의, Tunnel 요금·데이터 처리 정책 기록, 바깥 방향 UDP 7844 읽기 전용 확인,
   운영 색인·마이그레이션 역할이 `qk.embedding_usage` 소유자나 슈퍼유저인지 확인), 전용 사용자 `qkquery`, `qk-query.service`(`User=qkquery`, `EnvironmentFile=/etc/qello-knowledge/query.env`, 루프백 포트, 격리 설정은
   `qk-sync-notify@.service`와 같은 수준), `query.env`(root:qkquery, 0640, 숨김 입력), `cloudflared`(원격 관리 터널, 2025.7.0 이상), 마이그레이션 0007 적용 순서(코드 병합 전), `qk_query` `LOGIN`·암호 숨김 입력,
   Workers VPC Service·Worker 배포·Discord 수신 주소·명령 등록, SC-010 공인 주소 포트 확인, 되돌리기. 주소·토큰·식별자는 placeholder로 쓴다
@@ -262,13 +262,13 @@ description: "QK-BOT-001 구현 작업 목록"
 
 **Independent Test**: 등록 명령을 가짜 Discord 전송으로 두 번 실행해 결과가 같은지 본다(spec US6 Independent Test). 실측은 사람 단계.
 
-- [ ] T052 [P] [US6] `tests/unit/query/test_bot_register_commands.py`(contracts/cli.md, contracts/discord-outbound.md 2절, spec FR-003·FR-022, SC-011 등록 부분): `--dry-run`은 contracts 2절 JSON 그대로(`name` `ask`, `contexts: [0]`,
+- [X] T052 [P] [US6] `tests/unit/query/test_bot_register_commands.py`(contracts/cli.md, contracts/discord-outbound.md 2절, spec FR-003·FR-022, SC-011 등록 부분): `--dry-run`은 contracts 2절 JSON 그대로(`name` `ask`, `contexts: [0]`,
   `질문` `required`·`min_length: 1`·`max_length` = `RetrievalSettings.question_max_chars`(2,000), `나만_보기` 선택 참·거짓)를 표준 출력에 내고 전송 0회, 토큰 없이도 됨. 실제 실행은 `PUT …/guilds/{guild_id}/commands`와 `Authorization: Bot`을 쓰고 두 번 실행해도
   같은 본문. 종료 코드 0 성공, 2 설정 오류(필요 설정: `DISCORD_APPLICATION_ID`, `QK_DISCORD_GUILD_ID`, `DISCORD_BOT_TOKEN`, 진입점 `REGISTER`), 3 Discord 오류(상태 코드만 출력, 응답 본문·토큰 없음)
-- [ ] T053 [P] [US6] `tests/unit/query/test_bot_run_log.py`(spec FR-016·FR-021·FR-025, SC-012 자동 부분): 질의마다 운영 로그 한 줄, `timings_ms`에 `first_response`·`retrieve`·`generate`·`deliver`, `calls`에 단계별 실제 호출 수,
+- [X] T053 [P] [US6] `tests/unit/query/test_bot_run_log.py`(spec FR-016·FR-021·FR-025, SC-012 자동 부분): 질의마다 운영 로그 한 줄, `timings_ms`에 `first_response`·`retrieve`·`generate`·`deliver`, `calls`에 단계별 실제 호출 수,
   합이 `QK_QUERY_CALL_LIMIT` 이하, `deliver_retries`·`deliver_failure`, 요약은 수치·이름 항목만, Neurons는 측정·추정 구분이 요약에 남음
-- [ ] T054 [US6] `src/qello_knowledge/query/server.py`: `register-commands --env-file <경로> [--dry-run]` 하위 명령(T052)과 운영 로그 항목 채우기(T053)
-- [ ] T055 [US6] 이 파일 "사람 단계"의 실측 기록 꼴을 확정한다: FR-025 항목(날짜, 질문 세트 이름·버전, 질문 수, SC-002 판정 기준, 생성 모델·프롬프트 버전, 질의 임베딩 모델, 인덱스 버전·색인 시점, 실행 방식)과
+- [X] T054 [US6] `src/qello_knowledge/query/server.py`: `register-commands --env-file <경로> [--dry-run]` 하위 명령(T052)과 운영 로그 항목 채우기(T053)
+- [X] T055 [US6] 이 파일 "사람 단계"의 실측 기록 꼴을 확정한다: FR-025 항목(날짜, 질문 세트 이름·버전, 질문 수, SC-002 판정 기준, 생성 모델·프롬프트 버전, 질의 임베딩 모델, 인덱스 버전·색인 시점, 실행 방식)과
   질문별 처리 중 응답 시간·갱신까지 시간·단계별 시간·Worker CPU·외부 호출 수·Neurons(측정·추정). 질문 원문은 넣지 않고 번호로 가리킨다. 실측 질문 세트는 코드와 다른 커밋으로 넣는다(AGENTS.md 3.4 취지)
 
 **Checkpoint**: 전체 단위·로컬 DB 시험 통과.
@@ -303,6 +303,39 @@ description: "QK-BOT-001 구현 작업 목록"
 | H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다 | H04 뒤 | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
 
 ---
+
+### 실측 기록 꼴 (T055, 2026-10-26 확정, 아직 미실행)
+
+실측 질문·정답 라벨은 개인정보를 지우고 코드와 **다른 커밋**으로 먼저 고정한다. 아래에는 질문 번호만 쓴다. 질문·답변·출처 원문, 주소·Discord 식별자·토큰은 기록하지 않는다.
+실행 전에 질문 수 × 예상 Neurons와 당일 잔여량을 보고하고 사람 확인을 받는다. 미측정 값은 0이 아니라 `미측정`으로 남긴다.
+
+| 공통 조건 | 기록할 값 |
+| --- | --- |
+| 날짜·환경·실행 방식 | `<date-and-timezone>`, `<environment-label>`, Python 중계 Worker → VPC/Tunnel → OCI 질의 서비스, `<release-version>` |
+| 질문 세트 | `<set-name>`, `<set-version>`, 질문 수 `<n>`(10~12개), 자료로 답할 수 있음/없음 각 표본 수, 나만 보기 표본 수(≥1) |
+| SC-002 판정 기준 | 자료로 답할 수 있는 질문: 모두 출처 목록이 있고 각 링크가 원본 문서를 엶. 자료에 없는 질문: 모두 "제공된 자료만으로 확인할 수 없습니다.". 사람이 화면 대조로 확정 |
+| 모델·프롬프트 | 생성 `<model-id>`, `<prompt-version>`, 질의 임베딩 `<embedding-model>` |
+| 색인 조건 | `<index-version>`, `<indexed-at>`, `<chunking-version>` |
+| 제한·예산 | 질의 마감 `<seconds>`, 안내 전달 마감 `<seconds>`, 외부 호출 상한 `<calls>`(기본 20), Worker CPU 한도 10 ms, 예상/실사용 Neurons, 측정·추정 구분 |
+
+질문마다 다음 두 표를 같은 번호로 연결한다. 첫 표의 처음 두 시간은 **Discord 화면 기준 전체 경로**이고, `first_response`는 **OCI 요청 처리 시간**이다.
+OCI 로그의 `first_response`만으로 SC-001의 3초를 판정하지 않는다. Worker 지표의 CPU·subrequest는 별도로 수집하며 OCI 외부 호출 합계와 구분한다.
+
+| 질문 번호 | 유형(있음/없음) | 나만 보기 | 처리 중 응답 ms | 갱신까지 ms | first_response ms | retrieve ms | generate ms | deliver ms | Worker CPU ms |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `<question-number>` | `<kind>` | `<bool>` | 미측정 | 미측정 | 미측정 | 미측정 | 미측정 | 미측정 | 미측정 |
+
+| 질문 번호 | 검색/생성/전달 호출 수·합계 | Worker subrequest 수 | 전달 재시도·실패 종류 | 임베딩 Neurons·측정/추정 | 생성 Neurons·측정/추정 | SC-001·002·012·013 판정 | 값 가린 화면 기록 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `<question-number>` | 미측정 | 미측정 | 미측정 | 미측정 | 미측정 | 미확인 | `<evidence-label>` |
+
+OCI 호출 수는 시작한 제공자 호출·사용량 기록·검색 호출·Discord 전송의 시도 수(실패·재시도 포함)다. 검색·생성 요약은 기존 계약을 그대로 유지하므로 오류 때 보수적으로 센 요약값과 실제 호출 수가 다를 수 있다.
+마감 안내 로그는 안내 전달 때까지의 값이며, 아직 진행 중인 제공자 호출의 최종 사용량은 나중에 사용량 장부에 남는다. 실측 합산 때 같은 실행의 최종 장부를 확인하고 중복 합산하지 않는다.
+임베딩 요약의 `estimated_neurons`는 호출 전 예상치이고 `neurons`의 측정 여부는 `measured`로 구분한다. 생성도 `neurons`·`measured`를 함께 쓴다.
+
+마지막에 표본 수와 함께 처리 중 응답·갱신 시간 각각 p50·p95, Worker CPU p50·p95, 3초·안내 전달 마감·호출 상한 충족 건수/전체 건수와 SC-002 사람 판정을 기록한다.
+초과한 항목은 단계·한도·실측값·대안을 남긴다. Worker CPU 초과가 반복되면 research R-13의 TypeScript 중계 대안을 검토한다.
+SC-005는 별도 합성 비밀값 요청으로 질문자/다른 구성원 화면을 대조한다(합성 값도 기록하지 않음). 이는 자동 시험 결과나 승인으로 대신하지 않는다.
 
 ## Dependencies & Execution Order
 
@@ -480,3 +513,47 @@ US6:     T052, T053 (시험) → T054 → T055
   샌드박스 밖 검증은 중간 요청하지 않았으며 마지막 명령 목록으로만 넘긴다. 새로 추가한 로컬 DB 시험은 없다. US5는 미착수다.
 - 2026-10-26 T045 계산값(오케스트레이터가 시험·상수에서 확인): 기본 설정(제목 80, 링크 300, `expand_top` 8, 2,000자)에서 출처 항목 최대 길이 545자, 메시지당 3항목, 출처에 필요한 메시지 3개 ≤ 메시지 상한 4 − 1(`source_capacity(80, 300, expand_top=8) == (3, 3)`). spec FR-012 추론값(551자, 3항목, 3개)과 같은 결론이다.
 - 2026-10-26 US2~US4 검증(오케스트레이터, 샌드박스 밖): `QK_REQUIRE_LOCALDB=1` 전체 2,197 passed(외부 2 제외), preflight·ruff·format·`git diff --check` 통과. Codex 세션은 마지막 검증 중 모델 용량 초과로 멈췄다.
+
+- 2026-10-26 US5~US6 재개: git log에서 `117ecbe`·`877a151`, 시작 시 깨끗한 작업 트리와 작업 브랜치를 확인했다. 이번 범위는 T048~T055뿐이며 Polish는 시작하지 않았다.
+- 2026-10-26 T048 RED(오케스트레이터, 샌드박스 밖): `QK_REQUIRE_LOCALDB=1 .venv/bin/python -m pytest tests/localdb/query/test_bot_query_role.py -q` 결과 40 failed.
+  38건은 `0007 role missing`, 나머지는 RLS 미설정과 0007 파일 부재다. 이 결과를 받은 뒤에만 0007을 작성했다. 이후 DB 시험 실행을 중간에 다시 요청하지 않았다.
+  T048은 GREEN 미확인으로 체크하지 않는다. 시험은 기존 세션별 임시 DB에서 SET LOCAL ROLE을 쓰며 운영 DB·로그인·공유 테이블에는 적용하지 않았다.
+- 2026-10-26 T050: 0007에 NOLOGIN 역할, 검색·문맥 읽기, 질의 임베딩·생성 사용량 INSERT/SELECT, 두 사용량 시퀀스 USAGE, embedding_usage SELECT/INSERT RLS를 썼다.
+  0002~0006 함수 본문과 권한 목록을 대조한 결과를 data-model 4절에 적었다. 빠진 표·시퀀스 권한이나 승인 밖 추가 권한은 없고, 보조 함수 세 개(embedding_utc_day·embedding_amount·embedding_used)를 명시했다.
+  오늘 합계 함수는 daily 표를 읽지 않지만 승인된 집계 읽기 계약의 SELECT는 유지했다. PUBLIC EXECUTE를 유지하므로 reserve는 RLS, settle·prune은 표 변경 권한에서 막는 구성이다.
+  FORCE·UPDATE/DELETE 정책은 없으며 0001~0006을 바꾸지 않았다. 로컬 DB GREEN·기존 localdb 회귀와 운영 소유권 확인은 별도 오케스트레이터/사람 단계다.
+- 2026-10-26 T049: 저장소 시간 초과를 전체 질의 시간 초과로 바꾸던 경로의 RED를 확인한 뒤 질의 조립 경계에서 StoreUnavailable로 바꿨다.
+  추가 경계 시험으로 50초에 저장소 실패가 돌아와도 생성 최소 7초 검사에 가려지는 RED 2건을 확인했다. 검색 실패·빈 Context의 생성 API 없는 안내는 그 하한 검사를 거치지 않게 했다.
+  마감 전 연결 실패·시간 초과는 검색 불가 안내, 55초 마감 도달은 기존 시간 초과 안내다. 저장소 검색 재시도는 없고 늦은 결과도 다시 실행하지 않는다. retrieval/과 store.py는 바꾸지 않았다.
+- 2026-10-26 T051: OCI 운영 문서에 H00 게이트, 소유권 확인, 별도 읽기 전용 질의 릴리스, qkquery, query.env 숨김 입력·원자 교체, systemd, 원격 관리 터널·VPC·Worker·Discord, 폐쇄 포트 확인과 되돌리기를 더했다.
+  주소·토큰·비공개 식별자는 placeholder뿐이다. 별도 릴리스는 기존 동기화의 uv sync가 query 의존성을 제거하거나 실행 중 코드를 교체하지 않게 하기 위함이다.
+  qk-sync-notify@.service 원문은 현재 저장소에 없으므로 관리자 대조를 운영 적용 전 게이트로 적었다. 제시한 MemoryMax는 실측값이 아니며 관리자 확인이 필요하다. 운영 명령은 실행하지 않았다.
+- 2026-10-26 T052~T054: register-commands 부재 RED 15건을 확인한 뒤 REGISTER 설정·토큰 없는 dry-run·동일한 PUT 본문·종료 코드 0/2/3을 구현했다. 시험은 가짜 전송만 쓴다.
+  T053은 QueryCalls 부재 수집 오류 RED를 확인하고 호출·시간 기록을 구현했다. 조립 경계에서 제공자·장부·검색 시도를 세고 기존 검색·생성 요약은 바꾸지 않는다.
+  작업 상태 잠금 아래 단계 시간을 마무리하고, 즉시 안내에는 실행하지 않은 단계 0을 넣는다. 허용된 수치만 로그로 보내며 임베딩/생성 Neurons 측정·추정 구분을 남긴다.
+  마감 안내가 먼저 나가면 그 시점 호출 수로 로그 한 줄을 확정하며 늦은 사용량은 장부에 남는다. 성공·실패 호출, 지연 사용량 경합, 양쪽 모델 측정·추정, 최대 재시도와 4메시지(검색 7 + 생성 4 + 전달 8 = 19 ≤ 20)를 가짜 시계로 확인했다.
+- 2026-10-26 T055: 사람 단계에 FR-025 공통 조건·질문 번호별 시간/호출/Neurons·SC-002 화면 판정·p50/p95 기록 꼴을 확정했다. OCI first_response와 Discord 전체 경로 첫 응답을 구분한다.
+  질문 세트·정답 라벨은 코드와 다른 커밋에 먼저 고정하고, 이번에는 실제 질문·측정값·평가 자료를 만들거나 외부 API를 호출하지 않았다(0 Neurons).
+
+- 2026-10-26 US6 체크포인트(실행 에이전트 자체 검사): `.venv/bin/python -m pytest tests/unit -q --tb=short` 결과 **1,946 passed, 2 failed**(3.18초).
+  실패는 기존 `tests/unit/query/test_server.py::test_serve_answers_healthz_on_loopback`, `tests/unit/test_conftest_guards.py::test_loopback_connection_is_allowed`뿐이며 둘 다 socket.bind의 PermissionError(샌드박스)다.
+  `.venv/bin/ruff check .` 통과, `.venv/bin/ruff format --check .` 통과(530 files), `git diff --check` 통과. T048 시험 40건 수집만 통과했고 DB GREEN은 실행하지 않았다.
+  변경 파일 12개에 domain.secret_rules.RULES를 직접 적용한 보조 검사 검출 0건(전체 preflight 대체 아님). 기존 추적 시험 diff와 변경 금지 경로(retrieval/generation/embedding/security/indexer/workers_ai/store.py/0001~0006)의 HEAD 대비 diff는 비어 있다.
+  오케스트레이터 실행 필요: `QK_REQUIRE_LOCALDB=1 .venv/bin/python -m pytest`(T048 GREEN·전체 localdb 회귀·루프백 2건 포함), `.venv/bin/python scripts/preflight.py`(오케스트레이터 실행).
+  마지막 두 문서 기록 변경 뒤 정적 검사는 다시 확인한다. 현재 필수 DB·루프백·전체 preflight 확인 전이므로 최종 상태 BLOCKED다. 독립 검증·사람 승인으로 간주하지 않는다. 커밋·push·운영 변경·외부 API 호출은 하지 않았다.
+
+- 2026-10-26 US5~US6 오케스트레이터 검증(샌드박스 밖, `QK_REQUIRE_LOCALDB=1` 전체): **2,225 passed, 39 failed, 2 deselected**.
+  실패 39건은 T048의 `SET LOCAL ROLE qk_query` 준비 단계에서 발생한 권한 오류다. 로컬 supabase/postgres 17.11의 postgres는 **슈퍼유저가 아니다**(`rolsuper=false`).
+  PG16+ 역할 생성자는 ADMIN을 가져도 기본 createrole_self_grant가 비어 있으면 SET 멤버십이 자동 부여되지 않는다. preflight·ruff·format·diff와 루프백 시험은 오케스트레이터 확인으로 통과했고 금지 경로 변경도 없었다.
+  T048의 소유자 시험 `test_bot_owner_index_writes_still_work_and_rls_is_not_forced`는 통과했다(해당 파일 1 passed). 마이그레이션 역할이 표 소유자이면 비슈퍼유저여도 RLS를 건너뛰므로 data-model 4절 전제는 유지된다.
+  운영 DB의 마이그레이션 역할 속성과 실제 표 소유권도 H00에서 확인한다. 로컬 결과로 운영 속성을 추정하지 않는다.
+- 2026-10-26 T048 시험 준비 수정: 0007은 그대로 두고 bot_as_query의 트랜잭션에서만 `GRANT qk_query TO CURRENT_USER WITH SET TRUE, INHERIT FALSE` 후 SET LOCAL ROLE을 수행한다.
+  psycopg transaction(force_rollback=True)로 성공·실패 모두 멤버십 변경을 되돌려 기존 ADMIN/SET/INHERIT 상태를 보존한다. 역할 멤버십은 클러스터 전역이므로 세션 DB 삭제에 정리를 맡기지 않는다.
+  오케스트레이터의 39건 실패가 이 수정의 RED 증거다. T048 GREEN은 아직 미확인으로 미체크를 유지하며 역할 시험 파일만 재확인 요청한다.
+  수정 후 역할 시험 40건 수집·해당 파일 ruff check/format·git diff --check는 통과했다. 설치된 psycopg의 force_rollback 인자 지원도 확인했다. DB 실행 결과는 오케스트레이터에게 해당 파일만 재확인 요청했으며 아직 미수신이다.
+
+- 2026-10-26 T048 최종 GREEN(오케스트레이터, 샌드박스 밖, `QK_REQUIRE_LOCALDB=1`): `tests/localdb/query/test_bot_query_role.py` **40 passed**.
+  이어서 전체 재실행 **2,264 passed, 2 deselected in 42.32s**를 확인했다. 임시 SET 멤버십 준비 뒤 역할 성공·거부·소유자 색인·마이그레이션 재실행이 모두 통과했으며 T048을 [X]로 바꿨다.
+  앞의 39건 권한 실패와 DB GREEN 대기 상태는 이 결과로 해소됐다. 0007에 마이그레이션 역할 멤버십을 추가하지 않았다. 이번 재실행 결과는 오케스트레이터가 전달한 증거이며 실행 에이전트의 자체 승인이나 운영 검증을 뜻하지 않는다.
+  preflight는 앞선 오케스트레이터 실행에서 통과했고, 이후 변경은 시험의 임시 멤버십 준비와 문서 기록이다. 해당 변경의 수집·ruff·format·diff 검사는 통과했다. 최종 기록 갱신 뒤 전체 ruff check·format(530 files)·git diff --check와 이번 수정 3개 파일의 비밀값 규칙 보조 검사(검출 0건)도 통과했다.
+  US5~US6 T048~T055를 완료했다. Polish T056~T061과 사람 단계 H00~H05는 시작하지 않았으며 운영 적용·네트워크 호출·커밋·push는 하지 않았다.
