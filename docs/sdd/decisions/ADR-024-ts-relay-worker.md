@@ -3,7 +3,7 @@
 > Created at: `2026-10-27`
 > Jira 이슈: `https://tkv123.atlassian.net/browse/SCRUM-115`
 > 기능명세서 ID: `QK-BOT-001` (research R-13 대안, tasks.md "H04 일부 측정")
-> Status: Proposed
+> Status: Accepted
 >
 > ADR-022의 구조(Worker는 서명 검사·중계만, 검색·생성은 OCI 질의 서비스, Workers VPC + Tunnel)는 그대로다. 바뀌는 것은 Worker 구현 언어뿐이다.
 
@@ -69,5 +69,7 @@ Discord 중계 Worker를 npm 의존성 없는 TypeScript(`workers/relay/`)로 �
 
 ## Approval
 
-- Approvers:
-- Approved at:
+- Approvers: PR #66 리뷰어 tkv00(팀원, OCI 계정 소유자·인스턴스 관리자. ADR-008·ADR-020·ADR-022 Approval의 역할 기록)
+- Approved at: 2026-10-27 PR #66 리뷰 승인(APPROVED, [승인 기록](https://github.com/Qello-Labs/qello-knowledge/pull/66#pullrequestreview-5662314164)), 같은 날 병합.
+  PR 본문에서 요청한 ADR-024 승인과 공유 인스턴스 구성 요소(`qk-cloudflared`, `qkquery`, `qk-query.service`, DB 역할 `qk_query` 로그인) 추가 확인을 이 승인으로 기록한다.
+  이 세션은 사람의 리뷰를 기록하며 결정을 스스로 승인하지 않는다.
