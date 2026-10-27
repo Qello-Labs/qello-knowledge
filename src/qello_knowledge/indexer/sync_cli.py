@@ -11,8 +11,8 @@ from datetime import date, datetime
 from pathlib import Path
 
 from qello_knowledge.adapters.postgres.connection import database_url, target_label
-from qello_knowledge.config.check import budget_settings, build_report
-from qello_knowledge.config.loader import load, merge_sources, read_env_file
+from qello_knowledge.config.check import budget_settings, build_report, code_chunking_from
+from qello_knowledge.config.loader import SettingStatus, load, merge_sources, read_env_file
 from qello_knowledge.config.registry import Entrypoint
 from qello_knowledge.domain.chunking import ChunkingSettings
 from qello_knowledge.domain.embedding import EmbedError
@@ -72,16 +72,33 @@ def workers_ai_provider(source, settings):
     return WorkersAiRestProvider(source["CLOUDFLARE_ACCOUNT_ID"], settings.get("CLOUDFLARE_API_TOKEN"))
 
 
-def current_index_version(chunking=None):
-    """현재 청커 설정의 인덱스 버전(활성화의 현재 버전 계산, QK-RET-001 research R-09)."""
-    from qello_knowledge.chunking.version import chunking_version
-    from qello_knowledge.sync.keys import index_version_id
-
-    return index_version_id("@cf/baai/bge-m3", 1024, chunking_version(chunking or ChunkingSettings()))
+_UNSET = object()
 
 
-def build_runtime(*, settings, configs, policy, source, chunking=None, targets_factory=None, provider_factory=None):
-    """인자 없이 부르면 지금까지와 같다. 평가용 색인 준비(QK-RET-001)가 청커 설정과 대상·제공자를 바꿔 넣는다."""
+def current_index_version(chunking=None, code=None):
+    """현재 청커 설정의 인덱스 버전(활성화의 현재 버전 계산, QK-RET-001·QK-CHK-001 research R-09)."""
+    from qello_knowledge.chunking.version import index_chunking_version
+    from qello_knowledge.sync.keys import index_version_id, metadata_schema_version
+
+    version = index_chunking_version(chunking or ChunkingSettings(), code)
+    return index_version_id("@cf/baai/bge-m3", 1024, version, metadata_schema_version(code))
+
+
+def build_runtime(
+    *,
+    settings,
+    configs,
+    policy,
+    source,
+    chunking=None,
+    code=_UNSET,
+    targets_factory=None,
+    provider_factory=None,
+):
+    """인자 없이 부르면 지금까지와 같다. 평가용 색인 준비(QK-RET-001)가 청커 설정과 대상·제공자를 바꿔 넣는다.
+
+    코드 청킹은 `code`를 넘기면 그 값이고, `chunking`을 명시하면(평가 준비) 꺼짐, 둘 다 없으면 설정에서 읽는다.
+    """
     from qello_knowledge.adapters.postgres.store import PostgresStore
     from qello_knowledge.adapters.postgres.sync_store import PostgresSyncStore
     from qello_knowledge.adapters.postgres.usage import PostgresUsageLedger
@@ -97,7 +114,9 @@ def build_runtime(*, settings, configs, policy, source, chunking=None, targets_f
     ledger = PostgresUsageLedger(url, budget_settings(settings))
     provider = (provider_factory or workers_ai_provider)(source, settings)
     embedder = EmbeddingService(provider, cache, ledger, budget_settings(settings), security_outgoing_check(policy))
-    deps = SyncDependencies(store, cache, embedder, policy, chunking or ChunkingSettings(), clock)
+    if code is _UNSET:
+        code = None if chunking is not None else code_chunking_from(settings)
+    deps = SyncDependencies(store, cache, embedder, policy, chunking or ChunkingSettings(), clock, code_chunking=code)
     store.current_version = current_spec(deps).id
     return SyncRuntime(tuple(targets), deps, (cache, store, ledger))
 
@@ -285,19 +304,20 @@ def query_command(args, store_factory, policy_path):
         if not _policy_valid(policy_path):
             return _failure(1, "store_policy_required")
     configs = None
+    settings = load(Entrypoint.INDEX, environ=source, env_file=None)
+    report = build_report(settings)
+    # 읽기 명령도 코드 청킹 설정으로 현재 버전을 계산한다. 그 값이 형식 오류면 멈춘다(QK-CHK-001 contracts 4절).
+    if not report.ok and (writes or dict(report.items).get("QK_CODE_CHUNKING") is SettingStatus.INVALID):
+        print(report.to_json() if args.json else report.to_text())
+        return 1
     if writes:
-        settings = load(Entrypoint.INDEX, environ=source, env_file=None)
-        report = build_report(settings)
-        if not report.ok:
-            print(report.to_json() if args.json else report.to_text())
-            return 1
         configs, issues = load_checked_sources(Path("config/sources.toml"), Path("config/source_reviews"))
         if issues:
             return _failure(1, "source_review_invalid")
         policy, issues = load_policy(Path("config/security_exceptions.toml"), configs)
         if issues:
             return _failure(1, "security_policy_invalid")
-    version = current_index_version()
+    version = current_index_version(code=code_chunking_from(settings))
     store = None
     lock = None
     try:

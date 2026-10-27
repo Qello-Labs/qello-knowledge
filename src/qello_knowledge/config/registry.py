@@ -62,6 +62,7 @@ GEN_MAX_TOKENS = _pattern(r"[1-9][0-9]{0,2}|[1-3][0-9]{3}|40[0-8][0-9]|409[0-6]"
 GEN_TEMPERATURE = _pattern(r"0(?:\.[0-9]{1,3})?|1(?:\.0{1,3})?", "0 이상 1 이하 소수(소수점 아래 3자리까지)")
 GEN_TIMEOUT = _pattern(r"[1-9]|[1-5][0-9]|60", "1 이상 60 이하 정수(초)")
 GEN_PROMPT = _pattern(r"gen-p1|gen-base", "`gen-p1` 또는 `gen-base`")
+SWITCH = _pattern(r"off|on", "`off` 또는 `on`")
 
 
 def _integer_range(low: int, high: int) -> Rule:
@@ -246,6 +247,15 @@ SETTINGS: tuple[SettingSpec, ...] = (
         secret=False,
         rule=POSITIVE_INT,
         default="3000",
+    ),
+    SettingSpec(
+        name="QK_CODE_CHUNKING",
+        description="Java·Kotlin 코드 청킹(QK-CHK-001). 켜면 인덱스 버전이 바뀌므로 QK-STO-002 활성화 절차와 함께 켠다",
+        entrypoints=frozenset({Entrypoint.INDEX}),
+        required=False,
+        secret=False,
+        rule=SWITCH,
+        default="off",
     ),
     SettingSpec(
         name="QK_RETRIEVAL_CONTEXT_BUDGET",
