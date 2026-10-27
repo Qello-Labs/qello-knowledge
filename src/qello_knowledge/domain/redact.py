@@ -33,13 +33,30 @@ WORD = "A-Za-z0-9_"
 # 시작 위치마다 덩어리를 다시 훑으면 긴 `a.a.a…`에서 길이의 제곱이 걸린다.
 SCHEME_CHARS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+.-")
 SCHEME_URL = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
-# IP는 경계 정규식으로 찾지 않고 후보를 `ipaddress`로 검증한다. 점이나 확장자가 바로 붙은 주소도 놓치지 않으려는 것이다.
+# IP는 경계 정규식으로 찾지 않고 후보를 `ipaddress` 문법으로 검증한다.
+# 점이나 확장자가 바로 붙은 주소도 놓치지 않으려는 것이다.
 # IPv6는 콜론이 두 개 이상인 16진 구간 안에서 찾는다. 코드(`std::map`)와 주소(`face::beef`)는 글자로 구분할 수 없어
 # 유효한 IPv6 후보는 모두 가린다. IPv4는 점 하나씩으로 이어진 숫자 덩어리 전체가 IPv4일 때만 가린다(`1.2.3.456`은 버전).
 # `..`는 덩어리를 끊는다. `v1.2..` 뒤에 붙은 IPv4를 놓치지 않으려는 것이다(#79).
 IP_RUN = re.compile(r"[0-9A-Fa-f:.]+")
 IPV4_DIGITS = re.compile(r"[0-9]+(?:\.[0-9]+)*")
-IP_MAX_LENGTH = 45  # IPv4를 붙인 IPv6 표기의 최대 길이
+# IPv6 후보는 `ipaddress`가 받는 표기와 같은 RFC 3986 3.2.2 문법으로 찾는다. 위치마다 길이별로 `ipaddress`를 부르면
+# 긴 16진·콜론 입력에서 몇 초가 걸린다(#82). 대안은 `::` 뒤 구간이 많은 것부터 두어, 한 위치에서 처음 맞는 것이
+# 가장 긴 유효 후보가 되게 한다. 10진 옥텟은 `ipaddress`처럼 앞자리 0을 받지 않는다(`0` 하나는 받는다).
+H16 = "[0-9A-Fa-f]{1,4}"
+DEC_OCTET = "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"
+LS32 = rf"(?:{H16}:{H16}|{DEC_OCTET}(?:\.{DEC_OCTET}){{3}})"
+IPV6 = re.compile(
+    "|".join(
+        [
+            rf"(?:{H16}:){{6}}{LS32}",
+            rf"::(?:{H16}:){{5}}{LS32}",
+            *(rf"(?:(?:{H16}:){{0,{hi}}}{H16})?::(?:{H16}:){{{4 - hi}}}{LS32}" for hi in range(5)),
+            rf"(?:(?:{H16}:){{0,5}}{H16})?::{H16}",
+            rf"(?:(?:{H16}:){{0,6}}{H16})?::",
+        ]
+    )
+)
 HOST_PORT = re.compile(rf"(?<![{WORD}.-])[A-Za-z][A-Za-z0-9.-]*:\d{{1,5}}(?![{WORD}])")
 DOTTED_NAME = re.compile(rf"(?<![{WORD}.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![{WORD}-])")
 FILE_NAME = re.compile(r"^(?P<stem>.+)\.(?P<ext>[A-Za-z0-9]+)$")
@@ -73,29 +90,16 @@ def _is_ip(candidate: str) -> bool:
     return True
 
 
-def _is_ipv6(candidate: str) -> bool:
-    return ":" in candidate and _is_ip(candidate)
-
-
 def _mask_ipv6(value: str, ip_run: re.Pattern[str]) -> str:
     """콜론이 두 개 이상인 구간마다 왼쪽부터 가장 긴 유효 IPv6 후보를 가린다."""
     out, last = [], 0
     for match in ip_run.finditer(value):
-        run, base, i = match.group(0), match.start(), 0
-        if run.count(":") < 2:
+        if match.group(0).count(":") < 2:
             continue
-        while i < len(run):
-            end = None
-            if run[i] != ".":
-                for j in range(min(len(run), i + IP_MAX_LENGTH), i + 1, -1):
-                    if _is_ipv6(run[i:j]):
-                        end = j
-                        break
-            if end is None:
-                i += 1
-                continue
-            out += [value[last : base + i], ADDRESS_MASK]
-            last, i = base + end, end
+        pos = match.start()
+        while (found := IPV6.search(value, pos, match.end())) is not None:
+            out += [value[last : found.start()], ADDRESS_MASK]
+            last = pos = found.end()
     return "".join(out) + value[last:]
 
 
