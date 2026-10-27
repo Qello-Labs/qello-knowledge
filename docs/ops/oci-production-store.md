@@ -381,7 +381,8 @@ DB를 잃으면 2절 3~4번으로 다시 만들고 `qk-index run --allow-remote`
    두 번째 적용은 `applied=0`인지 확인한다. 0001~0006은 수정하지 않는다. 0007은 `qk_query NOLOGIN`, 최소 권한, 사용량 RLS만 더하고 PUBLIC EXECUTE를 거두지 않는다.
    승인한 관리 연결에서 `ALTER ROLE qk_query LOGIN;` 뒤 psql의 `\password qk_query`로 암호를 숨김 입력한다. 암호 리터럴·접속 URL을 명령행이나 SQL 이력에 넣지 않는다.
 2. 관리자가 `qkquery` 시스템 사용자(로그인 셸 없음, sudo·docker 그룹 없음)를 만들고 기존 서비스와 권한을 분리한다. 이미 있으면 소속 그룹과 셸부터 확인한다.
-   승인된 커밋의 별도 질의 릴리스 `<query-release-directory>`를 준비해 그 안에서 `uv sync --locked --extra query --extra postgres`를 실행한다.
+   승인된 커밋의 별도 질의 릴리스 `<query-release-directory>`를 준비해 그 안에서 `uv sync --locked --no-dev --extra query --extra postgres`를 실행한다.
+   준비·전환 명령과 갱신 절차는 7.6을 따른다.
    릴리스는 관리자 소유, `qkquery`에는 코드·설정·가상환경 읽기와 실행만 준다. `qksync`가 매일 갱신하는 체크아웃·가상환경을 공유하지 않는다(동기화의 의존성 정리가 query 의존성을 제거할 수 있다).
 3. `/etc/qello-knowledge/query.env`는 root:qkquery, 0640이다. 값은 `getpass`로 터미널에서 숨겨 입력하고 원자적으로 교체한다. 아래 스크립트도 **사람이 서버에서만** 실행한다.
 
@@ -464,6 +465,7 @@ WantedBy=multi-user.target
 쓰기 경로는 필요 없다. 메모리 상한은 공유 인스턴스 관리자와 확인할 초기값이며 실측값이 아니다.
 `systemd-analyze verify /etc/systemd/system/qk-query.service` → `systemctl daemon-reload` → `systemctl enable --now qk-query.service` 순으로 실행한다.
 `systemctl status qk-query.service`와 루프백의 `GET /healthz` 성공을 확인한다. journal의 일반 질의 로그는 원문 없는 JSON 한 줄이다.
+2026-10-28(#58)부터 운영 유닛의 `<query-release-directory>`는 링크 `/opt/qello-knowledge-query-current`다(7.6).
 
 ### 7.4 Tunnel·Worker·Discord와 외부 접속 차단 확인
 
@@ -489,3 +491,48 @@ WantedBy=multi-user.target
 다른 서비스가 공유하는 터널은 중지하지 않는다. Worker·VPC Service·터널 연결과 전용 토큰은 사람 승인 뒤 해제하고, query.env를 제거한다.
 관리 연결에서 `ALTER ROLE qk_query NOLOGIN;`으로 새 DB 로그인을 막는다(이미 열린 연결을 끊는 명령은 아니므로 질의 서비스를 먼저 중지한다).
 0007·사용량 기록·RLS는 유지하고 데이터 삭제나 기존 마이그레이션 변경으로 되돌리지 않는다. qk-sync의 코드·설정·역할을 건드리지 않으며 기존 색인 성공을 별도로 확인한다.
+질의 릴리스 폴더(7.6의 `releases/`와 첫 릴리스), 링크 `/opt/qello-knowledge-query-current`, 유닛 백업도 지운다.
+새 릴리스 하나만 옛 릴리스로 되돌릴 때는 이 절이 아니라 7.6 6번을 따른다.
+
+### 7.6 질의 릴리스 갱신
+
+질의 서비스는 `qk-sync`처럼 스스로 갱신하지 않는다. 질의 경로(`query/`, `discord/`, 질의가 가져오는 `domain/` 규칙, 질의 설정 기본값, 의존성)에 영향을 주는
+병합 뒤에 사람이 승인해 갱신한다. 각 명령은 사람이 개별 승인하며 갱신 자체는 0 Neurons다.
+
+구성(2026-10-28 #58부터):
+
+- 릴리스: `/opt/qello-knowledge-query-releases/<commit>`(root:qkquery 0750). 공개 저장소 git 클론이고 `.venv`와 uv 관리 Python(`.python/`)을 릴리스 안에 둔다.
+  가상환경의 실행 파일과 `pyvenv.cfg`가 절대 경로를 담으므로 릴리스 폴더를 옮기거나 이름을 바꾸지 않는다.
+- 유닛 `qk-query.service`의 `WorkingDirectory`·`ExecStart`는 링크 `/opt/qello-knowledge-query-current`를 가리킨다. 갱신은 링크만 바꾸고 유닛은 고치지 않는다.
+- 첫 릴리스 `/opt/qello-knowledge-query`(`3a5a98e`, H02)는 되돌리기용으로 남겼다. 이 구성으로 바꾸기 전 유닛은 `/root/qk-query.service.before-gh58`에 있다.
+
+1. 대상 확인(로컬): `git diff <current-commit> <new-commit> -- src pyproject.toml uv.lock`로 질의 경로 변경, 새 설정 키, 의존성 변화를 본다.
+   새 필수 키가 있으면 전환 전에 7.2 3번 방식으로 `query.env`를 바꾼다. 키 이름은 `sudo cut -d= -f1 /etc/qello-knowledge/query.env`로만 보고 값은 출력하지 않는다.
+2. 새 릴리스 준비(서비스 영향 없음). 작업 사용자는 0750 폴더에 들어갈 수 없으므로 `cd` 대신 `uv --directory`를 쓴다. 실패하면 `"$NEW"`를 지우고 다시 한다.
+
+   ```bash
+   SHA=<new-commit>
+   NEW=/opt/qello-knowledge-query-releases/$SHA
+   sudo install -d -o root -g qkquery -m 0750 /opt/qello-knowledge-query-releases
+   sudo git clone -q "$(sudo git -C /opt/qello-knowledge-query remote get-url origin)" "$NEW"
+   sudo git -C "$NEW" checkout -q --detach "$SHA"
+   sudo env UV_PYTHON_INSTALL_DIR="$NEW/.python" UV_PYTHON_PREFERENCE=only-managed \
+     /usr/local/bin/uv --directory "$NEW" sync --locked --no-dev --extra query --extra postgres
+   sudo chown -R root:qkquery "$NEW" && sudo chmod -R g+rX,g-w,o-rwx "$NEW"
+   ```
+
+3. 전환 전 확인: `sudo -u qkquery "$NEW/.venv/bin/qk-query" check --env-file /etc/qello-knowledge/query.env`가 누락·형식 오류 0이다(이름·상태만 출력한다).
+   `sudo head -1 "$NEW/.venv/bin/qk-query"`가 `$NEW` 경로를 가리킨다.
+4. 전환: 진행 중 질의가 끊길 수 있으므로 `journalctl -u qk-query.service --since -10min`에 최근 실행이 없는지 먼저 본다. 링크를 원자적으로 바꾸고 재시작한다.
+
+   ```bash
+   sudo ln -sfn "$NEW" /opt/qello-knowledge-query-current.tmp
+   sudo mv -T /opt/qello-knowledge-query-current.tmp /opt/qello-knowledge-query-current
+   sudo systemctl restart qk-query.service
+   ```
+
+5. 확인: `systemctl show qk-query.service -p ActiveState -p NRestarts`가 active, `sudo readlink /proc/<main-pid>/cwd`가 `$NEW`, 루프백 `GET /healthz`가 200,
+   `qk-cloudflared.service`·`qk-sync.timer`가 active다. 필요하면 허용 밖 채널 `/ask` 1회(0 Neurons)로 Worker 경로를 확인한다.
+6. 되돌리기: 4번과 같은 방식으로 링크를 직전 릴리스(처음에는 `/opt/qello-knowledge-query`)로 돌리고 재시작한 뒤 5번을 다시 확인한다.
+   이 구성 이전으로 완전히 되돌리려면 유닛 백업을 `/etc/systemd/system/qk-query.service`로 복원하고 `systemctl daemon-reload`·재시작한 뒤 링크를 지운다.
+7. 정리: 지금 릴리스와 직전 릴리스 하나를 남기고, 그보다 오래된 릴리스는 사람 승인 뒤 지운다. 릴리스 하나는 약 140~170 MB다.
