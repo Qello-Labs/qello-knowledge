@@ -393,3 +393,56 @@ def test_domain_and_ports_must_not_import_generation(tmp_path, part):
     (root / part / "bad.py").write_text("from qello_knowledge.generation import service\n", encoding="utf-8")
     found = [problem.replace("\\", "/") for problem in violations(root)]  # Windows 경로 구분자도 같게 본다
     assert found == [f"qello_knowledge/{part}/bad.py:1: qello_knowledge.generation"]
+
+
+# QK-CHK-001: 구문 해석기는 `chunking/code/parse.py`에서만 가져오고, 질의·도메인 쪽은 코드 청커를 모른다(research R-15).
+CODE_PARSERS = ("tree_sitter", "tree_sitter_java", "tree_sitter_kotlin")
+CODE_CHUNKER_FORBIDDEN = ("domain", "ports", "embedding", "query", "retrieval", "generation")
+
+
+def code_chunker_violations(root: Path) -> list[str]:
+    problems = []
+    for path in sorted(root.rglob("*.py")):
+        relative = path.relative_to(root).as_posix()
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"), filename=str(path))):
+            modules = []
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                module = node.module or ""
+                if node.level:
+                    base = ["qello_knowledge", *relative.split("/")[:-1]]
+                    module = ".".join([*base[: len(base) - node.level + 1], *([module] if module else [])])
+                packages = ("qello_knowledge", "qello_knowledge.chunking")
+                modules = [module + "." + a.name for a in node.names] if module in packages else [module]
+            for module in modules:
+                parser = module.split(".")[0] in CODE_PARSERS
+                chunker = module == "qello_knowledge.chunking.code" or module.startswith(
+                    "qello_knowledge.chunking.code."
+                )
+                if (parser and relative != "chunking/code/parse.py") or (
+                    chunker and relative.split("/")[0] in CODE_CHUNKER_FORBIDDEN
+                ):
+                    problems.append(f"{relative}:{node.lineno}: {module}")
+    return problems
+
+
+def test_code_chunker_dependencies_are_isolated():
+    assert code_chunker_violations(PACKAGE) == []
+
+
+def test_code_chunker_violations_are_detected(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    for part in ("query", "domain", "chunking/code"):
+        (root / part).mkdir(parents=True)
+    (root / "query" / "bad.py").write_text("from qello_knowledge.chunking import code\n", encoding="utf-8")
+    (root / "domain" / "bad.py").write_text("from ..chunking.code.version import X\n", encoding="utf-8")
+    (root / "chunking" / "code" / "units.py").write_text("import tree_sitter_java\n", encoding="utf-8")
+    (root / "chunking" / "code" / "parse.py").write_text(
+        "def load():\n    import tree_sitter\n    from tree_sitter_kotlin import language\n", encoding="utf-8"
+    )
+    assert code_chunker_violations(root) == [
+        "chunking/code/units.py:1: tree_sitter_java",
+        "domain/bad.py:1: qello_knowledge.chunking.code.version",
+        "query/bad.py:1: qello_knowledge.chunking.code",
+    ]
