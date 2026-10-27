@@ -4,10 +4,12 @@ from collections.abc import Iterable
 from dataclasses import fields
 
 from qello_knowledge.chunking.blocks import parse_document
+from qello_knowledge.chunking.code.service import chunk_code
+from qello_knowledge.chunking.code.version import code_chunking_version
 from qello_knowledge.chunking.header import embedding_text, search_header, search_text
 from qello_knowledge.chunking.sections import document_title, split_sections
 from qello_knowledge.chunking.split import SplitFailure, split_blocks
-from qello_knowledge.chunking.version import chunking_version
+from qello_knowledge.chunking.version import chunking_version, index_chunking_version, is_code_target
 from qello_knowledge.chunking.warnings import structure_warnings
 from qello_knowledge.domain.chunking import (
     ChunkDraft,
@@ -18,6 +20,7 @@ from qello_knowledge.domain.chunking import (
     ChunkingSummary,
     ChunkOutcome,
     ChunkOutcomeKind,
+    CodeChunkingSettings,
 )
 from qello_knowledge.domain.embedding import MODELS
 from qello_knowledge.domain.security import ScreenedContent
@@ -70,24 +73,37 @@ def chunk_markdown(body: str, *, location: str, source_title: str | None, settin
         return _empty(ChunkOutcomeKind.FAILED, version, ChunkFailureKind.PROCESSING_ERROR)
 
 
-def chunk_screened(passed: Iterable[ScreenedContent], settings: ChunkingSettings) -> ChunkingResult:
+def chunk_screened(
+    passed: Iterable[ScreenedContent], settings: ChunkingSettings, *, code: CodeChunkingSettings | None = None
+) -> ChunkingResult:
+    """Markdown은 그대로 Markdown 청커에, 코드 청킹이 켜져 있으면 `.java`·`.kt` 코드 자료만 코드 청커에 넘긴다."""
+    if code is not None and code.model_version != settings.model_version:
+        raise ValueError("코드 청킹 모델이 청킹 설정 모델과 다르다")
     version = chunking_version(settings)
+    code_version = code_chunking_version(code, settings) if code is not None else None
     results = []
     for screened in passed:
         try:
             content = screened.content
-            if content.content_format != ContentFormat.MARKDOWN:
-                result = _empty(ChunkOutcomeKind.NOT_MARKDOWN, version)
-            else:
+            if content.content_format == ContentFormat.MARKDOWN:
                 result = chunk_markdown(
                     content.body,
                     location=content.location,
                     source_title=content.title or screened.item.title,
                     settings=settings,
                 )
+            elif is_code_target(content, code):
+                result = chunk_code(content.body, location=content.location, settings=settings, code=code)
+            else:
+                result = _empty(ChunkOutcomeKind.NOT_MARKDOWN, version)
         except Exception:
             result = _empty(ChunkOutcomeKind.FAILED, version, ChunkFailureKind.PROCESSING_ERROR)
         values = {f.name: getattr(result, f.name) for f in fields(ChunkOutcome)}
         results.append(ChunkedContent(screened=screened, **values))
     results = tuple(results)
-    return ChunkingResult(results, ChunkingSummary.from_results(results))
+    if not results:
+        return ChunkingResult(results, ChunkingSummary.from_results(results))
+    summary = ChunkingSummary.from_results(
+        results, chunking_version=index_chunking_version(settings, code), code_chunking_version=code_version
+    )
+    return ChunkingResult(results, summary)
