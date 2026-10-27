@@ -68,4 +68,4 @@ uv run python specs/QK-CHK-001-code-chunker/measurement/measure_code.py \
 ## 4. 로컬 실측 (사람 실행, 0 Neurons)
 
 research R-02 명령을 구현된 청커로 다시 돌려 청크 수·크기 분포·상한 초과 나누기 수·`PARSE_FALLBACK` 수·`CONTEXT_OMITTED` 수를 적는다.
-값이 research R-02의 흉내 측정과 크게 다르면(청크 수 ±10% 초과) 원인을 기록한다. 결정 기록(ADR-022)의 비용 추정은 이 값으로 고친다. 출력의 `script_sha256_12`를 함께 적는다.
+값이 research R-02의 흉내 측정과 크게 다르면(청크 수 ±10% 초과) 원인을 기록한다. 결정 기록(ADR-023)의 비용 추정은 이 값으로 고친다. 출력의 `script_sha256_12`를 함께 적는다.

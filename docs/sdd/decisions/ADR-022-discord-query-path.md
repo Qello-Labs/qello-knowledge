@@ -6,6 +6,8 @@
 > Status: Accepted
 >
 > ADR-008의 "질의응답은 Cloudflare Workers에서 실행한다"를 일부 고친다. ADR-008의 저장 위치(OCI 공유 인스턴스)와 추가 고정비 상한(월 0원)은 그대로다.
+>
+> 2026-10-27: Worker 구현 언어를 TypeScript로 바꾸는 안을 [ADR-024](ADR-024-ts-relay-worker.md)로 제안했다(Python Worker CPU가 Free 한도 초과).
 
 ## Context
 
@@ -52,19 +54,35 @@ Cloudflare Tunnel로 공인 포트·공개 호스트명 없이 잇는다.
 - Python Workers 정식 출시(2026-09-21): https://blog.cloudflare.com/python-workers-ga/
 - 기존 조립: `src/qello_knowledge/indexer/ask_cli.py`(`postgres_ask`)
 
+H00 데이터 처리·요금 확인(조회일 2026-10-26):
+
+- Tunnel 나가는 연결 무료(모든 조직, Argo Smart Routing만 유료): https://blog.cloudflare.com/tunnel-for-everyone
+- Tunnel "Available on all plans"(요금 문장 없음): https://developers.cloudflare.com/tunnel/
+- Self-Serve 약관(2025-09-12 갱신) §2.5.1 Customer Content 사용 범위, §2.5.5 Network Data, §6.1 DPA 편입: https://www.cloudflare.com/terms/
+- DPA v6.4(2026-04-03 시행) §3.1 목적 제한, Annex 1 처리 기간: https://www.cloudflare.com/cloudflare-customer-dpa/
+- Workers AI 데이터 사용(학습 미사용): https://developers.cloudflare.com/workers-ai/platform/data-usage/
+- Workers Logs(새 Worker 기본 켜짐, Free 3일 보존·하루 200,000건, `invocation_logs` 설정): https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+
 ## Data and cost
 
 - 외부로 전송되는 데이터:
   - Discord → Worker → 질의 서비스: 상호작용 본문(질문 원문, 서버·채널·사용자 정보)이 Cloudflare 네트워크(Worker, 터널)를 지난다. Worker와 질의 서비스는 이 본문을 저장하지 않고,
     운영 로그에는 원문과 사용자 정보를 남기지 않는다(spec FR-021).
   - 질의 서비스 → Workers AI: 질문과 Context 청크 본문(ADR-009와 같다). 질의 서비스 → Discord: 답변 본문과 출처 링크.
-- 데이터 처리 정책(학습 사용·보존), 확인한 것과 못 한 것을 나눈다.
+- 데이터 처리 정책(학습 사용·보존), 확인한 것과 못 한 것을 나눈다. 2026-10-26 H00에서 아래처럼 닫았다.
   - 확인함: Workers AI 입력·출력은 학습에 쓰지 않는다고 Cloudflare가 밝힌다(ADR-009 Data and cost, 그 기록의 출처).
-  - 미확인: Worker와 Tunnel을 지나는 상호작용 본문(질문 원문, 서버·채널·사용자 정보)에 대한 Cloudflare의 보존 기간과 학습 사용 여부. 같은 계정 약관을 따른다는 것은 추론이다.
-  - 닫는 방법: 운영 구성 전에 Cloudflare의 데이터 처리 부속서(DPA)·개인정보 문서에서 Workers 요청 본문과 Tunnel 트래픽의 처리·보존·학습 사용 문장을 찾아 이 절에 URL과 함께 적는다. 이 확인은
-    운영 구성의 전제다(QK-BOT-001 quickstart 3절). 학습 사용이나 장기 보존이 확인되면 이 결정을 다시 본다.
-- 무료 한도와 예상 사용량: Workers Free 하루 100,000 요청 안(하루 질문 50건 × 요청 1~2개). Workers VPC는 베타 동안 무료. Cloudflare Tunnel은 "모든 플랜에서 사용 가능"하다고 적혀 있으나
-  요금 문장은 찾지 못했다(https://developers.cloudflare.com/tunnel/) `(미확인, 구현 전 확인. 유료면 C-05에 따라 사람 승인)`. Workers AI 사용량은 질의당 약 38~51 Neurons로 바뀌지 않는다(QK-GEN-001).
+  - 확인함(목적 제한): Free 플랜이 따르는 Self-Serve 약관 §2.5.1은 Worker·Tunnel을 지나는 데이터(Customer Content)를 "서비스 제공에 필요한 범위"에서만 쓰게 한다.
+    약관 §6.1이 DPA를 편입하고, DPA(v6.4) §3.1(a)는 개인정보를 서비스 제공 목적으로만 처리한다고 정한다.
+  - 명시 문장 없음: Worker·Tunnel 트래픽을 AI 학습에 쓰지 않는다는 문장은 약관·DPA에 없다(학습 금지 명시는 Workers AI 문서뿐). 약관 §2.5.5는 Cloudflare가 트래픽에서 만든 통계·분석·모델
+    (Network Data)을 서비스 개선에 쓸 수 있게 한다. 약관·DPA에 트래픽 보존 기간 문장은 없고, DPA Annex 1은 처리 기간을 계약 기간으로 둔다.
+  - 구체적으로 남는 곳: Workers Logs는 새 Worker에서 기본으로 켜지고, 호출마다 요청 메타데이터·헤더와 `console.log` 출력을 Free 플랜에서 3일 보존한다. 요청 본문을 남긴다는 문장은 없다.
+    이 Worker의 출력은 결과 종류와 경과 시간(실패 때 예외 이름)뿐이다(`workers/relay/index.ts`, ADR-024).
+  - 사용자 결정(2026-10-26): 목적 제한 조항을 근거로 받아들인다. Workers Logs는 H01~H05 동안 기본값(3일 보존)으로 둔다. H01에서 로그에 본문이 없는지 실제로 확인하고,
+    H05 뒤 `[observability.logs] invocation_logs = false`로 바꿀지 다시 정한다.
+- 무료 한도와 예상 사용량: Workers Free 하루 100,000 요청 안(하루 질문 50건 × 요청 1~2개). Workers VPC는 베타 동안 무료. Cloudflare Tunnel의 나가는 연결 기능은 모든 조직이 무료로 쓴다
+  (Cloudflare 공식 블로그, 유료는 별도 기능인 Argo Smart Routing뿐. 이 결정은 쓰지 않는다). Workers Logs는 Free 하루 200,000건 안. Workers AI 사용량은 질의당 약 38~51 Neurons로 바뀌지 않는다(QK-GEN-001).
+- 바깥 방향 UDP 7844(2026-10-26 H00, 읽기 전용): 인스턴스 서브넷 보안 목록 egress는 모든 프로토콜·`0.0.0.0/0`·stateful 허용이고 VNIC에 NSG가 없다. 호스트 iptables·ip6tables OUTPUT 정책은 ACCEPT,
+  추가 규칙은 메타데이터 주소 대상 하나뿐이고 UDP·7844를 막는 규칙이 없다. nftables output 훅은 모두 accept, ufw는 꺼져 있다. 실제 QUIC 연결은 H01에서 확인한다.
 - 비밀값: 질의 서비스 전용 Workers AI 토큰과 DB 역할 `qk_query` 암호, 터널 토큰을 인스턴스에만 둔다. 봇 토큰은 서버에 두지 않는다(명령 등록은 로컬에서 사람이 한다).
 - 교체 시 영향: 인덱스 버전·임베딩 변경 없음.
 
@@ -101,3 +119,5 @@ Cloudflare Tunnel로 공인 포트·공개 호스트명 없이 잇는다.
 - Approved at: 2026-10-26 PR #64 리뷰 승인(APPROVED, [마지막 승인 기록](https://github.com/Qello-Labs/qello-knowledge/pull/64#pullrequestreview-5649650760)).
   PR 본문에서 요청한 ADR-008 일부 개정과 공유 인스턴스 구성 요소(`qk-query.service`, `cloudflared`, 전용 사용자 `qkquery`, DB 역할 `qk_query`) 추가 동의를 이 승인으로 기록한다.
   운영 구성 전 Data and cost의 미확인 항목을 닫는 조건은 유지한다. 이 세션은 사람의 리뷰를 기록하며 결정을 스스로 승인하지 않는다.
+- 2026-10-26 H00: Data and cost의 미확인 항목(Tunnel 요금, Worker·Tunnel 데이터 처리, UDP 7844)을 위처럼 닫았다. 데이터 처리 수준과 Workers Logs 유지는 사용자 결정이며,
+  이 보강의 승인은 이 기록을 담은 PR 리뷰로 받는다.

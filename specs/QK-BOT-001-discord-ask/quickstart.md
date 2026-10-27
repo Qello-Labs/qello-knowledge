@@ -56,7 +56,7 @@ uv run qk-query register-commands --env-file <합성 애플리케이션·서버 
 2. 운영 DB에 마이그레이션 0007을 적용하고, `qk_query`에 `LOGIN`과 암호를 숨김 입력으로 정한다. 새 마이그레이션은 코드가 `main`에 들어가기 전에 적용한다(운영 문서 규칙).
 3. 질의 서비스 전용 Workers AI 토큰을 발급하고 `/etc/qello-knowledge/query.env`(root:qkquery, 0640)를 숨김 입력으로 만든다.
 4. 전용 사용자 `qkquery`와 `qk-query.service`를 설치하고 켠다. `systemd-analyze verify`, `systemctl status`, 루프백 `GET /healthz`.
-5. Workers VPC Service(대상 `127.0.0.1:<포트>`, 터널 ID)를 만들고, Worker를 배포한다(`pywrangler deploy`). Worker 비밀값·변수는 `DISCORD_PUBLIC_KEY`, `QK_RELAY_TIMEOUT_SECONDS`.
+5. Workers VPC Service(대상 `127.0.0.1:<포트>`, 터널 ID)를 만들고, Worker를 배포한다(`npx wrangler deploy`, TypeScript 중계 ADR-024). Worker 비밀값·변수는 `DISCORD_PUBLIC_KEY`, `QK_RELAY_TIMEOUT_SECONDS`.
 6. Discord 개발자 포털에 Interactions Endpoint URL을 넣는다. 저장할 때 Discord의 서명 확인을 통과해야 한다(M-01).
 7. 로컬에서 `qk-query register-commands --env-file .env`로 `/ask`를 서버에 등록한다(봇 토큰은 로컬 `.env`에만).
 8. 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트에 접속이 안 되는지 확인한다(SC-010).

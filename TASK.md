@@ -13,7 +13,9 @@
 - Branch: `feat/SCRUM-118-gh-63-code-chunker`
 - Base branch: `main`. 2026-10-26 `origin/main` `d7c9e3f`(#60 병합)에서 분기했고, 첫 커밋은 `1c9a9f6`(#62 병합) 위에 있다.
   같은 날 PR #65 충돌을 풀려고 `369b2ec`(#64 병합)를 병합했다. 충돌난 `TASK.md`는 이 계약을 남겼고, 이전 `main`의 계약(QK-BOT-001)은 git 이력에 남긴다.
-  설계 PR #65가 병합된 뒤 2026-10-27 같은 브랜치 이름을 `origin/main` `3a5a98e`(#65 병합)로 fast-forward해 구현을 시작했다. 구현은 새 PR로 올린다
+  설계 PR #65가 병합된 뒤 2026-10-27 같은 브랜치 이름을 `origin/main` `3a5a98e`(#65 병합)로 fast-forward해 구현을 시작했다. 구현은 새 PR로 올린다.
+  2026-10-27 구현 PR #69 충돌을 풀려고 `origin/main` `e701d5b`(#66 병합)를 병합했다. `TASK.md`는 이 계약을 남겼고(`main`의 QK-BOT-001 운영 계약은 git 이력에 남긴다),
+  `pyproject.toml`·`uv.lock`은 `main`의 `workers-py` 제거와 이 브랜치의 tree-sitter 3종을 함께 반영했다. `tasks.md`는 이 브랜치의 완료 표시와 `main`의 ADR-023 번호를 함께 남겼다
 
 ## Objective
 

@@ -295,12 +295,12 @@ description: "QK-BOT-001 구현 작업 목록"
 
 | 단계 | 내용 | 상태 | 비용·허락 |
 | --- | --- | --- | --- |
-| H00 | 운영 게이트 닫기: Cloudflare Tunnel 요금과 Worker·Tunnel 트래픽의 데이터 처리 정책(보존, 학습 사용)을 ADR-022 Data and cost에 URL과 함께 적는다. 인스턴스 바깥 방향 UDP 7844 읽기 전용 확인. 운영 색인·마이그레이션 역할의 `qk.embedding_usage` 소유 확인. 질의 서비스 전용 Workers AI 토큰 발급 계획(PR #62 계정 교체 결과와 맞춘다) | 구현 뒤 | 없음. 유료·학습 사용·장기 보존이면 멈추고 결정 재검토 |
-| H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | H00 뒤 | 0 Neurons |
-| H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | H01 뒤 | 0 Neurons |
-| H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | H02 뒤 | 0 Neurons |
-| H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | H02 뒤 | 0 Neurons |
-| H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다. 실측 동안 인스턴스 자원(아래 "인스턴스 자원 기록")을 함께 잰다 | H04 뒤 | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
+| H00 | 운영 게이트 닫기: Cloudflare Tunnel 요금과 Worker·Tunnel 트래픽의 데이터 처리 정책(보존, 학습 사용)을 ADR-022 Data and cost에 URL과 함께 적는다. 인스턴스 바깥 방향 UDP 7844 읽기 전용 확인. 운영 색인·마이그레이션 역할의 `qk.embedding_usage` 소유 확인. 질의 서비스 전용 Workers AI 토큰 발급 계획(PR #62 계정 교체 결과와 맞춘다) | 2026-10-26 완료(아래 "H00 운영 게이트") | 없음. 유료·학습 사용·장기 보존이면 멈추고 결정 재검토 |
+| H01 | M-01: 시험 질의 서비스(연결 확인만)로 터널·VPC Service·Worker 배포, Discord 수신 주소 등록 때 서명 확인(401) 통과, Python Worker에서 VPC 바인딩 `fetch` 동작 확인 | 2026-10-27 완료(아래 "H01 배포 확인"). Worker CPU 초과 위험은 H04 | 0 Neurons |
+| H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | 2026-10-27 완료(아래 "H02 질의 서비스 구성") | 0 Neurons |
+| H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | 2026-10-27 완료(아래 "H03 외부 접속 차단 확인") | 0 Neurons |
+| H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | 2026-10-27 완료(아래 "H04 일부 측정", "H04 TS 중계 재측정", "H04 실제 질의 서비스 기준 측정"). Discord PING 10회는 미측정 | 0 Neurons |
+| H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다. 실측 동안 인스턴스 자원(아래 "인스턴스 자원 기록")을 함께 잰다 | 2026-10-27 실행(아래 "H05 실측"). SC-002 Q05 실패 | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
 
 ---
 
@@ -341,14 +341,14 @@ Workers AI, 인스턴스는 DB 질의 2~3회와 중계, 동시 실행 2)은 아�
 
 | 항목 | 재는 방법(읽기 전용) | 기준선(H04, 질의 없음 10분) | 실측 중(H05) 최대 |
 | --- | --- | --- | --- |
-| 인스턴스 가용 메모리 | `free -m`의 available | 미측정 | 미측정 |
-| 인스턴스 CPU | `uptime`의 1분 load average, `mpstat 5`(설치돼 있으면)의 사용률 | 미측정 | 미측정 |
-| 질의 서비스 메모리 | `systemctl show qk-query -p MemoryCurrent`를 5초마다 기록한 최대값(`MemoryMax=512M` 대비 %). `memory.peak`가 있으면 그 값 | 미측정 | 미측정 |
-| 질의 서비스 CPU 시간 | `systemctl show qk-query -p CPUUsageNSec`의 실측 전후 차이 ÷ 질문 수 | 해당 없음 | 미측정(질문당 ms) |
-| 터널(`cloudflared`) 메모리·CPU | 같은 방법으로 `cloudflared` 서비스 | 미측정 | 미측정 |
-| DB 컨테이너 | `docker stats --no-stream --format '{{.Name}} {{.CPUPerc}} {{.MemUsage}}'`의 `qk-postgres` 행(상한 1.5 GB 대비 %) | 미측정 | 미측정 |
-| 질의 역할 DB 연결 수 | 승인한 관리 연결에서 `SELECT count(*) FROM pg_stat_activity WHERE usename = 'qk_query'` | 미측정 | 미측정(실행 자리 수 이하여야 함) |
-| 회의 봇 영향 | 같은 `docker stats`의 회의 봇 컨테이너 행(이름은 기록하지 않고 "회의 봇 1·2"로), 실측 동안 재시작 수(`docker ps`의 STATUS) | 미측정 | 미측정 |
+| 인스턴스 가용 메모리 | `free -m`의 available | 4,505~4,536 MB(2026-10-26, 질의 없음 10분 20회) | 4,456 MB(최소) |
+| 인스턴스 CPU | `uptime`의 1분 load average, `mpstat 5`(설치돼 있으면)의 사용률 | load 0.00~0.20 | load 0.56(최대) |
+| 질의 서비스 메모리 | `systemctl show qk-query -p MemoryCurrent`를 5초마다 기록한 최대값(`MemoryMax=512M` 대비 %). `memory.peak`가 있으면 그 값 | 33 MB(약 6%, 2026-10-27 질의 없음 10분 120회). 질의 없는 동안 CPU 750 ms/10분 | 34 MB(약 7%) |
+| 질의 서비스 CPU 시간 | `systemctl show qk-query -p CPUUsageNSec`의 실측 전후 차이 ÷ 질문 수 | 해당 없음 | 약 138 ms(15분 1,519 ms ÷ 11, 대기 중 CPU 포함) |
+| 터널(`cloudflared`) 메모리·CPU | 같은 방법으로 `cloudflared` 서비스 | `qk-cloudflared` 14 MB, CPU 882 ms/10분(약 0.15%) | 14 MB |
+| DB 컨테이너 | `docker stats --no-stream --format '{{.Name}} {{.CPUPerc}} {{.MemUsage}}'`의 `qk-postgres` 행(상한 1.5 GB 대비 %) | CPU 0~3.1%, 262 MiB(약 17%) | CPU 2.4%, 264 MiB(최대) |
+| 질의 역할 DB 연결 수 | 승인한 관리 연결에서 `SELECT count(*) FROM pg_stat_activity WHERE usename = 'qk_query'` | 미측정(H02 뒤, `qk_query` 로그인 전) | 최대 2(실행 자리 수 2 이하) |
+| 회의 봇 영향 | 같은 `docker stats`의 회의 봇 컨테이너 행(이름은 기록하지 않고 "회의 봇 1·2"로), 실측 동안 재시작 수(`docker ps`의 STATUS) | 회의 봇 1: CPU 0~0.06%, 120 MiB. 회의 봇 2: CPU 0.04~0.62%, 430 MiB. 재시작 0 | 회의 봇 1 CPU 0.02%, 회의 봇 2 CPU 0.91%·431 MiB(최대), 재시작 0 |
 | 메모리 부족 종료 | 실측 시간대의 `journalctl -k --since <start>`에서 'out of memory' 줄 수(`grep -ci`) | 해당 없음 | 미측정(0이어야 함) |
 | 동기화와 겹침(선택) | 예약 동기화(00:30 UTC)가 도는 동안 질문 1~2개를 넣어 retrieve ms·갱신까지 ms를 평소 값과 비교. 질문 세트 안의 번호로 하고 Neurons를 따로 늘리지 않는다 | 해당 없음 | 미측정 |
 
@@ -628,3 +628,202 @@ US6:     T052, T053 (시험) → T054 → T055
 - 별도 운영 검증: 검증 에이전트가 systemd 상태와 이번 실행 ID의 결과를 직접 조회해 위 성공·건수·0 Neurons를 재확인했다. 활성 인덱스·모델·청킹 값도 운영 DB에서 조회했다.
 - 이번 세션 로컬 검증: `python3 scripts/preflight.py`, `git diff --check`, `uv run --no-sync ruff check --no-cache .`, `uv run --no-sync ruff format --check --no-cache .`, `uv run --no-sync qk-dev db up`, `QK_REQUIRE_LOCALDB=1 uv run --no-sync pytest` 통과(2,313 passed, 외부 2 deselected).
 - 남은 단계: H00의 소유권 확인과 승인 기록만 닫았다. Tunnel 요금·Worker/Tunnel 데이터 처리 정책, UDP 7844, 질의 전용 토큰 계획과 H01~H05는 미완료다. 이번 운영 확인은 Discord 전체 경로·Workers 런타임 검증을 대신하지 않는다. PR 병합·Jira 완료 처리는 하지 않았다.
+
+### H00 운영 게이트 (2026-10-26, PR #64 병합 뒤)
+
+- 작업 위치: 브랜치 `docs/SCRUM-115-gh-58-discord-ask-ops`(최신 `main` `3a5a98e`에서 분기). 이 단계는 읽기 전용 확인과 문서 기록만 했다.
+- 요금·데이터 처리: 공식 문서 근거와 판단은 ADR-022 Data and cost·Evidence에 적었다. Tunnel 나가는 연결은 무료다. Worker·Tunnel 트래픽은 약관·DPA의 목적 제한 조항만 있고 학습 금지 명시 문장은 없다.
+  사용자 결정: 이 수준을 받아들이고, Workers Logs(Free 3일 보존)는 H01~H05 동안 기본값으로 둔다. H01에서 로그에 요청 본문이 없는지 확인하고, H05 뒤 `invocation_logs` 끄기를 다시 정한다.
+- UDP 7844: OCI CLI(`qello-team`, 다시 인증한 세션)로 서브넷 보안 목록과 NSG egress를 조회했다. 이어 Bastion 관리형 SSH 세션(TTL 30분, 확인 뒤 삭제)으로 호스트 방화벽을 조회했다.
+  보안 목록 egress는 모든 프로토콜·`0.0.0.0/0`·stateful 허용이고 NSG는 없다. iptables·ip6tables OUTPUT 정책은 ACCEPT이고, UDP·7844를 막는 규칙이 없다. nftables output 훅은 모두 accept, ufw는 꺼져 있다.
+  방화벽·보안 목록은 바꾸지 않았다. 식별자·주소는 출력에서 가렸다. 실제 QUIC 연결은 H01에서 확인한다.
+- 전용 토큰: 사용자가 `qk-workers-ai-query-prod`(Qello 전용 계정 소유, Workers AI만, TTL 365일)를 만들고 verify `active`를 확인했다. 값·계정 ID는 대화·저장소에 없다. 서버 배치는 H02다(`docs/sdd/research/tokens.md` 6·7절).
+- 비용: 0 Neurons, 외부 모델 호출 0건.
+- 다음: H01(시험 질의 서비스로 터널·VPC Service·Worker 배포, Discord 수신 주소 서명 확인). 공유 인스턴스·Cloudflare·Discord를 바꾸므로 사람이 인증하고 명령마다 승인한다.
+
+### H01 Worker 로컬 확인 (2026-10-26)
+
+- 조건: 저장소 밖 사본(`pywrangler sync`·`dev`, wrangler 4.149.0 고정)에서 실행했다. VPC 바인딩은 원격이 필요해 로컬 설정 사본에서만 뺐다. 로컬 workerd가 호환 날짜 2026-10-13까지라 `--compatibility-date 2026-10-13`으로 낮췄다(배포는 2026-10-26 그대로). 합성 Ed25519 키, 외부 호출 0, Neurons 0.
+- 찾은 문제(원래 코드):
+  - `wrangler.toml`에 `base_dir`가 없어 번들에 `query/` 폴더 파일만 들어갔다. `qello_knowledge.config`·`discord`를 가져오지 못한다.
+  - 모든 요청이 500(`'Request' object has no attribute 'arrayBuffer'`).
+  - SDK 소스 기준(추론): SDK는 JS 클래스 이름이 `Fetcher`인 바인딩을 감싸 `fetch(url, **kwargs)`로 받고, 그 응답은 `bytes()`·`headers.get`을 쓴다. VPC Service 바인딩이 `Fetcher`인지는 소스로 확인할 수 없어 배포에서 확인한다.
+    `waitUntil`은 SDK ASGI 구현처럼 작업 프록시를 넘긴다.
+- 수정: `worker.py`(본문 `bytes()`, `fetch` 키워드 인자, `headers.get`, `waitUntil` 프록시와 정리, 실패 로그에 예외 클래스 이름만), `wrangler.toml`(`base_dir = "src"`, 번들 164개 모듈 약 710 KiB).
+- 수정 뒤 로컬 결과: `/healthz` 200, 서명 없음·잘못된 서명 401, 서명된 PING `{"type":1}`(Web Crypto Ed25519 FFI 동작), 바인딩 없는 `/ask` → 대체 안내 type 4(나만 보기), 로그 `{"kind": "relay_failed", "error": "AttributeError"}`.
+- 남은 확인(배포): VPC 바인딩 `fetch`의 요청 본문 전달, 응답 헤더 `X-QK-Run`, `waitUntil` 시작 확인 204, 호환 날짜 2026-10-26 배포.
+- 독립 검토(별도 에이전트, 읽기 전용, SDK 1.9.5·wrangler 4.149.0 소스 대조): 승인. High 0. Medium 1: VPC Service 바인딩이 `Fetcher`가 아니면 `/ask`가 대체 안내로 끝난다. 배포 첫 `/ask` 로그의 `error`로 확인하고 필요하면 그때 고친다.
+  Low: 확인 범위보다 단정적인 문구(반영), 시간 초과 때 응답 본문 읽기가 중단되지 않음(동작 영향 없음, 유지). 번들의 import 추적에서 표준 라이브러리 밖 모듈 수준 import 0건.
+- 시험 서비스 `measurement/h01_probe.py`: 로컬에서 합성 키로 PING 200, 변조·오래된 서명 401, 다른 애플리케이션 거부, `/ask` → type 5·`X-QK-Run`, 다른 서명의 시작 확인 409, 시작 확인 204와 갱신 1회, 재시작 확인 409를 확인했다(Discord 전송은 가짜로 바꿔 외부 호출 0).
+
+### H01 배포 확인 (2026-10-26~27)
+
+- 조건: Cloudflare Qello 전용 계정, wrangler 4.149.0, Worker 호환 날짜 2026-10-26, 커밋 `c512170`의 `worker.py`·`wrangler.toml`. 실제 VPC Service ID를 넣은 배포 설정은 저장소 밖 사본에만 두었다.
+  시험 서비스 `measurement/h01_probe.py`(커밋 `2158f42`)를 공유 인스턴스에 임시 유닛(`nobody`, 메모리 상한 128M)으로 띄웠다. Workers AI·DB 호출 0, Neurons 0. 식별자·주소·키·토큰은 기록하지 않는다.
+- 공유 인스턴스: `cloudflared` 2026.10.4(Cloudflare 공식 apt 저장소)를 설치했다. 서비스 `qk-cloudflared.service`는 `DynamicUser`, 토큰을 `LoadCredential`로 받아 `--token-file`로 넘기고
+  `--protocol quic`으로 고정했다. 토큰은 사람이 숨김 입력했고(root:root 0600) 프로세스 인자에 없다. 설치 뒤 다른 서비스 재시작 0건(apt·journal 확인), 회의 봇 컨테이너·`qk-postgres`·`qk-sync.timer` 유지.
+- 터널: QUIC 연결 4개 등록, cloudflared 사전 점검 "Environment is healthy", Cloudflare 쪽 상태 `healthy`. quic-go UDP 수신 버퍼 증가 실패 경고가 있었다(`net.core.rmem_max`). 연결에는 영향이 없어 sysctl은 바꾸지 않았다.
+- Cloudflare: VPC Service(HTTP, `127.0.0.1:8787`, 터널 연결), Worker `qello-knowledge-relay` 배포(164개 모듈, gzip 189 KiB, 기동 681 ms), 비밀값 `DISCORD_PUBLIC_KEY`(사람이 숨김 입력).
+  비대화형 배포가 계정에 workers.dev 서브도메인이 없다며 작업 폴더 이름으로 서브도메인을 자동 등록했다. 수신 주소 등록 전에 사람이 대시보드에서 팀 이름으로 바꿨다. 이후 배포 전에는 서브도메인 존재를 먼저 확인한다.
+- Discord: `Qello Knowledge`를 시험 서버에 `applications.commands`로 설치했다. Interactions Endpoint URL 저장 때 Discord 검증 요청 2건이 서명된 PING 200(CPU 8 ms), 틀린 서명 401로 통과했다.
+  `/ask`를 서버 한정으로 등록했다(`register-commands`, 먼저 `--dry-run`. 로컬 `.env`의 봇 토큰 값이 비어 있어 이번 실행에만 숨김 입력하고 바로 지웠다). 역할 제한이 없어 서버의 모든 멤버에게 보인다.
+- `/ask` 3회(시험 문구): 3회 모두 Worker 200(`relayed`, VPC 왕복 404~459 ms, `error` 없음), 시험 서비스 type 5, 시작 확인 204(`start_failed` 0), 원 메시지 갱신 200(354~892 ms).
+  Discord가 받은 첫 응답의 Worker wall time 852~974 ms(3초 안). 독립 검토 Medium(VPC 바인딩이 `Fetcher`로 감싸지는가)은 실제 동작으로 해소됐다.
+- Workers Logs: `wrangler tail`의 요청 항목은 `cf`·`headers`·`method`·`url`뿐이고 본문이 없다. 헤더에는 서명·타임스탬프와 Cloudflare 기본 헤더가 있다. 저장되는 Workers Logs(Free 3일)도 같은 항목으로 본다 `(추론, 대시보드 미확인)`.
+- **위험(H04로 넘김)**: `/ask` 중계 요청의 Worker CPU가 121~189 ms다(Free 한도 10 ms의 12~19배). 문서상 가끔 넘는 것은 허용하지만 꾸준히 넘으면 Error 1102(`exceededCpu`)로 끊고,
+  그때는 대체 안내도 나가지 않고 Discord에 "응답하지 않음"이 뜬다. 이번 3회는 모두 `ok`였다. H04에서 10회 이상 재서 `exceededCpu`가 나면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다.
+  Python 안에서 줄이기, Workers Paid(월 고정비, ADR-008·C-05 승인 필요)도 대안이다. `/healthz` 첫 요청은 CPU 225 ms였다.
+- 정리: 시험 서비스 중지(임시 유닛 제거), `h01-probe.env`·값 입력 스크립트·`/usr/local/lib/qk-h01` 삭제, Bastion 세션 삭제. 남긴 것: 터널, `qk-cloudflared`, 터널 토큰 파일과 입력 스크립트 `/usr/local/sbin/qk-tunnel-token-setup`,
+  VPC Service, Worker, 수신 주소, `/ask` 명령. H02 전까지 `/ask`는 Worker 대체 안내("지금은 답할 수 없습니다", 나만 보기)를 받는다 `(추론, 중지 뒤 호출 미확인)`.
+- 남은 일: H02(실제 질의 서비스 구성), H03(SC-010), H04(CPU·첫 응답 측정), H05(실측). 사람 확인: 로컬 `.env` 권한이 644로 `tokens.md` 기록(600)과 다르다.
+
+### H04 일부 측정 (2026-10-27, H02 전)
+
+- 조건: H01과 같은 Worker(커밋 `c512170`)·터널·VPC Service. 시험 서비스(커밋 대기 중인 거부 경로 흉내 포함)를 임시 유닛으로 다시 띄웠다. 시험 채널에서 사람이 시험 문구로 `/ask`를 보냈다.
+  Worker 기록은 `wrangler tail`의 요청별 `cpuTime`·`wallTime`과 Worker 로그(`relayed`, 중계 왕복 ms)다. Workers AI·DB 호출 0, Neurons 0.
+- 표본: 23건. 거부 경로 흉내(`나만_보기` 켬 → 시험 서비스 type 4, 시작 확인 없음) 10건, 허용 경로(type 5 + 시작 확인 204 + 원 메시지 갱신 200) 13건. 23건 모두 outcome `ok`, `exceededCpu`·Worker `error` 0건.
+  시험 서비스 기록과 건수가 같다(type 4 10, type 5 13, 시작 확인 204 13, 갱신 200 13, 갱신 p50 371 ms·최대 829 ms).
+
+| 경로 | n | Worker CPU p50 / p95 / 최소 / 최대 (ms) | 10 ms 초과 | 중계 왕복 p50 / p95 / 최대 (ms) |
+| --- | --- | --- | --- | --- |
+| 거부 흉내(type 4) | 10 | 29.5 / 155.5 / 18 / 250 | 10/10 | 357 / 841 / 1,146 |
+| 허용(type 5 + 시작 확인) | 13 | 37 / 144 / 21 / 172 | 13/13 | 369 / 381 / 382 |
+| 전체 | 23 | 31 / 167 / 18 / 250 | 23/23 | 366 / 460 / 1,146 |
+
+- 해석: 따뜻한 isolate에서도 CPU가 18~52 ms로 Free 한도(10 ms)의 2~5배이고, 새 isolate로 보이는 요청(첫 요청 250 ms, 46초 쉰 뒤 연속 3건 108~172 ms)은 10~25배다. 이번 표본에서는 끊기지 않았지만
+  문서상 "꾸준히" 넘으면 1102로 끊는 조건에 해당한다. 허용 경로 CPU에는 `waitUntil` 시작 확인 처리도 들어 있다 `(추론)`. 비교로 서명 검사만 하는 PING은 8 ms(H01, 1건)였다.
+- 첫 응답 시간: Discord가 기다리는 첫 응답은 Worker가 시험 서비스 응답을 받아 돌려주는 시점이다. 중계 왕복 p50 366 ms·p95 460 ms·최대 1,146 ms, Worker wall(거부 흉내) 최대 1,164 ms로 3초 안이다.
+  실제 질의 서비스의 첫 응답 결정(M-03)은 H02 뒤에 잰다.
+- 인스턴스 기준선(질의 없음 10분, 30초 간격 20회): 위 "인스턴스 자원 기록" 표 기준선 열. 측정 시간대(기준선 시작부터 `/ask` 뒤까지) 커널 로그의 메모리 부족 종료 0줄. 측정 뒤 가용 4,526 MB, load 0.15.
+  첫 수집 스크립트의 메모리 부족 종료 집계는 시각 형식 오류로 무효였고, 같은 구간을 다시 조회한 값이 위 0줄이다.
+- 판정(M-02): Worker CPU가 Free 한도를 **꾸준히** 넘는다(23/23). research R-13의 대안 발동 조건("자주 넘으면")에 해당하므로 중계만 TypeScript로 옮기는 안을 사람 결정으로 올린다.
+  대안: Python 안에서 줄이기(PING 8 ms가 하한에 가까워 10 ms 안쪽 보장은 어렵다고 본다 `(추론)`), Workers Paid(월 고정비, ADR-008·C-05 승인 필요).
+- 미측정: PING(연결 확인) 10회(Discord는 수신 주소 저장 때만 보낸다), 대시보드 Worker 지표, 실제 질의 서비스 경로. 정리: 시험 서비스 중지·임시 파일 삭제·Bastion 세션 삭제.
+
+### 중계 Worker TypeScript 이전 (2026-10-27, ADR-024 Proposed)
+
+- 사용자 결정: H04 일부 결과로 research R-13 대안(B)을 택했다. Python Worker 코드는 지우고 계약 시험을 TS로 옮긴다. 시험은 `node --test`(npm 의존성 0), CI에 `relay` job을 더한다. 결정 기록은 ADR-024.
+- 변경: `workers/relay/relay.ts`(순수 판단), `workers/relay/index.ts`(진입점, 공개 키 isolate 캐시, `AbortSignal.timeout`과 경쟁 타이머로 중계 제한 시간 보장), `workers/relay/relay.test.ts`(14개).
+  `wrangler.toml`은 `main = "workers/relay/index.ts"`, `python_workers`·`base_dir` 제거. 삭제: `query/worker.py`, `discord/relay.py`, `test_bot_relay.py`. `signature_headers`는 `discord/interactions.py`로 옮겼다.
+  개발 의존성 `workers-py` 제거(`uv.lock`의 패키지 항목 24개 → 16개, `workers-py`와 그 의존성 8개).
+- 시험 이동: 이전 Python 계약 시험 5개(precheck·PING, 실패 대체 안내 3, 중계·시작 확인·기록 허용 목록)의 기대값을 TS 시험으로 옮기고, 진입점 시험 7개(healthz, 경로·크기·서명 거부, PING, 중계와 시작 확인,
+  즉시 안내, 실패·시간 초과 기록, 시작 확인 실패 기록)를 실제 Ed25519 서명과 가짜 VPC 바인딩·`waitUntil`로 더했다. RED(모듈 없음) → GREEN 확인.
+- 검증: `node --test workers/relay/relay.test.ts` 14 passed, `QK_REQUIRE_LOCALDB=1 uv run pytest` 2,309 passed(외부 2 제외, 이전 2,313에서 옮긴 5개 빠지고 1개 더함), ruff check·format, preflight, `git diff --check` 통과.
+  로컬 `wrangler dev`(workerd, 호환 날짜 2026-10-13로 낮춤, 합성 키, 외부 호출 0): `/healthz` 200, 서명 없음·잘못된 서명 401, 서명된 PING `{"type":1}`, 바인딩 없는 `/ask` → 대체 안내와 `relay_failed`·`error=TypeError`.
+- 독립 검토(별도 에이전트, 읽기 전용, Node 24·esbuild로 재현): 변경 요청 H1·M1·L4건 → 반영.
+  H1: CI의 `node --test workers/relay/`(디렉터리 인자)가 Node 24에서 실패 → 시험 파일 경로로 바꿈. M1: 응답 헤더 대기와 본문 읽기에 제한 시간이 따로 걸려 최악 2배 → 한 번의 제한 시간으로 묶음
+  (시험을 먼저 더해 1.9초 RED 확인 뒤 GREEN). L1: ADR-024의 로컬 시간 비교 문장(CPU가 아닌 클라이언트 측정 시간) 정정. L2: `uv.lock` 빠진 패키지 수 정정. L3: ADR-022의 지운 파일 참조 정정.
+  L4: 숫자가 아닌 Content-Length 400과 본문 읽기 시간 초과 시험 추가(14개). 동작 동등성·healthz·보안 경로 결함 없음.
+  재검토: 승인(High·Medium 0). 선택 Low(시간 시험 상한 1,400 → 1,700 ms, 회귀 1.9초와 간격 유지)를 반영했다. Node 24·26 모두 14 passed.
+- 남은 확인: 재배포와 운영 Worker CPU 재측정(H04), 타입 검사는 하지 않는다(ADR-024 Negative).
+
+### H04 TS 중계 재측정 (2026-10-27)
+
+- 조건: TS Worker(커밋 `1257d10`, 업로드 8.4 KiB, 기동 2 ms)를 같은 이름·VPC Service·비밀값으로 재배포했다. 시험 서비스(커밋 `7f69179`)를 임시 유닛으로 다시 띄웠고, 사람이 시험 채널에서 시험 문구로 `/ask`를 보냈다.
+  `wrangler tail`의 요청별 `cpuTime`·`wallTime`과 Worker 로그로 셌다. 경로는 시험 서비스 기록(type 5 21, type 4 10)과 Worker wall(시작 확인 대기 포함 여부)로 나눴다. Workers AI·DB 호출 0, Neurons 0.
+- 첫 20회는 `나만_보기` 옵션이 붙지 않아 모두 허용 경로였고, 거부 경로 10회를 따로 더 보냈다. 시험 서비스가 21건인 것은 로그 수집 연결 직전 1건으로 본다 `(추론)`.
+
+| 경로 | n | Worker CPU p50 / p95 / 최소 / 최대 (ms) | 10 ms 초과 | 중계 왕복 p50 / p95 / 최대 (ms) |
+| --- | --- | --- | --- | --- |
+| 거부 흉내(type 4) | 10 | 1 / 3.7 / 1 / 5 | 0/10 | 336 / 353 / 355 |
+| 허용(type 5 + 시작 확인) | 20 | 2.5 / 5 / 1 / 5 | 0/20 | 340 / 355 / 366 |
+| 전체 | 30 | 2 / 5 / 1 / 5 | 0/30 | — |
+
+- 비교(Python Worker, "H04 일부 측정"): CPU p50 31 ms·p95 167 ms·최대 250 ms, 23/23건 초과 → TS는 p50 2 ms·최대 5 ms, 0/30건 초과. outcome 모두 `ok`, Worker `error` 0, 시작 확인 204·원 메시지 갱신 200 21건.
+- 판정(M-02 명령 경로): 통과. Worker CPU가 Free 한도 안이다. 30초 넘게 쉰 뒤의 새 isolate 요청은 이번 표본에서 따로 확인하지 못했다(최대 간격 약 14초). PING 10회와 실제 질의 서비스 경로(M-03)는 H02 뒤.
+- 정리: 시험 서비스 중지·임시 파일 삭제·Bastion 세션 삭제·로그 수집 종료. 터널·`qk-cloudflared`·VPC Service·Worker·수신 주소·`/ask`는 H02용으로 남긴다.
+
+### H02 질의 서비스 구성 (2026-10-27)
+
+- 실행: 아래쪽 Herdr 패널의 Claude(실행 에이전트)가 운영 문서 7.2·7.3대로 했다. 서버·DB를 바꾸는 명령은 사람이 하나씩 승인했고, 비밀값은 사람이 대화형 SSH에서 숨김 입력했다.
+  오케스트레이터가 별도 Bastion 세션에서 읽기 전용으로 결과를 다시 확인했고 보고와 일치했다. 값·주소·식별자는 기록하지 않는다.
+- 구성:
+  - 시스템 사용자 `qkquery`(추가 그룹 없음, 로그인 셸 없음, 홈 없음)
+  - 질의 릴리스 `/opt/qello-knowledge-query`(root:qkquery 0750, `origin/main` `3a5a98e`). `uv sync --locked --extra query --extra postgres`.
+    uv 관리 Python 3.13을 릴리스 안 `.python/`에 두어(`UV_PYTHON_INSTALL_DIR`) `qkquery`와 `ProtectHome=yes`에서 읽힌다. 168 MB. main에 남은 개발 의존성 `workers-py`도 함께 설치됐다(PR #66 병합 전).
+  - `qk_query`: LOGIN, 암호 SCRAM-SHA-256(사람이 `\password`로 입력), super·createrole·createdb 없음. `qkquery`로 DB 연결과 `qk.embedding_usage` 읽기 권한 확인
+  - `/etc/qello-knowledge/query.env`(root:qkquery 0640, 8개 키, 역할 목록만 빈 값). `qk-query check` 누락·형식 오류 0
+  - `qk-query.service`(운영 문서 7.3 유닛, `--port 8787`): active, 재시작 0, 루프백 8787만 수신, `/healthz` 200 `ok=true`, 메모리 약 34 MB(상한 512 MB)
+- 0 Neurons 확인: 허용 밖 채널 `/ask` 2회 → 거부 안내(나만 보기), 운영 로그 `access=channel_outside`·`status=access_denied`, 검색·생성·전송 호출 0, 첫 응답 결정 0~1 ms.
+  운영 로그 키는 `run_id, access, private, status, failure, timings_ms, calls, deliver_retries, deliver_failure, retrieval_summary, generation_summary`뿐이고 원문 필드가 없다.
+- 범위 밖 허용 경로 1건: 서비스 기동 약 1분 30초 뒤 시험 서버의 누군가가 허용 채널에서 공개로 `/ask`를 보냈다. 검색 5·생성 2·전송 1회, 결과 `cannot_confirm`, 검색 870 ms·생성 639 ms·전송 1,071 ms,
+  생성 13.42 Neurons(측정)·검색 임베딩 0 Neurons(측정). 실제 경로(qk_query 검색, 전용 Workers AI 토큰, 원 메시지 갱신)가 동작한 사실이지만 H05 실측 표본으로는 쓰지 않는다.
+  사용자 결정(2026-10-27): 허용 채널을 그대로 열어 둔다(누구나 `/ask`로 Neurons를 쓸 수 있고, 하루 예산 검사는 질의 서비스가 한다).
+- 실행 중 실수: 관리 DB 조회 한 번에서 관리 암호가 `docker exec -e PGPASSWORD=<값>` 꼴로 약 1초 동안 같은 호스트의 프로세스 인자에 있었다. 외부 전송·기록은 없다. 이후 명령은 이름만 넘기는 꼴로 바꿨다.
+  사용자 결정(2026-10-27): 암호를 교체하지 않는다.
+- 공유 인스턴스 영향: `qk-postgres`·회의 봇 컨테이너 재시작 0, `qk-cloudflared`·`qk-sync.timer` active, 가용 메모리 약 4.5 GB. `MemoryMax=512M`은 초기값이며 질의 중 메모리는 H04 남은 항목에서 잰다.
+- 되돌리기(운영 문서 7.5): `qk-query` 중지·비활성화, 유닛 삭제, 관리 psql `ALTER ROLE qk_query NOLOGIN;`, `query.env`·릴리스 폴더 삭제, `userdel qkquery`. 터널·Worker·수신 주소·명령은 사람 승인 뒤 해제한다.
+- 남은 일: PR #66 병합 뒤 질의 릴리스 갱신 절차가 없다(H03~H05 전에 정하거나 기록한다). 서버 배너 "System restart required"는 범위 밖이라 두었다.
+
+### H03 외부 접속 차단 확인 (2026-10-27, SC-010)
+
+- 조건: 인스턴스 밖(작업자 PC, 일반 인터넷 회선)에서 OCI CLI로 인스턴스 공인 주소를 조회해 기록하지 않고 썼다. `nc -z`(연결 제한 5초)로 포트마다 3회 시도했다. 2026-10-26T18:01Z.
+- 결과: 대조 22번은 3회 모두 연결됐다(172~176 ms). DB 포트 5432와 질의 포트 8787은 3회 모두 5초 제한까지 응답 없이 실패했다(거부 응답 없이 버려짐).
+- 해석: 보안 목록이 22번만 받고(H00·운영 문서 1절), 그 안쪽에서도 DB 컨테이너는 `127.0.0.1:5432`, 질의 서비스는 `127.0.0.1:8787`에만 묶여 있다(H02 재확인). 두 겹 모두 바깥 접속을 막는다.
+  안쪽 경로(질의 서비스 healthz, 터널 경유 Worker 중계)는 H01·H02에서 동작을 확인했다.
+- 판정: SC-010 통과. 비용 0, 서버 설정 변경 없음.
+
+### H04 실제 질의 서비스 기준 측정 (2026-10-27)
+
+- 조건: H02의 실제 질의 서비스(`qk-query`, main `3a5a98e`)와 TS Worker. 서버 자원은 Bastion 세션에서 읽기 전용으로 5초마다 기록했다(A구간 질의 없음 10분 120회, B구간 8.5분 96회, `docker stats`는 30초마다).
+  B구간에 사람이 허용 밖 채널에서 시험 문구로 `/ask` 10회(4~5초 간격)를 보냈다. Worker는 `wrangler tail`로 기록했다. 0 Neurons(검색·생성 호출 0).
+- M-03(첫 응답): 질의 서비스의 첫 응답 결정 `first_response` 0 ms(10/10), 검색·생성·전송 호출 0, `access=channel_outside`·`status=access_denied`·나만 보기.
+  Worker 중계 왕복 p50 343 ms·p95 367 ms·최대 376 ms, Worker wall 최대 377 ms로 3초 마감 안이다. 왕복 시간은 대부분 Worker ↔ 터널 ↔ 인스턴스 네트워크다 `(추론, 질의 서비스 결정 0 ms)`.
+- M-02(Worker CPU, 실제 질의 서비스 경로): 10건 p50 1 ms·p95 3 ms·최대 3 ms, 10 ms 초과 0, outcome 모두 `ok`. 첫 요청은 앞선 요청 뒤 약 40분 쉰 다음이라 새 isolate일 가능성이 크다 `(추론)`. 그 요청 CPU는 3 ms였다.
+- 자원(A → B): 가용 메모리 4,487~4,516 → 4,486~4,513 MB, load 0~0.12 → 0~0.51, `qk-query` 33 → 33 MB(상한 512 MB), `qk-query` CPU 750 → 613 ms(구간 합), `qk-cloudflared` 14 MB,
+  `qk-postgres` CPU 0~3.1%·262 MiB, 회의 봇 1 CPU 0~0.03%·120 MiB, 회의 봇 2 CPU 0.04~0.74%·424~427 MiB. `qk-query` 재시작 0, 메모리 부족 종료 0줄, 컨테이너 재시작 0.
+- 판정: 허용 밖 경로에서 M-02·M-03 통과. 공유 인스턴스 부담은 질의 없음과 차이를 보기 어렵다. 질의 역할 DB 연결 수와 검색·생성 중 자원은 허용 경로가 있어야 하므로 H05에서 잰다.
+- 미측정: Discord PING(연결 확인) 10회. Discord는 수신 주소를 저장할 때만 PING을 보내 반복하기 어렵다. H01의 PING 2건(Python Worker)과 TS Worker 진입점 시험으로 갈음하고, 필요하면 수신 주소를 다시 저장해 잰다.
+
+### H05 실측 (2026-10-27)
+
+| 공통 조건 | 값 |
+| --- | --- |
+| 날짜·환경·실행 방식 | 2026-10-26 18:43~19:02 UTC(2026-10-27 KST), 운영(Qello 전용 Cloudflare 계정, OCI 공유 인스턴스), TS 중계 Worker → Workers VPC/Tunnel → OCI 질의 서비스, 질의 릴리스 main `3a5a98e` |
+| 질문 세트 | `qk-bot-001-h05` v1(`measurement/h05-question-set.md`, 커밋 `322fe49`), 질문 11개(있음 8·없음 3), 별도 S01 1개 |
+| 실행 편차(사용자 결정) | 공개 Q01·Q09·Q10, 나머지 나만 보기(세트는 Q08·Q11만 나만 보기). 세트 파일은 바꾸지 않았다 |
+| SC-002 판정 기준 | 세트 문서의 판정 기준. 사람이 화면을 보고, 출처 링크는 오케스트레이터가 공개 주소로 열어 확인(8개 모두 HTTP 200) |
+| 모델·프롬프트 | 생성 qwen3-30b-a3b-fp8(ADR-009, 질의 서비스 기본값), 프롬프트 버전 기본값, 질의 임베딩 `@cf/baai/bge-m3` |
+| 색인 조건 | `iv-4c0bc4fcc642`, 활성 문서 79건(자료원 커밋 `6aeccd0`, 수집 2026-10-23), `chk-md-20d966f730bb` |
+| 제한·예산 | 질의 마감·안내 전달 마감·외부 호출 상한(20)은 질의 서비스 기본값, Worker CPU 한도 10 ms. 당일 사용 시작 전 약 13.4 Neurons |
+
+질문별 시간(ms). 처리 중 응답은 Worker 중계 왕복(Discord가 기다리는 첫 응답), 단계 시간은 질의 서비스 운영 로그, 갱신까지 화면 시간은 재지 않았다.
+
+| 질문 | 유형 | 나만 보기 | 처리 중 응답 | first_response | retrieve | generate | deliver | Worker CPU |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Q01 | 있음 | 끔 | 383 | 0 | 587 | 1,366 | 439 | 4 |
+| Q02 | 있음 | 켬 | 357 | 0 | 167 | 1,198 | 745 | 1 |
+| Q03 | 있음 | 켬 | 339 | 0 | 481 | 1,079 | 416 | 3 |
+| Q04 | 있음 | 켬 | 350 | 0 | 470 | 1,594 | 1,255 | 2 |
+| Q05 | 있음 | 켬 | 336 | 0 | 165 | 877 | 534 | 3 |
+| Q06 | 있음 | 켬 | 343 | 0 | 407 | 1,036 | 497 | 3 |
+| Q07 | 있음 | 켬 | 372 | 0 | 216 | 546 | 454 | 2 |
+| Q08 | 있음 | 켬 | 358 | 0 | 156 | 839 | 466 | 3 |
+| Q09 | 없음 | 끔 | 359 | 0 | 152 | 598 | 425 | 2 |
+| Q10 | 없음 | 끔 | 357 | 0 | 204 | 595 | 826 | 3 |
+| Q11 | 없음 | 켬 | 355 | 0 | 153 | 759 | 450 | 2 |
+
+| 질문 | 검색/생성/전달 호출 | 전달 재시도·실패 | 임베딩 Neurons(측정) | 생성 Neurons(측정) | 상태 | SC-002 판정 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Q01 | 5/2/1 | 0 | 0.02 | 19.42 | answered | 통과(공개) |
+| Q02 | 5/2/1 | 0 | 0.02 | 16.75 | answered | 통과 |
+| Q03 | 5/2/1 | 0 | 0.01 | 18.21 | answered | 통과(CSRF 언급 빠짐) |
+| Q04 | 5/2/1 | 0 | 0.02 | 16.61 | answered | 통과(저장 전 검증·400 언급 빠짐) |
+| Q05 | 5/2/1 | 0 | 0.03 | 14.65 | answered | **실패**: "출처 확인 안 됨" 표시와 "자료에 명시되지 않음" 답. 근거가 있는데 쓰지 않았고 표준 확인 불가 문구도 아니다 |
+| Q06 | 5/2/1 | 0 | 0.02 | 15.51 | answered | 통과 |
+| Q07 | 5/2/1 | 0 | 0.02 | 14.99 | answered | 통과 |
+| Q08 | 5/2/1 | 0 | 0.02 | 15.66 | answered | 통과 |
+| Q09 | 5/2/1 | 0 | 0.01 | 14.72 | cannot_confirm | 통과(공개) |
+| Q10 | 5/2/1 | 0 | 0.02 | 15.26 | cannot_confirm | 통과(공개) |
+| Q11 | 5/2/1 | 0 | 0.01 | 12.48 | cannot_confirm | 통과 |
+
+- 집계: SC-001 통과(처리 중 응답 11/11이 336~383 ms, 3초 안). SC-002 10/11(있음 7/8, 없음 3/3). SC-012 통과(외부 호출 질문당 8, 상한 20 이하, 사용량 측정값).
+  SC-013: 공개 3건은 다른 사람에게 보였고, 나만 보기 8건은 질문자 화면에서 나만 보기로 보였다. 나만 보기 8건을 다른 계정으로 대조했는지는 미확인. Worker CPU 1~4 ms, outcome 모두 `ok`.
+- Q05 원인 조사(추론): 같은 질문으로 순위만 다시 검색했더니(질의 임베딩만, 0.03 Neurons) ADR-0008의 "선택 이유" 절이 하이브리드 2위, "고려한 선택지" 절이 6위였다. 검색은 근거를 찾았고
+  생성이 문맥의 근거를 쓰지 않았거나 인용 검증에서 빠진 것으로 본다. 실제 실행의 문맥 구성은 로그에 남지 않아 확인하지 못했다. 생성 품질(QK-GEN-001) 후속 과제다.
+- SC-005(S01): 첫 두 번은 클립보드에 남은 Q01 문장이 보내져(생성 19.42·19.14 Neurons, Q01과 같은 답) 시험이 되지 않았다. 세 번째에 합성 토큰 질문을 공개로 보냈고, 처리 중 응답 전 검사에서 걸려
+  `outgoing_blocked`, 나만 보기 안내, 검색·생성·전달 호출 0이었다. 질의 서비스·터널 로그와 Worker 로그에 토큰 조각 0건. 통과. 세 번째 시도를 다른 계정 화면으로 대조했는지는 미확인(첫 시도 때 받은 "다른 사람에게 안 보였다"는 Q01 답변에 대한 것).
+- 별도 발견(보안 결함, 범위 밖): 비밀값 규칙의 단어 경계 `\b`가 한글을 단어 문자로 봐서, 토큰이 한글에 붙으면(예 "토큰ghp_…은") `github-token` 규칙이 잡지 못한다(로컬 `find_secrets` 시험).
+  질의 전송 직전 검사와 색인 전송 직전 검사가 같은 규칙을 쓴다. QK-SEC-001 후속 과제로 넘긴다. 운영에서 이 꼴로 보내 보지는 않았다.
+- 비용: 세트 11개 생성 174.26 + 임베딩 0.20 = 174.46 Neurons(측정). 잘못 보낸 Q01 2건 38.56, Q05 순위 검색 2회 약 0.05. 실측 시간대 합계 약 213 Neurons, 당일 합계 약 227(무료 10,000, 질의 예비분 3,000 안).
+- 자원: 위 "인스턴스 자원 기록" 표의 실측 중 열. 메모리 부족 종료와 회의 봇·DB 재시작 0. 임시 기록 유닛과 파일은 지웠다.

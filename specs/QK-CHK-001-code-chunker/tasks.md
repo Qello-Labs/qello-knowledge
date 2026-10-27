@@ -402,9 +402,9 @@ US6(켜기 설정)은 P1이지만 코드 청킹 규칙 버전의 재료가 US1~U
 - [X] T040 [US7] `config/sources.toml`에 항목 두 개를 더한다(항목 추가만, T039 통과).
   - research R-13 표대로 `dnd-backend-code`와 `dnd-android-code`를 더한다.
   - 각 항목: `kind = "github_repo_files"`, `enabled = false`, `auth = "GITHUB_API_TOKEN"`. `[source.scope]`에는 `repo`·`ref = "main"`·`include`를 적는다.
-  - 각 항목 바로 위에 활성화 선행 조건 주석 한 줄을 단다(spec FR-036, ADR-022).
+  - 각 항목 바로 위에 활성화 선행 조건 주석 한 줄을 단다(spec FR-036, ADR-023).
   - 기존 줄과 `dnd-backend-docs` 항목은 한 글자도 바꾸지 않는다.
-- [X] T041 [US7] `docs/sdd/decisions/ADR-022-code-sources.md`: `templates/decision-record.md` 형식으로 쓰고, Status는 `Proposed`다. 담을 것은 다음과 같다(spec FR-034·036, research R-02·R-13).
+- [X] T041 [US7] `docs/sdd/decisions/ADR-023-code-sources.md`: `templates/decision-record.md` 형식으로 쓰고, Status는 `Proposed`다. 담을 것은 다음과 같다(spec FR-034·036, research R-02·R-13).
   - 자료원과 범위. 첫 활성화는 본문 코드만 권고하고, 테스트 소스 세트는 평가 뒤 별도로 결정한다.
   - 읽기 전용 토큰 권한(`docs/sdd/research/tokens.md`).
   - 외부로 나가는 데이터: 코드 청크 본문과 임베딩 입력 텍스트. ADR-002 공급자의 데이터 처리 정책을 함께 적는다.
@@ -415,7 +415,7 @@ US6(켜기 설정)은 P1이지만 코드 청킹 규칙 버전의 재료가 US1~U
   - 번호: 진행 중인 SCRUM-108 브랜치의 ADR-021과 병합 순서에 따라 번호를 다시 확인한다.
   - 사람이 승인하기 전까지 Status는 Proposed다.
 
-**Checkpoint**: 설정 검사·범위 시험 통과, ADR-022는 사람 리뷰 대기
+**Checkpoint**: 설정 검사·범위 시험 통과, ADR-023는 사람 리뷰 대기
 
 ---
 
@@ -470,8 +470,8 @@ US6(켜기 설정)은 P1이지만 코드 청킹 규칙 버전의 재료가 US1~U
   - 증빙: 출력(장비, 새 `script_sha256_12` 포함)을 PR에 붙인다. 외부 호출은 0건이다.
 - [X] H02 로컬 실측(quickstart 4절): 구현된 청커로 research R-02 항목을 다시 잰다.
   - 항목: 청크 수, 종류별 수, 크기 분포, 상한 초과 나누기 수, `PARSE_FALLBACK`, `CONTEXT_OMITTED`
-  - 흉내 측정과 청크 수가 ±10%를 넘게 다르면 원인을 적는다. ADR-022 비용 추정을 그 값으로 고치고, 새 스크립트 해시를 적는다.
-- [X] H03 ADR-022 리뷰·승인(사람). 승인 전에는 Proposed로 둔다. 코드 자료원 켜기와 개인 정보 확인 기록 작성은 이 작업 밖이다(spec FR-035·036).
+  - 흉내 측정과 청크 수가 ±10%를 넘게 다르면 원인을 적는다. ADR-023 비용 추정을 그 값으로 고치고, 새 스크립트 해시를 적는다.
+- [X] H03 ADR-023 리뷰·승인(사람). 승인 전에는 Proposed로 둔다. 코드 자료원 켜기와 개인 정보 확인 기록 작성은 이 작업 밖이다(spec FR-035·036).
 - [X] H04 언어 팩 내려받기 폴더 처리 결정(사람): plan 측정 중 `tree-sitter-language-pack`이 내려받은 `%LOCALAPPDATA%/tree-sitter-language-pack/v1.22.1`(약 28 MB)을 지울지 사유와 함께 남길지 정한다. TASK.md에 기록한다.
 
 ---
@@ -513,5 +513,5 @@ US6(켜기 설정)은 P1이지만 코드 청킹 규칙 버전의 재료가 US1~U
 
 1. **MVP = Phase 1~3(US1)**: 원문 청크·심볼 경로·헤더·재현성이다. 켜기 설정이 꺼짐이라 운영에 영향이 없다.
 2. **P1 마무리**: US2·US3으로 요약과 메타데이터를 더하고, US6으로 켜짐 경로와 차단을 연결한다.
-3. **P2**: US4·US5로 판정·크기·실패 처리를 채우고, US7로 비활성 자료원과 ADR-022를 더한다.
+3. **P2**: US4·US5로 판정·크기·실패 처리를 채우고, US7로 비활성 자료원과 ADR-023를 더한다.
 4. **마무리**: Polish(비노출·격리, 전송 직전 검사, 요약 수치, 성능 회귀, 측정 옵션, 필수 키)와 기본 검증을 한다. 사람 단계 H01~H04는 구현 뒤 사람이 한다.
