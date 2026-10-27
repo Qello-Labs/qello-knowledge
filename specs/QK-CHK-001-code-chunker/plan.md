@@ -11,7 +11,7 @@ Kotlin은 `suspend { … }` 문법 결함을 피하려고 같은 길이 해석�
 코드 메타데이터는 `locator["code"]`에, 심볼 경로는 `heading_path`에 담는다. 그래서 저장 스키마·SQL·검색·생성 코드를 바꾸지 않는다.
 
 코드 청킹은 `QK_CODE_CHUNKING=off`가 기본이다. 꺼져 있으면 Markdown 청킹 규칙 버전, 메타데이터 스키마 버전(`meta-v1`), 인덱스 버전(`iv-4c0bc4fcc642`)이 지금과 같다.
-코드 자료원 두 개(`dnd-backend-code`, `dnd-android-code`)는 비활성으로 등록하고 결정 기록 ADR-022을 쓴다.
+코드 자료원 두 개(`dnd-backend-code`, `dnd-android-code`)는 비활성으로 등록하고 결정 기록 ADR-023을 쓴다.
 
 대상 두 저장소 실측은 다음과 같다(research R-02). 청크 약 11,800개, 상한 1,500을 넘는 청크 22개, 해석 오류 0이다. 본문 코드 첫 색인은 보수 추정 약 3,000 Neurons다.
 켜짐 계산 코드는 미리 넣되, 켜짐 인덱스 버전이 키워드 규칙 대응표에 없으면 `qk-index check`·`run`이 멈춘다. 그래서 환경값만으로는 켜지지 않는다(research R-09).
@@ -51,7 +51,7 @@ Kotlin은 `suspend { … }` 문법 결함을 피하려고 같은 길이 해석�
 | C-01·C-02 | 해당 없음(답변을 만들지 않는다) | 해당 없음 |
 | C-03 검색 자료는 데이터 | 코드 주석·문자열 안의 지시를 해석하지 않고 원문 그대로 자른다. 해석용 사본은 해석에만 쓴다 | 통과 |
 | C-04 작게 시작 | 기본 꺼짐, 비활성 자료원, 첫 활성화는 본문 코드만 권고(research R-13), 두 자료원은 하나씩 | 통과 |
-| C-05 비용 상한 | 이 작업 0 Neurons. 첫 색인 보수 추정 약 3,000(하루 예산 5,000 안)을 ADR-022에 적는다 | 통과 |
+| C-05 비용 상한 | 이 작업 0 Neurons. 첫 색인 보수 추정 약 3,000(하루 예산 5,000 안)을 ADR-023에 적는다 | 통과 |
 | C-06 교체 가능한 경계 | 해석기는 `chunking/code/parse.py` 한 곳, 타입은 `domain/chunking.py`(표준 라이브러리만), 자료원 종류를 모르는 진입점 | 통과 |
 | C-07 재현 | 원문 줄 그대로, 결정적 규칙, 해석기·사본 규칙 버전을 재료로 한 `chk-code-<해시>`, 켜짐일 때 인덱스 버전에 반영 | 통과 |
 | C-08 멱등·실패 격리 | 순수 함수, 파일별 실패 값, 해석 실패는 대체 청킹, 문서별 버전 비교(research R-10) | 통과 |
@@ -61,7 +61,7 @@ Kotlin은 `suspend { … }` 문법 결함을 피하려고 같은 길이 해석�
 | C-12 검증으로 닫기 | SC마다 시험(quickstart 1절) | 통과 |
 | C-13 수치 조건 | 커밋, 해석기·토크나이저 버전, 추정식, 표본을 research R-02에 고정 | 통과 |
 | C-14 권한 확인 자료만 | 입력이 팀 공용 판정을 통과한 자료뿐. 두 저장소 모두 공개 | 통과 |
-| AGENTS.md 3.1 새 자료원 | 비활성 등록 + ADR-022(데이터 처리 정책 포함). 켜기는 사람이 확인 기록과 함께 한다 | 통과 |
+| AGENTS.md 3.1 새 자료원 | 비활성 등록 + ADR-023(데이터 처리 정책 포함). 켜기는 사람이 확인 기록과 함께 한다 | 통과 |
 | AGENTS.md 3.3 인덱스 버전 | 켜짐에서만 `chk-code`·`meta-v2`가 인덱스 버전에 들어가고, 활성화는 QK-STO-002 | 통과 |
 | AGENTS.md 3.5 비용 | 0 Neurons | 통과 |
 | AGENTS.md 4절 | 다른 사람 파일 없음. 기존 시험 기대값 변경 없음(아래 Scope) | 통과 |
@@ -94,7 +94,7 @@ specs/QK-CHK-001-code-chunker/
 ```text
 pyproject.toml, uv.lock               # index 선택 의존성·dev 그룹에 tree-sitter 3종(R-01)
 config/sources.toml                   # dnd-backend-code, dnd-android-code (enabled = false, R-13)
-docs/sdd/decisions/ADR-022-code-sources.md   # 새 결정 기록(spec FR-034)
+docs/sdd/decisions/ADR-023-code-sources.md   # 새 결정 기록(spec FR-034)
 src/qello_knowledge/
 ├── domain/chunking.py                # CodeChunkingSettings(별도 타입, ChunkingSettings 불변), CodeChunkKind, AndroidComponent, 경고 2종, ChunkingSummary 추가 필드·from_results 키워드 인자
 ├── chunking/
@@ -131,7 +131,7 @@ tests/
 
 | 구분 | 내용 |
 | --- | --- |
-| 새 파일 | `chunking/code/*`, ADR-022, 시험·고정값, `measurement/measure_code.py`(이미 있음, `--time-chunking` 추가) |
+| 새 파일 | `chunking/code/*`, ADR-023, 시험·고정값, `measurement/measure_code.py`(이미 있음, `--time-chunking` 추가) |
 | 기존 파일 변경 | `pyproject.toml`·`uv.lock`, `config/sources.toml`(비활성 2항목 추가만), `domain/chunking.py`(추가만, `ChunkingSettings` 불변), `chunking/__init__.py`·`service.py`·`version.py`(Markdown 경로 불변, 해석기 지연 가져오기), `sync/keys.py`·`run.py`(`SyncDependencies.code_chunking` 기본 `None`, `IndexSpec` 메타 버전)·`plan.py`(87·216행), `indexer/sync_cli.py`(`current_index_version`, `build_runtime`, 읽기 명령의 설정 읽기), `config/registry.py`·`check.py`(두 교차 검사), `.env.example` 재생성, `tests/unit/test_boundaries.py`(검사 추가만) |
 | 바꾸지 않음 | 마이그레이션·SQL, `adapters/postgres/`, `retrieval/`, `generation/`, `embedding/`, `security/`, `domain/keyword_rules.py`(대응표 추가는 켜는 변경), `devtools/measure.py`·`devtools/eval_index.py`, `config/source_reviews/`, 기존 시험 기대값(측정 출력 고정값 포함) |
 | 의존성 | tree-sitter 3종 추가(research R-01). linux x86_64·aarch64·Windows 휠과 MIT 사용권을 PyPI에서 확인했다. 사람 확인 대상 |
@@ -157,7 +157,7 @@ tests/
   - 새 Kotlin 문법 결함(R-01)
   - `locator` 노출(R-11)
   - 보정 계수가 코드에 맞는지(R-02: 토크나이저 기준은 보수 추정의 약 절반)
-  - ADR 번호: `ADR-022`는 진행 중인 SCRUM-108 브랜치의 `ADR-021` 다음 번호다. 병합 순서에 따라 다시 확인한다(R-13)
+  - ADR 번호: `ADR-023`이다. `ADR-021`은 SCRUM-108, `ADR-022`는 QK-BOT-001(`ADR-022-discord-query-path.md`)이 먼저 썼다(2026-10-27 번호 정정, R-13)
 - Phase 1: [data-model.md](data-model.md), [contracts/chunker.md](contracts/chunker.md), [quickstart.md](quickstart.md).
 
 ## 다른 명세에 넘기는 것

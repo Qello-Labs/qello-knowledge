@@ -5,6 +5,13 @@ import json
 from qello_knowledge.domain.discord import ChannelKind, FirstResponse, Interaction, InteractionKind
 
 MAX_BODY_BYTES = 64 * 1024
+SIGNATURE_HEADERS = ("X-Signature-Ed25519", "X-Signature-Timestamp")
+
+
+def signature_headers(headers) -> dict[str, str]:
+    """서명 헤더 두 개를 대소문자와 관계없이 꺼낸다. 없으면 빈 문자열이다."""
+    lowered = {k.lower(): v for k, v in headers.items()}
+    return {name: lowered.get(name.lower(), "") for name in SIGNATURE_HEADERS}
 
 
 def _other() -> Interaction:
