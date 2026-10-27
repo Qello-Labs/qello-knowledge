@@ -298,6 +298,38 @@ def test_long_dotted_runs_without_a_scheme_are_cheap():
     assert time.perf_counter() - started < 1
 
 
+@pytest.mark.parametrize("field_kind", list(FieldKind))
+@pytest.mark.parametrize("unit", ["fffff:", "f:f.", "a.a.a.a:99999", "::", "f:", "ffff:", "1:2:3:4:5:6:7:"])
+def test_long_hex_colon_runs_are_cheap(unit, field_kind):
+    # 위치마다 길이별로 `ipaddress`를 부르면 10만 자에 몇 초가 걸린다(#82).
+    import time
+
+    started = time.perf_counter()
+    safe_text(unit * (100_000 // len(unit)), field_kind, PUBLIC)
+    assert time.perf_counter() - started < 1
+
+
+# 한 위치에서는 `ipaddress`가 받는 가장 긴 IPv6 후보를 가린다(#82 전과 같은 결과).
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("1:2:3:4:5:6:7::9", f"{MASK}9"),
+        ("::1:2:3:4:5:6:7:8", f"{MASK}:8"),
+        ("1:2:3:4:5:6:7:8:9", f"{MASK}:9"),
+        ("2001:db8::1:2:3:4:5:6", f"{MASK}:6"),
+        ("2001:db8:::1", f"{MASK}:1"),
+        ("fffff::1", f"f{MASK}"),
+        ("::192.0.2.256", f"{MASK}6"),
+        ("::ffff:192.0.2.01", f"{MASK}1"),
+        ("1:2:3:4:5:6:192.0.2.1.5", f"{MASK}.5"),
+        ("std::map::f", f"st{MASK}map{MASK}"),
+    ],
+)
+def test_ipv6_masks_the_longest_valid_candidate(value, expected):
+    assert safe_text(value, FieldKind.TEXT, PUBLIC) == expected
+    assert safe_text(value, FieldKind.PATH, PUBLIC) == expected
+
+
 @pytest.mark.parametrize(
     ("value", "leftover"),
     [
