@@ -3,7 +3,7 @@
 > Created at: `2026-10-27`
 > Jira 이슈: 해당 없음(Jira 없이 진행하는 예외 작업, GitHub Issue #68)
 > 기능명세서 ID: `QK-RET-001` (research R-08의 초기값 2,000을 바꾼다)
-> Status: Proposed
+> Status: Accepted
 >
 > 문맥을 담는 규칙(중심 먼저, 절 첫 청크·앞뒤 청크 다음, 청크를 자르지 않음)과 예산 범위(1~8000)는 그대로다. 바뀌는 것은 `QK_RETRIEVAL_CONTEXT_BUDGET` 기본값뿐이다.
 
@@ -39,6 +39,8 @@
 
 - 평가 보고서: [`specs/QK-BOT-001-discord-ask/measurement/gh68-budget-eval.md`](../../../specs/QK-BOT-001-discord-ask/measurement/gh68-budget-eval.md)
 - 원인 재현과 사람 판정: 이 브랜치의 `TASK.md` Decisions(2026-10-27)
+- v2 라벨 CLI 평가(2회 × 11문항, 22/22): [`specs/QK-BOT-001-discord-ask/measurement/h05-v2-eval.md`](../../../specs/QK-BOT-001-discord-ask/measurement/h05-v2-eval.md)
+- 운영 반영과 Discord 재확인(Q05 통과, 1회): [`specs/QK-BOT-001-discord-ask/tasks.md`](../../../specs/QK-BOT-001-discord-ask/tasks.md) "질의 릴리스 갱신과 H05 재확인"
 
 ## Data and cost
 
@@ -71,5 +73,6 @@
 
 ## Approval
 
-- Approvers:
-- Approved at:
+- Approvers: Byuntil(저장소 담당자, #58 작업 담당)
+- Approved at: 2026-10-28 사용자 결정(#58 마무리 작업). 운영 질의 릴리스를 `ce6d1d8`로 갱신하고 Discord에서 Q05를 다시 확인한 뒤 승인했다.
+  이 세션은 사람의 결정을 기록하며 결정을 스스로 승인하지 않는다.
