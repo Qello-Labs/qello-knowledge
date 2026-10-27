@@ -13,7 +13,7 @@
 | `rrf_k` | 60 | 1~1,000 | FR-003 |
 | `expand_top` | 8 | 1~20 | FR-012. 문맥 확장을 끄려면 `want_context=False` |
 | `before`, `after` | 1, 1 | 0~3 | FR-012 |
-| `context_budget` | 2,000 | 1~8,000 | FR-016 |
+| `context_budget` | 3,000 | 1~8,000 | FR-016. [ADR-025](../../docs/sdd/decisions/ADR-025-context-budget-3000.md)에서 2,000 → 3,000 |
 | `question_max_chars` | 2,000 | 1~8,000 | FR-009 |
 | `query_rule` | `kw-query-v1` | `QUERY_RULES` 안 | FR-017 |
 | `bytes_per_token` | 3.5 | QK-EMB-001 모델 설정과 같음 | FR-016 |
