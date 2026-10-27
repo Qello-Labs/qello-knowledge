@@ -14,8 +14,8 @@ from qello_knowledge.generation.settings import (
 
 def test_default_settings_pass_with_documented_total():
     gen, retrieval = GenerationSettings(), RetrievalSettings()
-    # 624(시스템 2,184바이트) + 15(고정 문구 50바이트) + 2,286(2,000자 × 4바이트) + 2,000 = 4,925 → × 2.0 + 800
-    assert worst_case_tokens(gen, retrieval) == 10650
+    # 624(시스템 2,184바이트) + 15(고정 문구 50바이트) + 2,286(2,000자 × 4바이트) + 3,000(ADR-025) = 5,925 → × 2.0 + 800
+    assert worst_case_tokens(gen, retrieval) == 12650
     assert check_settings(gen, retrieval) == []
 
 
@@ -26,14 +26,15 @@ def test_max_overrides_are_rejected():
 
 
 def test_factor_applies_to_inputs_only_and_output_is_added_once():
-    retrieval = RetrievalSettings()
+    retrieval = RetrievalSettings(context_budget=2000)  # 계산식 시험. 기본값은 위 시험이 본다
     low = worst_case_tokens(GenerationSettings(underestimate_factor=1.0), retrieval)
     assert low == 4925 + 800
     assert worst_case_tokens(GenerationSettings(max_tokens=100), retrieval) == 9850 + 100
 
 
 def test_question_limit_counts_four_bytes_per_char():
-    one = worst_case_tokens(GenerationSettings(underestimate_factor=1.0), RetrievalSettings(question_max_chars=7))
+    retrieval = RetrievalSettings(question_max_chars=7, context_budget=2000)  # 계산식 시험. 기본값은 위 시험이 본다
+    one = worst_case_tokens(GenerationSettings(underestimate_factor=1.0), retrieval)
     zero_q = 624 + 15 + 2000 + 800
     assert one == zero_q + 8  # ceil(7 × 4 / 3.5) = 8
 
