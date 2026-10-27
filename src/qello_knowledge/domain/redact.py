@@ -15,7 +15,7 @@ from urllib.parse import unquote, urlsplit
 from qello_knowledge.domain.secret_rules import find_secrets
 
 ADDRESS_MASK = "[가림:address]"
-ADDRESS_POLICY_VERSION = "address-v5"
+ADDRESS_POLICY_VERSION = "address-v6"
 FILE_EXTENSIONS = frozenset(
     {
         "md", "mdx", "markdown", "txt", "rst", "adoc",
@@ -27,12 +27,18 @@ FILE_EXTENSIONS = frozenset(
 # `\b`·`\w`는 한글 같은 비ASCII 글자도 단어 문자로 봐서 그 글자에 바로 붙은 주소를 놓친다(#70).
 # 경계는 ASCII 영숫자·밑줄로만 본다.
 WORD = "A-Za-z0-9_"
-SCHEME_URL = re.compile(rf"(?<![{WORD}])[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
+# 스킴 주소는 `://`가 있어 글자만으로 주소가 확실하므로 앞 경계를 두지 않는다(#79). 패턴은 `://` 앞 스킴 문자 덩어리의
+# 첫 글자에서만 맞춰 보고, 맞으면 덩어리 시작부터 가린다(`_mask_scheme`). 첫 글자 앞의 숫자·점이 IPv4 조각으로
+# 남지 않게 한다. 다만 덩어리 바로 앞이 `:`이면 맨 앞 숫자 5자까지는 포트일 수 있어 남겨 `host:port` 패턴이 가리게 한다.
+# 시작 위치마다 덩어리를 다시 훑으면 긴 `a.a.a…`에서 길이의 제곱이 걸린다.
+SCHEME_CHARS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+.-")
+SCHEME_URL = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
 # IP는 경계 정규식으로 찾지 않고 후보를 `ipaddress`로 검증한다. 점이나 확장자가 바로 붙은 주소도 놓치지 않으려는 것이다.
 # IPv6는 콜론이 두 개 이상인 16진 구간 안에서 찾는다. 코드(`std::map`)와 주소(`face::beef`)는 글자로 구분할 수 없어
-# 유효한 IPv6 후보는 모두 가린다. IPv4는 숫자·점 덩어리 전체(앞뒤 점 제외)가 IPv4일 때만 가린다(`1.2.3.456`은 버전).
+# 유효한 IPv6 후보는 모두 가린다. IPv4는 점 하나씩으로 이어진 숫자 덩어리 전체가 IPv4일 때만 가린다(`1.2.3.456`은 버전).
+# `..`는 덩어리를 끊는다. `v1.2..` 뒤에 붙은 IPv4를 놓치지 않으려는 것이다(#79).
 IP_RUN = re.compile(r"[0-9A-Fa-f:.]+")
-IPV4_DIGITS = re.compile(r"[0-9.]+")
+IPV4_DIGITS = re.compile(r"[0-9]+(?:\.[0-9]+)*")
 IP_MAX_LENGTH = 45  # IPv4를 붙인 IPv6 표기의 최대 길이
 HOST_PORT = re.compile(rf"(?<![{WORD}.-])[A-Za-z][A-Za-z0-9.-]*:\d{{1,5}}(?![{WORD}])")
 DOTTED_NAME = re.compile(rf"(?<![{WORD}.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![{WORD}-])")
@@ -96,22 +102,43 @@ def _mask_ipv6(value: str, ip_run: re.Pattern[str]) -> str:
 def _mask_ipv4(value: str, ipv4_digits: re.Pattern[str]) -> str:
     def replace(match: re.Match[str]) -> str:
         token = match.group(0)
-        core = token.strip(".")
-        if core.count(".") != 3 or not _is_ip(core):
-            return token
-        start = token.index(core)
-        return token[:start] + ADDRESS_MASK + token[start + len(core) :]
+        return ADDRESS_MASK if token.count(".") == 3 and _is_ip(token) else token
 
     return ipv4_digits.sub(replace, value)
+
+
+def _mask_scheme(value: str, scheme: re.Pattern[str]) -> str:
+    """`://`마다 그 앞 스킴 문자 덩어리의 첫 글자에서 패턴을 맞춰 보고, 맞으면 덩어리 시작부터 가린다.
+
+    덩어리는 `:`에서 끝나 서로 겹치지 않으므로 전체 시간이 길이에 비례한다.
+    """
+    out, last, pos = [], 0, 0
+    while (colon := value.find("://", pos)) >= 0:
+        start = colon
+        while start > last and value[start - 1] in SCHEME_CHARS:
+            start -= 1
+        letter = next((i for i in range(start, colon) if value[i].isascii() and value[i].isalpha()), None)
+        match = scheme.match(value, letter) if letter is not None else None
+        if match is None:
+            pos = colon + 1
+            continue
+        begin = start
+        if start > 0 and value[start - 1] == ":":
+            while begin < min(letter, start + 5) and value[begin].isdigit():
+                begin += 1
+        out += [value[last:begin], ADDRESS_MASK]
+        last = pos = match.end()
+    return "".join(out) + value[last:]
 
 
 def _mask_definite(value: str, policy: AddressPolicy) -> str:
     """스킴 주소, IP, `host:port`처럼 글자만으로 주소가 확실한 것을 가린다."""
     scheme, ip_run, ipv4_digits, host_port, _ = policy.patterns
-    value = scheme.sub(ADDRESS_MASK, value)
+    value = _mask_scheme(value, scheme)
     value = _mask_ipv6(value, ip_run)
     value = _mask_ipv4(value, ipv4_digits)
-    return host_port.sub(ADDRESS_MASK, value)
+    # `host:9.192.0.2.1`처럼 포트가 IPv4 앞 숫자와 붙어 있으면 포트를 가린 뒤에야 IPv4가 드러난다(#79).
+    return _mask_ipv4(host_port.sub(ADDRESS_MASK, value), ipv4_digits)
 
 
 def _mask_text(value: str, policy: AddressPolicy) -> str:

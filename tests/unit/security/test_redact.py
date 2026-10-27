@@ -262,8 +262,8 @@ def test_addresses_glued_to_other_non_ascii_letters_are_masked(address, leftover
     ("value", "kind", "expected"),
     [
         (f"x{SCHEME_ADDRESS}", FieldKind.TEXT, MASK),
-        (f"_{SCHEME_ADDRESS}", FieldKind.TEXT, f"_{SCHEME_ADDRESS}"),
-        (f"9{SCHEME_ADDRESS}", FieldKind.TEXT, f"9{SCHEME_ADDRESS}"),
+        (f"_{SCHEME_ADDRESS}", FieldKind.TEXT, f"_{MASK}"),  # #79: 스킴 주소는 숫자·밑줄 뒤에서도 가린다
+        (f"9{SCHEME_ADDRESS}", FieldKind.TEXT, MASK),  # 스킴 덩어리 앞 숫자도 함께 가린다
         (f"x{HOST_PORT_ADDRESS}", FieldKind.TEXT, MASK),
         (f"_{HOST_PORT_ADDRESS}", FieldKind.TEXT, f"_{HOST_PORT_ADDRESS}"),
         (f"9{HOST_PORT_ADDRESS}", FieldKind.TEXT, f"9{HOST_PORT_ADDRESS}"),
@@ -282,5 +282,101 @@ def test_ascii_neighbors_keep_the_previous_judgement(value, kind, expected):
     assert safe_text(value, kind, PUBLIC) == expected
 
 
-def test_address_policy_version_changed_with_the_hangul_boundary():
-    assert AddressPolicy().version == "address-v5"
+def test_address_policy_version_changed_with_the_scheme_boundary():
+    assert AddressPolicy().version == "address-v6"
+
+
+# --- #79: 스킴 패턴이 긴 입력에서 길이의 제곱으로 느렸고, 숫자·밑줄·`..` 뒤의 주소가 한 번 가림에서 남았다 ---
+
+
+def test_long_dotted_runs_without_a_scheme_are_cheap():
+    import time
+
+    started = time.perf_counter()
+    for unit in ("a.", "a-", "a.-", "1."):
+        safe_text(unit * (100_000 // len(unit)), FieldKind.TEXT, PUBLIC)
+    assert time.perf_counter() - started < 1
+
+
+@pytest.mark.parametrize(
+    ("value", "leftover"),
+    [
+        (f"{IPV4_ADDRESS}{SCHEME_ADDRESS}", "ssh:"),
+        (f"{IPV4_ADDRESS}{SCHEME_ADDRESS}", IPV4_ADDRESS),
+        (f"_{SCHEME_ADDRESS}", "ssh:"),
+        (f"9{SCHEME_ADDRESS}", "ssh:"),
+        (f"1.2.{SCHEME_ADDRESS}", "ssh:"),
+        (f"v1.2..{IPV4_ADDRESS}_x", IPV4_ADDRESS),
+        (f"1.2..{IPV4_ADDRESS}", IPV4_ADDRESS),
+    ],
+)
+def test_addresses_after_digits_underscores_and_double_dots_are_masked(value, leftover):
+    assert leftover not in safe_text(value, FieldKind.TEXT, PUBLIC)
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (f"1.{IPV4_ADDRESS}{SCHEME_ADDRESS}", MASK),
+        (f"9{IPV4_ADDRESS}{SCHEME_ADDRESS}", MASK),
+        (f"_{SCHEME_ADDRESS}", f"_{MASK}"),
+        (f"x {SCHEME_ADDRESS}", f"x {MASK}"),
+        (f"{HOST_PORT_ADDRESS}.md+{SCHEME_ADDRESS}", f"{MASK}{MASK}"),  # 포트 숫자는 `host:port`가 가린다
+    ],
+)
+def test_digits_and_dots_before_a_scheme_are_masked_with_it(value, expected):
+    assert safe_text(value, FieldKind.TEXT, PUBLIC) == expected
+
+
+def test_only_port_digits_after_a_colon_are_left_before_a_scheme():
+    masked = safe_text(f":80{IPV4_ADDRESS}{SCHEME_ADDRESS}", FieldKind.TEXT, PUBLIC)
+    assert masked.endswith(MASK)
+    assert IPV4_ADDRESS not in masked
+    assert "." not in masked.removesuffix(MASK)
+
+
+@pytest.mark.parametrize("kind", [FieldKind.TEXT, FieldKind.PATH])
+def test_ipv4_after_a_masked_port_is_masked(kind):
+    value = (
+        f"docs/{HOST_PORT_ADDRESS}.{IPV4_ADDRESS}" if kind == FieldKind.PATH else f"{HOST_PORT_ADDRESS}.{IPV4_ADDRESS}"
+    )
+    assert IPV4_ADDRESS not in safe_text(value, kind, PUBLIC)
+
+
+@pytest.mark.parametrize(
+    ("value", "kind"),
+    [
+        (f"v1.2..{IPV4_ADDRESS}", FieldKind.TEXT),
+        (f"docs/v1.2..{IPV4_ADDRESS}/a.md", FieldKind.PATH),
+        (f"docs/v1.2..{IPV4_ADDRESS}.md", FieldKind.PATH),
+    ],
+)
+def test_ipv4_after_double_dots_counts_as_an_address(value, kind):
+    assert IPV4_ADDRESS not in safe_text(value, kind, PUBLIC)
+    assert has_unsafe(value, kind, PUBLIC) == "address"
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["release 1.2.3.4.5", "1.2.3.456", "2026.10.20.1", "x9://", "a_b://", f"_{HOST_PORT_ADDRESS}", "9://"],
+)
+def test_versions_and_schemes_without_a_host_are_kept(value):
+    assert safe_text(value, FieldKind.TEXT, PUBLIC) == value
+
+
+IDEMPOTENT_PARTS = (
+    SCHEME_ADDRESS, IPV4_ADDRESS, IPV6_ADDRESS, HOST_PORT_ADDRESS, INTERNAL_HOST, COLLIDING_HOST,
+    "v1.2", "..", ".", "_", "9", "-", "/", " ", "주소", "://", ":1", "x", ".md",
+)  # fmt: skip
+
+
+def _glued_inputs(max_parts: int) -> list[str]:
+    from itertools import product
+
+    return ["".join(parts) for n in range(1, max_parts + 1) for parts in product(IDEMPOTENT_PARTS, repeat=n)]
+
+
+@pytest.mark.parametrize("kind", list(FieldKind))
+def test_masking_twice_gives_the_same_result(kind):
+    once = {v: safe_text(v, kind, PUBLIC) for v in _glued_inputs(3)}
+    assert [v for v, masked in once.items() if safe_text(masked, kind, PUBLIC) != masked] == []
