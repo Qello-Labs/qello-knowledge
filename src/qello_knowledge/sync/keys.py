@@ -3,6 +3,7 @@
 from hashlib import sha256
 
 METADATA_SCHEMA_VERSION = "meta-v1"
+CODE_METADATA_SCHEMA_VERSION = "meta-v2"  # 코드 청크의 `locator["code"]`(QK-CHK-001 research R-11)
 
 
 def chunk_input_hash(content_hash: str, location: str, source_title: str | None) -> str:
@@ -24,6 +25,11 @@ def index_version_id(
             "\0".join(map(str, (embedding_model, dimension, chunking_version, metadata_schema_version))).encode()
         ).hexdigest()[:12]
     )
+
+
+def metadata_schema_version(code=None) -> str:
+    """코드 청킹이 켜졌을 때만 새 메타데이터 스키마 버전이 인덱스 버전 재료가 된다(QK-CHK-001 spec FR-026)."""
+    return METADATA_SCHEMA_VERSION if code is None else CODE_METADATA_SCHEMA_VERSION
 
 
 def scope_key(kind, scope=None, *, repo=None, ref=None):
