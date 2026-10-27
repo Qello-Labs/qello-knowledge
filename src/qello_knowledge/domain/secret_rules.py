@@ -25,29 +25,35 @@ KEY_NAME_PATTERN = (
     r"|secret[_-]?key|access[_-]?token|client[_-]?secret|token|secret)"
 )
 PLACEHOLDER = r"(?!\$\{|<|example|redacted|masked|changeme|dummy)"
+# `\b`는 한글도 단어 문자로 봐서 한글에 바로 붙은 토큰을 놓친다(#67). ASCII 영숫자·밑줄만 경계로 본다.
+START = r"(?<![A-Za-z0-9_])"
+END = r"(?![A-Za-z0-9_])"
 RULES = (
     SecretRule("private-key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
-    SecretRule("aws-access-key", re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b")),
-    SecretRule("github-token", re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")),
-    SecretRule("slack-token", re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,}\b")),
-    SecretRule("anthropic-key", re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}")),
-    SecretRule("openai-key", re.compile(r"\bsk-(?!ant-)(?:proj-)?[A-Za-z0-9_-]{32,}")),
-    SecretRule("notion-token", re.compile(r"\b(?:secret|ntn)_[A-Za-z0-9]{40,}\b")),
-    SecretRule("figma-token", re.compile(r"\bfigd_[A-Za-z0-9_-]{30,}")),
-    SecretRule("atlassian-token", re.compile(r"\bATATT[A-Za-z0-9_=-]{20,}")),
-    SecretRule("github-fine-grained-token", re.compile(r"\bgithub_pat_[A-Za-z0-9_]{22,}")),
-    SecretRule("cloudflare-account-token", re.compile(r"\bcfat_[A-Za-z0-9_-]{20,}")),
-    SecretRule("discord-bot-token", re.compile(r"\b[MNO][A-Za-z0-9_-]{23,27}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,}")),
-    SecretRule("clickup-token", re.compile(r"\bpk_\d{3,}_[A-Z0-9]{20,}")),
+    SecretRule("aws-access-key", re.compile(START + r"(?:AKIA|ASIA)[A-Z0-9]{16}" + END)),
+    SecretRule("github-token", re.compile(START + r"gh[pousr]_[A-Za-z0-9_]{30,}" + END)),
+    SecretRule("slack-token", re.compile(START + r"xox[baprs]-[A-Za-z0-9-]{20,}" + END)),
+    SecretRule("anthropic-key", re.compile(START + r"sk-ant-[A-Za-z0-9_-]{20,}")),
+    SecretRule("openai-key", re.compile(START + r"sk-(?!ant-)(?:proj-)?[A-Za-z0-9_-]{32,}")),
+    SecretRule("notion-token", re.compile(START + r"(?:secret|ntn)_[A-Za-z0-9]{40,}" + END)),
+    SecretRule("figma-token", re.compile(START + r"figd_[A-Za-z0-9_-]{30,}")),
+    SecretRule("atlassian-token", re.compile(START + r"ATATT[A-Za-z0-9_=-]{20,}")),
+    SecretRule("github-fine-grained-token", re.compile(START + r"github_pat_[A-Za-z0-9_]{22,}")),
+    SecretRule("cloudflare-account-token", re.compile(START + r"cfat_[A-Za-z0-9_-]{20,}")),
+    SecretRule(
+        "discord-bot-token",
+        re.compile(START + r"[MNO][A-Za-z0-9_-]{23,27}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27,}"),
+    ),
+    SecretRule("clickup-token", re.compile(START + r"pk_\d{3,}_[A-Z0-9]{20,}")),
     SecretRule(
         "db-url-with-password",
-        re.compile(r"(?i)\bpostgres(?:ql)?(?:\+\w+)?://[^:/\s@]+:(?!<|\$\{)[^@\s]{3,}@"),
+        re.compile(r"(?i)" + START + r"postgres(?:ql)?(?:\+\w+)?://[^:/\s@]+:(?!<|\$\{)[^@\s]{3,}@"),
     ),
     # 코드의 `api_key = settings.api_key` 같은 참조는 잡지 않도록 따옴표로 감싼 값만 본다.
     SecretRule(
         "assigned-secret",
         re.compile(
-            rf"(?i)\b{KEY_NAME_PATTERN}[\"']?\s*(?::\s*[\w\[\]|. ]+?\s*)?[:=]\s*[\"']"
+            rf"(?i){START}{KEY_NAME_PATTERN}[\"']?\s*(?::\s*[\w\[\]|. ]+?\s*)?[:=]\s*[\"']"
             rf"{PLACEHOLDER}[^\s\"']{{12,}}[\"']"
         ),
     ),

@@ -13,6 +13,7 @@
 - Branch: `feat/SCRUM-119-gh-72-confluence-source`
 - Base branch: `main`. 2026-10-27 `origin/main` `ba1249e`(#69 병합)에서 분기했다. 이전 `main`의 계약(QK-CHK-001)은 git 이력에 남긴다.
   push 전에 `origin/main` `4286014`(#73 병합) 위로 커밋을 다시 쌓았다. 충돌난 `TASK.md`는 이 계약을 남겼고, `main`의 #68 계약은 git 이력에 남긴다.
+  PR #77을 연 뒤 충돌을 풀려고 `origin/main` `5567346`(#71·#75 병합)을 병합했다. `TASK.md`는 같은 방식으로 이 계약을 남겼다(`main`의 #67·#58 계약은 git 이력에 남긴다).
 
 ## Objective
 
