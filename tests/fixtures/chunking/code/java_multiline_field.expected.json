@@ -1,0 +1,123 @@
+{
+  "input": {
+    "location": "src/main/java/a/Config.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Config.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Config.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Config.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Config.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          14
+        ],
+        "heading_path": [
+          "Config"
+        ],
+        "search_header": "src/main/java/a/Config.java java\nConfig [TYPE_SUMMARY]",
+        "search_text": "src/main/java/a/Config.java java\nConfig [TYPE_SUMMARY]\n\nclass Config {\n    private static final List<String> NAMES = List.of(\n    @Value(\"${limit}\")\n    private int limit;\n    int size() {",
+        "embedding_text": "src/main/java/a/Config.java java\nConfig [TYPE_SUMMARY]\n\nclass Config {\n    private static final List<String> NAMES = List.of(\n    @Value(\"${limit}\")\n    private int limit;\n    int size() {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Config",
+          "signature": "class Config",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          9
+        ],
+        "heading_path": [
+          "Config"
+        ],
+        "search_header": "src/main/java/a/Config.java java\nConfig [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Config.java java\nConfig [TYPE_HEAD]\n\nclass Config {\n    private static final List<String> NAMES = List.of(\n        \"a\",\n        \"b\");\n\n    @Value(\"${limit}\")\n    private int limit;",
+        "embedding_text": "src/main/java/a/Config.java java\nConfig [TYPE_HEAD]\n\nclass Config {\n    private static final List<String> NAMES = List.of(\n        \"a\",\n        \"b\");\n\n    @Value(\"${limit}\")\n    private int limit;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Config",
+          "signature": "class Config",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          11,
+          14
+        ],
+        "heading_path": [
+          "Config",
+          "size()"
+        ],
+        "search_header": "src/main/java/a/Config.java java\nConfig > size() [METHOD]",
+        "search_text": "src/main/java/a/Config.java java\nConfig > size() [METHOD]\n\nclass Config {\n    int size() {\n        return NAMES.size();\n    }\n}",
+        "embedding_text": "src/main/java/a/Config.java java\nConfig > size() [METHOD]\n\nclass Config {\n    int size() {\n        return NAMES.size();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "size()",
+          "signature": "int size()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

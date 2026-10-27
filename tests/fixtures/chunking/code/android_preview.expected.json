@@ -1,0 +1,129 @@
+{
+  "input": {
+    "location": "presentation/src/main/java/com/acme/home/HomeScreen.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "HomeScreen.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\n[FILE_HEAD]",
+        "search_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.home\n\nimport androidx.compose.runtime.Composable",
+        "embedding_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.home\n\nimport androidx.compose.runtime.Composable",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.home",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          1,
+          14
+        ],
+        "heading_path": [
+          "HomeScreen.kt"
+        ],
+        "search_header": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt [FILE_SUMMARY]",
+        "search_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt [FILE_SUMMARY]\n\n@Preview(showBackground = true)\n@Composable\nprivate fun HomePreview() {\n@Composable\nfun HomeScreen() {",
+        "embedding_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt [FILE_SUMMARY]\n\n@Preview(showBackground = true)\n@Composable\nprivate fun HomePreview() {\n@Composable\nfun HomeScreen() {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.home",
+          "symbol": "HomeScreen.kt",
+          "signature": "",
+          "chunk_kind": "FILE_SUMMARY",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          5,
+          9
+        ],
+        "heading_path": [
+          "HomeScreen.kt",
+          "HomePreview()"
+        ],
+        "search_header": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt > HomePreview() [TOP_FUNCTION]",
+        "search_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt > HomePreview() [TOP_FUNCTION]\n\n@Preview(showBackground = true)\n@Composable\nprivate fun HomePreview() {\n    HomeScreen()\n}",
+        "embedding_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt > HomePreview() [TOP_FUNCTION]\n\n@Preview(showBackground = true)\n@Composable\nprivate fun HomePreview() {\n    HomeScreen()\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.home",
+          "symbol": "HomePreview()",
+          "signature": "private fun HomePreview()",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [
+            "Preview",
+            "Composable"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "COMPOSABLE",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          11,
+          14
+        ],
+        "heading_path": [
+          "HomeScreen.kt",
+          "HomeScreen()"
+        ],
+        "search_header": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt > HomeScreen() [TOP_FUNCTION]",
+        "search_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt > HomeScreen() [TOP_FUNCTION]\n\n@Composable\nfun HomeScreen() {\n    Text(\"홈\")\n}",
+        "embedding_text": "presentation/src/main/java/com/acme/home/HomeScreen.kt kotlin\nHomeScreen.kt > HomeScreen() [TOP_FUNCTION]\n\n@Composable\nfun HomeScreen() {\n    Text(\"홈\")\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.home",
+          "symbol": "HomeScreen()",
+          "signature": "fun HomeScreen()",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [
+            "Composable"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "COMPOSABLE",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

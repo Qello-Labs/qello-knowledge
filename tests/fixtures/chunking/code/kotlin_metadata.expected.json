@@ -1,0 +1,337 @@
+{
+  "input": {
+    "location": "app/src/main/java/com/acme/meta/Box.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Box.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\n[FILE_HEAD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.meta\n\nimport androidx.compose.runtime.Composable",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.meta\n\nimport androidx.compose.runtime.Composable",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          1,
+          29
+        ],
+        "heading_path": [
+          "Box.kt"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox.kt [FILE_SUMMARY]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox.kt [FILE_SUMMARY]\n\nfun String.toSlug(): String {",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox.kt [FILE_SUMMARY]\n\nfun String.toSlug(): String {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "Box.kt",
+          "signature": "",
+          "chunk_kind": "FILE_SUMMARY",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          5,
+          5
+        ],
+        "heading_path": [
+          "Shape"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nShape [TYPE_HEAD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nShape [TYPE_HEAD]\n\nsealed interface Shape",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nShape [TYPE_HEAD]\n\nsealed interface Shape",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "Shape",
+          "signature": "sealed interface Shape",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "interface",
+          "type_modifiers": [
+            "sealed"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          7,
+          25
+        ],
+        "heading_path": [
+          "Box"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox [TYPE_SUMMARY]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox [TYPE_SUMMARY]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    suspend fun load(vararg ids: String, onDone: () -> Unit): Box? {\n    fun render(content: @Composable () -> Unit) {\n    fun `면적을 계산한다`(): Int {\n    companion object {",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox [TYPE_SUMMARY]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    suspend fun load(vararg ids: String, onDone: () -> Unit): Box? {\n    fun render(content: @Composable () -> Unit) {\n    fun `면적을 계산한다`(): Int {\n    companion object {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "Box",
+          "signature": "data class Box(val width: Int, val height: Int?) : Shape",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "data"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          7,
+          7
+        ],
+        "heading_path": [
+          "Box"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox [TYPE_HEAD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox [TYPE_HEAD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox [TYPE_HEAD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "Box",
+          "signature": "data class Box(val width: Int, val height: Int?) : Shape",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "data"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          9,
+          12
+        ],
+        "heading_path": [
+          "Box",
+          "load(String...,()->Unit)"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > load(String...,()->Unit) [METHOD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > load(String...,()->Unit) [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    suspend fun load(vararg ids: String, onDone: () -> Unit): Box? {\n        delay(1)\n        return null\n    }",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > load(String...,()->Unit) [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    suspend fun load(vararg ids: String, onDone: () -> Unit): Box? {\n        delay(1)\n        return null\n    }",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "load(String...,()->Unit)",
+          "signature": "suspend fun load(vararg ids: String, onDone: () -> Unit): Box?",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "data"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          14,
+          16
+        ],
+        "heading_path": [
+          "Box",
+          "render(()->Unit)"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > render(()->Unit) [METHOD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > render(()->Unit) [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    fun render(content: @Composable () -> Unit) {\n        content()\n    }",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > render(()->Unit) [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    fun render(content: @Composable () -> Unit) {\n        content()\n    }",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "render(()->Unit)",
+          "signature": "fun render(content: @Composable () -> Unit)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "data"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 7,
+        "lines": [
+          18,
+          20
+        ],
+        "heading_path": [
+          "Box",
+          "면적을 계산한다()"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > 면적을 계산한다() [METHOD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > 면적을 계산한다() [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    fun `면적을 계산한다`(): Int {\n        return width * (height ?: 1)\n    }",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > 면적을 계산한다() [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    fun `면적을 계산한다`(): Int {\n        return width * (height ?: 1)\n    }",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "면적을 계산한다()",
+          "signature": "fun `면적을 계산한다`(): Int",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "data"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 8,
+        "lines": [
+          22,
+          22
+        ],
+        "heading_path": [
+          "Box",
+          "Companion"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > Companion [TYPE_HEAD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > Companion [TYPE_HEAD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    companion object {",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > Companion [TYPE_HEAD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    companion object {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "Companion",
+          "signature": "companion object",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "object",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 9,
+        "lines": [
+          23,
+          25
+        ],
+        "heading_path": [
+          "Box",
+          "Companion",
+          "empty()"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > Companion > empty() [METHOD]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > Companion > empty() [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    companion object {\n        fun empty(): Box = Box(0, null)\n    }\n}",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox > Companion > empty() [METHOD]\n\ndata class Box(val width: Int, val height: Int?) : Shape {\n    companion object {\n        fun empty(): Box = Box(0, null)\n    }\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "empty()",
+          "signature": "fun empty(): Box",
+          "chunk_kind": "METHOD",
+          "type_kind": "object",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 10,
+        "lines": [
+          27,
+          29
+        ],
+        "heading_path": [
+          "Box.kt",
+          "String.toSlug()"
+        ],
+        "search_header": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox.kt > String.toSlug() [TOP_FUNCTION]",
+        "search_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox.kt > String.toSlug() [TOP_FUNCTION]\n\nfun String.toSlug(): String {\n    return lowercase()\n}",
+        "embedding_text": "app/src/main/java/com/acme/meta/Box.kt kotlin\nBox.kt > String.toSlug() [TOP_FUNCTION]\n\nfun String.toSlug(): String {\n    return lowercase()\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.meta",
+          "symbol": "String.toSlug()",
+          "signature": "fun String.toSlug(): String",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

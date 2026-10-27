@@ -1,0 +1,301 @@
+{
+  "input": {
+    "location": "src/main/java/a/Big.java",
+    "code_settings": {
+      "target_tokens": 60,
+      "limit_tokens": 100
+    }
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Big.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Big.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Big.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Big.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          30
+        ],
+        "heading_path": [
+          "Big"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig [TYPE_SUMMARY]",
+        "search_text": "src/main/java/a/Big.java java\nBig [TYPE_SUMMARY]\n\nclass Big {\n    void run() {",
+        "embedding_text": "src/main/java/a/Big.java java\nBig [TYPE_SUMMARY]\n\nclass Big {\n    void run() {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Big",
+          "signature": "class Big",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "Big"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Big.java java\nBig [TYPE_HEAD]\n\nclass Big {",
+        "embedding_text": "src/main/java/a/Big.java java\nBig [TYPE_HEAD]\n\nclass Big {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Big",
+          "signature": "class Big",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          7
+        ],
+        "heading_path": [
+          "Big",
+          "run()"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig > run() [METHOD]",
+        "search_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step01(\"aaaaaaaaaaaaaaaaaaaa\");\n        step02(\"aaaaaaaaaaaaaaaaaaaa\");\n        step03(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "embedding_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step01(\"aaaaaaaaaaaaaaaaaaaa\");\n        step02(\"aaaaaaaaaaaaaaaaaaaa\");\n        step03(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          8,
+          10
+        ],
+        "heading_path": [
+          "Big",
+          "run()"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig > run() [METHOD]",
+        "search_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n        step04(\"aaaaaaaaaaaaaaaaaaaa\");\n        step05(\"aaaaaaaaaaaaaaaaaaaa\");\n        step06(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "embedding_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step04(\"aaaaaaaaaaaaaaaaaaaa\");\n        step05(\"aaaaaaaaaaaaaaaaaaaa\");\n        step06(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          11,
+          13
+        ],
+        "heading_path": [
+          "Big",
+          "run()"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig > run() [METHOD]",
+        "search_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n        step07(\"aaaaaaaaaaaaaaaaaaaa\");\n        step08(\"aaaaaaaaaaaaaaaaaaaa\");\n        step09(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "embedding_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step07(\"aaaaaaaaaaaaaaaaaaaa\");\n        step08(\"aaaaaaaaaaaaaaaaaaaa\");\n        step09(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          14,
+          16
+        ],
+        "heading_path": [
+          "Big",
+          "run()"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig > run() [METHOD]",
+        "search_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n        step10(\"aaaaaaaaaaaaaaaaaaaa\");\n        step11(\"aaaaaaaaaaaaaaaaaaaa\");\n        step12(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "embedding_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step10(\"aaaaaaaaaaaaaaaaaaaa\");\n        step11(\"aaaaaaaaaaaaaaaaaaaa\");\n        step12(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 7,
+        "lines": [
+          17,
+          19
+        ],
+        "heading_path": [
+          "Big",
+          "run()"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig > run() [METHOD]",
+        "search_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n        step13(\"aaaaaaaaaaaaaaaaaaaa\");\n        step14(\"aaaaaaaaaaaaaaaaaaaa\");\n        step15(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "embedding_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step13(\"aaaaaaaaaaaaaaaaaaaa\");\n        step14(\"aaaaaaaaaaaaaaaaaaaa\");\n        step15(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 8,
+        "lines": [
+          20,
+          22
+        ],
+        "heading_path": [
+          "Big",
+          "run()"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig > run() [METHOD]",
+        "search_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n        step16(\"aaaaaaaaaaaaaaaaaaaa\");\n        step17(\"aaaaaaaaaaaaaaaaaaaa\");\n        step18(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "embedding_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step16(\"aaaaaaaaaaaaaaaaaaaa\");\n        step17(\"aaaaaaaaaaaaaaaaaaaa\");\n        step18(\"aaaaaaaaaaaaaaaaaaaa\");",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 9,
+        "lines": [
+          23,
+          30
+        ],
+        "heading_path": [
+          "Big",
+          "run()"
+        ],
+        "search_header": "src/main/java/a/Big.java java\nBig > run() [METHOD]",
+        "search_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n        step19(\"aaaaaaaaaaaaaaaaaaaa\");\n        step20(\"aaaaaaaaaaaaaaaaaaaa\");\n        step21(\"aaaaaaaaaaaaaaaaaaaa\");\n        step22(\"aaaaaaaaaaaaaaaaaaaa\");\n        step23(\"aaaaaaaaaaaaaaaaaaaa\");\n        step24(\"aaaaaaaaaaaaaaaaaaaa\");\n    }\n}",
+        "embedding_text": "src/main/java/a/Big.java java\nBig > run() [METHOD]\n\nclass Big {\n    void run() {\n        step19(\"aaaaaaaaaaaaaaaaaaaa\");\n        step20(\"aaaaaaaaaaaaaaaaaaaa\");\n        step21(\"aaaaaaaaaaaaaaaaaaaa\");\n        step22(\"aaaaaaaaaaaaaaaaaaaa\");\n        step23(\"aaaaaaaaaaaaaaaaaaaa\");\n        step24(\"aaaaaaaaaaaaaaaaaaaa\");\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

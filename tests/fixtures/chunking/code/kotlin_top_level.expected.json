@@ -1,0 +1,124 @@
+{
+  "input": {
+    "location": "util/src/main/kotlin/com/acme/util/Strings.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Strings.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\n[FILE_HEAD]",
+        "search_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.util",
+        "embedding_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.util",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.util",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          1,
+          8
+        ],
+        "heading_path": [
+          "Strings.kt"
+        ],
+        "search_header": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt [FILE_SUMMARY]",
+        "search_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt [FILE_SUMMARY]\n\nconst val LIMIT = 10\nval names = listOf(\"a\")\nfun slug(text: String): String {",
+        "embedding_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt [FILE_SUMMARY]\n\nconst val LIMIT = 10\nval names = listOf(\"a\")\nfun slug(text: String): String {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.util",
+          "symbol": "Strings.kt",
+          "signature": "",
+          "chunk_kind": "FILE_SUMMARY",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          4
+        ],
+        "heading_path": [
+          "Strings.kt",
+          "LIMIT"
+        ],
+        "search_header": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt > LIMIT [TOP_PROPERTIES]",
+        "search_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt > LIMIT [TOP_PROPERTIES]\n\nconst val LIMIT = 10\nval names = listOf(\"a\")",
+        "embedding_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt > LIMIT [TOP_PROPERTIES]\n\nconst val LIMIT = 10\nval names = listOf(\"a\")",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.util",
+          "symbol": "LIMIT",
+          "signature": "",
+          "chunk_kind": "TOP_PROPERTIES",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          6,
+          8
+        ],
+        "heading_path": [
+          "Strings.kt",
+          "slug(String)"
+        ],
+        "search_header": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt > slug(String) [TOP_FUNCTION]",
+        "search_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt > slug(String) [TOP_FUNCTION]\n\nfun slug(text: String): String {\n    return text.lowercase()\n}",
+        "embedding_text": "util/src/main/kotlin/com/acme/util/Strings.kt kotlin\nStrings.kt > slug(String) [TOP_FUNCTION]\n\nfun slug(text: String): String {\n    return text.lowercase()\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.util",
+          "symbol": "slug(String)",
+          "signature": "fun slug(text: String): String",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,182 @@
+{
+  "input": {
+    "location": "src/main/java/a/Color.java",
+    "code_settings": {
+      "target_tokens": 60,
+      "limit_tokens": 100
+    }
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Color.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Color.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Color.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Color.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          7
+        ],
+        "heading_path": [
+          "Color"
+        ],
+        "search_header": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\nenum Color {\n    COLOR_01_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_02_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_03_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_04_AAAAAAAAAAAAAAAAAAAA,",
+        "embedding_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\nenum Color {\n    COLOR_01_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_02_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_03_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_04_AAAAAAAAAAAAAAAAAAAA,",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Color",
+          "signature": "enum Color",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "enum",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          8,
+          11
+        ],
+        "heading_path": [
+          "Color"
+        ],
+        "search_header": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\n    COLOR_05_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_06_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_07_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_08_AAAAAAAAAAAAAAAAAAAA,",
+        "embedding_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\nenum Color {\n    COLOR_05_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_06_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_07_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_08_AAAAAAAAAAAAAAAAAAAA,",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Color",
+          "signature": "enum Color",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "enum",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          12,
+          15
+        ],
+        "heading_path": [
+          "Color"
+        ],
+        "search_header": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\n    COLOR_09_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_10_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_11_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_12_AAAAAAAAAAAAAAAAAAAA,",
+        "embedding_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\nenum Color {\n    COLOR_09_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_10_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_11_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_12_AAAAAAAAAAAAAAAAAAAA,",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Color",
+          "signature": "enum Color",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "enum",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          16,
+          19
+        ],
+        "heading_path": [
+          "Color"
+        ],
+        "search_header": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\n    COLOR_13_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_14_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_15_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_16_AAAAAAAAAAAAAAAAAAAA,",
+        "embedding_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\nenum Color {\n    COLOR_13_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_14_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_15_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_16_AAAAAAAAAAAAAAAAAAAA,",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Color",
+          "signature": "enum Color",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "enum",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          20,
+          25
+        ],
+        "heading_path": [
+          "Color"
+        ],
+        "search_header": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\n    COLOR_17_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_18_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_19_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_20_AAAAAAAAAAAAAAAAAAAA,\n    LAST\n}",
+        "embedding_text": "src/main/java/a/Color.java java\nColor [TYPE_HEAD]\n\nenum Color {\n    COLOR_17_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_18_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_19_AAAAAAAAAAAAAAAAAAAA,\n    COLOR_20_AAAAAAAAAAAAAAAAAAAA,\n    LAST\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Color",
+          "signature": "enum Color",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "enum",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

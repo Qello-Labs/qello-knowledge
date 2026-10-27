@@ -1,0 +1,123 @@
+{
+  "input": {
+    "location": "presentation/src/main/java/com/acme/login/LoginViewModel.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "LoginViewModel.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\n[FILE_HEAD]",
+        "search_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.login\n\nimport androidx.lifecycle.ViewModel",
+        "embedding_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.login\n\nimport androidx.lifecycle.ViewModel",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.login",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          5,
+          11
+        ],
+        "heading_path": [
+          "LoginViewModel"
+        ],
+        "search_header": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel [TYPE_SUMMARY]",
+        "search_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel [TYPE_SUMMARY]\n\nclass LoginViewModel(private val repo: LoginRepository) : ViewModel() {\n    fun login(id: String) {",
+        "embedding_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel [TYPE_SUMMARY]\n\nclass LoginViewModel(private val repo: LoginRepository) : ViewModel() {\n    fun login(id: String) {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.login",
+          "symbol": "LoginViewModel",
+          "signature": "class LoginViewModel(private val repo: LoginRepository) : ViewModel()",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "VIEW_MODEL",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          5,
+          5
+        ],
+        "heading_path": [
+          "LoginViewModel"
+        ],
+        "search_header": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel [TYPE_HEAD]",
+        "search_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel [TYPE_HEAD]\n\nclass LoginViewModel(private val repo: LoginRepository) : ViewModel() {",
+        "embedding_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel [TYPE_HEAD]\n\nclass LoginViewModel(private val repo: LoginRepository) : ViewModel() {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.login",
+          "symbol": "LoginViewModel",
+          "signature": "class LoginViewModel(private val repo: LoginRepository) : ViewModel()",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "VIEW_MODEL",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          7,
+          11
+        ],
+        "heading_path": [
+          "LoginViewModel",
+          "login(String)"
+        ],
+        "search_header": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel > login(String) [METHOD]",
+        "search_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel > login(String) [METHOD]\n\nclass LoginViewModel(private val repo: LoginRepository) : ViewModel() {\n    fun login(id: String) {\n        val job = suspend { repo.login(id) }\n        launch(job)\n    }\n}",
+        "embedding_text": "presentation/src/main/java/com/acme/login/LoginViewModel.kt kotlin\nLoginViewModel > login(String) [METHOD]\n\nclass LoginViewModel(private val repo: LoginRepository) : ViewModel() {\n    fun login(id: String) {\n        val job = suspend { repo.login(id) }\n        launch(job)\n    }\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.login",
+          "symbol": "login(String)",
+          "signature": "fun login(id: String)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "VIEW_MODEL",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

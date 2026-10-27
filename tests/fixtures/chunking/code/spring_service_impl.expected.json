@@ -1,0 +1,135 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/order/OrderServiceImpl.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "OrderServiceImpl.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/order/OrderServiceImpl.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\n[FILE_HEAD]\n\npackage com.acme.order;\n\nimport org.springframework.stereotype.Service;",
+        "embedding_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\n[FILE_HEAD]\n\npackage com.acme.order;\n\nimport org.springframework.stereotype.Service;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          5,
+          12
+        ],
+        "heading_path": [
+          "OrderServiceImpl"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl [TYPE_SUMMARY]\n\n@Service\npublic class OrderServiceImpl extends BaseService implements OrderService {\n    @Override\n    public void place(Order order) {",
+        "embedding_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl [TYPE_SUMMARY]\n\n@Service\npublic class OrderServiceImpl extends BaseService implements OrderService {\n    @Override\n    public void place(Order order) {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderServiceImpl",
+          "signature": "public class OrderServiceImpl extends BaseService implements OrderService",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Service"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          5,
+          6
+        ],
+        "heading_path": [
+          "OrderServiceImpl"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl [TYPE_HEAD]\n\n@Service\npublic class OrderServiceImpl extends BaseService implements OrderService {",
+        "embedding_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl [TYPE_HEAD]\n\n@Service\npublic class OrderServiceImpl extends BaseService implements OrderService {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderServiceImpl",
+          "signature": "public class OrderServiceImpl extends BaseService implements OrderService",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Service"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          8,
+          12
+        ],
+        "heading_path": [
+          "OrderServiceImpl",
+          "place(Order)"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl > place(Order) [METHOD]",
+        "search_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl > place(Order) [METHOD]\n\n@Service\npublic class OrderServiceImpl extends BaseService implements OrderService {\n    @Override\n    public void place(Order order) {\n        save(order);\n    }\n}",
+        "embedding_text": "src/main/java/com/acme/order/OrderServiceImpl.java java\nOrderServiceImpl > place(Order) [METHOD]\n\n@Service\npublic class OrderServiceImpl extends BaseService implements OrderService {\n    @Override\n    public void place(Order order) {\n        save(order);\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "place(Order)",
+          "signature": "public void place(Order order)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Override"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

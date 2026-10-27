@@ -1,0 +1,226 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/order/OrderService.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "OrderService.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\n[FILE_HEAD]\n\npackage com.acme.order;",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\n[FILE_HEAD]\n\npackage com.acme.order;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          25
+        ],
+        "heading_path": [
+          "OrderService"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_SUMMARY]\n\n/** 주문 서비스 */\n@Service\npublic class OrderService {\n    private final OrderRepository repository;\n    private final Clock clock;\n    public OrderService(OrderRepository repository, Clock clock) {\n    public Order find(Long id) {\n    public void cancel(Long id) {\n    public int count() {",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_SUMMARY]\n\n/** 주문 서비스 */\n@Service\npublic class OrderService {\n    private final OrderRepository repository;\n    private final Clock clock;\n    public OrderService(OrderRepository repository, Clock clock) {\n    public Order find(Long id) {\n    public void cancel(Long id) {\n    public int count() {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderService",
+          "signature": "public class OrderService",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Service"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          7
+        ],
+        "heading_path": [
+          "OrderService"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_HEAD]\n\n/** 주문 서비스 */\n@Service\npublic class OrderService {\n    private final OrderRepository repository;\n    private final Clock clock;",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_HEAD]\n\n/** 주문 서비스 */\n@Service\npublic class OrderService {\n    private final OrderRepository repository;\n    private final Clock clock;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderService",
+          "signature": "public class OrderService",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Service"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          9,
+          12
+        ],
+        "heading_path": [
+          "OrderService",
+          "OrderService(OrderRepository,Clock)"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService > OrderService(OrderRepository,Clock) [CONSTRUCTOR]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > OrderService(OrderRepository,Clock) [CONSTRUCTOR]\n\n@Service\npublic class OrderService {\n    public OrderService(OrderRepository repository, Clock clock) {\n        this.repository = repository;\n        this.clock = clock;\n    }",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > OrderService(OrderRepository,Clock) [CONSTRUCTOR]\n\n@Service\npublic class OrderService {\n    public OrderService(OrderRepository repository, Clock clock) {\n        this.repository = repository;\n        this.clock = clock;\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderService(OrderRepository,Clock)",
+          "signature": "public OrderService(OrderRepository repository, Clock clock)",
+          "chunk_kind": "CONSTRUCTOR",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          14,
+          16
+        ],
+        "heading_path": [
+          "OrderService",
+          "find(Long)"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService > find(Long) [METHOD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > find(Long) [METHOD]\n\n@Service\npublic class OrderService {\n    public Order find(Long id) {\n        return repository.findById(id);\n    }",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > find(Long) [METHOD]\n\n@Service\npublic class OrderService {\n    public Order find(Long id) {\n        return repository.findById(id);\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "find(Long)",
+          "signature": "public Order find(Long id)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          18,
+          20
+        ],
+        "heading_path": [
+          "OrderService",
+          "cancel(Long)"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService > cancel(Long) [METHOD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > cancel(Long) [METHOD]\n\n@Service\npublic class OrderService {\n    public void cancel(Long id) {\n        find(id).cancel(clock.now());\n    }",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > cancel(Long) [METHOD]\n\n@Service\npublic class OrderService {\n    public void cancel(Long id) {\n        find(id).cancel(clock.now());\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "cancel(Long)",
+          "signature": "public void cancel(Long id)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          22,
+          25
+        ],
+        "heading_path": [
+          "OrderService",
+          "count()"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService > count() [METHOD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > count() [METHOD]\n\n@Service\npublic class OrderService {\n    public int count() {\n        return repository.count();\n    }\n}",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > count() [METHOD]\n\n@Service\npublic class OrderService {\n    public int count() {\n        return repository.count();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "count()",
+          "signature": "public int count()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

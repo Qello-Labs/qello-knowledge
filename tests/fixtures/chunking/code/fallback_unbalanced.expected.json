@@ -1,0 +1,43 @@
+{
+  "input": {
+    "location": "src/main/java/a/Broken.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Broken.java",
+    "warnings": [
+      {
+        "kind": "PARSE_FALLBACK",
+        "line": 6
+      }
+    ],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          11
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Broken.java java\n[FALLBACK]",
+        "search_text": "src/main/java/a/Broken.java java\n[FALLBACK]\n\npackage a;\n\nclass Broken {\n    void f() {\n        go();\n    )\n\n    void g() {\n        stop();\n    }\n}",
+        "embedding_text": "src/main/java/a/Broken.java java\n[FALLBACK]\n\npackage a;\n\nclass Broken {\n    void f() {\n        go();\n    )\n\n    void g() {\n        stop();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FALLBACK",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

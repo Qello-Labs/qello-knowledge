@@ -1,0 +1,43 @@
+{
+  "input": {
+    "location": "app/src/main/java/a/Script.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Script.kt",
+    "warnings": [
+      {
+        "kind": "PARSE_FALLBACK",
+        "line": 3
+      }
+    ],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          7
+        ],
+        "heading_path": [],
+        "search_header": "app/src/main/java/a/Script.kt kotlin\n[FALLBACK]",
+        "search_text": "app/src/main/java/a/Script.kt kotlin\n[FALLBACK]\n\npackage a\n\nprintln(\"x\")\n\nfun f() {\n    g()\n}",
+        "embedding_text": "app/src/main/java/a/Script.kt kotlin\n[FALLBACK]\n\npackage a\n\nprintln(\"x\")\n\nfun f() {\n    g()\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FALLBACK",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

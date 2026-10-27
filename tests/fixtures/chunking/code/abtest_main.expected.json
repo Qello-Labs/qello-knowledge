@@ -1,0 +1,131 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/exp/ABTest.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "ABTest.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/exp/ABTest.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/exp/ABTest.java java\n[FILE_HEAD]\n\npackage com.acme.exp;",
+        "embedding_text": "src/main/java/com/acme/exp/ABTest.java java\n[FILE_HEAD]\n\npackage com.acme.exp;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.exp",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          8
+        ],
+        "heading_path": [
+          "ABTest"
+        ],
+        "search_header": "src/main/java/com/acme/exp/ABTest.java java\nABTest [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/exp/ABTest.java java\nABTest [TYPE_SUMMARY]\n\npublic class ABTest {\n    @Test\n    public void variant() {",
+        "embedding_text": "src/main/java/com/acme/exp/ABTest.java java\nABTest [TYPE_SUMMARY]\n\npublic class ABTest {\n    @Test\n    public void variant() {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.exp",
+          "symbol": "ABTest",
+          "signature": "public class ABTest",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "ABTest"
+        ],
+        "search_header": "src/main/java/com/acme/exp/ABTest.java java\nABTest [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/exp/ABTest.java java\nABTest [TYPE_HEAD]\n\npublic class ABTest {",
+        "embedding_text": "src/main/java/com/acme/exp/ABTest.java java\nABTest [TYPE_HEAD]\n\npublic class ABTest {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.exp",
+          "symbol": "ABTest",
+          "signature": "public class ABTest",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          8
+        ],
+        "heading_path": [
+          "ABTest",
+          "variant()"
+        ],
+        "search_header": "src/main/java/com/acme/exp/ABTest.java java\nABTest > variant() [METHOD]",
+        "search_text": "src/main/java/com/acme/exp/ABTest.java java\nABTest > variant() [METHOD]\n\npublic class ABTest {\n    @Test\n    public void variant() {\n        pick();\n    }\n}",
+        "embedding_text": "src/main/java/com/acme/exp/ABTest.java java\nABTest > variant() [METHOD]\n\npublic class ABTest {\n    @Test\n    public void variant() {\n        pick();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.exp",
+          "symbol": "variant()",
+          "signature": "public void variant()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Test"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/web/OrderController.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "OrderController.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/web/OrderController.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/web/OrderController.java java\n[FILE_HEAD]\n\npackage com.acme.web;",
+        "embedding_text": "src/main/java/com/acme/web/OrderController.java java\n[FILE_HEAD]\n\npackage com.acme.web;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.web",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          11
+        ],
+        "heading_path": [
+          "OrderController"
+        ],
+        "search_header": "src/main/java/com/acme/web/OrderController.java java\nOrderController [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/web/OrderController.java java\nOrderController [TYPE_SUMMARY]\n\n@RestController\n@RequestMapping(\"/orders\")\npublic class OrderController {\n    @GetMapping(\"/{id}\")\n    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {",
+        "embedding_text": "src/main/java/com/acme/web/OrderController.java java\nOrderController [TYPE_SUMMARY]\n\n@RestController\n@RequestMapping(\"/orders\")\npublic class OrderController {\n    @GetMapping(\"/{id}\")\n    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.web",
+          "symbol": "OrderController",
+          "signature": "public class OrderController",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "RestController",
+            "RequestMapping"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          5
+        ],
+        "heading_path": [
+          "OrderController"
+        ],
+        "search_header": "src/main/java/com/acme/web/OrderController.java java\nOrderController [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/web/OrderController.java java\nOrderController [TYPE_HEAD]\n\n@RestController\n@RequestMapping(\"/orders\")\npublic class OrderController {",
+        "embedding_text": "src/main/java/com/acme/web/OrderController.java java\nOrderController [TYPE_HEAD]\n\n@RestController\n@RequestMapping(\"/orders\")\npublic class OrderController {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.web",
+          "symbol": "OrderController",
+          "signature": "public class OrderController",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "RestController",
+            "RequestMapping"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          7,
+          11
+        ],
+        "heading_path": [
+          "OrderController",
+          "getOrder(Long)"
+        ],
+        "search_header": "src/main/java/com/acme/web/OrderController.java java\nOrderController > getOrder(Long) [METHOD]",
+        "search_text": "src/main/java/com/acme/web/OrderController.java java\nOrderController > getOrder(Long) [METHOD]\n\n@RestController\n@RequestMapping(\"/orders\")\npublic class OrderController {\n    @GetMapping(\"/{id}\")\n    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {\n        return ResponseEntity.ok(service.find(id));\n    }\n}",
+        "embedding_text": "src/main/java/com/acme/web/OrderController.java java\nOrderController > getOrder(Long) [METHOD]\n\n@RestController\n@RequestMapping(\"/orders\")\npublic class OrderController {\n    @GetMapping(\"/{id}\")\n    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {\n        return ResponseEntity.ok(service.find(id));\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.web",
+          "symbol": "getOrder(Long)",
+          "signature": "public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "GetMapping"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

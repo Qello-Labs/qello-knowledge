@@ -1,0 +1,195 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/Outer.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Outer.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/Outer.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/Outer.java java\n[FILE_HEAD]\n\npackage com.acme;",
+        "embedding_text": "src/main/java/com/acme/Outer.java java\n[FILE_HEAD]\n\npackage com.acme;",
+        "code": {
+          "language": "java",
+          "package": "com.acme",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          11
+        ],
+        "heading_path": [
+          "Outer"
+        ],
+        "search_header": "src/main/java/com/acme/Outer.java java\nOuter [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/Outer.java java\nOuter [TYPE_SUMMARY]\n\npublic class Outer {\n    public static class Inner {",
+        "embedding_text": "src/main/java/com/acme/Outer.java java\nOuter [TYPE_SUMMARY]\n\npublic class Outer {\n    public static class Inner {",
+        "code": {
+          "language": "java",
+          "package": "com.acme",
+          "symbol": "Outer",
+          "signature": "public class Outer",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "Outer"
+        ],
+        "search_header": "src/main/java/com/acme/Outer.java java\nOuter [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/Outer.java java\nOuter [TYPE_HEAD]\n\npublic class Outer {",
+        "embedding_text": "src/main/java/com/acme/Outer.java java\nOuter [TYPE_HEAD]\n\npublic class Outer {",
+        "code": {
+          "language": "java",
+          "package": "com.acme",
+          "symbol": "Outer",
+          "signature": "public class Outer",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          5,
+          10
+        ],
+        "heading_path": [
+          "Outer",
+          "Inner"
+        ],
+        "search_header": "src/main/java/com/acme/Outer.java java\nOuter > Inner [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/Outer.java java\nOuter > Inner [TYPE_SUMMARY]\n\npublic class Outer {\n    public static class Inner {\n        void run() {",
+        "embedding_text": "src/main/java/com/acme/Outer.java java\nOuter > Inner [TYPE_SUMMARY]\n\npublic class Outer {\n    public static class Inner {\n        void run() {",
+        "code": {
+          "language": "java",
+          "package": "com.acme",
+          "symbol": "Inner",
+          "signature": "public static class Inner",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "static"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          5,
+          5
+        ],
+        "heading_path": [
+          "Outer",
+          "Inner"
+        ],
+        "search_header": "src/main/java/com/acme/Outer.java java\nOuter > Inner [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/Outer.java java\nOuter > Inner [TYPE_HEAD]\n\npublic class Outer {\n    public static class Inner {",
+        "embedding_text": "src/main/java/com/acme/Outer.java java\nOuter > Inner [TYPE_HEAD]\n\npublic class Outer {\n    public static class Inner {",
+        "code": {
+          "language": "java",
+          "package": "com.acme",
+          "symbol": "Inner",
+          "signature": "public static class Inner",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "static"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          7,
+          11
+        ],
+        "heading_path": [
+          "Outer",
+          "Inner",
+          "run()"
+        ],
+        "search_header": "src/main/java/com/acme/Outer.java java\nOuter > Inner > run() [METHOD]",
+        "search_text": "src/main/java/com/acme/Outer.java java\nOuter > Inner > run() [METHOD]\n\npublic class Outer {\n    public static class Inner {\n        void run() {\n            go();\n        }\n    }\n}",
+        "embedding_text": "src/main/java/com/acme/Outer.java java\nOuter > Inner > run() [METHOD]\n\npublic class Outer {\n    public static class Inner {\n        void run() {\n            go();\n        }\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme",
+          "symbol": "run()",
+          "signature": "void run()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "static"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}
