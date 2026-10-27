@@ -12,7 +12,8 @@
 - GitHub Issue: `#63`
 - Branch: `feat/SCRUM-118-gh-63-code-chunker`
 - Base branch: `main`. 2026-10-26 `origin/main` `d7c9e3f`(#60 병합)에서 분기했고, 첫 커밋은 `1c9a9f6`(#62 병합) 위에 있다.
-  같은 날 PR #65 충돌을 풀려고 `369b2ec`(#64 병합)를 병합했다. 충돌난 `TASK.md`는 이 계약을 남겼고, 이전 `main`의 계약(QK-BOT-001)은 git 이력에 남긴다
+  같은 날 PR #65 충돌을 풀려고 `369b2ec`(#64 병합)를 병합했다. 충돌난 `TASK.md`는 이 계약을 남겼고, 이전 `main`의 계약(QK-BOT-001)은 git 이력에 남긴다.
+  설계 PR #65가 병합된 뒤 2026-10-27 같은 브랜치 이름을 `origin/main` `3a5a98e`(#65 병합)로 fast-forward해 구현을 시작했다. 구현은 새 PR로 올린다
 
 ## Objective
 
@@ -21,7 +22,7 @@
 - 완료: `/speckit-plan` 설계 산출물(`plan.md`·`research.md` R-01~R-15·`data-model.md`·`contracts/chunker.md`·`quickstart.md`·`measurement/measure_code.py`)을 썼다.
   독립 검토 2회(변경 요청, 경미한 변경 요청)를 거쳐 사람 승인을 받았다(2026-10-26, tree-sitter 의존성 채택 포함). 바꾸려면 다시 승인을 받는다.
 - 완료: `/speckit-tasks`로 작업 목록(`tasks.md`, 작업 48개 T001~T048 + 사람 단계 4개 H01~H04)을 쓰고 독립 검토 1회(변경 요청)를 반영해 사람 승인을 받았다(2026-10-26). 바꾸려면 다시 승인을 받는다.
-- 다음 단계: 구현(T001~). 구현 시작 시점은 사람이 정한다(1.G 미완료). 시작 전 확인할 것: 실행 전 사람 허용(T001 PyPI 내려받기, T032 `.env.example` 재생성).
+- 이번 단계: 구현(T001~T048). 2026-10-27 사용자가 시작을 정했고, 실행 전 사람 허용(T001 PyPI 내려받기, T032 `.env.example` 재생성)도 받았다. 사람 단계 H01~H04는 구현 뒤 사람이 한다.
 - tasks가 반드시 담을 것(plan이 넘긴 항목):
   - plan "구현 Scope 승인이 필요한 것" 표의 파일 범위
   - quickstart 1절 시험 묶음
@@ -42,7 +43,7 @@
 - 구현 범위(tasks.md T001~T048, plan "구현 Scope 승인이 필요한 것" 표. 2026-10-26 tasks와 함께 승인):
   - 새 파일:
     - `src/qello_knowledge/chunking/code/`(`__init__`, `parse`, `units`, `symbols`, `header`, `split`, `version`, `service`)
-    - `docs/sdd/decisions/ADR-022-code-sources.md`(Proposed)
+    - `docs/sdd/decisions/ADR-023-code-sources.md`(Proposed. 계획 번호 ADR-022는 `main`에서 이미 쓰여 2026-10-27 사용자 결정으로 023)
     - `tests/fixtures/chunking/code/`(합성 Java·Kotlin + 사람이 쓴 기대 JSON)
     - `tests/unit/chunking/code/`(`__init__`, `helpers`, `test_code_*.py`)
     - `tests/unit/sync/test_code_*.py`, `tests/unit/indexer/test_code_sync_cli.py`, `tests/unit/config/test_code_check.py`, `tests/unit/sources/test_code_sources.py`
@@ -95,6 +96,7 @@
 ## Existing user-owned changes
 
 - 2026-10-26 `origin/main`(`d7c9e3f`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 2026-10-27 `origin/main`(`3a5a98e`)으로 fast-forward한 뒤 구현 시작 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
@@ -233,3 +235,65 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
 - 2026-10-26 사용자 결정: QK-CHK-001 `tasks.md`와 TASK.md(Scope 구현 범위, 완료 조건)를 승인했다.
   원문은 "QK-CHK-001 tasks.md와 TASK.md(Scope·완료 조건) 승인"이다. 바꾸려면 다시 승인을 받는다.
   구현 시작 시점(1.G 미완료)과 언어 팩 내려받기 폴더 처리(H04)는 아직 사람 결정 대기다.
+- 2026-10-27 사용자 결정: PR #65(설계안)를 바탕으로 #63 구현을 시작한다("#65 PR은 설계안이고 이제 이거를 #63 이슈를 참고해서 작업을 시작한다").
+  브랜치는 같은 이름을 다시 쓴다(PR #65가 병합 커밋으로 들어가 원격 브랜치를 지우지 않고 fast-forward했다). T001 PyPI 내려받기와 T032 `.env.example` 재생성을 허용했다.
+- 2026-10-27 사실: 구현 장비는 macOS(Darwin arm64)다. tasks의 "이 PC(Windows)" 기준선 실패 3건이 여기서도 나는지는 T003·T048에서 따로 적는다.
+- 2026-10-27 사실(구현): `tasks.md` T001~T047을 구현했다. 커밋은 아직 하지 않았다. 외부 모델 호출 0건, 0 Neurons.
+  - T001: `uv lock`·`uv sync`로 tree-sitter 3종을 받았다(`importlib.metadata` 값 `0.26.0`·`0.23.5`·`1.1.0`). `uv.lock`에 세 패키지의 `manylinux2014_x86_64`·`aarch64` 휠 항목이 있다.
+  - T003: macOS에서는 `tests/unit/test_boundaries.py` 전체가 통과한다. tasks의 Windows 기준선 실패 3건은 이 장비에서 나지 않는다.
+  - T032: 허용받은 대로 `uv run python -m qello_knowledge.config.example`로 `.env.example`을 다시 만들었다(`.env.*` 읽기 차단 규칙 때문에 내용은 열지 않고 `test_example_file.py` 통과로 확인).
+  - T038: 코드 청킹 규칙 버전 첫 값은 `chk-code-b818138b990b`이고 `test_code_version.py`에 고정했다. 켜짐 인덱스 버전은 `iv-a6e6263090c8`(대응표에 없어 `qk-index check`·`run`이 멈춘다).
+    꺼짐 인덱스 버전 `iv-4c0bc4fcc642`·`meta-v1`·`chk-md-20d966f730bb`는 그대로다(기존 고정값 시험 통과).
+  - T045: 합성 1,361개 파일(2,918,175바이트) 청킹이 이 장비(macOS arm64, Python 3.13)에서 약 0.7초였다. 회귀 감시이고 완료 판정(H01)이 아니다.
+  - 기대 JSON(픽스처 44개)은 원문과 spec·contracts 8절 규칙으로 손으로 정했다. 줄 자르기·문자열 잇기만 하는 작성 도구를 썼고 코드 청커는 부르지 않았다.
+    기대값과 결과가 달랐던 2건은 모두 기대값 쪽 착오(줄 번호 셈, 나눔 지점)였고 원문과 규칙을 다시 보고 고쳤다. 구현 결과를 복사하지 않았다.
+- 2026-10-27 작성 세션 판단(사람 확인 대상):
+  - ADR 번호: `main`에 ADR-021(동기화 실패 알림)·ADR-022(Discord 질의 경로)가 이미 있어 결정 기록을 `ADR-023-code-sources.md`로 썼다(tasks T041의 번호 재확인 지시).
+    Scope의 `ADR-022-code-sources.md`와 spec·plan·research·tasks의 "ADR-022" 표기는 승인 문서라 고치지 않았다.
+  - 요약 청크의 필드 줄: tasks T022는 "필드 선언 첫 줄"이다. 어노테이션이 따로 줄에 있는 필드(`@Column` 등)는 첫 줄만 넣으면 필드 이름이 빠지므로,
+    필드 시작 줄부터 첫 이름이 있는 줄까지 넣는다. 여러 줄 초기값의 나머지 줄은 넣지 않는다(spec FR-013 "필드·프로퍼티 선언 줄").
+  - 새 프로세스 시험: `subprocess`는 새 `# noqa`가 필요해 `multiprocessing` `spawn` 방식(`tests/unit/chunking/code/fresh.py`)으로 바꿨다. 새 `# noqa`는 0개다.
+  - T025 마이그레이션 확인: CI는 깊이 1로 체크아웃해 기준 커밋이 없고, 고정 커밋 비교는 뒤 기능이 마이그레이션을 더하면 깨진다. 그래서 시험은 왕복(현재 스키마로 저장·반환)과
+    "QK-CHK-001을 언급하는 마이그레이션 없음"만 보고, 이 변경이 마이그레이션을 더하지 않았다는 것은 최종 보고의 `git diff`로 확인한다.
+  - Kotlin 대체 청킹 픽스처 이름: Java와 같은 이름이면 기대 JSON 이름이 겹쳐 `fallback_unbalanced_kotlin.kt`로 했다.
+  - 요약 청크 나누기(spec FR-015)는 원문 청크와 같은 "목표 크기 근처" 규칙을 멤버 경계 후보에 쓴다. 필드 묶음의 반복 줄은 맥락 줄 마지막(자기 형식 선언 줄)과 같으면 다시 붙이지 않는다.
+  - 컴포넌트: 형식의 컴포넌트는 그 형식의 메서드·필드·초기화 청크에 붙고, 중첩 형식은 자기 상위 클래스로만 판정한다(물려받지 않는다). 요약 수치가 중첩 형식을 컴포넌트로 세지 않게 하려는 것이다.
+  - T043은 T027 파일의 조립 함수 `code_harness`를 가져다 쓴다(같은 조립을 두 번 쓰지 않으려는 것, 공용 `helpers.py`는 그대로).
+- 2026-10-27 검증(T048, macOS arm64): 사용자 요청으로 Docker Desktop을 켜고 기본 검증을 모두 실행했다.
+  - `python scripts/preflight.py`(`uv run`) 통과, `git diff --check` 통과, `uv run ruff check .`·`uv run ruff format --check .` 통과.
+  - `uv run qk-dev db up` 통과. `uv run qk-migrate` 첫 번째는 `main`의 기존 0006·0007이 로컬 개발 DB에 없어 `applied=2 skipped=5`, 두 번째는 `applied=0 skipped=7`.
+  - `QK_REQUIRE_LOCALDB=1 uv run pytest` 2,759 passed, 2 deselected(`external` 표지, 기본 제외). `tests/localdb/retrieval/test_code_provenance.py` 3건이 로컬 DB에서 실행·통과했다.
+  - `git diff origin/main -- src/qello_knowledge/adapters/postgres/migrations`가 비어 있어 이 변경은 마이그레이션을 더하지 않았다(T025 판단의 최종 보고 확인).
+  - 같은 세션의 자기 검증이라 독립 검증이 아니다. 실제 Workers AI 호출 0건, 0 Neurons.
+- 2026-10-27 사실: 구현 독립 검토(작성에 관여하지 않은 별도 서브에이전트) 판정은 변경 요청이다(높음 1, 낮음~중간 1, 낮음 3). 검증 명령은 검토자도 모두 통과로 확인했다.
+  - 높음: tree-sitter-kotlin 1.1.0이 최상위 어노테이션 일부 조합(`@Preview(..)` + `@Composable` + `private fun`, `@Module` + `@InstallIn(..)` + `object` 등)을
+    `has_error` 없이 루트의 `annotated_expression`으로 해석한다. 그래서 어노테이션(때로는 함수 전체)이 앞 청크로 가고 `annotations`·Composable 판정이 빠진다(FR-010·019·021·023·024, SC-004·007).
+    작성 세션이 같은 입력으로 다시 재현했다. 픽스처 44쌍에는 이 형태가 없다.
+  - 낮음~중간: 같은 줄의 두 멤버 앞에 주석이 있으면 앞 멤버 청크에 주석만 남는다(`_assign_ranges`가 주석 포함 시작 줄로 비교). 작성 세션이 재현했다.
+  - 낮음: Kotlin 해석기가 못 읽는 문법(`fun interface` 등)은 파일 전체 대체 청킹(FR-019대로), T025 마이그레이션 시험이 약함, ADR 번호가 Scope와 다름.
+  - 검토자는 중첩 형식이 컴포넌트를 물려받지 않아 ViewModel 안 `companion object` 메서드도 컴포넌트가 비는 점을 사람 확인 대상으로 올렸다.
+- 2026-10-27 사용자 결정(독립 검토 반영, 원문 "1. A 2. A 3. A 4. 두 가지 모두 6.승인 7.지워도 되고 사유는 안남겨도됨"):
+  - 1: Kotlin 최상위 어노테이션 오해석은 선언을 살리는 방식으로 고친다. 작성 세션이 트리를 보니 `@Preview(..)` `@Composable` `private fun …`은 어노테이션 덩어리가 뒤 선언까지 삼킨다.
+    그래서 "다음 선언에 붙이기"를 이렇게 구현한다: 루트의 `annotated_expression` 어노테이션 부분을 같은 길이 공백으로 바꾼 사본으로 다시 해석하고, 지운 어노테이션은 바로 뒤 선언에 붙인다.
+    그래도 루트에 선언이 아닌 노드가 남으면 해석 실패로 보고 대체 청킹한다(FR-019). 이 규칙은 코드 청킹 규칙 버전 재료다(첫 값 다시 고정).
+  - 2: 중첩 형식은 컴포넌트를 물려받지 않는다(지금대로).
+  - 3: 결정 기록 번호는 ADR-023으로 확정하고 Scope 표기를 고쳤다. spec·plan·research·tasks의 ADR-022 표기는 승인 문서라 그대로 둔다.
+  - 4: 요약 필드 줄(필드 시작 줄~첫 이름 줄)과 T025 마이그레이션 확인 방식(시험은 약하게, PR 리뷰의 `git diff`로 확인)을 받아들였다.
+  - 5: 답 없음. 커밋·PR은 수정·재검증 뒤 따로 승인을 받는다.
+  - 6: 승인. 작성 세션은 대상 저장소 두 곳 클론과 H01·H02 실측 허락, ADR-023 승인으로 해석한다(사람 확인 대상). ADR-023은 H02 실측을 반영한 뒤 Status를 바꾼다.
+  - 7(H04): Windows PC의 `%LOCALAPPDATA%/tree-sitter-language-pack/v1.22.1`은 지워도 되고 사유는 남기지 않는다. 그 PC에서 사람이 지운다(이 Mac에는 없다).
+- 2026-10-27 사실(검토 반영 구현): Kotlin 루트 어노테이션 재해석·붙이기, 루트 비선언 노드의 대체 청킹, 같은 줄 멤버 합치기를 고쳤다.
+  재현 입력 4종(Compose 미리 보기, Hilt 모듈, 클래스 뒤 어노테이션, 한 줄 어노테이션 + `internal`)에서 선언·어노테이션·Composable 판정이 살아났다.
+  픽스처 4쌍(`android_preview.kt`, `kotlin_root_annotations.kt`, `java_same_line.java`, `kotlin_stray_root.kt`)을 더했고 기대값은 손으로 정했다. 기존 픽스처 44쌍의 기대값은 그대로다.
+  코드 청킹 규칙 버전 첫 값을 `chk-code-4c1551b7519d`로 다시 고정했다(켜짐 인덱스 버전 `iv-6f56155d4096`, 대응표 미등록이라 차단). 꺼짐 값은 그대로다.
+  `test_code_summary_counts.py`의 컴포넌트 수 단언은 새 픽스처 때문에 COMPOSABLE 1 → 3으로 고쳤다(입력이 늘어난 것이라 검사 내용은 같다).
+- 2026-10-27 검증(검토 반영 뒤): ruff check·format --check, preflight, `git diff --check` 통과. `qk-migrate` 두 번 모두 `applied=0 skipped=7`.
+  `QK_REQUIRE_LOCALDB=1 uv run pytest` 2,788 passed, 2 deselected. 같은 세션의 자기 검증이다. 그 뒤 주석 줄 길이와 가져오기 순서만 고치고 코드 청커 시험 440개를 다시 통과했다.
+- 2026-10-27 사실(H01·H02 실측, 사용자 허용): 대상 저장소 두 곳을 `/Users/kimdoyeon/Downloads/qk-targets/`에 읽기 전용으로 클론했다(백엔드 `6aeccd0`, Android `0314755`).
+  `measure_code.py --compact-header --merge-small-heads --skip-trivial-summary --time-chunking`, 스크립트 해시 `360e7f3810f9`, macOS arm64·Python 3.13. 외부 모델 호출 0건, 0 Neurons.
+  - H01(SC-012): 중앙값 백엔드 0.73초 + Android 0.10초 = 0.83초로 기준 60초 이하다. 통과.
+  - H02: 실제 청크 수 백엔드 10,866·Android 1,048(흉내 측정 10,800·1,021 대비 +0.6%·+2.6%, ±10% 안). 대체 청킹 0, 맥락 줄 생략 0, 나뉜 원문 청크 15.
+    예상 Neurons(보정 계수) 본문 백엔드 2,658 + Android 509 ≈ 3,170, 테스트 포함 ≈ 7,440. 흉내 측정 부분은 research R-02 수치를 그대로 재현했다(청크 10,800·1,021, Neurons 2,476·482).
+    측정 스크립트에 본문·테스트별 실제 Neurons 추정 출력을 더해 해시가 바뀌었다.
+  - H03: ADR-023에 실측을 반영하고 사용자 승인("6.승인")을 기록해 Status를 Accepted로 바꿨다. 코드 자료원은 여전히 비활성이다.
+  - H04: 사용자 결정(지워도 됨, 사유 기록 안 함)을 기록했다. 폴더는 Windows PC에 있어 그 PC에서 사람이 지운다.
