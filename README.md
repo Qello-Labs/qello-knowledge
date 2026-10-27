@@ -1,6 +1,6 @@
 # Qello Knowledge
 
-팀의 코드, ClickUp 문서·작업, GitHub 기록을 근거로 질문에 답하는 RAG 지식 검색 시스템이다.
+팀의 코드, Confluence 문서, Jira 이슈, GitHub 기록을 근거로 질문에 답하는 RAG 지식 검색 시스템이다.
 구축 순서와 명세 백로그는 [로드맵](docs/sdd/roadmap.md)에 있다.
 
 | 문서 | 내용 |
