@@ -1,4 +1,4 @@
-# Task Contract: #74 명세에 남은 문맥 예산 기본값 2,000 문장을 3,000으로 갱신
+# Task Contract: #76 H05 질문 세트 v2 — 정답 라벨에 근거 문서 여러 개 허용
 
 > Generated at: `2026-10-27`
 >
@@ -7,44 +7,47 @@
 ## Work gate
 
 - Jira 이슈: 해당 없음: 2026-10-27 사용자 결정으로 Jira 없이 진행하는 예외 작업
-- 기능명세서 ID / 링크: `QK-RET-001` / `specs/QK-RET-001-hybrid-retrieval/`, `QK-CHK-001` / `specs/QK-CHK-001-code-chunker/`(현재 기본값 문장만 갱신. 요구사항은 바꾸지 않는다)
+- 기능명세서 ID / 링크: `QK-BOT-001` / `specs/QK-BOT-001-discord-ask/`(SC-002 실측 질문 세트의 새 버전. 명세 요구사항은 바꾸지 않는다)
 - 팀 스프린트 ID: 해당 없음: Jira 없이 진행하는 예외 작업
-- GitHub Issue: `#74`
-- Branch: `docs/gh-74-context-budget-3000`
+- GitHub Issue: `#76`
+- Branch: `docs/gh-76-h05-question-set-v2`
 - Base branch: `main`. 2026-10-27 `origin/main` `256de6f`(#78 병합)에서 분기했다
 
 ## Objective
 
-- #73(ADR-025)에서 3,000으로 올린 문맥 예산 기본값(`QK_RETRIEVAL_CONTEXT_BUDGET`)을, 현재 기본값을 2,000으로 적은 명세 문장에 반영한다.
+- 질문 세트 `qk-bot-001-h05` v2를 만들어, 있음 질문마다 같은 핵심 사실을 담은 근거 문서를 여러 개 적고 판정 기준을 "출처 가운데 하나 이상이 근거 문서 목록에 있다"로 바꾼다.
+- v2로 질문마다 2회 평가해 글자 그대로 판정과 사람 판정, 모델 출력 편차를 기록한다.
 
 ## Scope
 
-- `specs/QK-RET-001-hybrid-retrieval/data-model.md` 1.1 표의 `context_budget` 기본값
-- `specs/QK-RET-001-hybrid-retrieval/spec.md` "초기값"의 "Context 예산 2,000은 청크 상한(예상 2,800, QK-CHK-002)보다 작아" 문단
-- `specs/QK-CHK-001-code-chunker/spec.md` FR-016의 "지금 2,000토큰" 문장
-- 세 곳 모두 3,000과 [ADR-025](docs/sdd/decisions/ADR-025-context-budget-3000.md) 링크를 가리킨다
+- `specs/QK-BOT-001-discord-ask/measurement/h05-question-set-v2.md`(새 파일): v2 질문·근거 문서 목록·핵심 사실·판정 기준, v1과 바뀐 점과 사유, 비교 조건. 질문 문장과 핵심 사실은 v1과 같다
+- `specs/QK-BOT-001-discord-ask/measurement/h05-v2-eval.md`(새 파일): `templates/eval-report.md` 양식의 평가 보고서
 - `TASK.md`
+- 운영 읽기 전용 확인과 평가 실행(아래 "실행 계획", 단계마다 사람 승인)
 
 ## Explicit exclusions
 
-- 이력 문장: QK-RET-001 research R-08, tasks T003·T014·H01, spec의 Clarification·FR-016 "초기값 2,000"·"초기값" 문단의 나머지, QK-CHK-001 plan의 당시 기준, QK-CHK-001 spec US 근거 문장(66행)
-- 코드·설정 변경(기본값은 #73에서 이미 3,000), ADR-025 상태 변경
+- v1 파일(`h05-question-set.md`)과 #73 평가 보고서(`gh68-budget-eval.md`) 변경
+- 검색·생성·질의 서비스 코드와 설정 변경, 질의 릴리스 갱신, 운영 `query.env` 변경
+- 질문 문장·핵심 사실 변경, 질문 추가·삭제. SC-005 합성 비밀값 질문(S01)은 생성 경로가 아니어서 평가에서 뺀다
+- 동기화 수동 실행, 운영 DB 쓰기. 운영 접속은 읽기 전용 조회와 `qk-index ask`만 한다
 - `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정. 원본 자료원 쓰기
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문, 실제 주소·도메인, 답변 원문은 기록하지 않는다. 출처 경로·판정·집계만 남긴다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음
-- 외부 API로 보내는 데이터: 해당 없음
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 0 Neurons
-- 인덱스 버전 변경: 없음
+- 새로 읽는 자료원: 해당 없음(색인된 `dnd-backend-docs`만 검색)
+- 외부 API로 보내는 데이터: v1과 같은 질문 11개와 검색된 Context를 Workers AI(생성·질의 임베딩)로 보낸다. #73과 같은 경로다
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 11문항 × 2회 = 22회. #73 예산 3,000 실측 평균 19.93 Neurons/문항이면 약 440, 명세 최악 추정 51/문항이면 약 1,120.
+  하루 무료 10,000, 질의 예비분 3,000 안이다. 실행 직전 당일 사용량을 확인해 보고하고 승인받는다. 색인 확인은 DB 조회만이라 0 Neurons
+- 인덱스 버전 변경: 없음(`iv-4c0bc4fcc642` 그대로인지 실행 전 확인)
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| 위 명세 문서 3개, `TASK.md` | Byuntil | 사람 리뷰 |
+| 위 새 파일 2개, `TASK.md` | Byuntil | 사람 리뷰(정답 라벨 확정·판정은 사람) |
 
 ## Existing user-owned changes
 
@@ -57,12 +60,30 @@ python scripts/preflight.py
 git diff --check
 ```
 
+## 실행 계획
+
+1. v2 근거 문서 후보를 사람이 확정한다.
+2. 운영에서 v2 근거 문서가 활성 색인(`qk.artifact`, active)에 있는지 읽기 전용으로 확인한다(0 Neurons, 승인 뒤).
+3. v2 파일을 평가 실행 전에 별도 커밋으로 고정한다(AGENTS.md 3.4).
+4. 당일 사용량을 확인해 보고하고 승인받은 뒤, 운영 동기화 체크아웃에서 `qk-index ask --provider workers-ai --budget 3000 --allow-remote --json`을 질문마다 2회 실행한다.
+5. 글자 그대로 판정은 출처 경로로 계산하고, 내용 판정은 사람이 확정한다. 보고서는 별도 커밋으로 둔다.
+
 ## Completion criteria
 
-- 갱신 대상 세 곳이 3,000과 ADR-025 링크를 가리키고, 이력 문장은 바뀌지 않는다 — diff
-- 문서만 바뀐다 — `python scripts/preflight.py`, `git diff --check`
+- v2 질문 세트 파일과 버전 변경 사유가 코드와 다른 커밋에 있다 — diff
+- v1 결과와는 같은 질문·같은 조건(인덱스 버전, 모델, 예산, 프롬프트)만 비교한다는 점이 v2 파일과 보고서에 있다 — 리뷰
+- v2로 질문마다 2회 실행한 결과(글자 그대로·사람 판정, 회차 간 차이, 사용 Neurons)가 평가 보고서에 있다 — 보고서
 
 ## Decisions
 
-- 2026-10-27 사용자 결정: #74와 #76은 Jira 없는 예외 작업이고 이슈별로 브랜치·PR을 나눈다.
-- 2026-10-27 사실: ADR-025는 아직 `Status: Proposed`다. 상태 변경은 이 작업 범위 밖이다.
+- 2026-10-27 사용자 결정: #74와 #76은 Jira 없는 예외 작업이고 이슈별로 브랜치·PR을 나눈다. #76은 평가 실행까지 한다.
+- 2026-10-27 사실: 근거 문서 후보는 백엔드 로컬 복제본(`6aeccd0`, 2026-10-16 `main`, 색인 검토 기준 커밋과 같음)의 색인 범위 문서 80개에서 핵심어로 찾고 해당 절을 읽어 골랐다.
+- 2026-10-27 사용자 결정(정답 라벨): 판단이 필요했던 후보 가운데 Q01·Q07의 `docs/adr/README.md`(ADR 목록 행 요약)는 넣고, Q08의 `CLAUDE.md`(주석에 한정된 목록)는 뺀다.
+  기준은 "그 문서만 보고도 핵심 사실에 틀림없이 답할 수 있는가"다. 넣은 문서와 뺀 후보·사유는 v2 파일에 있다.
+- 2026-10-27 사실(운영 확인, 사용자 승인, 읽기 전용, 0 Neurons): Bastion 세션(확인 뒤 삭제)에서 `qksync` 환경으로 읽기 전용 세션을 열어 확인했다.
+  서버 체크아웃 `3a5a98e`, 활성 인덱스 `iv-4c0bc4fcc642`(청킹 `chk-md-20d966f730bb`), `github_repo_files` 79개 모두 active.
+  v2 근거 문서 15개 모두 active·권한 메타데이터 있음·활성 인덱스 청크 있음(문서당 6~40개), 원본 버전은 모두 `6aeccd0`(후보를 고른 로컬 복제본과 같음).
+  당일(UTC 2026-10-27) 사용량: `qk-index usage`는 색인 0, 질의 0.55, 합계 0.55 / 10,000으로 보였다. 이 명령은 임베딩 사용 장부만 읽어(`indexer/usage.py`) 생성 사용량(실행 전 430.56, #73 평가분)이 빠진 값이다. 평가 결과의 `usage_today`로 확인했다.
+- 2026-10-27 사실(평가 실행, 사용자 승인): 같은 방법으로 Bastion 세션(실행 뒤 삭제)에서 `qk-index ask --provider workers-ai --budget 3000 --allow-remote --json`을 11문항 × 2회 실행했다. 22회 모두 성공.
+  생성 437.67 Neurons(측정), 실행 뒤 당일 합계 869.18(생성 868.23, 질의 임베딩 0.95), 질의 예비분 3,000 안. 답변 원문은 저장소에 넣지 않았다.
+- 2026-10-27 사용자 결정(판정): 22건 모두 내용 판정 통과로 확정했다. v2 글자 그대로 22/22, v1 글자 그대로 18/22(Q02·Q04 두 회차). 결과는 `h05-v2-eval.md`에 있다.
