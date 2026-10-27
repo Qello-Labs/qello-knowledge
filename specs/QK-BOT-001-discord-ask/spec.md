@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-25
 
-**Status**: Draft
+**Status**: Approved(2026-10-28 사용자 승인, #58 마무리 작업)
 
 **Input**: 로드맵 4절 명세 백로그 QK-BOT-001 "Discord `/ask`, 지연 응답, 답변 표시·분할, 접근 제어, 오류 안내". 선행은 QK-GEN-001(병합됨, PR #54)이다.
 백로그 행의 요구사항 ID(FR-BOT-01, 02, 06, 07)는 원문이 없어(Assumptions 참조) 백로그 제목, 로드맵 1.G 완료 조건, constitution C-01·C-02·C-03·C-05·C-06·C-09·C-10·C-12·C-13·C-14,

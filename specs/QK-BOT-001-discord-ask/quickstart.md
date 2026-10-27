@@ -63,6 +63,8 @@ uv run qk-query register-commands --env-file <합성 애플리케이션·서버 
 
 되돌리기: Interactions Endpoint URL을 지우고, `qk-query.service`와 `cloudflared`를 끄고 지운다. `query.env`를 지운다. `qk_query`의 `LOGIN`을 뺀다. 색인 동기화(`qk-sync`)에는 영향이 없다.
 
+구성 뒤 질의 경로에 영향을 주는 병합이 있으면 운영 문서 7.6(질의 릴리스 갱신)으로 질의 릴리스를 바꾼다. 질의 서비스는 스스로 갱신하지 않는다.
+
 ## 4. 실측 (사람 단계)
 
 | 단계 | 내용 | 비용 |
