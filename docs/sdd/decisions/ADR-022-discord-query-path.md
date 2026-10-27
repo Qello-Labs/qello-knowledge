@@ -7,7 +7,7 @@
 >
 > ADR-008의 "질의응답은 Cloudflare Workers에서 실행한다"를 일부 고친다. ADR-008의 저장 위치(OCI 공유 인스턴스)와 추가 고정비 상한(월 0원)은 그대로다.
 >
-> 2026-10-27: Worker 구현 언어를 TypeScript로 바꾸는 안을 [ADR-024](ADR-024-ts-relay-worker.md)로 제안했다(Python Worker CPU가 Free 한도 초과).
+> 2026-10-27: Worker 구현 언어를 TypeScript로 바꿨다([ADR-024](ADR-024-ts-relay-worker.md), Accepted. Python Worker CPU가 Free 한도 초과).
 
 ## Context
 
