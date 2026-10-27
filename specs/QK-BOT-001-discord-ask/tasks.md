@@ -285,7 +285,7 @@ description: "QK-BOT-001 구현 작업 목록"
 - [X] T059 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate` × 2, `QK_REQUIRE_LOCALDB=1 uv run pytest`)과
   2절 로컬 질의 서비스 확인(가짜 제공자, 외부 호출 0건). 결과를 "실행 기록"에 적고 체크 표시를 갱신한다
 - [X] T060 독립 검토(다른 지침을 받은 별도 에이전트, AGENTS.md 2절)로 diff·시험 결과를 확인받고, 지적 반영 이력을 "실행 기록"에 남긴다
-- [ ] T061 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
+- [X] T061 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용). PR #64에서 했고 체크만 빠져 있었다(2026-10-28 #58 마무리에서 표시)
 
 ---
 
@@ -300,7 +300,7 @@ description: "QK-BOT-001 구현 작업 목록"
 | H02 | quickstart 3절 1~8 운영 구성(마이그레이션 0007 적용과 `qk_query` 로그인, `query.env`, `qkquery`·`qk-query.service`, `cloudflared`, Worker, 명령 등록) | 2026-10-27 완료(아래 "H02 질의 서비스 구성") | 0 Neurons |
 | H03 | SC-010: 인스턴스 공인 주소로 DB 포트와 질의 서비스 포트 접속 실패 확인 | 2026-10-27 완료(아래 "H03 외부 접속 차단 확인") | 0 Neurons |
 | H04 | M-02·M-03: 연결 확인·허용 밖 채널 요청 각 10회 이상으로 Worker CPU 시간(Free 10 ms)과 첫 응답 시간 p50·p95 기록. CPU 한도를 자주 넘으면 중계만 TypeScript로 옮기는 안(research R-13)을 올린다. 질의 없는 기준선의 인스턴스 자원(아래 "인스턴스 자원 기록")도 이때 잰다 | 2026-10-27 완료(아래 "H04 일부 측정", "H04 TS 중계 재측정", "H04 실제 질의 서비스 기준 측정"). Discord PING 10회는 미측정 | 0 Neurons |
-| H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다. 실측 동안 인스턴스 자원(아래 "인스턴스 자원 기록")을 함께 잰다 | 2026-10-27 실행(아래 "H05 실측"). SC-002 Q05 실패 | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
+| H05 | M-04: 질문 세트 10~12개(자료로 답할 수 있는 질문, 자료에 없는 질문, "나만 보기" 1개 이상)로 SC-001·SC-002·SC-012·SC-013 기록, 합성 비밀값 질문으로 SC-005 화면 대조. 화면 기록은 값을 가린다. 실측 동안 인스턴스 자원(아래 "인스턴스 자원 기록")을 함께 잰다 | 2026-10-27 실행(아래 "H05 실측"). SC-002 Q05 실패 → 2026-10-28 릴리스 갱신 뒤 Q05·SC-005(#71)·SC-013 재확인 통과(아래 "질의 릴리스 갱신과 H05 재확인") | 약 500~610 Neurons. 실행 전 예상량 보고와 사람 확인(AGENTS.md 3.5) |
 
 ---
 
@@ -753,7 +753,7 @@ US6:     T052, T053 (시험) → T054 → T055
   사용자 결정(2026-10-27): 암호를 교체하지 않는다.
 - 공유 인스턴스 영향: `qk-postgres`·회의 봇 컨테이너 재시작 0, `qk-cloudflared`·`qk-sync.timer` active, 가용 메모리 약 4.5 GB. `MemoryMax=512M`은 초기값이며 질의 중 메모리는 H04 남은 항목에서 잰다.
 - 되돌리기(운영 문서 7.5): `qk-query` 중지·비활성화, 유닛 삭제, 관리 psql `ALTER ROLE qk_query NOLOGIN;`, `query.env`·릴리스 폴더 삭제, `userdel qkquery`. 터널·Worker·수신 주소·명령은 사람 승인 뒤 해제한다.
-- 남은 일: PR #66 병합 뒤 질의 릴리스 갱신 절차가 없다(H03~H05 전에 정하거나 기록한다). 서버 배너 "System restart required"는 범위 밖이라 두었다.
+- 남은 일: PR #66 병합 뒤 질의 릴리스 갱신 절차가 없다(H03~H05 전에 정하거나 기록한다). → 2026-10-28 운영 문서 7.6으로 정하고 `ce6d1d8`로 갱신했다(아래 "질의 릴리스 갱신과 H05 재확인"). 서버 배너 "System restart required"는 범위 밖이라 두었다.
 
 ### H03 외부 접속 차단 확인 (2026-10-27, SC-010)
 
@@ -827,3 +827,38 @@ US6:     T052, T053 (시험) → T054 → T055
   질의 전송 직전 검사와 색인 전송 직전 검사가 같은 규칙을 쓴다. QK-SEC-001 후속 과제로 넘긴다. 운영에서 이 꼴로 보내 보지는 않았다.
 - 비용: 세트 11개 생성 174.26 + 임베딩 0.20 = 174.46 Neurons(측정). 잘못 보낸 Q01 2건 38.56, Q05 순위 검색 2회 약 0.05. 실측 시간대 합계 약 213 Neurons, 당일 합계 약 227(무료 10,000, 질의 예비분 3,000 안).
 - 자원: 위 "인스턴스 자원 기록" 표의 실측 중 열. 메모리 부족 종료와 회의 봇·DB 재시작 0. 임시 기록 유닛과 파일은 지웠다.
+
+### 질의 릴리스 갱신과 H05 재확인 (2026-10-28, #58 마무리)
+
+- 실행: 아래쪽 Herdr 패널의 Claude(실행 에이전트)가 Bastion 세션 하나에서 했다. 서버를 바꾸는 단계(릴리스 준비, 전환)는 사람이 단계마다 승인했고, Discord 질문은 사람이 보냈다.
+  값·주소·식별자는 출력에서 가렸고 기록하지 않는다. 세션은 끝나자마자 지웠다.
+- 읽기 전용 확인(전환 전): `qk-query.service` active·재시작 0, 릴리스 `/opt/qello-knowledge-query`는 git 클론 `3a5a98e`(변경 0). 가상환경의 실행 파일과 `pyvenv.cfg`가 릴리스 절대 경로를 담는다.
+  `query.env` root:qkquery 0640, H02와 같은 키 8개(`QK_RETRIEVAL_CONTEXT_BUDGET` 없음 → 새 릴리스는 기본값 3,000). `/healthz` 200, `qk-cloudflared`·`qk-sync.timer` active, 디스크 여유 충분.
+- 코드 확인(로컬): `3a5a98e..ce6d1d8`의 질의 설정 변경은 문맥 예산 기본값 3,000(ADR-025)과 색인 전용 `QK_CODE_CHUNKING`뿐이다. 질의 쪽에 새 필수 키가 없다.
+- 갱신(운영 문서 7.6, 이번에 정함): 새 릴리스 `/opt/qello-knowledge-query-releases/ce6d1d8`(`uv sync --locked --no-dev --extra query --extra postgres`, 137 MB,
+  설치 패키지 `cffi cryptography psycopg psycopg-binary pycparser qello-knowledge`로 개발 의존성 없음). `qkquery`로 `qk-query check` 통과(누락·형식 오류 0), import와 예산 3,000 확인.
+  첫 시도는 작업 사용자가 0750 릴리스 폴더에 `cd`하지 못해 실패했고 만든 폴더를 지웠다. `uv --directory`로 바꿔 다시 했다.
+- 전환: 유닛을 `/root/qk-query.service.before-gh58`로 백업하고, 링크 `/opt/qello-knowledge-query-current` → 새 릴리스, 유닛의 `WorkingDirectory`·`ExecStart` 두 줄만 링크로 바꿨다.
+  `systemd-analyze verify`(다른 시스템 유닛 경고만), `daemon-reload`, 재시작. 전환 전 10분 질의 0건. 전환 뒤 active·재시작 0, 작업 폴더 새 릴리스, `/healthz` 200, `qk-cloudflared`·`qk-sync.timer` active.
+- 되돌리기: 링크를 `/opt/qello-knowledge-query`(옛 릴리스, 그대로 둠)로 돌리고 재시작한다. 완전 복구는 유닛 백업 복원 뒤 `daemon-reload`·재시작(운영 문서 7.6 6번).
+
+| 공통 조건 | 값 |
+| --- | --- |
+| 날짜·환경·실행 방식 | 2026-10-27 17시대 UTC(2026-10-28 KST), 운영, TS 중계 Worker → Workers VPC/Tunnel → OCI 질의 서비스, 질의 릴리스 main `ce6d1d8` |
+| 질문 세트 | `qk-bot-001-h05` v2(`measurement/h05-question-set-v2.md`)의 Q05 1개. 합성 비밀값 질문 1개(실행 때 만들고 기록하지 않음, "토큰" 바로 뒤에 붙인 `ghp_` 꼴) |
+| 모델·프롬프트·색인 | H05와 같다(생성 qwen3-30b-a3b-fp8, 프롬프트 기본값, `iv-4c0bc4fcc642`). 문맥 예산만 2,000 → 3,000(ADR-025) |
+| 당일 사용 시작 전 | 질의 0.95 Neurons(예비분 3,000), 전체 0.95(무료 10,000) |
+
+| 질문 | 나만 보기 | first_response | retrieve | generate | deliver | 검색/생성/전달 호출 | 임베딩 Neurons(측정) | 생성 Neurons(측정) | 상태 | 판정 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Q05 | 켬 | 3 | 873 | 1,097 | 488 | 5/2/1 | 0.02 | 22.09 | answered | SC-002 통과(사람 판정) |
+| 합성 토큰 | 켬(안내) | 0 | 0 | 0 | 0 | 0/0/0 | 0 | 0 | outgoing_blocked | SC-005 통과(#71 반영) |
+
+- Q05: 기존 PostgreSQL 원장을 재사용해 새 broker 비용·운영 부담을 피한 것과 외부 호출을 transaction 밖으로 뺀 것을 ADR-0008 출처 링크와 함께 답했다. "출처 확인 안 됨" 표시와 확인 불가 문구는 없었다.
+  lease·fencing과 짧은 claim transaction은 제목에만 있고 본문에서 설명하지 않았다. 본문은 근거를 "선택 이유" 절로 적었는데 출처 줄의 절 제목은 "고려한 선택지"여서 둘이 어긋났다. 판정에는 넣지 않았다.
+  답변 원문은 기록하지 않는다(ADR-016). 처리 중 응답 시간과 Worker CPU는 이번에 재지 않았다(`wrangler tail` 미실행).
+- 합성 토큰: 처리 중 응답 전 검사에서 걸려 나만 보기 안내를 받았다. 검색·생성·전달 호출 0. 전환 뒤 `qk-query`·`qk-cloudflared` journal에서 `ghp_` 조각 0건. Worker 로그는 보지 않았다.
+  같은 꼴의 문장을 로컬에서 대조하면 `ce6d1d8` 규칙은 `github-token`으로 잡고 `3a5a98e` 규칙은 놓친다. H05 "별도 발견"의 운영 노출이 이 갱신으로 닫혔다.
+- SC-013: Q05(나만 보기)와 합성 토큰 안내를 사람이 다른 계정 화면으로 대조했고 둘 다 보이지 않았다. H05의 "다른 계정 대조 미확인"을 이 2건으로 닫는다.
+- 비용: 22.11 Neurons(측정). 당일 합계 약 23.06(계산값, 다시 조회하지 않음).
+- 남은 위험: Q05 재확인은 1회 표본이다. v2 세트 전체는 운영에서 다시 돌리지 않았다(사용자 결정, CLI 평가 22/22는 `measurement/h05-v2-eval.md`).
