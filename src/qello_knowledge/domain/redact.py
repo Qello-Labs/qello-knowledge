@@ -28,7 +28,9 @@ FILE_EXTENSIONS = frozenset(
 # 경계는 ASCII 영숫자·밑줄로만 본다.
 WORD = "A-Za-z0-9_"
 # 스킴 주소는 `://`가 있어 글자만으로 주소가 확실하므로 앞 경계를 두지 않는다(#79). 패턴은 `://` 앞 스킴 문자 덩어리의
-# 첫 글자에서만 맞춰 본다(`_mask_scheme`). 시작 위치마다 덩어리를 다시 훑으면 긴 `a.a.a…`에서 길이의 제곱이 걸린다.
+# 첫 글자에서만 맞춰 보고, 맞으면 덩어리 시작부터 가린다(`_mask_scheme`). 첫 글자 앞의 숫자·점이 IPv4 조각으로
+# 남지 않게 한다. 다만 덩어리 바로 앞이 `:`이면 맨 앞 숫자 5자까지는 포트일 수 있어 남겨 `host:port` 패턴이 가리게 한다.
+# 시작 위치마다 덩어리를 다시 훑으면 긴 `a.a.a…`에서 길이의 제곱이 걸린다.
 SCHEME_CHARS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+.-")
 SCHEME_URL = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
 # IP는 경계 정규식으로 찾지 않고 후보를 `ipaddress`로 검증한다. 점이나 확장자가 바로 붙은 주소도 놓치지 않으려는 것이다.
@@ -106,7 +108,7 @@ def _mask_ipv4(value: str, ipv4_digits: re.Pattern[str]) -> str:
 
 
 def _mask_scheme(value: str, scheme: re.Pattern[str]) -> str:
-    """`://`마다 그 앞 스킴 문자 덩어리의 첫 글자에서 패턴을 맞춰 본다.
+    """`://`마다 그 앞 스킴 문자 덩어리의 첫 글자에서 패턴을 맞춰 보고, 맞으면 덩어리 시작부터 가린다.
 
     덩어리는 `:`에서 끝나 서로 겹치지 않으므로 전체 시간이 길이에 비례한다.
     """
@@ -120,7 +122,11 @@ def _mask_scheme(value: str, scheme: re.Pattern[str]) -> str:
         if match is None:
             pos = colon + 1
             continue
-        out += [value[last : match.start()], ADDRESS_MASK]
+        begin = start
+        if start > 0 and value[start - 1] == ":":
+            while begin < min(letter, start + 5) and value[begin].isdigit():
+                begin += 1
+        out += [value[last:begin], ADDRESS_MASK]
         last = pos = match.end()
     return "".join(out) + value[last:]
 

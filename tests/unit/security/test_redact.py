@@ -263,7 +263,7 @@ def test_addresses_glued_to_other_non_ascii_letters_are_masked(address, leftover
     [
         (f"x{SCHEME_ADDRESS}", FieldKind.TEXT, MASK),
         (f"_{SCHEME_ADDRESS}", FieldKind.TEXT, f"_{MASK}"),  # #79: 스킴 주소는 숫자·밑줄 뒤에서도 가린다
-        (f"9{SCHEME_ADDRESS}", FieldKind.TEXT, f"9{MASK}"),
+        (f"9{SCHEME_ADDRESS}", FieldKind.TEXT, MASK),  # 스킴 덩어리 앞 숫자도 함께 가린다
         (f"x{HOST_PORT_ADDRESS}", FieldKind.TEXT, MASK),
         (f"_{HOST_PORT_ADDRESS}", FieldKind.TEXT, f"_{HOST_PORT_ADDRESS}"),
         (f"9{HOST_PORT_ADDRESS}", FieldKind.TEXT, f"9{HOST_PORT_ADDRESS}"),
@@ -312,6 +312,48 @@ def test_long_dotted_runs_without_a_scheme_are_cheap():
 )
 def test_addresses_after_digits_underscores_and_double_dots_are_masked(value, leftover):
     assert leftover not in safe_text(value, FieldKind.TEXT, PUBLIC)
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (f"1.{IPV4_ADDRESS}{SCHEME_ADDRESS}", MASK),
+        (f"9{IPV4_ADDRESS}{SCHEME_ADDRESS}", MASK),
+        (f"_{SCHEME_ADDRESS}", f"_{MASK}"),
+        (f"x {SCHEME_ADDRESS}", f"x {MASK}"),
+        (f"{HOST_PORT_ADDRESS}.md+{SCHEME_ADDRESS}", f"{MASK}{MASK}"),  # 포트 숫자는 `host:port`가 가린다
+    ],
+)
+def test_digits_and_dots_before_a_scheme_are_masked_with_it(value, expected):
+    assert safe_text(value, FieldKind.TEXT, PUBLIC) == expected
+
+
+def test_only_port_digits_after_a_colon_are_left_before_a_scheme():
+    masked = safe_text(f":80{IPV4_ADDRESS}{SCHEME_ADDRESS}", FieldKind.TEXT, PUBLIC)
+    assert masked.endswith(MASK)
+    assert IPV4_ADDRESS not in masked
+    assert "." not in masked.removesuffix(MASK)
+
+
+@pytest.mark.parametrize("kind", [FieldKind.TEXT, FieldKind.PATH])
+def test_ipv4_after_a_masked_port_is_masked(kind):
+    value = (
+        f"docs/{HOST_PORT_ADDRESS}.{IPV4_ADDRESS}" if kind == FieldKind.PATH else f"{HOST_PORT_ADDRESS}.{IPV4_ADDRESS}"
+    )
+    assert IPV4_ADDRESS not in safe_text(value, kind, PUBLIC)
+
+
+@pytest.mark.parametrize(
+    ("value", "kind"),
+    [
+        (f"v1.2..{IPV4_ADDRESS}", FieldKind.TEXT),
+        (f"docs/v1.2..{IPV4_ADDRESS}/a.md", FieldKind.PATH),
+        (f"docs/v1.2..{IPV4_ADDRESS}.md", FieldKind.PATH),
+    ],
+)
+def test_ipv4_after_double_dots_counts_as_an_address(value, kind):
+    assert IPV4_ADDRESS not in safe_text(value, kind, PUBLIC)
+    assert has_unsafe(value, kind, PUBLIC) == "address"
 
 
 @pytest.mark.parametrize(
