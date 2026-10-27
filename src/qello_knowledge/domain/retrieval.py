@@ -83,7 +83,7 @@ class RetrievalSettings:
     expand_top: int = 8
     before: int = 1
     after: int = 1
-    context_budget: int = 2000
+    context_budget: int = 3000  # ADR-025: 2,000에서 근거 절이 예산 부족으로 빠졌다(#68)
     question_max_chars: int = 2000
     query_rule: str = "kw-query-v1"
     bytes_per_token: float = 3.5

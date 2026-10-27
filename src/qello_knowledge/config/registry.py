@@ -264,7 +264,7 @@ SETTINGS: tuple[SettingSpec, ...] = (
         required=False,
         secret=False,
         rule=CONTEXT_BUDGET,
-        default="2000",
+        default="3000",
     ),
     SettingSpec(
         name="QK_GEN_MODEL",
