@@ -514,7 +514,7 @@ WantedBy=multi-user.target
    SHA=<new-commit>
    NEW=/opt/qello-knowledge-query-releases/$SHA
    sudo install -d -o root -g qkquery -m 0750 /opt/qello-knowledge-query-releases
-   sudo git clone -q "$(sudo git -C /opt/qello-knowledge-query remote get-url origin)" "$NEW"
+   sudo git clone -q "$(sudo git -C /opt/qello-knowledge-query-current remote get-url origin)" "$NEW"
    sudo git -C "$NEW" checkout -q --detach "$SHA"
    sudo env UV_PYTHON_INSTALL_DIR="$NEW/.python" UV_PYTHON_PREFERENCE=only-managed \
      /usr/local/bin/uv --directory "$NEW" sync --locked --no-dev --extra query --extra postgres
