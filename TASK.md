@@ -1,4 +1,4 @@
-# Task Contract: #68 근거가 있는 질문에 출처 없이 "명시되지 않음"으로 답하는 원인 조사·수정
+# Task Contract: QK-ING-003 Confluence 자료원 전환과 Confluence 페이지 수집 명세 (WBS 2.3)
 
 > Generated at: `2026-10-27`
 >
@@ -6,111 +6,106 @@
 
 ## Work gate
 
-- Jira 이슈: 해당 없음: 2026-10-27 사용자 결정으로 Jira 없이 진행하는 예외 작업
-- 기능명세서 ID / 링크: `QK-GEN-001`·`QK-RET-001`(원인 위치에 따라 정함. 명세 변경이 필요하면 멈추고 묻는다), 실측 맥락은 `QK-BOT-001` H05
-- 팀 스프린트 ID: 해당 없음: Jira 없이 진행하는 예외 작업
-- GitHub Issue: `#68`
-- Branch: `fix/gh-68-grounded-answer-not-stated`
-- Base branch: `main`. 2026-10-27 `origin/main` `ba1249e`(#69 병합)에서 분기했다
+- Jira 이슈: `SCRUM-119` / https://tkv123.atlassian.net/browse/SCRUM-119 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: `QK-ING-003` / `specs/QK-ING-003-confluence-pages/spec.md`(작성 중)
+- 팀 스프린트 ID: `QELLO-S2026-W44`
+- GitHub Issue: `#72`
+- Branch: `feat/SCRUM-119-gh-72-confluence-source`
+- Base branch: `main`. 2026-10-27 `origin/main` `ba1249e`(#69 병합)에서 분기했다. 이전 `main`의 계약(QK-CHK-001)은 git 이력에 남긴다.
+  push 전에 `origin/main` `4286014`(#73 병합) 위로 커밋을 다시 쌓았다. 충돌난 `TASK.md`는 이 계약을 남겼고, `main`의 #68 계약은 git 이력에 남긴다.
 
 ## Objective
 
-- 1단계(원인 조사): H05 Q05에서 검색이 근거(ADR-0008)를 찾았는데도 답이 출처 없이 "자료에 명시되지 않음"이 된 원인을, 문맥 구성 → 묶음 렌더링·전송 검사 → 생성 → 후처리(인용 검증) 순서로 증거와 함께 찾는다.
-- 2단계(수정): 원인이 코드 결함이면 시험을 먼저 쓰고 고친 뒤, 같은 질문 세트 `qk-bot-001-h05` v1로 전후를 비교한다. 수정 범위는 1단계 보고 뒤 사용자가 정한다.
+- 팀이 2026-10-17에 작업 관리를 Jira `SCRUM` 프로젝트로, 문서를 Confluence `SCRUM` 스페이스로 옮긴 것을 색인 정책과 계획에 반영한다.
+- Confluence를 새 자료원 종류로 추가하는 결정 기록(ADR-026, Proposed)을 쓴다(AGENTS.md 3.1).
+- QK-ING-003(WBS 2.3) Confluence 페이지 수집 `spec.md`를 Spec Kit으로 쓰고 독립 검토 뒤 사람 승인을 받는다. 승인 뒤 `plan.md`·`tasks.md`로 넘어간다.
 
 ## Scope
 
-- `TASK.md`
-- 1단계(읽기 전용, 저장소 파일 변경 없음):
-  - 코드 확인: `retrieval/pack.py`(예산 2,000 토큰, 중심 상위 8개), `generation/service.py`(묶음별 전송 검사로 문서 빼기), `generation/render.py`, `generation/prompts.py`(`gen-p1`), `generation/postprocess.py`(인용 정리·`unsupported_answer`)
-  - 대상 백엔드 저장소 로컬 복제본의 ADR-0008 구조 확인(절·바이트, 비밀값 규칙 적중 여부. 원문은 기록하지 않는다)
-  - (승인 뒤) 운영 DB 검색 재현: Bastion + `qksync` 환경으로 `qk-index search --allow-remote --json`(생성 없음). 순위·문맥에 담긴 청크 ID·건너뛴 청크·사용 토큰만 본다
-  - (승인 뒤) 같은 경로로 `qk-index ask --provider fake --allow-remote --json`: 보낸 묶음 수와 전송 검사로 뺀 묶음, 입력 토큰을 본다(생성 Neurons 0)
-  - (승인 뒤, 필요할 때만) 실제 생성 재현: `qk-index ask --provider workers-ai`로 Q05를 소수 회 실행해 답·인용 정리 결과를 본다
-- 2단계(2026-10-27 사용자 결정: 문맥 예산 기본값 2,000 → 3,000):
-  - `src/qello_knowledge/domain/retrieval.py`(`RetrievalSettings.context_budget` 기본값), `src/qello_knowledge/config/registry.py`(`QK_RETRIEVAL_CONTEXT_BUDGET` 기본값), `.env.example`(레지스트리에서 생성. `.env.*` 접근 차단으로 사람이 `uv run python -m qello_knowledge.config.example`을 실행한다)
-  - 기본값을 고정한 시험의 기대값: `tests/unit/retrieval/test_retrieval_settings.py`, `tests/unit/config/test_retrieval_budget_setting.py`, `tests/unit/generation/test_gen_check_settings.py`(최악 입력 합계).
-    의도한 기본값 변경을 시험에 먼저 반영하는 것이며 검증 통과를 위한 기대값 조정이 아니다(AGENTS.md 9절)
-  - 결정 기록 새 파일 `docs/sdd/decisions/ADR-025-context-budget-3000.md`(QK-RET-001 research R-08의 초기값 2,000을 바꾼다)
-  - 평가 보고서 새 파일 `specs/QK-BOT-001-discord-ask/measurement/gh68-budget-eval.md`(`templates/eval-report.md` 양식). 질문 세트 v1은 바꾸지 않는다
-  - 운영 평가(승인): 운영 DB·질의 릴리스와 같은 커밋에서 `qk-index ask --provider workers-ai --budget 2000|3000`으로 Q01~Q11을 한 번씩 실행. 사람 판정은 사용자가 확정한다
+- `AGENTS.md` 3.1 색인 대상 목록(사람 승인 대상, AGENTS.md 4절)
+- `docs/sdd/roadmap.md`: 2절 Phase 2·3 산출물, 3절 Phase 1·2 목표와 범위, 2.3·3.1·6.3, 4절 QK-ING-003·004 행, 6절 RISK-01·02, 이관 설명 한 단락. WBS 번호·명세 ID·선행·크기는 바꾸지 않는다
+- `README.md` 소개 문구
+- 새 결정 기록 `docs/sdd/decisions/ADR-026-confluence-source.md`(Proposed)
+- `specs/QK-ING-003-confluence-pages/`의 `spec.md`, `checklists/requirements.md`. spec 승인 뒤 같은 디렉터리의 plan 산출물
+- WBS 보드(Artifact) 제목·메모 6곳. PR 내용 승인 뒤 반영한다
+- `TASK.md`(이 파일)
 
 ## Explicit exclusions
 
-- 질문 세트 `specs/QK-BOT-001-discord-ask/measurement/h05-question-set.md`(v1)와 정답 라벨 변경. 바꿔야 하면 버전을 올리고 코드와 다른 커밋에 사유를 남긴다
-- 승인된 프롬프트 원문(`gen-p1`, 2026-10-23 승인), 예산 밖의 검색 기본값(후보 수·상위 확장 수), 청킹 규칙처럼 QK-GEN-001·QK-RET-001의 설계 결정을 바꾸는 수정. 필요하면 구현 전에 멈추고 묻는다
-- 운영 질의 서비스 설정·릴리스 변경(병합 뒤 따로 승인), `qk-sync`·운영 DB 쓰기(생성·임베딩 사용량 장부 기록은 평가 실행의 정상 부수 효과), 색인 실행, 인덱스 버전 변경
-- `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정. 원본 자료원 쓰기
+- 수집기·접근 판정 규칙·변환기 구현, `src/`·`tests/`·`config/` 변경, 자료원 종류 등록
+- Jira 이슈 수집 명세(QK-ING-004, Phase 3)와 Jira 자료원 결정 기록
+- Atlassian 토큰·서비스 계정 발급, 실제 수집·측정·색인. Confluence·Jira 원본 쓰기
+- 기존 ClickUp 조사 문서(`clickup-writing-rules.md`, `research/clickup-migration-check.md`, `research/inventory.md`, `research/tokens.md`), 승인된 명세(QK-CHK-002·QK-SEC-001·QK-ING-001·QK-SYN-001), 기존 ADR 수정
+- `CLAUDE.md`, `CODEX.md`, `.claude/**`, `.github/` 수정. `AGENTS.md`는 3.1 목록만 바꾼다
 - 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다. 운영 DB 결과는 청크 ID·순위·절 제목·수치만 남긴다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 해당 없음(이미 색인된 `dnd-backend-docs`를 운영 DB에서 읽기만 한다)
-- 외부 API로 보내는 데이터: 질의 임베딩(Q05 질문 원문)을 Workers AI로 보낸다. 실제 생성 재현을 하면 Q05 문맥과 질문을 Workers AI 생성 모델로 보낸다
-- 예상 임베딩·생성 호출량과 무료 한도 대비:
-  - 검색·가짜 생성 재현: 질의 임베딩 1회당 약 0.03 Neurons(H05 측정) × 2~4회 = 약 0.1 Neurons
-  - 실제 생성 재현(필요할 때만): 회당 약 15~20 Neurons(H05 Q05 14.65 측정) × 최대 3회 = 약 60 Neurons
-  - 2단계 전후 평가(수정할 때만): 질문 11개 × 약 15~20 Neurons × 2회(전·후) = 약 330~440 Neurons. 실행 전에 당일 사용량과 함께 다시 보고한다
-  - 하루 무료 10,000, 질의 예비분 3,000 안
-- 인덱스 버전 변경: 없음(`iv-4c0bc4fcc642` 유지)
+- 새로 읽는 자료원: 이번 단계는 없다. 명세가 정할 대상은 Confluence `SCRUM` 스페이스(비공개 팀 자료)다. 결정은 ADR-026에 남긴다(AGENTS.md 3.1)
+- 외부 API로 보내는 데이터: 이번 단계 0건. 공식 문서 조회만 했다. 운영에서는 청크 본문이 Workers AI 임베딩(ADR-002)으로 간다
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 이번 단계 0 Neurons. 첫 색인 예상은 plan에서 페이지 수를 잰 뒤 추정한다
+- 인덱스 버전 변경: 없음
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `TASK.md`, 원인 조사 기록 | Byuntil | 사람 리뷰 |
-| 2단계 코드·시험·평가 보고서 | Byuntil | 사람 리뷰, 독립 검토 에이전트 |
-| 운영 DB 읽기 전용 재현(Bastion) | Byuntil | 명령별 사람 승인 |
+| `AGENTS.md` 3.1, `docs/sdd/roadmap.md`, `README.md`, WBS 보드 | tkv00 | 사람 리뷰(AGENTS.md는 승인 필수) |
+| `docs/sdd/decisions/ADR-026-confluence-source.md` | tkv00 | 사람 리뷰 |
+| `specs/QK-ING-003-confluence-pages/`, `TASK.md` | tkv00 | 사람 리뷰 |
 
 ## Existing user-owned changes
 
-- 2026-10-27 `origin/main`(`ba1249e`)에서 작업 폴더 `qello-knowledge-gh68`를 만들 때 `git status --short` 결과: 변경 없음
+- 2026-10-27 `origin/main`(`ba1249e`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
 ```bash
 python scripts/preflight.py
 git diff --check
+uv run ruff check .
+uv run ruff format --check .
 ```
 
-2단계에서 코드를 바꾸면 AGENTS.md 7절 기본 검증 전부와 `node --test workers/relay/relay.test.ts`, 질문 세트 v1 전후 평가를 실행한다.
+문서 단계라 코드 시험은 해당하지 않는다.
 
 ## Completion criteria
 
-- Q05가 출처 없이 "명시되지 않음"이 된 원인이 단계(문맥 구성·전송 검사·생성·후처리)별 증거와 함께 기록돼 있다. 증거가 없는 단계는 추론이라고 적혀 있다 — 리뷰
-- (수정하는 경우) 원인을 재현하는 시험이 수정 전 실패·수정 뒤 통과하고, 질문 세트 v1 전후 비교에서 Q05가 통과하며 다른 질문에 회귀가 없다 — 평가 보고서
-- (수정하지 않는 경우) 원인이 승인된 설계 결정의 결과라면 바꿀 선택지와 영향이 사람 결정용으로 정리돼 있다 — 리뷰
+- AGENTS.md 3.1·로드맵·README 변경과 WBS 보드 변경이 사람 리뷰로 승인된다 — PR 리뷰
+- ADR-026(Proposed)이 데이터 처리 정책, 토큰 종류·범위(공식 문서 근거), 수집 계정, `access_scope` 판정 규칙, 개인 스페이스 제외, 본문 변환 방식을 담는다 — PR 리뷰
+- QK-ING-003 `spec.md`가 독립 검토를 거쳐 사람 리뷰로 승인된다 — 리뷰 기록
 
 ## Decisions
 
-- 2026-10-27 사용자 결정(오케스트레이터 지시 파일로 전달): #68은 Jira 없는 예외 작업이고, #67 PR(#71) 뒤에 시작한다.
-- 2026-10-27 사실(코드·로컬 복제본 확인, 외부 호출 0):
-  - ADR-0008(대상 백엔드 로컬 복제본, 2026-10-16 `main`)에서 Q05의 근거는 한 절에 모여 있지 않다. 초기 규모와 별도 broker 근거는 `배경`, SQS·Kafka 선택지는 `고려한 선택지`, 새 broker의 비용·운영 부담은 `선택 이유`에 있다. `선택 이유`에는 SQS·Kafka라는 이름이 없다.
-  - 그 문서 전체에 현재 비밀값 규칙 적중은 0건이다. 따라서 묶음별 전송 검사가 ADR-0008 묶음을 뺐을 가능성은 낮다(색인 시점 본문이 같다는 가정).
-  - 문맥은 통합 순위 상위 8개 중심을 순서대로 담고, 이어서 중심마다 절 첫 청크·앞·뒤 청크를 2,000 토큰 안에서 붙인다. 순위 2위 `선택 이유`는 앞 중심이 예산을 다 쓰지 않았다면 담긴다. 6위 `고려한 선택지`·`배경`이 담겼는지는 운영 재현이 필요하다.
-  - `gen-p1` 규칙 1은 "추론으로 보충하지 않는다"이고, 후처리는 인용이 하나도 없으면 `unsupported_answer`("출처 확인 안 됨")로 표시한다. 모델이 "SQS·Kafka를 안 쓴 이유"를 명시 문장으로 찾지 못해 근거 없이 부정한 경우와 맞는다(추론).
-- 2026-10-27 사용자 결정: 이 계약 초안대로 진행한다. 운영 DB 읽기 전용 재현과 실제 생성 재현(최대 3회)을 승인했다. 명령은 사용자가 지정한 아래쪽 Herdr 패널에서 실행했다.
-- 2026-10-27 사실(운영 재현, Bastion 세션 TTL 30분·확인 뒤 삭제, `qksync` 환경, 체크아웃 `3a5a98e` = 질의 릴리스와 같은 커밋, 인덱스 `iv-4c0bc4fcc642`):
-  - 가짜 생성 `ask`: 묶음 3개 전송, 전송 검사로 뺀 묶음 0, 예상 입력 2,848토큰. 전송 검사 경로는 원인이 아니다.
-  - `search --json`(예산 2,000): 사용 1,980/2,000, 묶음 3개. 6위 중심인 ADR-0008 `고려한 선택지`(키워드 1위, SQS·Kafka가 이 절에만 있다)가 `budget_exhausted`로 빠졌다.
-    ADR-0008에서는 `선택 이유`(2위)와 그 뒤 청크만 담겼고 `배경`도 없었다. 예산 대부분은 1·3·4·5위의 다른 문서(인증 설계, 푸시 운영 세팅) 청크가 썼다.
-  - `search --json --budget 3000`: 사용 2,972/3,000, 묶음 4개. ADR-0008 묶음에 `고려한 선택지`·`선택 이유`와 앞뒤 청크가 함께 담긴다.
-  - 실제 생성(Workers AI, `gen-p1`): 예산 2,000은 `cannot_confirm`(표준 확인 불가 문구, 14.25 Neurons). 예산 3,000은 `answered`, 출처 ADR-0008 [S2], 새 broker 비용·운영 부담과 DB transaction 밖 외부 호출을 근거로 답했다(22.07 Neurons). 판정 기준(핵심 사실 일부, 틀린 내용 없음)으로는 통과로 본다(사람 판정 전).
-  - H05의 비표준 부정 답("명시되지 않음", 출처 없음)과 이번 예산 2,000 결과(표준 문구)는 같은 문맥에서 모델 출력이 달랐던 것이다. 후처리는 인용 없는 답에 `unsupported_answer`를 붙이는 설계대로 동작했다.
-  - 원인: 문맥 예산 2,000토큰 안에서 상위 순위의 다른 문서 청크가 예산을 쓰고, 질문 핵심어가 있는 6위 절이 빠져 생성 입력에 SQS·Kafka와 이유를 잇는 근거가 없었다. 생성은 그 입력에서 근거를 찾지 못했다.
-  - 예산은 코드 상수가 아니라 설정 `QK_RETRIEVAL_CONTEXT_BUDGET`(기본 2000, 1~8000)이고 질의 서비스가 읽는다. 3,000에서도 최악 입력 12,650 < 모델 컨텍스트 32,768로 설정 검사를 통과한다. 2,000은 QK-RET-001 research R-08의 결정이다.
-  - 사용량: 질의 임베딩 4회 약 0.12 + 생성 36.32 = 약 36.4 Neurons(측정).
-- 2026-10-27 사용자 결정: 1안(문맥 예산 기본값 3,000)으로 진행하고, 질문 세트 v1 전후 평가(예상 약 400 Neurons)를 승인했다.
-- 2026-10-27 사실(운영 평가, Bastion 세션 확인 뒤 삭제, 체크아웃 `3a5a98e`, 인덱스 `iv-4c0bc4fcc642`, `gen-p1`, `@cf/qwen/qwen3-30b-a3b-fp8`, 질문 세트 `qk-bot-001-h05` v1 Q01~Q11, 예산마다 1회):
-  - 예산 2,000: 있음 8 중 7이 근거 문서를 인용해 답했고 Q05는 출처 없이 "명시되지 않음"(`unsupported_answer`, H05와 같은 실패). 없음 3은 모두 표준 확인 불가. 생성 174.99 Neurons.
-  - 예산 3,000: Q05가 ADR-0008을 인용해 답했다. Q02는 `docs/api-response.md`만, Q04는 `docs/product/ONBOARDING_COUNTRY_DESIGN.md`·`AUTH_DESIGN.md`만 인용해 라벨의 근거 문서(ADR-0005, ADR-0007)가 출처에 없다.
-    두 답의 내용은 핵심 사실과 맞는다. 없음 3은 모두 표준 확인 불가. 생성 219.25 Neurons.
-  - 질문 세트 판정 기준("출처 가운데 하나 이상이 근거 문서")을 글자 그대로 적용하면 2,000은 10/11, 3,000은 9/11(Q02·Q04 출처 불일치)이다. 내용 기준으로는 2,000 10/11, 3,000 11/11이다. 최종 판정은 사람이 한다. 표본은 질문마다 1회라 모델 출력 편차를 분리하지 못한다.
-  - 당일 사용량(UTC 2026-10-27, 평가 뒤): 생성 430.56 + 질의 임베딩 0.55 = 431.11 Neurons(이 작업의 재현·평가 합계와 맞음). 질의 예비분 3,000 안.
-- 2026-10-27 사실: 기본값 시험 3개를 먼저 3,000으로 바꿔 실패를 확인한 뒤 기본값을 바꿨다. 계산식 시험 2개는 기본값 대신 `context_budget=2000`을 명시했다. `.env.example`은 레지스트리에서 생성하는 파일(`python -m qello_knowledge.config.example`)인데 `.env.*` 접근 차단 규칙에 걸려 이 세션에서 다시 만들지 못했다.
-- 2026-10-27 사용자 결정: a안(예산 3,000 채택)으로 진행한다. 예산 3,000의 Q02·Q04는 내용 기준으로 통과로 판정한다. 결과는 ADR-025와 `measurement/gh68-budget-eval.md`에 기록했다.
-- 2026-10-27 사실(독립 검토, 별도 에이전트·읽기 전용): 승인 권고, blocker 없음. 기본값 정의 두 곳·생성 예시 일치, 시험 수정은 의도한 동작 반영, 최악 입력 12,650 확인, 범위 안.
-  반영: ADR-025에 2,000의 비용 근거(ADR-009 입력 3,000 가정)와 3,000의 최악값(질의당 약 59, 하루 50건 약 2,950), 큰 청크 부수 효과, 남는 명세 문장(후속) 추가.
-  평가 보고서에 글자 그대로 기준(10/11 → 9/11) 행 추가. TASK.md의 ADR-0008 원문 구절을 요약으로 바꿈.
-- 2026-10-27 사실: 원인이 설정값이라 담기 단위의 재현 시험은 따로 두지 않았다. 기본값 시험 3개가 수정 전 실패·수정 뒤 통과한 것과 운영 재현·평가가 그 역할을 한다.
+- 2026-10-27 사실: 이관 사실은 `docs/github-workflow.md:5`에 있다. Confluence `Qello 마이그레이션 검증 기록`은 이 세션에서 열지 못했다(Atlassian MCP 미인증).
+- 2026-10-27 사실: 별도 세션이 문서 초안(AGENTS.md 3.1·로드맵·README patch, Confluence 결정 기록 초안, ClickUp 전제 문서 목록, 질문 Q1~Q12)을 세션 공유 노트 폴더에 썼다. 저장소 밖 초안이다.
+- 2026-10-27 사용자 결정: Jira 이슈 하나와 PR 하나에 AGENTS.md 3.1, 로드맵, README, WBS 보드, ADR-026(Proposed)을 함께 올린다(초안 질문 Q1 A안).
+- 2026-10-27 사용자 결정: Spec Kit 규칙대로 설계안을 쓰고 이슈를 만든다. GitHub Issue #72를 작업 폼 형식으로 열었고 `Jira subtask` 워크플로가 `SCRUM-42` 아래 `SCRUM-119`를 만들었다.
+  하위 작업의 Jira 스프린트는 상위 이슈를 따라 `Backend·Sprint 3`(10/12–10/18)이라 팀 스프린트 ID와 어긋난다. 옮기는 일은 사람이 한다.
+- 2026-10-27 사실: 단계 게이트 1.G는 미완료다. QK-CHK-001 선례(2026-10-26 사용자 결정)처럼 명세 단계만 먼저 한다(작성 세션 해석, 사람 확인 대상).
+- 2026-10-27 사실: 작성 시점에는 결정 기록 번호 025가 비어 있었으나, push 전에 `main`에 #68·#73(`ADR-025-context-budget-3000.md`)이 병합됐다.
+- 2026-10-27 사용자 결정: 결정 기록을 ADR-026으로 바꾸고, `TASK.md` 충돌은 이 브랜치 계약을 남겨 최신 `main` 위에 커밋 6개를 다시 쌓는다.
+  026은 `origin/main`, 원격 브랜치, 열린 PR(#71·#75)에서 쓰이지 않는다. 이 파일의 아래 기록과 명세·로드맵의 "ADR-025" 표기는 ADR-026으로 고쳤다.
+- 2026-10-27 사실(specify): `specs/QK-ING-003-confluence-pages/spec.md`(US 6개, FR-001~029, SC-001~010)와 `checklists/requirements.md`를 썼다. 외부 호출 0건, 0 Neurons.
+  [NEEDS CLARIFICATION] 2개(FR-012 Free 사이트 판정, FR-021 회의록 이름)를 사람에게 물었다.
+- 2026-10-27 사용자 결정(원문 "1. B 2. A"): 회의록 참석자·담당자 이름은 그대로 색인하고 개인 정보 확인 기록에 허용을 적는다(FR-021).
+  Free 사이트는 "사이트 사용자가 모두 팀원임"을 사람이 확인한 기록으로 팀 공용을 판정한다(FR-012). ADR-026에도 반영했다.
+  멘션도 표시 이름을 남기게 한 것(FR-017)은 작성 세션 판단이다(사람 확인 대상).
+- 2026-10-27 사실: spec 독립 검토(작성에 관여하지 않은 별도 서브에이전트) 판정은 변경 요청이다(높음 2, 중간 7, 낮음 8). 다음 지적은 작성 세션이 코드·공식 자료로 다시 확인했다.
+  - H1: 수집 계정이 볼 수 없게 된 페이지는 "제한"으로 판정되지 않고 목록에서 빠져 일반 내림(`SOURCE_MISSING`)으로 간다(`sync/plan.py:171-184`). 일반 내림은 내림 비율 검사에 막힐 수 있다.
+  - H2: 동기화는 종류당 자료원 하나(`sync/identity.py:19-23`)이고, 범위 키가 바뀌면 `scope_changed`로 멈춘다(`identity.py:28-32`). 원본 정체성이 없으면 보안 동작만 한다(`sync/plan.py:77-81`).
+  - M3: 개인 정보 확인 기록 형식은 `result` 두 값과 GitHub 범위 키만 받는다(`sources/scope_review.py:64-67`).
+  - M7: 공식 v2 OpenAPI에 `GET /pages/{id}/permissions`·`GET /pages/{id}/restriction-state`(둘 다 `read:page:confluence`)가 있다. ADR-026의 "v2에 대응 엔드포인트가 없다"는 틀렸다.
+- 2026-10-27 사용자 결정(독립 검토 반영):
+  - H1: 지난 실행에 있었는데 목록에서 빠진 페이지는 단건 확인 뒤 접근 거부·없음이면 보안 내림한다(spec FR-030). QK-SYN-001 동기화 계획 변경이 이 명세 구현 범위에 들어간다.
+  - H2: 자료원 하나 = 스페이스 하나. 정체성·범위 키는 스페이스 ID(FR-002·FR-002a). 스페이스 추가는 자료원별 식별 명세 뒤.
+  - M1: Free 사이트 사용자 확인 기록은 90일 유효. 판정 방식과 기록 해시를 보안 규칙 버전 재료에 넣는다(FR-006·FR-012).
+  - M2: 대응표 키는 첫 단계 페이지 ID. 미분류·스페이스 홈은 색인하지 않고 설정 제외처럼 보안 내림한다(FR-020·FR-020a).
+- 2026-10-27 사실: 나머지 지적은 작성 세션이 다음처럼 반영했다(사람 결정 필요 없음으로 판단).
+  - M3: 확인 기록 형식 확장(FR-025a). M4: 공통 형식 확장(FR-032), 메타데이터 필터는 QK-TRK-001, 인덱스 버전 영향은 ADR-026 Data and cost.
+  - M5: 구조로 알 수 있는 식별자·연락처만 지우고 본문 연락처는 사람 확인으로 막는다(FR-017·FR-021). M6: 보류 페이지 판정 기록에는 페이지 ID만(FR-011).
+  - M7·L7: ADR-026 엔드포인트 표와 서비스 계정 문구를 고쳤다. L1: 모르는 권한 주체 규칙을 FR-010과 ADR 표에서 같게 했다.
+  - L2: 권한 조회 실패 10% 초과 시 불완전(FR-031). L3·L8: Edge Cases. L4: `일시` 없는 페이지는 회의로 세지 않는다(FR-022). L5: 인증 값 여러 개와 링크 호스트는 plan(FR-018·FR-028).
+  - L6: 로드맵 279행을 고쳤다. WBS 보드는 PR 승인 뒤 반영하므로 PR 본문에 그 차이를 적는다. AGENTS.md 3.1 문구는 그대로 두었다(새 자료원은 결정 기록 뒤에 켠다는 규칙이 같은 절에 있다).
+  재검토는 받지 않았다.
