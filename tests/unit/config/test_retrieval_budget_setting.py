@@ -20,5 +20,5 @@ def test_rejects_out_of_range(value: str) -> None:
 
 
 def test_default_and_entrypoints() -> None:
-    assert SPEC.default == "2000" and not SPEC.secret and not SPEC.required
+    assert SPEC.default == "3000" and not SPEC.secret and not SPEC.required
     assert SPEC.entrypoints == {Entrypoint.QUERY, Entrypoint.INDEX}

@@ -12,7 +12,7 @@ DEFAULTS = {
     "expand_top": 8,
     "before": 1,
     "after": 1,
-    "context_budget": 2000,
+    "context_budget": 3000,  # ADR-025
     "question_max_chars": 2000,
     "query_rule": "kw-query-v1",
     "bytes_per_token": 3.5,
