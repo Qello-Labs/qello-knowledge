@@ -1,0 +1,252 @@
+{
+  "input": {
+    "location": "order/src/test/java/com/acme/order/OrderServiceTest.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "OrderServiceTest.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\n[FILE_HEAD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\n[FILE_HEAD]\n\npackage com.acme.order;\n\nimport org.junit.jupiter.api.Test;",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\n[FILE_HEAD]\n\npackage com.acme.order;\n\nimport org.junit.jupiter.api.Test;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          5,
+          26
+        ],
+        "heading_path": [
+          "OrderServiceTest"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest [TYPE_SUMMARY]",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest [TYPE_SUMMARY]\n\nclass OrderServiceTest {\n    @Test\n    @DisplayName(\"재고가 없으면 주문을 거절한다\")\n    void rejectsWhenOutOfStock() {\n    @ParameterizedTest\n    @ValueSource(ints = {1, 2})\n    void acceptsQuantity(int quantity) {\n    @Nested\n    class Cancel {",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest [TYPE_SUMMARY]\n\nclass OrderServiceTest {\n    @Test\n    @DisplayName(\"재고가 없으면 주문을 거절한다\")\n    void rejectsWhenOutOfStock() {\n    @ParameterizedTest\n    @ValueSource(ints = {1, 2})\n    void acceptsQuantity(int quantity) {\n    @Nested\n    class Cancel {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderServiceTest",
+          "signature": "class OrderServiceTest",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          5,
+          5
+        ],
+        "heading_path": [
+          "OrderServiceTest"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest [TYPE_HEAD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest [TYPE_HEAD]\n\nclass OrderServiceTest {",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest [TYPE_HEAD]\n\nclass OrderServiceTest {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderServiceTest",
+          "signature": "class OrderServiceTest",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          7,
+          11
+        ],
+        "heading_path": [
+          "OrderServiceTest",
+          "rejectsWhenOutOfStock()"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > rejectsWhenOutOfStock() [METHOD] 재고가 없으면 주문을 거절한다",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > rejectsWhenOutOfStock() [METHOD] 재고가 없으면 주문을 거절한다\n\nclass OrderServiceTest {\n    @Test\n    @DisplayName(\"재고가 없으면 주문을 거절한다\")\n    void rejectsWhenOutOfStock() {\n        assertThrows(OutOfStock.class, () -> service.place(order));\n    }",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > rejectsWhenOutOfStock() [METHOD] 재고가 없으면 주문을 거절한다\n\nclass OrderServiceTest {\n    @Test\n    @DisplayName(\"재고가 없으면 주문을 거절한다\")\n    void rejectsWhenOutOfStock() {\n        assertThrows(OutOfStock.class, () -> service.place(order));\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "rejectsWhenOutOfStock()",
+          "signature": "void rejectsWhenOutOfStock()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [
+            "Test",
+            "DisplayName"
+          ],
+          "test_code": true,
+          "test_method": true,
+          "display_name": "재고가 없으면 주문을 거절한다",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          13,
+          17
+        ],
+        "heading_path": [
+          "OrderServiceTest",
+          "acceptsQuantity(int)"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > acceptsQuantity(int) [METHOD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > acceptsQuantity(int) [METHOD]\n\nclass OrderServiceTest {\n    @ParameterizedTest\n    @ValueSource(ints = {1, 2})\n    void acceptsQuantity(int quantity) {\n        service.place(quantity);\n    }",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > acceptsQuantity(int) [METHOD]\n\nclass OrderServiceTest {\n    @ParameterizedTest\n    @ValueSource(ints = {1, 2})\n    void acceptsQuantity(int quantity) {\n        service.place(quantity);\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "acceptsQuantity(int)",
+          "signature": "void acceptsQuantity(int quantity)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [
+            "ParameterizedTest",
+            "ValueSource"
+          ],
+          "test_code": true,
+          "test_method": true,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          19,
+          25
+        ],
+        "heading_path": [
+          "OrderServiceTest",
+          "Cancel"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel [TYPE_SUMMARY]",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel [TYPE_SUMMARY]\n\nclass OrderServiceTest {\n    @Nested\n    class Cancel {\n        @Test\n        void cancelsOrder() {",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel [TYPE_SUMMARY]\n\nclass OrderServiceTest {\n    @Nested\n    class Cancel {\n        @Test\n        void cancelsOrder() {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "Cancel",
+          "signature": "class Cancel",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [
+            "Nested"
+          ],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          19,
+          20
+        ],
+        "heading_path": [
+          "OrderServiceTest",
+          "Cancel"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel [TYPE_HEAD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel [TYPE_HEAD]\n\nclass OrderServiceTest {\n    @Nested\n    class Cancel {",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel [TYPE_HEAD]\n\nclass OrderServiceTest {\n    @Nested\n    class Cancel {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "Cancel",
+          "signature": "class Cancel",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [
+            "Nested"
+          ],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 7,
+        "lines": [
+          21,
+          26
+        ],
+        "heading_path": [
+          "OrderServiceTest",
+          "Cancel",
+          "cancelsOrder()"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel > cancelsOrder() [METHOD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel > cancelsOrder() [METHOD]\n\nclass OrderServiceTest {\n    @Nested\n    class Cancel {\n        @Test\n        void cancelsOrder() {\n            service.cancel(1L);\n        }\n    }\n}",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderServiceTest.java java\nOrderServiceTest > Cancel > cancelsOrder() [METHOD]\n\nclass OrderServiceTest {\n    @Nested\n    class Cancel {\n        @Test\n        void cancelsOrder() {\n            service.cancel(1L);\n        }\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "cancelsOrder()",
+          "signature": "void cancelsOrder()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [
+            "Test"
+          ],
+          "test_code": true,
+          "test_method": true,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

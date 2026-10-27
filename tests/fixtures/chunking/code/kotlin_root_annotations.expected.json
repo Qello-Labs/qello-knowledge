@@ -1,0 +1,218 @@
+{
+  "input": {
+    "location": "data/src/main/java/com/acme/net/NetworkModule.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "NetworkModule.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\n[FILE_HEAD]",
+        "search_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.net",
+        "embedding_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.net",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.net",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          1,
+          16
+        ],
+        "heading_path": [
+          "NetworkModule.kt"
+        ],
+        "search_header": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt [FILE_SUMMARY]",
+        "search_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt [FILE_SUMMARY]\n\n@JvmStatic @Deprecated(\"old\") internal fun legacy() {\nprivate const val BASE = \"x\"",
+        "embedding_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt [FILE_SUMMARY]\n\n@JvmStatic @Deprecated(\"old\") internal fun legacy() {\nprivate const val BASE = \"x\"",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.net",
+          "symbol": "NetworkModule.kt",
+          "signature": "",
+          "chunk_kind": "FILE_SUMMARY",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          10
+        ],
+        "heading_path": [
+          "NetworkModule"
+        ],
+        "search_header": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule [TYPE_SUMMARY]",
+        "search_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule [TYPE_SUMMARY]\n\n/** 네트워크 모듈 */\n@Module\n@InstallIn(SingletonComponent::class)\nobject NetworkModule {\n    fun timeout(): Int {",
+        "embedding_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule [TYPE_SUMMARY]\n\n/** 네트워크 모듈 */\n@Module\n@InstallIn(SingletonComponent::class)\nobject NetworkModule {\n    fun timeout(): Int {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.net",
+          "symbol": "NetworkModule",
+          "signature": "object NetworkModule",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "object",
+          "type_modifiers": [],
+          "annotations": [
+            "Module",
+            "InstallIn"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          3,
+          6
+        ],
+        "heading_path": [
+          "NetworkModule"
+        ],
+        "search_header": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule [TYPE_HEAD]",
+        "search_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule [TYPE_HEAD]\n\n/** 네트워크 모듈 */\n@Module\n@InstallIn(SingletonComponent::class)\nobject NetworkModule {",
+        "embedding_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule [TYPE_HEAD]\n\n/** 네트워크 모듈 */\n@Module\n@InstallIn(SingletonComponent::class)\nobject NetworkModule {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.net",
+          "symbol": "NetworkModule",
+          "signature": "object NetworkModule",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "object",
+          "type_modifiers": [],
+          "annotations": [
+            "Module",
+            "InstallIn"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          7,
+          10
+        ],
+        "heading_path": [
+          "NetworkModule",
+          "timeout()"
+        ],
+        "search_header": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule > timeout() [METHOD]",
+        "search_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule > timeout() [METHOD]\n\n@Module\n@InstallIn(SingletonComponent::class)\nobject NetworkModule {\n    fun timeout(): Int {\n        return 30\n    }\n}",
+        "embedding_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule > timeout() [METHOD]\n\n@Module\n@InstallIn(SingletonComponent::class)\nobject NetworkModule {\n    fun timeout(): Int {\n        return 30\n    }\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.net",
+          "symbol": "timeout()",
+          "signature": "fun timeout(): Int",
+          "chunk_kind": "METHOD",
+          "type_kind": "object",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          12,
+          14
+        ],
+        "heading_path": [
+          "NetworkModule.kt",
+          "legacy()"
+        ],
+        "search_header": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt > legacy() [TOP_FUNCTION]",
+        "search_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt > legacy() [TOP_FUNCTION]\n\n@JvmStatic @Deprecated(\"old\") internal fun legacy() {\n    go()\n}",
+        "embedding_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt > legacy() [TOP_FUNCTION]\n\n@JvmStatic @Deprecated(\"old\") internal fun legacy() {\n    go()\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.net",
+          "symbol": "legacy()",
+          "signature": "internal fun legacy()",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [
+            "JvmStatic",
+            "Deprecated"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          16,
+          16
+        ],
+        "heading_path": [
+          "NetworkModule.kt",
+          "BASE"
+        ],
+        "search_header": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt > BASE [TOP_PROPERTIES]",
+        "search_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt > BASE [TOP_PROPERTIES]\n\nprivate const val BASE = \"x\"",
+        "embedding_text": "data/src/main/java/com/acme/net/NetworkModule.kt kotlin\nNetworkModule.kt > BASE [TOP_PROPERTIES]\n\nprivate const val BASE = \"x\"",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.net",
+          "symbol": "BASE",
+          "signature": "",
+          "chunk_kind": "TOP_PROPERTIES",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

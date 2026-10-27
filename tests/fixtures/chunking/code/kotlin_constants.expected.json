@@ -1,0 +1,96 @@
+{
+  "input": {
+    "location": "core/src/main/kotlin/com/acme/text/Constants.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Constants.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\n[FILE_HEAD]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.text",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.text",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          4
+        ],
+        "heading_path": [
+          "Constants.kt",
+          "MAX"
+        ],
+        "search_header": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\nConstants.kt > MAX [TOP_PROPERTIES]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\nConstants.kt > MAX [TOP_PROPERTIES]\n\nconst val MAX = 10\nval DEFAULT_NAME = \"guest\"",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\nConstants.kt > MAX [TOP_PROPERTIES]\n\nconst val MAX = 10\nval DEFAULT_NAME = \"guest\"",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "MAX",
+          "signature": "",
+          "chunk_kind": "TOP_PROPERTIES",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          6,
+          6
+        ],
+        "heading_path": [
+          "Constants.kt",
+          "twice(Int)"
+        ],
+        "search_header": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\nConstants.kt > twice(Int) [TOP_FUNCTION]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\nConstants.kt > twice(Int) [TOP_FUNCTION]\n\nfun twice(x: Int) = x * 2",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Constants.kt kotlin\nConstants.kt > twice(Int) [TOP_FUNCTION]\n\nfun twice(x: Int) = x * 2",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "twice(Int)",
+          "signature": "fun twice(x: Int)",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

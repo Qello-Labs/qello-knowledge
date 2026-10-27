@@ -1,0 +1,160 @@
+{
+  "input": {
+    "location": "src/main/java/a/Dtos.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Dtos.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Dtos.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Dtos.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Dtos.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          7
+        ],
+        "heading_path": [
+          "Dtos"
+        ],
+        "search_header": "src/main/java/a/Dtos.java java\nDtos [TYPE_SUMMARY]",
+        "search_text": "src/main/java/a/Dtos.java java\nDtos [TYPE_SUMMARY]\n\npublic class Dtos {\n    public record Request(String name) {}\n    public record Response(Long id) {}",
+        "embedding_text": "src/main/java/a/Dtos.java java\nDtos [TYPE_SUMMARY]\n\npublic class Dtos {\n    public record Request(String name) {}\n    public record Response(Long id) {}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Dtos",
+          "signature": "public class Dtos",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "Dtos"
+        ],
+        "search_header": "src/main/java/a/Dtos.java java\nDtos [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Dtos.java java\nDtos [TYPE_HEAD]\n\npublic class Dtos {",
+        "embedding_text": "src/main/java/a/Dtos.java java\nDtos [TYPE_HEAD]\n\npublic class Dtos {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Dtos",
+          "signature": "public class Dtos",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          4
+        ],
+        "heading_path": [
+          "Dtos",
+          "Request"
+        ],
+        "search_header": "src/main/java/a/Dtos.java java\nDtos > Request [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Dtos.java java\nDtos > Request [TYPE_HEAD]\n\npublic class Dtos {\n    public record Request(String name) {}",
+        "embedding_text": "src/main/java/a/Dtos.java java\nDtos > Request [TYPE_HEAD]\n\npublic class Dtos {\n    public record Request(String name) {}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Request",
+          "signature": "public record Request(String name)",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "record",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          6,
+          7
+        ],
+        "heading_path": [
+          "Dtos",
+          "Response"
+        ],
+        "search_header": "src/main/java/a/Dtos.java java\nDtos > Response [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Dtos.java java\nDtos > Response [TYPE_HEAD]\n\npublic class Dtos {\n    public record Response(Long id) {}\n}",
+        "embedding_text": "src/main/java/a/Dtos.java java\nDtos > Response [TYPE_HEAD]\n\npublic class Dtos {\n    public record Response(Long id) {}\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Response",
+          "signature": "public record Response(Long id)",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "record",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

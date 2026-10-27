@@ -1,0 +1,196 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/order/OrderService.java",
+    "keyword_text_rule": "kw-index-idsplit-v1"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "OrderService.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\n[FILE_HEAD]\n\npackage com.acme.order;\n\nimport java.util.List;\n\norder service",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\n[FILE_HEAD]\n\npackage com.acme.order;\n\nimport java.util.List;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          5,
+          27
+        ],
+        "heading_path": [
+          "OrderService"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_SUMMARY]\n\npublic class OrderService {\n    @Transactional(readOnly = true)\n    public Order find(Long id) {\n    public List<Order> list(int page, int size) {\n    @Transactional\n    public void cancel(Long id) {\n\norder service read only",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_SUMMARY]\n\npublic class OrderService {\n    @Transactional(readOnly = true)\n    public Order find(Long id) {\n    public List<Order> list(int page, int size) {\n    @Transactional\n    public void cancel(Long id) {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderService",
+          "signature": "public class OrderService",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          5,
+          5
+        ],
+        "heading_path": [
+          "OrderService"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_HEAD]\n\npublic class OrderService {\n\norder service",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService [TYPE_HEAD]\n\npublic class OrderService {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderService",
+          "signature": "public class OrderService",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          7,
+          13
+        ],
+        "heading_path": [
+          "OrderService",
+          "find(Long)"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService > find(Long) [METHOD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > find(Long) [METHOD]\n\npublic class OrderService {\n    /**\n     * 주문을 찾는다.\n     */\n    @Transactional(readOnly = true)\n    public Order find(Long id) {\n        return repository.findById(id);\n    }\n\norder service read only find by id",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > find(Long) [METHOD]\n\npublic class OrderService {\n    /**\n     * 주문을 찾는다.\n     */\n    @Transactional(readOnly = true)\n    public Order find(Long id) {\n        return repository.findById(id);\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "find(Long)",
+          "signature": "public Order find(Long id)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Transactional"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          15,
+          19
+        ],
+        "heading_path": [
+          "OrderService",
+          "list(int,int)"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService > list(int,int) [METHOD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > list(int,int) [METHOD]\n\npublic class OrderService {\n    /** 주문 목록 */\n    public List<Order> list(int page, int size) {\n        int offset = page * size;\n        return repository.list(offset, size);\n    }\n\norder service",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > list(int,int) [METHOD]\n\npublic class OrderService {\n    /** 주문 목록 */\n    public List<Order> list(int page, int size) {\n        int offset = page * size;\n        return repository.list(offset, size);\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "list(int,int)",
+          "signature": "public List<Order> list(int page, int size)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          21,
+          27
+        ],
+        "heading_path": [
+          "OrderService",
+          "cancel(Long)"
+        ],
+        "search_header": "src/main/java/com/acme/order/OrderService.java java\nOrderService > cancel(Long) [METHOD]",
+        "search_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > cancel(Long) [METHOD]\n\npublic class OrderService {\n    // 주문을 취소한다.\n    @Transactional\n    public void cancel(Long id) {\n        Order order = find(id);\n        order.cancel();\n    }\n}\n\norder service",
+        "embedding_text": "src/main/java/com/acme/order/OrderService.java java\nOrderService > cancel(Long) [METHOD]\n\npublic class OrderService {\n    // 주문을 취소한다.\n    @Transactional\n    public void cancel(Long id) {\n        Order order = find(id);\n        order.cancel();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "cancel(Long)",
+          "signature": "public void cancel(Long id)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [
+            "Transactional"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

@@ -17,6 +17,8 @@ GENERATION_NAMES = (
     "QK_GEN_MODEL", "QK_GEN_MAX_TOKENS", "QK_GEN_TEMPERATURE", "QK_GEN_TIMEOUT_SECONDS", "QK_GEN_PROMPT_VERSION",
 )  # fmt: skip
 GENERATION_CHECK = "QK-GEN-001 생성 입력 최대 예상 <= 모델 컨텍스트"
+CODE_LIMIT_OVER_CONTEXT_BUDGET = "CODE_LIMIT_OVER_CONTEXT_BUDGET"
+CODE_INDEX_VERSION_UNREGISTERED = "CODE_INDEX_VERSION_UNREGISTERED"
 
 
 @dataclass(frozen=True)
@@ -111,6 +113,39 @@ def _generation_check(settings: Settings) -> CrossCheck | None:
     return CrossCheck(GENERATION_CHECK, False, "; ".join(problems)) if problems else None
 
 
+def code_chunking_from(settings: Settings):
+    """`QK_CODE_CHUNKING`을 코드 청킹 설정으로 바꾸는 하나뿐인 함수(QK-CHK-001). 꺼짐·없음·형식 오류는 `None`."""
+    from qello_knowledge.domain.chunking import CodeChunkingSettings
+
+    return CodeChunkingSettings() if _text(settings, "QK_CODE_CHUNKING") == "on" else None
+
+
+def _code_checks(settings: Settings) -> tuple[CrossCheck, ...]:
+    """켜짐일 때만 계산한다. 질의 경로가 청커를 불러오지 않게 함수 안에서 가져온다(research R-09, plan 재검토 N2)."""
+    code = code_chunking_from(settings) if settings.entrypoint is Entrypoint.INDEX else None
+    if code is None:
+        return ()
+    from qello_knowledge.chunking.version import index_chunking_version
+    from qello_knowledge.domain.chunking import ChunkingSettings
+    from qello_knowledge.domain.embedding import MODELS
+    from qello_knowledge.domain.keyword_rules import INDEX_KEYWORD_RULES
+    from qello_knowledge.sync.keys import index_version_id, metadata_schema_version
+
+    checks = []
+    budget = _text(settings, "QK_RETRIEVAL_CONTEXT_BUDGET")
+    model = MODELS[code.model_version]
+    if budget is not None:
+        context_tokens = code.limit_tokens * model.bytes_per_token_estimate / RetrievalSettings().bytes_per_token
+        if context_tokens > int(budget):
+            detail = f"{code.limit_tokens} > {budget}"
+            checks.append(CrossCheck(CODE_LIMIT_OVER_CONTEXT_BUDGET, False, detail))
+    chunking = index_chunking_version(ChunkingSettings(model_version=code.model_version), code)
+    version = index_version_id(model.model_version, model.dimension, chunking, metadata_schema_version(code))
+    if version not in INDEX_KEYWORD_RULES:
+        checks.append(CrossCheck(CODE_INDEX_VERSION_UNREGISTERED, False, CODE_INDEX_VERSION_UNREGISTERED))
+    return tuple(checks)
+
+
 def _budget_check(settings: Settings) -> CrossCheck | None:
     budget = budget_settings(settings)
     if budget is None:
@@ -129,7 +164,7 @@ def build_report(settings: Settings) -> CheckReport:
         elif item.status is SettingStatus.MISSING and item.spec.required:
             ok = False
     checks = tuple(check for check in (_budget_check(settings), _generation_check(settings)) if check is not None)
-    checks += _query_checks(settings)
+    checks += _query_checks(settings) + _code_checks(settings)
     source_check = _source_list_check(settings)
     if source_check is not None:
         checks += (source_check,)

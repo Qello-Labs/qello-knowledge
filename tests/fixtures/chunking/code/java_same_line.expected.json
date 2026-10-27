@@ -1,0 +1,152 @@
+{
+  "input": {
+    "location": "src/main/java/a/Same.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Same.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Same.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Same.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Same.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          11
+        ],
+        "heading_path": [
+          "Same"
+        ],
+        "search_header": "src/main/java/a/Same.java java\nSame [TYPE_SUMMARY]",
+        "search_text": "src/main/java/a/Same.java java\nSame [TYPE_SUMMARY]\n\nclass Same {\n    void x() {\n    void a() { } void b() {",
+        "embedding_text": "src/main/java/a/Same.java java\nSame [TYPE_SUMMARY]\n\nclass Same {\n    void x() {\n    void a() { } void b() {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Same",
+          "signature": "class Same",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "Same"
+        ],
+        "search_header": "src/main/java/a/Same.java java\nSame [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Same.java java\nSame [TYPE_HEAD]\n\nclass Same {",
+        "embedding_text": "src/main/java/a/Same.java java\nSame [TYPE_HEAD]\n\nclass Same {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Same",
+          "signature": "class Same",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          6
+        ],
+        "heading_path": [
+          "Same",
+          "x()"
+        ],
+        "search_header": "src/main/java/a/Same.java java\nSame > x() [METHOD]",
+        "search_text": "src/main/java/a/Same.java java\nSame > x() [METHOD]\n\nclass Same {\n    void x() {\n        y();\n    }",
+        "embedding_text": "src/main/java/a/Same.java java\nSame > x() [METHOD]\n\nclass Same {\n    void x() {\n        y();\n    }",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "x()",
+          "signature": "void x()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          7,
+          11
+        ],
+        "heading_path": [
+          "Same",
+          "a()"
+        ],
+        "search_header": "src/main/java/a/Same.java java\nSame > a() [METHOD]",
+        "search_text": "src/main/java/a/Same.java java\nSame > a() [METHOD]\n\nclass Same {\n    // note\n    void a() { } void b() {\n        b();\n    }\n}",
+        "embedding_text": "src/main/java/a/Same.java java\nSame > a() [METHOD]\n\nclass Same {\n    // note\n    void a() { } void b() {\n        b();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "a()",
+          "signature": "void a()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

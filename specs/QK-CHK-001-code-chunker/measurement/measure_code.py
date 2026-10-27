@@ -10,13 +10,20 @@
         --repo <대상 저장소 로컬 사본> --commit <커밋> [--tokenizer <bge-m3 tokenizer.json>]
 
 `--tokenizer`를 빼면 실제 토큰 비교는 건너뛴다. 분위수는 정렬한 값의 `index = min(n - 1, floor(n * q))` 원소다.
+
+`--time-chunking`(구현 단계, research R-14)을 주면 흉내 측정과 별도로 구현된 `chunk_code`로
+같은 대상 파일을 3회 청킹해 중앙값 시간과 실제 청킹 결과 집계를 `time_chunking`에 더한다.
+이 옵션을 더해 스크립트 해시가 research R-02의 `1cc6ad12e564`와 달라졌다.
+R-02·R-04의 옛 수치는 그 해시의 스크립트(커밋 `3a5a98e`의 이 파일)로 재현한다.
 """
 
 import argparse
 import hashlib
 import json
 import math
+import platform
 import re
+import statistics
 import subprocess
 import time
 from collections import Counter
@@ -318,6 +325,7 @@ def main() -> None:
     ap.add_argument("--merge-small-heads", action="store_true")
     ap.add_argument("--skip-trivial-summary", action="store_true")
     ap.add_argument("--no-parse-copy", action="store_true")
+    ap.add_argument("--time-chunking", action="store_true")
     args = ap.parse_args()
     global COMPACT, MERGE_HEAD, SKIP_TRIVIAL_SUMMARY, PARSE_COPY
     COMPACT, MERGE_HEAD, SKIP_TRIVIAL_SUMMARY = args.compact_header, args.merge_small_heads, args.skip_trivial_summary
@@ -347,7 +355,7 @@ def main() -> None:
     out = {"commit": args.commit, "script_sha256_12": script_sha, "variant": variant, "files": Counter(),
            "bytes": Counter(), "default_excluded": 0, "secret_blocked_files": Counter(),
            "secret_rules": Counter()}  # fmt: skip
-    all_files, parse_seconds = [], 0.0
+    all_files, parse_seconds, targets = [], 0.0, []
     for path in paths:
         is_test = any(f"/{d}" in f"/{path}" for d in TEST_DIRS)
         group = f"{'java' if path.endswith('.java') else 'kotlin'}-{'test' if is_test else 'main'}"
@@ -363,6 +371,7 @@ def main() -> None:
             out["secret_blocked_files"][group] += 1
             out["secret_rules"].update({h.rule for h in hits})
             continue
+        targets.append((path, text))
         started = time.perf_counter()
         fs = analyse(path, text, parsers, counters)
         parse_seconds += time.perf_counter() - started
@@ -431,7 +440,44 @@ def main() -> None:
             "max": round(max(ratios), 3),
             "total": round(real_total / est_total, 3),
         }
+    if args.time_chunking:
+        out["time_chunking"] = time_chunking(targets)
     print(json.dumps(out, ensure_ascii=False, indent=1, default=lambda o: dict(o)))
+
+
+def time_chunking(targets):
+    """구현된 청커로 3회 청킹한 중앙값 시간과 마지막 실행의 집계(research R-14). 원문·경로·심볼은 내지 않는다."""
+    from qello_knowledge.chunking.code.service import chunk_code
+    from qello_knowledge.domain.chunking import ChunkingSettings, CodeChunkingSettings
+
+    settings, code = ChunkingSettings(), CodeChunkingSettings()
+    seconds, results = [], []
+    for _ in range(3):
+        started = time.perf_counter()
+        results = [chunk_code(text, location=path, settings=settings, code=code) for path, text in targets]
+        seconds.append(time.perf_counter() - started)
+    drafts = [d for r in results for d in r.drafts]
+    emb_bytes = Counter()
+    for (path, _), result in zip(targets, results, strict=True):
+        group = "test" if any(f"/{d}" in f"/{path}" for d in TEST_DIRS) else "main"
+        emb_bytes[group] += sum(len(d.embedding_text.encode("utf-8")) for d in result.drafts)
+    return {
+        "files": len(targets),
+        "elapsed_seconds": round(statistics.median(seconds), 2),
+        "runs": [round(s, 2) for s in seconds],
+        "outcomes": Counter(r.outcome.value for r in results),
+        "failures": Counter(r.failure.value for r in results if r.failure),
+        "chunks": len(drafts),
+        "chunks_by_kind": Counter(d.chunk.locator["code"]["chunk_kind"] for d in drafts),
+        "parse_fallback": sum(w.kind == "PARSE_FALLBACK" for r in results for w in r.warnings),
+        "context_omitted": sum(w.kind == "CONTEXT_OMITTED" for r in results for w in r.warnings),
+        "split_blocks": sum(r.split_blocks for r in results),
+        "embedding_bytes": emb_bytes,
+        "neurons_estimate": {
+            g: round(b / NEURON_BYTES_PER_TOKEN * NEURONS_PER_M_TOKENS / 1_000_000) for g, b in emb_bytes.items()
+        },
+        "machine": {"system": platform.system(), "machine": platform.machine(), "python": platform.python_version()},
+    }
 
 
 if __name__ == "__main__":

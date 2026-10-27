@@ -1,0 +1,123 @@
+{
+  "input": {
+    "location": "order/src/test/java/com/acme/order/OrderFixtures.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "OrderFixtures.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "order/src/test/java/com/acme/order/OrderFixtures.java java\n[FILE_HEAD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\n[FILE_HEAD]\n\npackage com.acme.order;",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\n[FILE_HEAD]\n\npackage com.acme.order;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          7
+        ],
+        "heading_path": [
+          "OrderFixtures"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures [TYPE_SUMMARY]",
+        "search_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures [TYPE_SUMMARY]\n\nclass OrderFixtures {\n    static Order paid() {",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures [TYPE_SUMMARY]\n\nclass OrderFixtures {\n    static Order paid() {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderFixtures",
+          "signature": "class OrderFixtures",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "OrderFixtures"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures [TYPE_HEAD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures [TYPE_HEAD]\n\nclass OrderFixtures {",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures [TYPE_HEAD]\n\nclass OrderFixtures {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "OrderFixtures",
+          "signature": "class OrderFixtures",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          7
+        ],
+        "heading_path": [
+          "OrderFixtures",
+          "paid()"
+        ],
+        "search_header": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures > paid() [METHOD]",
+        "search_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures > paid() [METHOD]\n\nclass OrderFixtures {\n    static Order paid() {\n        return new Order(true);\n    }\n}",
+        "embedding_text": "order/src/test/java/com/acme/order/OrderFixtures.java java\nOrderFixtures > paid() [METHOD]\n\nclass OrderFixtures {\n    static Order paid() {\n        return new Order(true);\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.order",
+          "symbol": "paid()",
+          "signature": "static Order paid()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

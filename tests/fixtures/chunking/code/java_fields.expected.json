@@ -1,0 +1,184 @@
+{
+  "input": {
+    "location": "src/main/java/a/Fields.java",
+    "code_settings": {
+      "target_tokens": 40
+    }
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Fields.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Fields.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Fields.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Fields.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          5
+        ],
+        "heading_path": [
+          "Small"
+        ],
+        "search_header": "src/main/java/a/Fields.java java\nSmall [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Fields.java java\nSmall [TYPE_HEAD]\n\nclass Small {\n    private int a;\n    private int b;",
+        "embedding_text": "src/main/java/a/Fields.java java\nSmall [TYPE_HEAD]\n\nclass Small {\n    private int a;\n    private int b;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Small",
+          "signature": "class Small",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          6,
+          6
+        ],
+        "heading_path": [
+          "Small",
+          "code"
+        ],
+        "search_header": "src/main/java/a/Fields.java java\nSmall > code [FIELDS]",
+        "search_text": "src/main/java/a/Fields.java java\nSmall > code [FIELDS]\n\nclass Small {\n    private String code = \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\";",
+        "embedding_text": "src/main/java/a/Fields.java java\nSmall > code [FIELDS]\n\nclass Small {\n    private String code = \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\";",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "code",
+          "signature": "",
+          "chunk_kind": "FIELDS",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          7,
+          8
+        ],
+        "heading_path": [
+          "Small",
+          "name"
+        ],
+        "search_header": "src/main/java/a/Fields.java java\nSmall > name [FIELDS]",
+        "search_text": "src/main/java/a/Fields.java java\nSmall > name [FIELDS]\n\nclass Small {\n    private String name = \"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\";\n}",
+        "embedding_text": "src/main/java/a/Fields.java java\nSmall > name [FIELDS]\n\nclass Small {\n    private String name = \"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\";\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "name",
+          "signature": "",
+          "chunk_kind": "FIELDS",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          10,
+          13
+        ],
+        "heading_path": [
+          "Big"
+        ],
+        "search_header": "src/main/java/a/Fields.java java\nBig [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Fields.java java\nBig [TYPE_HEAD]\n\n/**\n * 형식 머리만으로 목표 크기를 넘는 긴 설명이다. 형식 머리만으로 목표 크기를 넘는 긴 설명이다.\n */\nclass Big {",
+        "embedding_text": "src/main/java/a/Fields.java java\nBig [TYPE_HEAD]\n\n/**\n * 형식 머리만으로 목표 크기를 넘는 긴 설명이다. 형식 머리만으로 목표 크기를 넘는 긴 설명이다.\n */\nclass Big {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Big",
+          "signature": "class Big",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          14,
+          16
+        ],
+        "heading_path": [
+          "Big",
+          "c"
+        ],
+        "search_header": "src/main/java/a/Fields.java java\nBig > c [FIELDS]",
+        "search_text": "src/main/java/a/Fields.java java\nBig > c [FIELDS]\n\nclass Big {\n    private int c;\n    private int d;\n}",
+        "embedding_text": "src/main/java/a/Fields.java java\nBig > c [FIELDS]\n\nclass Big {\n    private int c;\n    private int d;\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "c",
+          "signature": "",
+          "chunk_kind": "FIELDS",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

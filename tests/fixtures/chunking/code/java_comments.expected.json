@@ -1,0 +1,152 @@
+{
+  "input": {
+    "location": "src/main/java/a/Notes.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Notes.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Notes.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Notes.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Notes.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          16
+        ],
+        "heading_path": [
+          "Notes"
+        ],
+        "search_header": "src/main/java/a/Notes.java java\nNotes [TYPE_SUMMARY]",
+        "search_text": "src/main/java/a/Notes.java java\nNotes [TYPE_SUMMARY]\n\nclass Notes {\n    void first() {\n    void second() {",
+        "embedding_text": "src/main/java/a/Notes.java java\nNotes [TYPE_SUMMARY]\n\nclass Notes {\n    void first() {\n    void second() {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Notes",
+          "signature": "class Notes",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "Notes"
+        ],
+        "search_header": "src/main/java/a/Notes.java java\nNotes [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Notes.java java\nNotes [TYPE_HEAD]\n\nclass Notes {",
+        "embedding_text": "src/main/java/a/Notes.java java\nNotes [TYPE_HEAD]\n\nclass Notes {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Notes",
+          "signature": "class Notes",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          5,
+          10
+        ],
+        "heading_path": [
+          "Notes",
+          "first()"
+        ],
+        "search_header": "src/main/java/a/Notes.java java\nNotes > first() [METHOD]",
+        "search_text": "src/main/java/a/Notes.java java\nNotes > first() [METHOD]\n\nclass Notes {\n    // 붙은 주석\n    void first() {\n        x();\n    }\n\n    // 떨어진 주석",
+        "embedding_text": "src/main/java/a/Notes.java java\nNotes > first() [METHOD]\n\nclass Notes {\n    // 붙은 주석\n    void first() {\n        x();\n    }\n\n    // 떨어진 주석",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "first()",
+          "signature": "void first()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          12,
+          16
+        ],
+        "heading_path": [
+          "Notes",
+          "second()"
+        ],
+        "search_header": "src/main/java/a/Notes.java java\nNotes > second() [METHOD]",
+        "search_text": "src/main/java/a/Notes.java java\nNotes > second() [METHOD]\n\nclass Notes {\n    void second() {\n        y();\n    }\n    // 끝 주석\n}",
+        "embedding_text": "src/main/java/a/Notes.java java\nNotes > second() [METHOD]\n\nclass Notes {\n    void second() {\n        y();\n    }\n    // 끝 주석\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "second()",
+          "signature": "void second()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

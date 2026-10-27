@@ -1,0 +1,68 @@
+{
+  "input": {
+    "location": "lib/Codes.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Codes.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          7
+        ],
+        "heading_path": [],
+        "search_header": "lib/Codes.java java com.acme.util\n[FILE_HEAD]",
+        "search_text": "lib/Codes.java java com.acme.util\n[FILE_HEAD]\n\n/*\n * Copyright 2026 Acme\n */\npackage com.acme.util;\n\nimport java.util.List;\nimport java.util.Map;",
+        "embedding_text": "lib/Codes.java java com.acme.util\n[FILE_HEAD]\n\n/*\n * Copyright 2026 Acme\n */\npackage com.acme.util;\n\nimport java.util.List;\nimport java.util.Map;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.util",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          9,
+          11
+        ],
+        "heading_path": [
+          "Codes"
+        ],
+        "search_header": "lib/Codes.java java com.acme.util\nCodes [TYPE_HEAD]",
+        "search_text": "lib/Codes.java java com.acme.util\nCodes [TYPE_HEAD]\n\npublic interface Codes {\n    int A = 1;\n}",
+        "embedding_text": "lib/Codes.java java com.acme.util\nCodes [TYPE_HEAD]\n\npublic interface Codes {\n    int A = 1;\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.util",
+          "symbol": "Codes",
+          "signature": "public interface Codes",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "interface",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

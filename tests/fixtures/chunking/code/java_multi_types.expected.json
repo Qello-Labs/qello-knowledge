@@ -1,0 +1,214 @@
+{
+  "input": {
+    "location": "src/main/java/a/Multi.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Multi.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/a/Multi.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/a/Multi.java java\n[FILE_HEAD]\n\npackage a;",
+        "embedding_text": "src/main/java/a/Multi.java java\n[FILE_HEAD]\n\npackage a;",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          7
+        ],
+        "heading_path": [
+          "First"
+        ],
+        "search_header": "src/main/java/a/Multi.java java\nFirst [TYPE_SUMMARY]",
+        "search_text": "src/main/java/a/Multi.java java\nFirst [TYPE_SUMMARY]\n\npublic class First {\n    void one() {",
+        "embedding_text": "src/main/java/a/Multi.java java\nFirst [TYPE_SUMMARY]\n\npublic class First {\n    void one() {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "First",
+          "signature": "public class First",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "First"
+        ],
+        "search_header": "src/main/java/a/Multi.java java\nFirst [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Multi.java java\nFirst [TYPE_HEAD]\n\npublic class First {",
+        "embedding_text": "src/main/java/a/Multi.java java\nFirst [TYPE_HEAD]\n\npublic class First {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "First",
+          "signature": "public class First",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          7
+        ],
+        "heading_path": [
+          "First",
+          "one()"
+        ],
+        "search_header": "src/main/java/a/Multi.java java\nFirst > one() [METHOD]",
+        "search_text": "src/main/java/a/Multi.java java\nFirst > one() [METHOD]\n\npublic class First {\n    void one() {\n        a();\n    }\n}",
+        "embedding_text": "src/main/java/a/Multi.java java\nFirst > one() [METHOD]\n\npublic class First {\n    void one() {\n        a();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "one()",
+          "signature": "void one()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          9,
+          13
+        ],
+        "heading_path": [
+          "Second"
+        ],
+        "search_header": "src/main/java/a/Multi.java java\nSecond [TYPE_SUMMARY]",
+        "search_text": "src/main/java/a/Multi.java java\nSecond [TYPE_SUMMARY]\n\nclass Second {\n    void two() {",
+        "embedding_text": "src/main/java/a/Multi.java java\nSecond [TYPE_SUMMARY]\n\nclass Second {\n    void two() {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Second",
+          "signature": "class Second",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          9,
+          9
+        ],
+        "heading_path": [
+          "Second"
+        ],
+        "search_header": "src/main/java/a/Multi.java java\nSecond [TYPE_HEAD]",
+        "search_text": "src/main/java/a/Multi.java java\nSecond [TYPE_HEAD]\n\nclass Second {",
+        "embedding_text": "src/main/java/a/Multi.java java\nSecond [TYPE_HEAD]\n\nclass Second {",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "Second",
+          "signature": "class Second",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          10,
+          13
+        ],
+        "heading_path": [
+          "Second",
+          "two()"
+        ],
+        "search_header": "src/main/java/a/Multi.java java\nSecond > two() [METHOD]",
+        "search_text": "src/main/java/a/Multi.java java\nSecond > two() [METHOD]\n\nclass Second {\n    void two() {\n        b();\n    }\n}",
+        "embedding_text": "src/main/java/a/Multi.java java\nSecond > two() [METHOD]\n\nclass Second {\n    void two() {\n        b();\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "a",
+          "symbol": "two()",
+          "signature": "void two()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "input": {
+    "location": "app/src/test/java/com/acme/LoginViewModelTest.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "LoginViewModelTest.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\n[FILE_HEAD]",
+        "search_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\n[FILE_HEAD]\n\npackage com.acme",
+        "embedding_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\n[FILE_HEAD]\n\npackage com.acme",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          8
+        ],
+        "heading_path": [
+          "LoginViewModelTest"
+        ],
+        "search_header": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest [TYPE_SUMMARY]",
+        "search_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest [TYPE_SUMMARY]\n\nclass LoginViewModelTest {\n    @Test\n    fun `로그인에 실패하면 오류를 보여 준다`() {",
+        "embedding_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest [TYPE_SUMMARY]\n\nclass LoginViewModelTest {\n    @Test\n    fun `로그인에 실패하면 오류를 보여 준다`() {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme",
+          "symbol": "LoginViewModelTest",
+          "signature": "class LoginViewModelTest",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "LoginViewModelTest"
+        ],
+        "search_header": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest [TYPE_HEAD]",
+        "search_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest [TYPE_HEAD]\n\nclass LoginViewModelTest {",
+        "embedding_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest [TYPE_HEAD]\n\nclass LoginViewModelTest {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme",
+          "symbol": "LoginViewModelTest",
+          "signature": "class LoginViewModelTest",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": true,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          4,
+          8
+        ],
+        "heading_path": [
+          "LoginViewModelTest",
+          "로그인에 실패하면 오류를 보여 준다()"
+        ],
+        "search_header": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest > 로그인에 실패하면 오류를 보여 준다() [METHOD] 로그인에 실패하면 오류를 보여 준다",
+        "search_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest > 로그인에 실패하면 오류를 보여 준다() [METHOD] 로그인에 실패하면 오류를 보여 준다\n\nclass LoginViewModelTest {\n    @Test\n    fun `로그인에 실패하면 오류를 보여 준다`() {\n        assertError()\n    }\n}",
+        "embedding_text": "app/src/test/java/com/acme/LoginViewModelTest.kt kotlin\nLoginViewModelTest > 로그인에 실패하면 오류를 보여 준다() [METHOD] 로그인에 실패하면 오류를 보여 준다\n\nclass LoginViewModelTest {\n    @Test\n    fun `로그인에 실패하면 오류를 보여 준다`() {\n        assertError()\n    }\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme",
+          "symbol": "로그인에 실패하면 오류를 보여 준다()",
+          "signature": "fun `로그인에 실패하면 오류를 보여 준다`()",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [],
+          "annotations": [
+            "Test"
+          ],
+          "test_code": true,
+          "test_method": true,
+          "display_name": "로그인에 실패하면 오류를 보여 준다",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

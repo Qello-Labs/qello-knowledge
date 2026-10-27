@@ -1,0 +1,153 @@
+{
+  "input": {
+    "location": "core/src/main/kotlin/com/acme/text/Slugs.kt"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Slugs.kt",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\n[FILE_HEAD]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.text",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\n[FILE_HEAD]\n\npackage com.acme.text",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          1,
+          11
+        ],
+        "heading_path": [
+          "Slugs.kt"
+        ],
+        "search_header": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt [FILE_SUMMARY]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt [FILE_SUMMARY]\n\nval separator = \"-\"\nfun toSlug(text: String): String {\nfun fromSlug(slug: String): String {",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt [FILE_SUMMARY]\n\nval separator = \"-\"\nfun toSlug(text: String): String {\nfun fromSlug(slug: String): String {",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "Slugs.kt",
+          "signature": "",
+          "chunk_kind": "FILE_SUMMARY",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          3,
+          3
+        ],
+        "heading_path": [
+          "Slugs.kt",
+          "separator"
+        ],
+        "search_header": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > separator [TOP_PROPERTIES]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > separator [TOP_PROPERTIES]\n\nval separator = \"-\"",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > separator [TOP_PROPERTIES]\n\nval separator = \"-\"",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "separator",
+          "signature": "",
+          "chunk_kind": "TOP_PROPERTIES",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          5,
+          7
+        ],
+        "heading_path": [
+          "Slugs.kt",
+          "toSlug(String)"
+        ],
+        "search_header": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > toSlug(String) [TOP_FUNCTION]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > toSlug(String) [TOP_FUNCTION]\n\nfun toSlug(text: String): String {\n    return text.lowercase().replace(\" \", separator)\n}",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > toSlug(String) [TOP_FUNCTION]\n\nfun toSlug(text: String): String {\n    return text.lowercase().replace(\" \", separator)\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "toSlug(String)",
+          "signature": "fun toSlug(text: String): String",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          9,
+          11
+        ],
+        "heading_path": [
+          "Slugs.kt",
+          "fromSlug(String)"
+        ],
+        "search_header": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > fromSlug(String) [TOP_FUNCTION]",
+        "search_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > fromSlug(String) [TOP_FUNCTION]\n\nfun fromSlug(slug: String): String {\n    return slug.replace(separator, \" \")\n}",
+        "embedding_text": "core/src/main/kotlin/com/acme/text/Slugs.kt kotlin\nSlugs.kt > fromSlug(String) [TOP_FUNCTION]\n\nfun fromSlug(slug: String): String {\n    return slug.replace(separator, \" \")\n}",
+        "code": {
+          "language": "kotlin",
+          "package": "com.acme.text",
+          "symbol": "fromSlug(String)",
+          "signature": "fun fromSlug(slug: String): String",
+          "chunk_kind": "TOP_FUNCTION",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/log/AuditActivity.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "AuditActivity.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          1
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/log/AuditActivity.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/log/AuditActivity.java java\n[FILE_HEAD]\n\npackage com.acme.log;",
+        "embedding_text": "src/main/java/com/acme/log/AuditActivity.java java\n[FILE_HEAD]\n\npackage com.acme.log;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.log",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          3,
+          5
+        ],
+        "heading_path": [
+          "AuditActivity"
+        ],
+        "search_header": "src/main/java/com/acme/log/AuditActivity.java java\nAuditActivity [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/log/AuditActivity.java java\nAuditActivity [TYPE_HEAD]\n\npublic class AuditActivity extends BaseActivity {\n    private String actor;\n}",
+        "embedding_text": "src/main/java/com/acme/log/AuditActivity.java java\nAuditActivity [TYPE_HEAD]\n\npublic class AuditActivity extends BaseActivity {\n    private String actor;\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.log",
+          "symbol": "AuditActivity",
+          "signature": "public class AuditActivity extends BaseActivity",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

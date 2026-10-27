@@ -1,0 +1,455 @@
+{
+  "input": {
+    "location": "src/main/java/com/acme/meta/Finder.java"
+  },
+  "expected": {
+    "outcome": "CHUNKED",
+    "document_title": "Finder.java",
+    "warnings": [],
+    "chunks": [
+      {
+        "ordinal": 0,
+        "lines": [
+          1,
+          3
+        ],
+        "heading_path": [],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\n[FILE_HEAD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\n[FILE_HEAD]\n\npackage com.acme.meta;\n\nimport java.util.List;",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\n[FILE_HEAD]\n\npackage com.acme.meta;\n\nimport java.util.List;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "",
+          "signature": "",
+          "chunk_kind": "FILE_HEAD",
+          "type_kind": "",
+          "type_modifiers": [],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 1,
+        "lines": [
+          5,
+          41
+        ],
+        "heading_path": [
+          "Finder"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder [TYPE_SUMMARY]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    static {\n    {\n    @Deprecated\n    @SuppressWarnings(\"unchecked\")\n    public <R> List<R> find(@NotNull final Long id) {\n    public T find(String name) {\n    protected abstract void log(String format, Object... args);\n    public enum Level {\n    public record Pair(String key, @Nullable String value) {",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder [TYPE_SUMMARY]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    static {\n    {\n    @Deprecated\n    @SuppressWarnings(\"unchecked\")\n    public <R> List<R> find(@NotNull final Long id) {\n    public T find(String name) {\n    protected abstract void log(String format, Object... args);\n    public enum Level {\n    public record Pair(String key, @Nullable String value) {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "Finder",
+          "signature": "public abstract class Finder<T extends Comparable<T>>",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "abstract"
+          ],
+          "annotations": [
+            "Component"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 2,
+        "lines": [
+          5,
+          6
+        ],
+        "heading_path": [
+          "Finder"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder [TYPE_HEAD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder [TYPE_HEAD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "Finder",
+          "signature": "public abstract class Finder<T extends Comparable<T>>",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "abstract"
+          ],
+          "annotations": [
+            "Component"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 3,
+        "lines": [
+          7,
+          9
+        ],
+        "heading_path": [
+          "Finder",
+          "<clinit>"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > <clinit> [INITIALIZER]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > <clinit> [INITIALIZER]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    static {\n        init();\n    }",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > <clinit> [INITIALIZER]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    static {\n        init();\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "<clinit>",
+          "signature": "",
+          "chunk_kind": "INITIALIZER",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "abstract"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 4,
+        "lines": [
+          11,
+          13
+        ],
+        "heading_path": [
+          "Finder",
+          "<init>"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > <init> [INITIALIZER]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > <init> [INITIALIZER]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    {\n        ready = true;\n    }",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > <init> [INITIALIZER]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    {\n        ready = true;\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "<init>",
+          "signature": "",
+          "chunk_kind": "INITIALIZER",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "abstract"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 5,
+        "lines": [
+          15,
+          19
+        ],
+        "heading_path": [
+          "Finder",
+          "find(Long)"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > find(Long) [METHOD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > find(Long) [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    @Deprecated\n    @SuppressWarnings(\"unchecked\")\n    public <R> List<R> find(@NotNull final Long id) {\n        return List.of();\n    }",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > find(Long) [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    @Deprecated\n    @SuppressWarnings(\"unchecked\")\n    public <R> List<R> find(@NotNull final Long id) {\n        return List.of();\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "find(Long)",
+          "signature": "public <R> List<R> find(@NotNull final Long id)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "abstract"
+          ],
+          "annotations": [
+            "Deprecated",
+            "SuppressWarnings"
+          ],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 6,
+        "lines": [
+          21,
+          23
+        ],
+        "heading_path": [
+          "Finder",
+          "find(String)"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > find(String) [METHOD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > find(String) [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public T find(String name) {\n        return null;\n    }",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > find(String) [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public T find(String name) {\n        return null;\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "find(String)",
+          "signature": "public T find(String name)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "abstract"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 7,
+        "lines": [
+          25,
+          25
+        ],
+        "heading_path": [
+          "Finder",
+          "log(String,Object...)"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > log(String,Object...) [METHOD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > log(String,Object...) [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    protected abstract void log(String format, Object... args);",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > log(String,Object...) [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    protected abstract void log(String format, Object... args);",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "log(String,Object...)",
+          "signature": "protected abstract void log(String format, Object... args)",
+          "chunk_kind": "METHOD",
+          "type_kind": "class",
+          "type_modifiers": [
+            "public",
+            "abstract"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 8,
+        "lines": [
+          27,
+          34
+        ],
+        "heading_path": [
+          "Finder",
+          "Level"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level [TYPE_SUMMARY]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public enum Level {\n        LOW,\n        HIGH;\n        int weight() {",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level [TYPE_SUMMARY]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public enum Level {\n        LOW,\n        HIGH;\n        int weight() {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "Level",
+          "signature": "public enum Level",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "enum",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 9,
+        "lines": [
+          27,
+          29
+        ],
+        "heading_path": [
+          "Finder",
+          "Level"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level [TYPE_HEAD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public enum Level {\n        LOW,\n        HIGH;",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level [TYPE_HEAD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public enum Level {\n        LOW,\n        HIGH;",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "Level",
+          "signature": "public enum Level",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "enum",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 10,
+        "lines": [
+          31,
+          34
+        ],
+        "heading_path": [
+          "Finder",
+          "Level",
+          "weight()"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level > weight() [METHOD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level > weight() [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public enum Level {\n        int weight() {\n            return ordinal();\n        }\n    }",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Level > weight() [METHOD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public enum Level {\n        int weight() {\n            return ordinal();\n        }\n    }",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "weight()",
+          "signature": "int weight()",
+          "chunk_kind": "METHOD",
+          "type_kind": "enum",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 11,
+        "lines": [
+          36,
+          40
+        ],
+        "heading_path": [
+          "Finder",
+          "Pair"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair [TYPE_SUMMARY]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair [TYPE_SUMMARY]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public record Pair(String key, @Nullable String value) {\n        public Pair {",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair [TYPE_SUMMARY]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public record Pair(String key, @Nullable String value) {\n        public Pair {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "Pair",
+          "signature": "public record Pair(String key, @Nullable String value)",
+          "chunk_kind": "TYPE_SUMMARY",
+          "type_kind": "record",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": true
+        }
+      },
+      {
+        "ordinal": 12,
+        "lines": [
+          36,
+          36
+        ],
+        "heading_path": [
+          "Finder",
+          "Pair"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair [TYPE_HEAD]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair [TYPE_HEAD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public record Pair(String key, @Nullable String value) {",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair [TYPE_HEAD]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public record Pair(String key, @Nullable String value) {",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "Pair",
+          "signature": "public record Pair(String key, @Nullable String value)",
+          "chunk_kind": "TYPE_HEAD",
+          "type_kind": "record",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      },
+      {
+        "ordinal": 13,
+        "lines": [
+          37,
+          41
+        ],
+        "heading_path": [
+          "Finder",
+          "Pair",
+          "Pair(String,String)"
+        ],
+        "search_header": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair > Pair(String,String) [CONSTRUCTOR]",
+        "search_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair > Pair(String,String) [CONSTRUCTOR]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public record Pair(String key, @Nullable String value) {\n        public Pair {\n            check(key);\n        }\n    }\n}",
+        "embedding_text": "src/main/java/com/acme/meta/Finder.java java\nFinder > Pair > Pair(String,String) [CONSTRUCTOR]\n\n@org.springframework.stereotype.Component\npublic abstract class Finder<T extends Comparable<T>> {\n    public record Pair(String key, @Nullable String value) {\n        public Pair {\n            check(key);\n        }\n    }\n}",
+        "code": {
+          "language": "java",
+          "package": "com.acme.meta",
+          "symbol": "Pair(String,String)",
+          "signature": "public Pair",
+          "chunk_kind": "CONSTRUCTOR",
+          "type_kind": "record",
+          "type_modifiers": [
+            "public"
+          ],
+          "annotations": [],
+          "test_code": false,
+          "test_method": false,
+          "display_name": "",
+          "component": "",
+          "summary": false
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "input": {
+    "location": "src/main/java/very_long_directory_name/very_long_directory_name/very_long_directory_name/very_long_directory_name/very_long_directory_name/very_long_directory_name/A.java",
+    "code_settings": {
+      "target_tokens": 10,
+      "limit_tokens": 50
+    }
+  },
+  "expected": {
+    "outcome": "FAILED",
+    "document_title": null,
+    "warnings": [],
+    "failure": "HEADER_TOO_LONG"
+  }
+}

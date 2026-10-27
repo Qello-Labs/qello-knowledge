@@ -38,3 +38,25 @@ include = [
   "infra/**/*.md", "**/AGENTS.md", ".github/PULL_REQUEST_TEMPLATE.md", "scripts/repo-map/README.md",
 ]
 exclude = [".claude/**", ".agents/**", ".codex/**", "agents/**", "templates/**", "docs/experiments/**", "docs/harness/ARCHITECTURE.md"]
+
+# 활성화 선행 조건: 자료원별 식별 명세 완료, QK-STO-002 새 인덱스 버전 활성화, 사람의 개인 정보 확인 기록(ADR-023)
+[[source]]
+name = "dnd-backend-code"
+kind = "github_repo_files"
+enabled = false
+auth = "GITHUB_API_TOKEN"
+[source.scope]
+repo = "dnd-side-project/dnd-15th-2-backend"
+ref = "main"
+include = ["src/main/java/**/*.java"]
+
+# 활성화 선행 조건: 자료원별 식별 명세 완료, QK-STO-002 새 인덱스 버전 활성화, 사람의 개인 정보 확인 기록(ADR-023)
+[[source]]
+name = "dnd-android-code"
+kind = "github_repo_files"
+enabled = false
+auth = "GITHUB_API_TOKEN"
+[source.scope]
+repo = "dnd-side-project/dnd-15th-2-android"
+ref = "main"
+include = ["app/src/main/**/*.kt", "data/src/main/**/*.kt", "domain/src/main/**/*.kt", "presentation/src/main/**/*.kt"]

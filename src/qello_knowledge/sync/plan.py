@@ -2,8 +2,9 @@
 
 from dataclasses import dataclass, field, replace
 
+from qello_knowledge.chunking.code.version import code_chunking_version
 from qello_knowledge.chunking.service import chunk_screened
-from qello_knowledge.chunking.version import chunking_version
+from qello_knowledge.chunking.version import index_chunking_version, version_for
 from qello_knowledge.domain.chunking import ChunkingSummary, ChunkOutcomeKind
 from qello_knowledge.domain.redact import FieldKind, safe_text
 from qello_knowledge.domain.scope import in_scope
@@ -84,7 +85,9 @@ def plan_source(target, deps, stored, index_version, options):
             item, content = screened.item, screened.content
             previous = stored.get(item.source_id)
             fingerprint = chunk_input_hash(content.content_hash, content.location, content.title or item.title)
-            reason = change_reason(previous, fingerprint, chunking_version(deps.chunking_settings), index_version)
+            # 그 문서를 맡는 청커의 버전과 비교한다(QK-CHK-001 research R-10)
+            version = version_for(content, deps.chunking_settings, deps.code_chunking)
+            reason = change_reason(previous, fingerprint, version, index_version)
             decision = doc(
                 item.source_id,
                 Action.PROCESS if reason else Action.UNCHANGED,
@@ -96,7 +99,7 @@ def plan_source(target, deps, stored, index_version, options):
             else:
                 decisions[item.source_id] = decision
         if to_chunk:
-            chunking = chunk_screened([s for d, s in to_chunk], deps.chunking_settings)
+            chunking = chunk_screened([s for d, s in to_chunk], deps.chunking_settings, code=deps.code_chunking)
             chunk_results = list(chunking.results)
             for (decision, _screened), chunked in zip(to_chunk, chunking.results, strict=True):
                 if chunked.outcome == ChunkOutcomeKind.FAILED:
@@ -213,7 +216,19 @@ def plan_source(target, deps, stored, index_version, options):
         stop=result.fetch.stop if result else None,
         fetch_summary=fetch,
         filter_summary=result.summary if result else None,
-        chunking_summary=ChunkingSummary.from_results(chunk_results),
+        chunking_summary=_chunking_summary(chunk_results, deps),
         holds=frozenset(holds),
         takedown_ratio={"general": general, "purge": purge, "base": base, "threshold": 0.2},
+    )
+
+
+def _chunking_summary(results, deps):
+    """결과가 있으면 인덱스 버전용 청킹 문자열을 남긴다. 첫 문서가 코드든 Markdown이든 같다(research R-10)."""
+    if not results:
+        return ChunkingSummary.from_results(results)
+    code = deps.code_chunking
+    return ChunkingSummary.from_results(
+        results,
+        chunking_version=index_chunking_version(deps.chunking_settings, code),
+        code_chunking_version=code_chunking_version(code, deps.chunking_settings) if code is not None else None,
     )
