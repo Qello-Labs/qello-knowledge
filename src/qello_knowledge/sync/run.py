@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from secrets import token_hex
 
-from qello_knowledge.chunking.version import chunking_version
+from qello_knowledge.chunking.version import index_chunking_version
 from qello_knowledge.domain.embedding import MODELS, EmbedError
 from qello_knowledge.domain.store import StoreError, StoreUnavailable
 from qello_knowledge.domain.sync import HoldReason, SyncRunResult
@@ -12,7 +12,7 @@ from qello_knowledge.ports.sync import IndexSpec, RunInfo
 from qello_knowledge.sync.decide import constrain
 from qello_knowledge.sync.execute import execute_source
 from qello_knowledge.sync.identity import select_targets
-from qello_knowledge.sync.keys import index_version_id, scope_key
+from qello_knowledge.sync.keys import index_version_id, metadata_schema_version, scope_key
 from qello_knowledge.sync.plan import plan_source
 from qello_knowledge.sync.preview import embedding_request
 from qello_knowledge.sync.report import source_summary
@@ -36,13 +36,19 @@ class SyncDependencies:
     chunking_settings: object
     clock: object
     preflight: object = None
+    code_chunking: object = None  # 코드 청킹 설정. `None`이면 꺼짐(QK-CHK-001 research R-09)
 
 
 def current_spec(deps):
     model = MODELS[deps.chunking_settings.model_version]
-    version = chunking_version(deps.chunking_settings)
+    version = index_chunking_version(deps.chunking_settings, deps.code_chunking)
+    meta = metadata_schema_version(deps.code_chunking)
     return IndexSpec(
-        index_version_id(model.model_version, model.dimension, version), model.model_version, model.dimension, version
+        index_version_id(model.model_version, model.dimension, version, meta),
+        model.model_version,
+        model.dimension,
+        version,
+        metadata_schema_version=meta,
     )
 
 
