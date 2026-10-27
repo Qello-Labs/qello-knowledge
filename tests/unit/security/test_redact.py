@@ -2,7 +2,7 @@
 
 import pytest
 
-from qello_knowledge.domain.redact import FieldKind, OutputContext, has_unsafe, safe_text
+from qello_knowledge.domain.redact import AddressPolicy, FieldKind, OutputContext, has_unsafe, safe_text
 
 PUBLIC = OutputContext(public_link_hosts=("github.com",), source_id_is_path=True)
 OPAQUE = OutputContext(public_link_hosts=("github.com",), source_id_is_path=False)
@@ -201,3 +201,86 @@ def test_long_non_address_strings_are_cheap():
     safe_text("a" * 100_000, FieldKind.TEXT, PUBLIC)
     safe_text("1" * 100_000, FieldKind.TEXT, PUBLIC)
     assert time.perf_counter() - started < 1
+
+
+# --- #70: `\b`·`\w`가 한글을 단어 문자로 봐서 한글에 바로 붙은 주소를 놓쳤다 ---
+
+SCHEME_ADDRESS = "ssh" + "://h/x"  # 점·포트가 없어 스킴 패턴만 잡는다
+HOST_PORT_ADDRESS = "buildbox" + ":9"
+IPV4_ADDRESS = ".".join(["192", "0", "2", "1"])
+IPV6_ADDRESS = "2001:db8" + "::1"
+# 점 이름 뒤에 한글이 붙으면 앞부분만 가리고 마지막 이름 조각이 남았다. 마지막 조각으로 확인한다.
+LAST_LABEL = INTERNAL_HOST.rsplit(".", 1)[-1]
+HANGUL_FORMS = ("주소{}", "{}입니다", "주소{}입니다", "주소 {} 입니다")
+HANGUL_CASES = [
+    (SCHEME_ADDRESS, FieldKind.TEXT, "{}", "ssh:"),
+    (HOST_PORT_ADDRESS, FieldKind.TEXT, "{}", "buildbox"),
+    (HOST_PORT_ADDRESS, FieldKind.PATH, "docs/{}/a.md", "buildbox"),
+    (HOST_PORT_ADDRESS, FieldKind.PATH, "docs/{}.md", "buildbox"),
+    (INTERNAL_HOST, FieldKind.TEXT, "{}", LAST_LABEL),
+    (INTERNAL_HOST, FieldKind.PATH, "docs/{}/a.md", LAST_LABEL),
+    (INTERNAL_HOST, FieldKind.PATH, "docs/{}", LAST_LABEL),
+    (IPV4_ADDRESS, FieldKind.TEXT, "{}", IPV4_ADDRESS),
+    (IPV4_ADDRESS, FieldKind.PATH, "docs/{}.md", IPV4_ADDRESS),
+    (IPV6_ADDRESS, FieldKind.TEXT, "{}", IPV6_ADDRESS),
+    (IPV6_ADDRESS, FieldKind.PATH, "docs/{}.md", IPV6_ADDRESS),
+]
+
+
+@pytest.mark.parametrize("form", HANGUL_FORMS)
+@pytest.mark.parametrize(("address", "kind", "template", "leftover"), HANGUL_CASES)
+def test_addresses_glued_to_hangul_are_masked(address, kind, template, leftover, form):
+    value = template.format(form.format(address))
+    assert leftover not in safe_text(value, kind, PUBLIC)
+    assert has_unsafe(value, kind, PUBLIC) == "address"
+
+
+@pytest.mark.parametrize("form", HANGUL_FORMS)
+@pytest.mark.parametrize(
+    ("address", "template"),
+    [
+        (SCHEME_ADDRESS, "https://github.com/o/r?next={}"),
+        (HOST_PORT_ADDRESS, "https://github.com/o/r#{}"),
+        (INTERNAL_HOST, "https://github.com/o/r?next={}"),
+        (INTERNAL_HOST, "https://github.com/o/{}/x.md"),
+        (IPV4_ADDRESS, "https://github.com/o/r#{}"),
+    ],
+)
+def test_public_links_with_hangul_glued_addresses_are_masked(address, template, form):
+    assert safe_text(template.format(form.format(address)), FieldKind.LINK, PUBLIC) == MASK
+
+
+@pytest.mark.parametrize("form", ("住所{}", "{}です"))
+@pytest.mark.parametrize(
+    ("address", "leftover"), [(SCHEME_ADDRESS, "ssh:"), (HOST_PORT_ADDRESS, "buildbox"), (INTERNAL_HOST, LAST_LABEL)]
+)
+def test_addresses_glued_to_other_non_ascii_letters_are_masked(address, leftover, form):
+    assert leftover not in safe_text(form.format(address), FieldKind.TEXT, PUBLIC)
+
+
+@pytest.mark.parametrize(
+    ("value", "kind", "expected"),
+    [
+        (f"x{SCHEME_ADDRESS}", FieldKind.TEXT, MASK),
+        (f"_{SCHEME_ADDRESS}", FieldKind.TEXT, f"_{SCHEME_ADDRESS}"),
+        (f"9{SCHEME_ADDRESS}", FieldKind.TEXT, f"9{SCHEME_ADDRESS}"),
+        (f"x{HOST_PORT_ADDRESS}", FieldKind.TEXT, MASK),
+        (f"_{HOST_PORT_ADDRESS}", FieldKind.TEXT, f"_{HOST_PORT_ADDRESS}"),
+        (f"9{HOST_PORT_ADDRESS}", FieldKind.TEXT, f"9{HOST_PORT_ADDRESS}"),
+        (f"{HOST_PORT_ADDRESS}x", FieldKind.TEXT, f"{HOST_PORT_ADDRESS}x"),
+        (f"{HOST_PORT_ADDRESS}_", FieldKind.TEXT, f"{HOST_PORT_ADDRESS}_"),
+        (f"docs/{HOST_PORT_ADDRESS}x.md", FieldKind.PATH, f"docs/{HOST_PORT_ADDRESS}x.md"),
+        (f"docs/_{HOST_PORT_ADDRESS}.md", FieldKind.PATH, f"docs/_{HOST_PORT_ADDRESS}.md"),
+        (f"x{INTERNAL_HOST}x", FieldKind.TEXT, MASK),
+        (f"docs/x{INTERNAL_HOST}.md", FieldKind.PATH, f"docs/x{INTERNAL_HOST}.md"),
+        (f"9{IPV4_ADDRESS}", FieldKind.TEXT, f"9{IPV4_ADDRESS}"),
+        (f"x{IPV4_ADDRESS}x", FieldKind.TEXT, f"x{MASK}x"),
+        (f"x{IPV6_ADDRESS}x", FieldKind.TEXT, f"x{MASK}x"),
+    ],
+)
+def test_ascii_neighbors_keep_the_previous_judgement(value, kind, expected):
+    assert safe_text(value, kind, PUBLIC) == expected
+
+
+def test_address_policy_version_changed_with_the_hangul_boundary():
+    assert AddressPolicy().version == "address-v5"

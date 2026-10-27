@@ -15,7 +15,7 @@ from urllib.parse import unquote, urlsplit
 from qello_knowledge.domain.secret_rules import find_secrets
 
 ADDRESS_MASK = "[가림:address]"
-ADDRESS_POLICY_VERSION = "address-v4"
+ADDRESS_POLICY_VERSION = "address-v5"
 FILE_EXTENSIONS = frozenset(
     {
         "md", "mdx", "markdown", "txt", "rst", "adoc",
@@ -24,15 +24,18 @@ FILE_EXTENSIONS = frozenset(
         "sql", "tf", "hcl", "xml", "gradle", "csv", "html", "css", "png", "svg", "jpg", "jpeg", "gif", "pdf",
     }
 )  # fmt: skip
-SCHEME_URL = re.compile(r"\b[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
+# `\b`·`\w`는 한글 같은 비ASCII 글자도 단어 문자로 봐서 그 글자에 바로 붙은 주소를 놓친다(#70).
+# 경계는 ASCII 영숫자·밑줄로만 본다.
+WORD = "A-Za-z0-9_"
+SCHEME_URL = re.compile(rf"(?<![{WORD}])[A-Za-z][A-Za-z0-9+.-]*://[^\s\"'<>]+")
 # IP는 경계 정규식으로 찾지 않고 후보를 `ipaddress`로 검증한다. 점이나 확장자가 바로 붙은 주소도 놓치지 않으려는 것이다.
 # IPv6는 콜론이 두 개 이상인 16진 구간 안에서 찾는다. 코드(`std::map`)와 주소(`face::beef`)는 글자로 구분할 수 없어
 # 유효한 IPv6 후보는 모두 가린다. IPv4는 숫자·점 덩어리 전체(앞뒤 점 제외)가 IPv4일 때만 가린다(`1.2.3.456`은 버전).
 IP_RUN = re.compile(r"[0-9A-Fa-f:.]+")
 IPV4_DIGITS = re.compile(r"[0-9.]+")
 IP_MAX_LENGTH = 45  # IPv4를 붙인 IPv6 표기의 최대 길이
-HOST_PORT = re.compile(r"(?<![\w.-])[A-Za-z][A-Za-z0-9.-]*:\d{1,5}\b")
-DOTTED_NAME = re.compile(r"(?<![\w.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![\w-])")
+HOST_PORT = re.compile(rf"(?<![{WORD}.-])[A-Za-z][A-Za-z0-9.-]*:\d{{1,5}}(?![{WORD}])")
+DOTTED_NAME = re.compile(rf"(?<![{WORD}.-])[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+(?![{WORD}-])")
 FILE_NAME = re.compile(r"^(?P<stem>.+)\.(?P<ext>[A-Za-z0-9]+)$")
 
 
