@@ -1,5 +1,6 @@
 """수집·필터·청킹·내림 판단. 저장소 쓰기 없이 실행과 미리 보기가 공유한다."""
 
+from collections import Counter
 from dataclasses import dataclass, field, replace
 
 from qello_knowledge.chunking.code.version import code_chunking_version
@@ -8,8 +9,8 @@ from qello_knowledge.chunking.version import index_chunking_version, version_for
 from qello_knowledge.domain.chunking import ChunkingSummary, ChunkOutcomeKind
 from qello_knowledge.domain.redact import FieldKind, safe_text
 from qello_knowledge.domain.scope import in_scope
-from qello_knowledge.domain.security import Verdict
-from qello_knowledge.domain.source import ItemStatus
+from qello_knowledge.domain.security import AccessScope, Verdict
+from qello_knowledge.domain.source import ItemStatus, MissingCheck, RunStopped
 from qello_knowledge.domain.sync import (
     Action,
     DocumentDecision,
@@ -19,6 +20,7 @@ from qello_knowledge.domain.sync import (
     TakedownReason,
     allowed,
 )
+from qello_knowledge.ports.source import MissingItemChecker
 from qello_knowledge.security.screen import screen_source, source_excluded
 from qello_knowledge.sync.decide import change_reason, constrain, exceeds_takedown_ratio
 from qello_knowledge.sync.keys import chunk_input_hash, doc_key
@@ -67,6 +69,9 @@ def plan_source(target, deps, stored, index_version, options):
     origin_check = "OK"
     result = None
     listing = None
+    incomplete_reason = None
+    held_bodies: set[str] = set()  # 권한 조회 실패 기준을 넘어 본문을 남기는 문서(QK-ING-003 R-05)
+    missing_counts: Counter = Counter()
     if target.mode == "TAKEDOWN_ONLY":
         for identity, previous in stored.items():
             if previous.takedown_reason != TakedownReason.SOURCE_DISABLED:
@@ -81,10 +86,13 @@ def plan_source(target, deps, stored, index_version, options):
             holds.add(HoldReason.ORIGIN_MISSING if origin_check == "MISSING" else HoldReason.ORIGIN_MISMATCH)
         if not listing.complete or result.fetch.stop:
             holds.add(HoldReason.COLLECTION_INCOMPLETE)
+            incomplete_reason = listing.incomplete_reason
         for screened in result.passed:
             item, content = screened.item, screened.content
             previous = stored.get(item.source_id)
-            fingerprint = chunk_input_hash(content.content_hash, content.location, content.title or item.title)
+            fingerprint = chunk_input_hash(
+                content.content_hash, content.location, content.title or item.title, extra=content.fingerprint_extra
+            )
             # 그 문서를 맡는 청커의 버전과 비교한다(QK-CHK-001 research R-10)
             version = version_for(content, deps.chunking_settings, deps.code_chunking)
             reason = change_reason(previous, fingerprint, version, index_version)
@@ -101,7 +109,8 @@ def plan_source(target, deps, stored, index_version, options):
         if to_chunk:
             chunking = chunk_screened([s for d, s in to_chunk], deps.chunking_settings, code=deps.code_chunking)
             chunk_results = list(chunking.results)
-            for (decision, _screened), chunked in zip(to_chunk, chunking.results, strict=True):
+            for (decision, screened), chunked in zip(to_chunk, chunking.results, strict=True):
+                chunked = _with_locator_extra(chunked, screened.content.locator_extra)
                 if chunked.outcome == ChunkOutcomeKind.FAILED:
                     decision = replace(
                         decision, actions=(Action.FAIL,), stage="chunk", failure=chunked.failure.value.lower()
@@ -162,7 +171,15 @@ def plan_source(target, deps, stored, index_version, options):
                     stage="fetch" if verdict.stage == "FETCH" else "screen",
                     failure=failure,
                 )
+        held_bodies = _lookup_failures(target, deps, result, listing)
+        if held_bodies:
+            holds.add(HoldReason.COLLECTION_INCOMPLETE)
+            incomplete_reason = incomplete_reason or "access_lookup_threshold"
+            for identity in held_bodies & decisions.keys():
+                decisions[identity] = replace(decisions[identity], delete_bodies=False)
         listed = {item.source_id for item in listing.items}
+        checker = target.adapter if isinstance(target.adapter, MissingItemChecker) else None
+        missing = []
         for identity, previous in stored.items():
             if previous.location and source_excluded(previous.location, target.config):
                 if not _settled_security_takedown(previous, TakedownReason.CONFIG_EXCLUDED):
@@ -181,11 +198,43 @@ def plan_source(target, deps, stored, index_version, options):
                 and previous.takedown_reason
                 not in {TakedownReason.SOURCE_MISSING, TakedownReason.SOURCE_DISABLED, TakedownReason.NOT_TARGET}
             ):
-                decisions[identity] = doc(identity, Action.TAKE_DOWN, takedown_reason=TakedownReason.SOURCE_MISSING)
-    pending = {identity for identity, previous in stored.items() if previous.purge_pending}
+                if checker is None or identity in listed:
+                    decisions[identity] = doc(identity, Action.TAKE_DOWN, takedown_reason=TakedownReason.SOURCE_MISSING)
+                elif not _settled_security_takedown(previous, TakedownReason.SECURITY_ACCESS):
+                    # 볼 수 없게 되어 이미 내린 페이지는 다시 확인하지 않는다(plan 검토 P1).
+                    missing.append(identity)
+        checks = {}
+        for identity in missing:
+            # 한 건씩 물어 실행이 멈춰도 이미 확인한 결과는 쓴다(구현 검토 C5).
+            try:
+                checks.update(checker.check_missing(target.session, target.config, [identity]))
+            except RunStopped:
+                holds.add(HoldReason.COLLECTION_INCOMPLETE)
+                incomplete_reason = incomplete_reason or "missing_check_stopped"
+                break
+        if missing:
+            missing_counts.update(checks.get(identity, "NOT_CHECKED") for identity in missing)
+            for identity in missing:
+                outcome = checks.get(identity, MissingCheck.UNCERTAIN)
+                if outcome == MissingCheck.GONE:
+                    decisions[identity] = doc(
+                        identity,
+                        Action.TAKE_DOWN,
+                        takedown_reason=TakedownReason.SECURITY_ACCESS,
+                        delete_bodies=True,
+                        access_scope=AccessScope.UNKNOWN,
+                    )
+                elif outcome == MissingCheck.ARCHIVED:
+                    decisions[identity] = doc(identity, Action.TAKE_DOWN, takedown_reason=TakedownReason.SOURCE_MISSING)
+                elif outcome == MissingCheck.PRESENT:
+                    holds.add(HoldReason.COLLECTION_INCOMPLETE)
+                    incomplete_reason = incomplete_reason or "missing_check_present"
+    pending = {identity for identity, previous in stored.items() if previous.purge_pending} - held_bodies
     general = sum(Action.TAKE_DOWN in d.actions and not d.takedown_reason.is_security for d in decisions.values())
     purge = len(
-        pending | {i for i, d in decisions.items() if Action.TAKE_DOWN in d.actions and d.takedown_reason.is_security}
+        pending
+        | {i for i, d in decisions.items() if Action.TAKE_DOWN in d.actions and d.takedown_reason.is_security}
+        - held_bodies
     )
     base = sum(
         r.takedown_reason
@@ -212,7 +261,9 @@ def plan_source(target, deps, stored, index_version, options):
         origin=listing.origin if listing else None,
         origin_check=origin_check,
         origin_version=listing.origin.version if listing and listing.origin else None,
-        listing_complete=listing.complete if listing else None,
+        listing_complete=(listing.complete and incomplete_reason is None) if listing else None,
+        incomplete_reason=incomplete_reason,
+        kind_summary=_kind_summary(target, deps, result, chunk_results, missing_counts),
         stop=result.fetch.stop if result else None,
         fetch_summary=fetch,
         filter_summary=result.summary if result else None,
@@ -220,6 +271,59 @@ def plan_source(target, deps, stored, index_version, options):
         holds=frozenset(holds),
         takedown_ratio={"general": general, "purge": purge, "base": base, "threshold": 0.2},
     )
+
+
+def merge_locator(locator, extra):
+    """자료원이 더한 위치 키를 청크 위치 값에 합친다. 청커의 키와 겹치면 오류다(QK-ING-003 research R-10)."""
+    if not extra:
+        return dict(locator)
+    clash = set(locator) & set(extra)
+    if clash:
+        raise ValueError("locator key conflict")
+    return {**locator, **extra}
+
+
+def _with_locator_extra(chunked, extra):
+    if not extra or not chunked.drafts:
+        return chunked
+    drafts = tuple(
+        replace(draft, chunk=replace(draft.chunk, locator=merge_locator(draft.chunk.locator, extra)))
+        for draft in chunked.drafts
+    )
+    return replace(chunked, drafts=drafts)
+
+
+def _kind_summary(target, deps, result, chunk_results, missing_counts) -> dict:
+    """자료원 종류별 요약 값(QK-ING-003 data-model 10절). 단건 확인·조회 실패 기준을 쓰는 종류만 채운다."""
+    spec = deps.policy.kinds.get(target.source_kind)
+    if result is None or not (
+        isinstance(target.adapter, MissingItemChecker) or (spec is not None and spec.lookup_failure_threshold)
+    ):
+        return {}
+    warnings = Counter(w.kind.value for s in result.passed for w in s.content.conversion_warnings)
+    return {
+        "unclassified": sum(v.rule == "source-exclude:unclassified" for v in result.verdicts),
+        "access_lookup_failed": sum(v.verdict == Verdict.ACCESS_HELD and not v.access_raw for v in result.verdicts),
+        "conversion_warnings": dict(sorted(warnings.items())),
+        "missing_checks": {str(k): v for k, v in sorted(missing_counts.items(), key=lambda kv: str(kv[0]))},
+        "empty_bodies": sum(c.outcome == ChunkOutcomeKind.EMPTY for c in chunk_results),
+    }
+
+
+def _lookup_failures(target, deps, result, listing) -> set[str]:
+    """권한 조회 실패(원값 없는 미확인)가 종류의 기준 비율을 넘으면 그 문서들을 돌려준다(QK-ING-003 FR-031).
+
+    규칙이 정한 미확인(원값 있음)은 세지 않는다. 기준이 없는 종류(GitHub)는 늘 빈 집합이다.
+    """
+    spec = deps.policy.kinds.get(target.source_kind)
+    threshold = spec.lookup_failure_threshold if spec is not None else None
+    if threshold is None or not listing.items:
+        return set()
+    failed = {v.source_id for v in result.verdicts if v.verdict == Verdict.ACCESS_HELD and not v.access_raw}
+    if not listing.complete:
+        # 다 받지 못한 목록에서 생긴 조회 실패는 기준과 관계없이 본문을 남긴다(구현 검토 C1).
+        return failed
+    return failed if len(failed) / len(listing.items) > threshold else set()
 
 
 def _chunking_summary(results, deps):

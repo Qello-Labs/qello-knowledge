@@ -148,6 +148,9 @@ class SourcePlan:
     holds: frozenset[HoldReason] = frozenset()
     filter_summary: FilterSummary | None = None
     chunking_summary: ChunkingSummary | None = None
+    # 목록이나 계획 단계에서 불완전이 된 사유(QK-ING-003 data-model 10절). GitHub는 비어 있다.
+    incomplete_reason: str | None = None
+    kind_summary: Mapping = field(default_factory=dict)  # 종류별 요약 값(QK-ING-003 data-model 10절)
 
     def __post_init__(self):
         if self.mode not in {"FULL", "TAKEDOWN_ONLY"}:
