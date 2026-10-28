@@ -1,0 +1,70 @@
+{
+ "title": "매크로",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "앞 문단"
+     }
+    ]
+   },
+   {
+    "type": "extension",
+    "attrs": {
+     "extensionKey": "toc",
+     "parameters": {
+      "secret": "x"
+     }
+    }
+   },
+   {
+    "type": "bodiedExtension",
+    "attrs": {
+     "extensionKey": "excerpt-include"
+    },
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "끌어온 내용"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "인라인 "
+     },
+     {
+      "type": "inlineExtension",
+      "attrs": {
+       "extensionKey": "jira"
+      }
+     },
+     {
+      "type": "text",
+      "text": " 끝"
+     }
+    ]
+   },
+   {
+    "type": "chart",
+    "attrs": {
+     "secret": "x"
+    }
+   }
+  ]
+ }
+}

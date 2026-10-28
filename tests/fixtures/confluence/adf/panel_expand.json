@@ -1,0 +1,61 @@
+{
+ "title": "패널",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "panel",
+    "attrs": {
+     "panelType": "warning"
+    },
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "주의할 점"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expand",
+    "attrs": {
+     "title": "자세히"
+    },
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "숨은 내용"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "expand",
+    "attrs": {
+     "title": ""
+    },
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "제목 없는 펼침"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,163 @@
+{
+ "title": "링크",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "사이트 문서",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/wiki/spaces/SCRUM/pages/12?focusedCommentId=3#c"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "프로필",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/wiki/people/acct-000"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "개인 공간",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/wiki/display/~acct-000"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "물결 조각",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/wiki/spaces/~acct-000/overview"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "저장소",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://github.com/Qello-Labs/qello-knowledge/pull/1?x=1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "외부 문서",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://docs.example.org/guide"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "https://docs.example.org/guide",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://docs.example.org/guide"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "http 주소",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "http://github.com/x"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "inlineCard",
+      "attrs": {
+       "url": "https://site.invalid/wiki/spaces/SCRUM/pages/77"
+      }
+     }
+    ]
+   },
+   {
+    "type": "blockCard",
+    "attrs": {
+     "url": "https://other.example.net/x"
+    }
+   }
+  ]
+ }
+}

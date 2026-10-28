@@ -1,0 +1,121 @@
+{
+ "title": "사람",
+ "doc_type": "회의록",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "table",
+    "content": [
+     {
+      "type": "tableRow",
+      "content": [
+       {
+        "type": "tableCell",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "일시"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "2026-10-14"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "담당: "
+     },
+     {
+      "type": "mention",
+      "attrs": {
+       "id": "acct-000",
+       "text": "@팀원A"
+      }
+     },
+     {
+      "type": "text",
+      "text": " 연락: "
+     },
+     {
+      "type": "text",
+      "text": "팀원A 메일",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "mailto:someone@site.invalid"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "extension",
+    "attrs": {
+     "extensionKey": "profile",
+     "parameters": {
+      "user": "acct-000"
+     }
+    }
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "status",
+      "attrs": {
+       "text": "진행 중"
+      }
+     },
+     {
+      "type": "text",
+      "text": " "
+     },
+     {
+      "type": "date",
+      "attrs": {
+       "timestamp": "1760400000000"
+      }
+     },
+     {
+      "type": "text",
+      "text": " "
+     },
+     {
+      "type": "emoji",
+      "attrs": {
+       "shortName": ":smile:",
+       "text": "😄"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,13 @@
+{
+ "warnings": [
+  [
+   "UNSUPPORTED_BLOCK",
+   2
+  ]
+ ],
+ "meeting": {
+  "date": "2026-10-14",
+  "kind": null,
+  "spec_ids": []
+ }
+}

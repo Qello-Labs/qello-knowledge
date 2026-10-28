@@ -1,0 +1,78 @@
+{
+ "title": "레이아웃",
+ "doc_type": "회의록",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "layoutSection",
+    "content": [
+     {
+      "type": "layoutColumn",
+      "attrs": {
+       "width": 50
+      },
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "왼쪽 열"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "layoutColumn",
+      "attrs": {
+       "width": 50
+      },
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "오른쪽 열"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "decisionList",
+    "content": [
+     {
+      "type": "decisionItem",
+      "attrs": {
+       "state": "DECIDED"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "결정 하나"
+       }
+      ]
+     },
+     {
+      "type": "decisionItem",
+      "attrs": {
+       "state": "DECIDED"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "결정 둘"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
