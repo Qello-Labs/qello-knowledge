@@ -17,6 +17,8 @@ class KindSecurityPolicy:
     judge: Callable[[AccessInfo], AccessScope]
     public_link_hosts: tuple[str, ...]
     source_id_is_path: bool
+    opaque_item_fields: bool = False  # 판정 기록·측정 출력에서 제목·위치·링크를 비운다(QK-ING-003 R-15)
+    lookup_failure_threshold: float | None = None  # 권한 조회 실패 비율 기준(QK-ING-003 FR-031, R-05)
 
 
 def _visibility(access: AccessInfo) -> str | None:
@@ -38,11 +40,52 @@ def judge_fake_visibility(access: AccessInfo) -> AccessScope:
     return AccessScope.RESTRICTED if value == "restricted" else AccessScope.UNKNOWN
 
 
+_CONFLUENCE_TEAM_SPACE_TYPES = frozenset({"global", "collaboration", "knowledge_base"})
+_CONFLUENCE_KEYS = {
+    "team_group": ("judge_mode", "space_type", "space_status", "team_group_read", "read_restricted", "ancestor_count"),
+    "site_users": (
+        "judge_mode",
+        "space_type",
+        "space_status",
+        "site_review_valid",
+        "read_restricted",
+        "ancestor_count",
+    ),
+}
+
+
+def judge_confluence_access(access: AccessInfo) -> AccessScope:
+    """원값만 읽는다(QK-ING-003 data-model 4절). 모양이 다르거나 모르는 값이면 미확인이다."""
+    if access.status != AccessStatus.PROVIDED:
+        return AccessScope.UNKNOWN
+    raw = dict(access.raw)
+    keys = _CONFLUENCE_KEYS.get(raw.get("judge_mode", ""))
+    if keys is None or tuple(key for key, _ in access.raw) != keys:
+        return AccessScope.UNKNOWN
+    flag = raw.get("team_group_read", raw.get("site_review_valid"))
+    if flag not in {"true", "false"} or not raw["ancestor_count"].isdigit():
+        return AccessScope.UNKNOWN
+    if raw["read_restricted"] in {"self", "ancestor"}:
+        return AccessScope.RESTRICTED
+    if (
+        raw["space_type"] in _CONFLUENCE_TEAM_SPACE_TYPES
+        and raw["space_status"] == "current"
+        and flag == "true"
+        and raw["read_restricted"] == "none"
+    ):
+        return AccessScope.TEAM
+    return AccessScope.UNKNOWN
+
+
 KINDS = MappingProxyType(
     {
         "github_repo_files": KindSecurityPolicy(
             "github_repo_files", "github-visibility-v1", judge_github_visibility, ("github.com",), True
         ),
         "fake": KindSecurityPolicy("fake", "fake-visibility-v1", judge_fake_visibility, ("fake.invalid",), False),
+        # 원본 링크는 출력에서 비운다. 판정 기록은 페이지 ID만 남긴다(QK-ING-003 R-15).
+        "confluence_pages": KindSecurityPolicy(
+            "confluence_pages", "confluence-access-v1", judge_confluence_access, (), False, True, 0.10
+        ),
     }
 )

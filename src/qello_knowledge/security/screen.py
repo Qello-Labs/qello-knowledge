@@ -74,6 +74,9 @@ def source_excluded(location: str, config: SourceConfig) -> bool:
 
 
 def _path_stage(item: SourceItem, config: SourceConfig, policy: SecurityPolicy) -> SecurityVerdict | None:
+    if item.exclusion is not None:
+        # 어댑터가 ID 기준으로 정한 제외(QK-ING-003 research R-07). 본문을 받지 않는다.
+        return _verdict(item, policy, Verdict.PATH_EXCLUDED, Stage.PATH, rule="source-exclude:" + item.exclusion)
     category = excluded_by(item.location, policy.exclusions)
     if category is None and _source_excluded(item.location, config):
         category = "source-exclude"
