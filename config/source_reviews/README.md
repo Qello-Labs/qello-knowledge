@@ -24,3 +24,14 @@
 6. `qk-dev source measure --name <자료원 이름>`과 해당 외부 시험을 실행하고, 측정 조건·결과·한도값 판단을 기록한다.
 
 정확한 형식은 [확인 기록 계약](../../specs/QK-ING-002-github-repo-source/contracts/source-reviews.md)을 따른다.
+
+## Confluence 자료원(QK-ING-003)
+
+Confluence 기록(`confluence_pages` 종류)은 같은 필수 항목에 다음이 다르다. 형식은 [확인 기록 계약](../../specs/QK-ING-003-confluence-pages/contracts/source-config.md)을 따른다.
+
+- `result`는 `팀원 이름 외 개인 정보 없음` 또는 `개인 정보 트리 제외함`이다. 뒤의 것이면 `[[moved_to_exclude]]`에 `id`(트리 맨 위 콘텐츠 ID)·`reason`을 적고, 그 ID가 설정 `exclude_trees`에 있어야 한다.
+- `team_member_names = "허용"`이 있어야 켤 수 있다. 회의록 참석자·담당자 이름과 멘션 표시 이름을 색인하기 때문이다(FR-021).
+- `[scope]`에는 설정의 `include`·`space_key`·`space_id`·`judge_mode`·`team_group_id`(팀 그룹 방식)·`doc_types`·`exclude_trees`를 같은 값으로 적는다.
+- 판정 방식이 `site_users`(Free 사이트)면 `[site_users]`에 `reviewed_on`(사이트 사용자가 모두 팀원임을 확인한 날)과 `user_count`를 적는다. 확인일에서 90일이 지나면 모든 페이지가 미확인으로 숨겨진다(FR-012).
+- 기록 파일의 해시와 판정 방식은 보안 규칙 버전 재료다. 기록을 고치면 다음 동기화에서 다시 판정한다.
+- 비활성 Confluence 자료원도 기록이 있으면 `qk-dev source measure --name <이름>`으로 켜기 전에 잴 수 있다(FR-027).

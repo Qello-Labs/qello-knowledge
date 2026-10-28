@@ -49,6 +49,40 @@ def _number(value, minimum: float, integer: bool = False, strict: bool = False) 
     return math.isfinite(value) and (value > minimum if strict else value >= minimum)
 
 
+def _common_scope(scope: dict, scope_keys, token_fields: set[str], add) -> tuple[dict, list]:
+    """종류 검증기가 없는 종류(GitHub·가짜)의 기존 범위 규칙. 결과와 오류 코드는 그대로다."""
+    patterns = {}
+    for key in ("include", "exclude"):
+        value = scope.get(key, [] if key == "exclude" else None)
+        if key == "include" and key not in scope:
+            add("scope.include", "MISSING")
+        elif (
+            not isinstance(value, list)
+            or (key == "include" and not value)
+            or any(
+                (not isinstance(v, str) or not v) and f"scope.{key}[{index}]" not in token_fields
+                for index, v in enumerate(value)
+            )
+        ):
+            add("scope." + key, "INVALID")
+            value = []
+        patterns[key] = tuple(v for v in (value or ()) if v is not None)
+    extra = []
+    for key in scope_keys:
+        value = scope.get(key)
+        if key not in scope:
+            add("scope." + key, "MISSING")
+        elif (
+            not isinstance(value, str)
+            or not value.strip()
+            or (key == "repo" and not re.fullmatch(r"[^/\s]+/[^/\s]+", value))
+        ):
+            add("scope." + key, "INVALID")
+        else:
+            extra.append((key, value))
+    return patterns, extra
+
+
 def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list[ConfigIssue]]:
     name = raw.get("name")
     label = name if isinstance(name, str) and not _token(name) else f"[[source]] {ordinal}"
@@ -107,37 +141,17 @@ def _source(raw: dict, ordinal: int, seen: set[str]) -> tuple[SourceConfig, list
         add("scope", "MISSING" if "scope" not in data else "INVALID")
         scope = {}
     scope_keys = spec.scope_keys if spec else ()
-    if "kind" not in token_fields:
+    if spec is not None and spec.scope_validator is not None:
+        checked = spec.scope_validator(scope)
+        for field, code in checked.issues:
+            add(field, code)
+        patterns = {"include": checked.include, "exclude": checked.exclude}
+        extra = list(checked.extra)
+        scope_keys = ()
+    elif "kind" not in token_fields:
         keys(scope, {"include", "exclude", *scope_keys}, "scope.")
-    patterns = {}
-    for key in ("include", "exclude"):
-        value = scope.get(key, [] if key == "exclude" else None)
-        if key == "include" and key not in scope:
-            add("scope.include", "MISSING")
-        elif (
-            not isinstance(value, list)
-            or (key == "include" and not value)
-            or any(
-                (not isinstance(v, str) or not v) and f"scope.{key}[{index}]" not in token_fields
-                for index, v in enumerate(value)
-            )
-        ):
-            add("scope." + key, "INVALID")
-            value = []
-        patterns[key] = tuple(v for v in (value or ()) if v is not None)
-    extra = []
-    for key in scope_keys:
-        value = scope.get(key)
-        if key not in scope:
-            add("scope." + key, "MISSING")
-        elif (
-            not isinstance(value, str)
-            or not value.strip()
-            or (key == "repo" and not re.fullmatch(r"[^/\s]+/[^/\s]+", value))
-        ):
-            add("scope." + key, "INVALID")
-        else:
-            extra.append((key, value))
+    if spec is None or spec.scope_validator is None:
+        patterns, extra = _common_scope(scope, scope_keys, token_fields, add)
 
     limits, retry = asdict(RateLimits()), asdict(RetryPolicy())
     for table_name, values in (("limits", limits), ("retry", retry)):
@@ -205,3 +219,20 @@ def load_sources(path: Path) -> tuple[tuple[SourceConfig, ...], tuple[ConfigIssu
         configs.append(config)
         issues.extend(found)
     return tuple(configs), tuple(issues)
+
+
+def load_source_as_enabled(path: Path, name: str) -> tuple[SourceConfig | None, tuple[ConfigIssue, ...]]:
+    """이름을 준 자료원 하나를 활성처럼 검증한다. 비활성 Confluence 측정 준비가 쓴다(QK-ING-003 research R-17).
+
+    설정 파일의 다른 자료원과 일반 읽기(`load_sources`)의 비활성 처리는 바꾸지 않는다.
+    """
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, UnicodeError):
+        return None, (ConfigIssue("file", "file", "INVALID"),)
+    rows = data.get("source", []) if isinstance(data.get("source", []), list) else []
+    row = next((r for r in rows if isinstance(r, dict) and r.get("name") == name), None)
+    if row is None:
+        return None, (ConfigIssue("source", "name", "NOT_FOUND"),)
+    config, issues = _source({**row, "enabled": True}, 1, set())
+    return config, tuple(issues)

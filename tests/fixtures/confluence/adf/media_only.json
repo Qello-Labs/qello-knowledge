@@ -1,0 +1,43 @@
+{
+ "title": "그림만",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "mediaSingle",
+    "content": [
+     {
+      "type": "media",
+      "attrs": {
+       "type": "file",
+       "id": "m1",
+       "alt": "다이어그램.png"
+      }
+     }
+    ]
+   },
+   {
+    "type": "mediaGroup",
+    "content": [
+     {
+      "type": "media",
+      "attrs": {
+       "type": "file",
+       "id": "m2",
+       "alt": "자료.pdf"
+      }
+     },
+     {
+      "type": "media",
+      "attrs": {
+       "type": "file",
+       "id": "m3"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,31 @@
+{
+ "title": "코드",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "codeBlock",
+    "attrs": {
+     "language": "kotlin"
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "fun main() {}\n"
+     }
+    ]
+   },
+   {
+    "type": "codeBlock",
+    "content": [
+     {
+      "type": "text",
+      "text": "before\n```\nafter"
+     }
+    ]
+   }
+  ]
+ }
+}

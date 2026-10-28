@@ -167,6 +167,16 @@ def main(argv: list[str] | None = None) -> int:
         if not isinstance(prepared, PreparedSource):
             errors = [{"field": issue.field, "code": issue.code} for issue in prepared]
             return _source_failure(errors, args.json)
+        if prepared.config.kind == "confluence_pages":
+            from qello_knowledge.devtools.measure import measure_confluence, render_confluence_measurement
+            from qello_knowledge.indexer.sync_cli import TARGET_PARTS, confluence_auth_issues
+
+            if confluence_auth_issues((prepared.config,), settings):
+                return _source_failure([{"field": "auth", "code": "MISSING"}], args.json)
+            adapter, transport = TARGET_PARTS["confluence_pages"](prepared.config, settings, prepared.context)
+            measurement = measure_confluence(prepared, adapter, transport, SystemClock(), chunk=args.chunk)
+            print(render_confluence_measurement(measurement, args.json))
+            return 0 if measurement.ok else 1
         token = settings.get(prepared.config.auth)
         if not isinstance(token, SecretValue):
             return _source_failure([{"field": "auth", "code": "MISSING"}], args.json)

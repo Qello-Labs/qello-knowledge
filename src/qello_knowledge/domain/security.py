@@ -69,12 +69,13 @@ class SecurityVerdict:
             return None if value is None else safe_text(value, FieldKind.TEXT, context)
 
         id_kind = FieldKind.PATH if context.source_id_is_path else FieldKind.TEXT
+        opaque = context.opaque_item_fields
         return {
             "source_name": self.source_name,
             "source_id": safe_text(self.source_id, id_kind, context),
-            "location": safe_text(self.location, FieldKind.PATH, context),
-            "url": safe_text(self.url, FieldKind.LINK, context),
-            "title": text(self.title),
+            "location": None if opaque else safe_text(self.location, FieldKind.PATH, context),
+            "url": None if opaque else safe_text(self.url, FieldKind.LINK, context),
+            "title": None if opaque else text(self.title),
             "verdict": self.verdict.value,
             "stage": self.stage.value,
             "rule": self.rule,

@@ -60,3 +60,19 @@ auth = "GITHUB_API_TOKEN"
 repo = "dnd-side-project/dnd-15th-2-android"
 ref = "main"
 include = ["app/src/main/**/*.kt", "data/src/main/**/*.kt", "domain/src/main/**/*.kt", "presentation/src/main/**/*.kt"]
+
+# Confluence SCRUM 스페이스(ADR-026 Proposed, QK-ING-003). 활성화 선행 조건: ADR-026 승인, space_id·doc_types 채우기,
+# 사람의 개인 정보 확인 기록(팀원 이름 색인 허용, 사이트 사용자 확인), 첫 측정(FR-027), INDEX_KEYWORD_RULES 등록과 QK-STO-002 절차
+[[source]]
+name = "confluence-scrum"
+kind = "confluence_pages"
+enabled = false
+auth = "ATLASSIAN_API_TOKEN"
+allowed_hosts = ["api.atlassian.com"]
+[source.scope]
+include = ["**"]
+space_key = "SCRUM"
+space_id = ""
+judge_mode = "site_users"
+doc_types = {}
+exclude_trees = []

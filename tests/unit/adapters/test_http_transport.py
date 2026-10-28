@@ -143,3 +143,41 @@ def test_url_error_with_timeout_reason_remains_timeout(stage):
     with pytest.raises(TransportError, match="^timeout$") as raised:
         HttpsTransport((), None, opener=opener).send(SourceRequest("GET", "https://api.github.com/x"))
     assert raised.value.kind == "timeout"
+
+
+def test_injected_authorization_and_default_headers_replace_github_defaults():
+    opener = Opener(Response(b"{}"))
+    transport = HttpsTransport(
+        ("api.atlassian.com",),
+        None,
+        authorization=lambda: "Basic dGVzdA==",
+        default_headers={"accept": "application/json"},
+        opener=opener,
+    )
+    transport.send(SourceRequest("GET", "https://api.atlassian.com/ex/confluence/c/wiki/api/v2/spaces"))
+    sent = {k.lower(): v for k, v in opener.requests[0][0].header_items()}
+    assert sent["authorization"] == "Basic dGVzdA=="
+    assert sent["accept"] == "application/json"
+    assert "x-github-api-version" not in sent
+    assert sent["user-agent"] == "qello-knowledge-indexer"
+
+
+def test_injected_authorization_only_for_auth_hosts():
+    opener = Opener(Response(b"{}"))
+    transport = HttpsTransport(("api.atlassian.com",), None, authorization=lambda: "Basic dGVzdA==", opener=opener)
+    transport.send(SourceRequest("GET", "https://other.invalid/x"))
+    sent = {k.lower(): v for k, v in opener.requests[0][0].header_items()}
+    assert "authorization" not in sent
+
+
+def test_github_headers_are_unchanged_without_injection():
+    opener = Opener(Response(b"{}"))
+    HttpsTransport(("api.github.com",), SecretValue(TOKEN), opener=opener).send(
+        SourceRequest("GET", "https://api.github.com/repos/x/y")
+    )
+    sent = {k.lower(): v for k, v in opener.requests[0][0].header_items()}
+    assert sent == {
+        "user-agent": "qello-knowledge-indexer",
+        "x-github-api-version": "2022-11-28",
+        "authorization": "Bearer " + TOKEN,
+    }

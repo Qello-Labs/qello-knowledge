@@ -80,6 +80,7 @@ class OutputContext:
     public_link_hosts: tuple[str, ...] = ()
     source_id_is_path: bool = False
     address_policy: AddressPolicy = field(default_factory=AddressPolicy)
+    opaque_item_fields: bool = False  # 참이면 판정 기록에서 제목·위치·링크를 비운다(QK-ING-003 R-15)
 
 
 def _is_ip(candidate: str) -> bool:

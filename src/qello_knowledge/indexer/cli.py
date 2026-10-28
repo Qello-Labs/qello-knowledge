@@ -12,6 +12,7 @@ from qello_knowledge.indexer.search_cli import SearchFactory, add_search_parser,
 from qello_knowledge.indexer.sync_cli import (
     add_sync_parsers,
     build_runtime,
+    confluence_source_issues,
     postgres_sync_store,
     query_command,
     run_command,
@@ -92,6 +93,8 @@ def main(
     configs, issues = (
         load_sources(args.sources) if args.command == "security" else load_checked_sources(args.sources, args.reviews)
     )
+    if args.command == "sources":
+        issues = (*issues, *confluence_source_issues(configs))
     report = source_report(args.sources, configs, issues)
     if args.command == "sources" or issues:
         print(render_report(report, json_output=getattr(args, "json", False)))

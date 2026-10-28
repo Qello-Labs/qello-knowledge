@@ -158,7 +158,11 @@ def test_security_check_json_is_one_line(capsys):
     output = capsys.readouterr().out
     data = json.loads(output)
     assert len(output.splitlines()) == 1 and data["ok"] and data["exceptions"] == 0 and data["secret_rules"] == 16
-    assert data["access_rules"] == {"github_repo_files": "github-visibility-v1", "fake": "fake-visibility-v1"}
+    assert data["access_rules"] == {
+        "github_repo_files": "github-visibility-v1",
+        "fake": "fake-visibility-v1",
+        "confluence_pages": "confluence-access-v1",
+    }
 
 
 def test_security_check_with_bad_sources_reports_like_sources_check(capsys):

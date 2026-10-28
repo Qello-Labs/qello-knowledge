@@ -19,7 +19,7 @@ Jira 이슈 수집(QK-ING-004, WBS 3.1)은 Phase 3 작업이라 이 기록에 �
 
 ## Decision
 
-Confluence Cloud `SCRUM` 스페이스(전역 스페이스, `type=global`, `status=current`)의 현재 페이지(`status=current`)를 새 자료원 종류로 추가하고,
+Confluence Cloud `SCRUM` 스페이스(팀 스페이스 종류 `global`·`collaboration`·`knowledge_base` 중 하나, `status=current`. 실제 종류는 plan 실측에서 확인)의 현재 페이지(`status=current`)를 새 자료원 종류로 추가하고,
 QK-ING-003 구현 뒤 비활성으로 등록했다가 개인 정보 확인 기록이 승인된 뒤 켠다. 수집은 읽기 범위만 고른 범위 지정 API 토큰을 쓰는 수집 전용 계정(서비스 계정 우선)으로 하고,
 본문은 ADF(`atlas_doc_format`)로 받아 Markdown으로 바꾼다. 개인 스페이스와 보기 제한이 걸린 페이지는 색인하지 않는다.
 
@@ -51,6 +51,10 @@ QK-ING-003 구현 뒤 비활성으로 등록했다가 개인 정보 확인 기�
   | 상위 페이지 | `GET /wiki/api/v2/pages/{id}/ancestors` | `read:content.metadata:confluence` |
   | 보기 제한 상태 | `GET /wiki/api/v2/pages/{id}/restriction-state`(`OPEN`·`EDIT_RESTRICTED`·`VIEW_RESTRICTED`) | `read:page:confluence` |
   | 페이지 직접 권한 | `GET /wiki/api/v2/pages/{id}/permissions` | `read:page:confluence` |
+  | 폴더 보기 제한 상태 | `GET /wiki/api/v2/folders/{id}/restriction-state` | `read:folder:confluence` |
+
+  폴더 행은 2026-10-27 spec 재검토자가 v2 OpenAPI 원본에서 확인했다고 보고했고, 작성 세션은 개발자 문서 페이지가 잘려 직접 확인하지 못했다. plan에서 확인한다.
+  이 범위가 없는 토큰이면 폴더 아래 페이지는 미확인으로 빠진다(QK-ING-003 FR-010).
 
   두 엔드포인트는 페이지 자신의 직접 제한·권한만 준다고 설명돼 있어, 상속 제한은 상위 페이지마다 다시 본다. `restriction-state`가 상속 제한도 반영하는지는 plan에서 재생 응답으로 확인한다.
   v1 `GET /wiki/rest/api/content/{id}/restriction/byOperation`(classic `read:confluence-content.all`)은 v2로 부족할 때의 대안이다 [A4].
@@ -59,7 +63,7 @@ QK-ING-003 구현 뒤 비활성으로 등록했다가 개인 정보 확인 기�
   지원 문서는 토큰 길이가 일정하지 않다고만 하고 접두어를 밝히지 않는다 [A1]. 범위 지정·서비스 계정 토큰이 같은 접두어인지는 발급할 때 사람이 접두어만 확인한다.
   다르면 비밀값 규칙에 더하는 일을 QK-ING-003 범위에 넣는다.
 - 보관: 서버 `/etc/qello-knowledge/sync.env`와 로컬 `.env`에만 둔다. 변수 이름 초안은 `ATLASSIAN_API_TOKEN`, `ATLASSIAN_EMAIL`(기본 인증에 쓰는 계정 메일),
-  `ATLASSIAN_CLOUD_ID`다. 계정 메일은 계정 정보라 저장소와 기록에 적지 않는다(AGENTS.md 6절). 교체·유출 대응은 `tokens.md` 6절 형식으로 더한다.
+  `ATLASSIAN_CLOUD_ID`다. 응답에 사이트 주소(`_links.base`)가 없을 때만 쓰는 선택 항목 `ATLASSIAN_SITE_URL`을 더한다(QK-ING-003 research R-12). 계정 메일은 계정 정보라 저장소와 기록에 적지 않는다(AGENTS.md 6절). 교체·유출 대응은 `tokens.md` 6절 형식으로 더한다.
 
 ### 원본 권한을 `access_scope`로 옮기는 규칙
 
@@ -67,10 +71,10 @@ QK-SEC-001 FR-016대로, 아래 조건을 모두 만족할 때만 "팀 공용"�
 
 | 순서 | 확인 | 팀 공용 조건 | 아니면 |
 | --- | --- | --- | --- |
-| 1 | 스페이스 종류(`GET /spaces?type=`) | `global` | `personal`·`collaboration`·`knowledge_base`·`system`·`onboarding`·`xflow_sample_space` 등 → 미확인. 설정에 개인 스페이스 키가 있으면 설정 오류 |
+| 1 | 스페이스 종류(`GET /spaces?type=`) | `global`·`collaboration`·`knowledge_base` | `personal` → 페이지를 부르지 않고 멈춘다(설정에 개인 스페이스 키 `~`가 있으면 호출 전 설정 오류). `system`·`onboarding`·`xflow_sample_space`와 모르는 값 → 미확인 |
 | 2 | 스페이스 상태 | `current` | `archived`·`trashed` → 그 스페이스의 페이지는 모두 미확인(보안 내림) |
-| 3 | 스페이스 권한 할당(`GET /spaces/{id}/permissions`) | 설정에 적은 "팀 전체" 그룹이 `operation.key=read`, `targetType=space`를 가진다 | 팀 그룹 할당이 없으면 미확인. 팀 그룹 할당을 읽는 데 필요한 값이 모르는 값이면 미확인. 다른 사용자·역할 할당이 더 있는 것은 판정에 영향 없음 |
-| 4 | 페이지와 모든 상위 페이지의 보기 제한(`restriction-state`) | 모두 `VIEW_RESTRICTED`가 아니다 | 제한이 있으면 제한. 조회 실패는 미확인 |
+| 3 | 스페이스 권한 할당(`GET /spaces/{id}/permissions`) | 설정에 그룹 ID로 적은 "팀 전체" 그룹이 `operation.key=read`, `targetType=space`를 가진다 | 팀 그룹 할당이 없으면 미확인. 팀 그룹 할당을 읽는 데 필요한 값이 모르는 값이면 미확인. 다른 사용자·역할 할당이 더 있는 것은 판정에 영향 없음 |
+| 4 | 페이지와 모든 상위 콘텐츠(페이지·폴더)의 보기 제한(`restriction-state`) | 모두 `VIEW_RESTRICTED`가 아니다 | 제한이 있으면 제한. 조회 실패(폴더 범위 없음 포함)는 미확인 |
 | 5 | 페이지 상태 | `current` | 초안·보관·휴지통은 수집하지 않음 |
 
 - 보기 제한은 하위 페이지로 상속되고, 하위 페이지는 상위보다 넓게 열릴 수 없다 [A6]. 그래서 페이지 자신의 제한만 보면 부족하고 상위 페이지를 모두 본다.
@@ -79,7 +83,11 @@ QK-SEC-001 FR-016대로, 아래 조건을 모두 만족할 때만 "팀 공용"�
   `read_restricted`(none/self/ancestor), `ancestor_count`. 사용자·그룹 ID는 남기지 않는다.
 - 수집 계정이 볼 수 없게 된 페이지는 목록에서 빠질 뿐 "제한"으로 보이지 않는다(목록은 볼 수 있는 페이지만 준다 [A3]). 그래서 지난 실행에 있었는데 목록에서 빠진 페이지는
   단건으로 다시 조회해, 접근 거부·없음이면 보안 내림으로 내린다(QK-ING-003 FR-030, 2026-10-27 사용자 결정).
-- 권한 조회가 목록의 10%를 넘는 페이지에서 실패하면(토큰 범위 누락 등) 그 실행을 불완전으로 두고 대량 보안 내림을 하지 않는다(QK-ING-003 FR-031).
+- 권한 조회가 목록의 10%를 넘는 페이지에서 실패하면(토큰 범위 누락 등) 그 실행을 불완전으로 둔다. 미확인 페이지는 검색에서 숨기고, 그 미확인 때문의 본문 삭제와 일반 내림만 보류한다
+  (2026-10-28 사용자 결정, QK-ING-003 FR-031).
+- 스페이스 종류: 새 Confluence는 스페이스를 협업·지식 베이스 목적으로 만들고 종류 값이 `collaboration`·`knowledge_base`로 나온다 [A9]. 그래서 개인 스페이스만 거부하고
+  세 팀 종류를 허용한다(2026-10-28 사용자 결정, QK-ING-003 FR-002).
+- 팀 그룹은 설정에 그룹 ID로 적는다. 스페이스 권한 응답의 권한 주체는 그룹 ID라 바로 비교할 수 있고, 이름을 ID로 바꾸는 조회와 그 범위가 필요 없다(2026-10-28 사용자 결정, QK-ING-003 FR-007).
 - Free 플랜: Confluence Free는 공간 권한·페이지 제한을 바꿀 수 없고 로그인한 사용자 모두에게 열려 있다(기존 설정은 남는다) [A8]. 사이트가 Free면 3·4단계의
   조회 결과가 어떻게 나오는지 plan 단계에서 실측한다. Free면 3단계 대신 "사이트 사용자가 모두 팀원임"을 사람이 확인한 기록을 쓴다.
   기록이 있으면 1·2·4·5단계를 만족하는 페이지를 팀 공용으로 판정하고, 없거나 확인일에서 90일이 지났으면 미확인이다. 사이트 사용자 구성이 바뀌면 기록을 다시 쓴다.
@@ -93,7 +101,8 @@ QK-SEC-001 FR-016대로, 아래 조건을 모두 만족할 때만 "팀 공용"�
 - ADF(`atlas_doc_format`)로 받아 이 저장소의 변환기로 Markdown을 만든다.
   - Jira REST API v3의 설명·댓글도 ADF라서 QK-ING-004가 같은 변환기를 쓸 수 있다(추론).
   - 노드 종류가 정해진 JSON이라 HTML 파싱보다 결정적이다.
-  - 목록 응답에 본문을 함께 받을 수 있어 페이지별 단건 호출이 필요 없다.
+  - 목록 응답에 본문을 함께 받을 수도 있지만, QK-ING-003 plan은 목록을 본문 없이 받고 팀 공용 판정을 통과한 페이지만 단건으로 본문을 받기로 했다.
+    세션이 목록 요청에도 본문 크기 상한을 걸고, 팀 공용이 아닌 페이지의 본문을 받지 않기 위해서다(QK-ING-003 research R-02, 2026-10-28 plan 승인).
 - 변환 규칙(초안. QK-ING-003 명세에서 확정):
   - 제목·문단·목록·표·코드 블록·인용·링크는 Markdown 대응으로 바꾼다.
   - 패널·확장(`expand`)은 제목 줄과 본문으로 펼친다.
@@ -101,7 +110,7 @@ QK-SEC-001 FR-016대로, 아래 조건을 모두 만족할 때만 "팀 공용"�
   - 멘션은 표시 이름만 남기고 계정 ID는 버린다(AGENTS.md 3.1 계정 정보). 회의록 참석자·담당자 이름은 색인한다.
     개인 정보 확인 기록에 이름 색인 허용을 적어야 한다(2026-10-27 사용자 결정, QK-ING-003 FR-017·FR-021).
   - 이미지·첨부는 `[이미지]`·`[첨부: 파일 이름]`만 남기고 받지 않는다.
-- 변환 결과는 QK-CHK-002 Markdown 청커에 그대로 넘긴다(FR-026). 위치 정보는 페이지 ID와 제목 경로를 쓰고, 블록 단위 위치가 필요한지는 명세에서 정한다.
+- 변환 결과는 QK-CHK-002 Markdown 청커에 그대로 넘긴다(FR-026). 위치 정보는 페이지 ID와 제목 경로를 쓰고, 블록 단위 위치는 남기지 않는다(QK-ING-003 FR-019a).
 - 변환 규칙을 바꾸면 같은 원문에서 다른 Markdown이 나오므로, 변환 규칙 버전을 변경 키나 청킹 규칙 버전에 넣는다(AGENTS.md 3.3). 어느 쪽에 넣을지는 plan에서 정한다.
 
 ## Alternatives considered
@@ -127,6 +136,9 @@ QK-SEC-001 FR-016대로, 아래 조건을 모두 만족할 때만 "팀 공용"�
 - [A6] Atlassian Support, "Add or Remove Page Restrictions": https://confluence.atlassian.com/confcloud/page-restrictions-724764891.html (조회 2026-10-27. 검색 결과 요약으로 확인, 본문 직접 열람 안 함). 보기 제한 상속.
 - [A7] CONFCLOUD-26297: https://jira.atlassian.com/browse/CONFCLOUD-26297 (조회 2026-10-27. 검색 결과 요약). 상위 페이지 삭제 시 상속 제한이 풀리는 문제. 해결 여부 미확인.
 - [A8] Atlassian Support, "Adjust permissions before downgrading to Confluence Free": https://support.atlassian.com/confluence-cloud/docs/manage-permissions-in-the-free-edition-of-confluence-cloud/ (조회 2026-10-27. 검색 결과 요약).
+- [A9] Atlassian Support, "Create a space": https://support.atlassian.com/confluence-cloud/docs/create-a-space/ (스페이스 목적 Collaboration·Knowledge base·Custom)와
+  v2 OpenAPI의 `SpaceType`(`collaboration`·`knowledge_base` 포함). 2026-10-27 spec 재검토자가 조회했다고 보고했고, 작성 세션은 직접 열지 않았다.
+  화면의 스페이스 목적이 API 종류 값과 그대로 대응한다는 것은 추론이다. plan 실측에서 `SCRUM`의 종류 값을 확인한다.
 - Workers AI 학습 미사용·보존: ADR-019 Evidence(Cloudflare "Data usage", 조회 2026-10-20). 저장소 정책: ADR-008 "데이터 처리 정책" 절.
 - 이관 사실: `docs/github-workflow.md:5`. Confluence `Qello 마이그레이션 검증 기록`은 이 세션에서 열지 못했다(Atlassian MCP 미인증).
 
@@ -144,7 +156,7 @@ QK-SEC-001 FR-016대로, 아래 조건을 모두 만족할 때만 "팀 공용"�
   - 원본에서 페이지가 지워지거나, 보기 제한이 걸리거나, 개인 스페이스로 옮겨지면 다음 동기화에서 검색에서 내린다(QK-SEC-001 FR-018, QK-SYN-001). 원본 보존 기간은 Atlassian 설정을 따르고 이 시스템이 따로 늘리지 않는다.
 - 무료 한도와 예상 사용량: 페이지 수·크기를 아직 재지 않았다(미확인). QK-ING-003 plan에서 읽기 전용으로 잰다. ADR-019의 비율(1,083 KB → 약 325 Neurons, 보정 전)을 쓰면 1 MB당 약 300 Neurons이고,
   QK-CHK-001 보정 계수를 적용한 실측 방식(ADR-023)으로 다시 계산한다. 첫 색인이 하루 색인 예산(5,000 Neurons)을 넘으면 스페이스나 페이지 트리를 나눠 켠다.
-  Atlassian 요청 수는 페이지 수 × 약 3(본문 목록, 상위, 제한)으로 보고 plan에서 잰다.
+  Atlassian 요청 수는 `Free` 사이트에서 약 `2N + 2F + ⌈N/250⌉ + 1`(N 페이지, F 폴더: 목록, 보기 제한, 통과 페이지 본문)로 추정한다(QK-ING-003 research R-02). 실제 값은 켜기 전 측정으로 잰다.
 - 교체 시 영향(재임베딩, 인덱스 버전): 자료원을 추가하는 일은 인덱스 버전 변경이 아니다(AGENTS.md 3.3). 다만 문서 종류·회의록 메타데이터를 저장하려면 메타데이터 스키마가 바뀔 수 있고,
   그러면 인덱스 버전이 바뀌어 QK-STO-002 활성화 게이트가 필요하다(QK-CHK-001과 같은 문제). ADF 변환 규칙 버전을 어디에 넣을지와 함께 plan에서 정한다(QK-ING-003 FR-019·FR-032).
   상위 페이지 제목이 바뀌면 하위 페이지의 위치가 바뀌어 다시 임베딩된다. 그 비용도 plan 측정에서 본다.

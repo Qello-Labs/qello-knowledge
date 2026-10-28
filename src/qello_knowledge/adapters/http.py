@@ -1,7 +1,7 @@
 """TLS 검증·인증 호스트 제한을 적용하는 읽기 전송. 로그를 남기지 않는다."""
 
 import ssl
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from email.message import Message
 from http.client import HTTPException
 from typing import IO
@@ -28,6 +28,9 @@ class _HttpsRequest(Request):
         super().__init__(url, headers=dict(headers), method=method)
 
 
+GITHUB_DEFAULT_HEADERS = {"x-github-api-version": "2022-11-28"}
+
+
 class HttpsTransport:
     def __init__(
         self,
@@ -37,9 +40,14 @@ class HttpsTransport:
         user_agent: str = "qello-knowledge-indexer",
         timeout_seconds: float = 30,
         opener: OpenerDirector | None = None,
+        authorization: Callable[[], str] | None = None,
+        default_headers: Mapping[str, str] | None = None,
     ) -> None:
+        """`authorization`·`default_headers`가 없으면 GitHub 방식(`Bearer`, API 버전 헤더)이다(QK-ING-003 R-14)."""
         self._auth_hosts = auth_hosts
         self._token = token
+        self._authorization = authorization
+        self._default_headers = dict(GITHUB_DEFAULT_HEADERS if default_headers is None else default_headers)
         self._user_agent = user_agent
         self._timeout = timeout_seconds
         self._opener = (
@@ -49,10 +57,13 @@ class HttpsTransport:
         )
 
     def send(self, request: SourceRequest) -> SourceResponse:
-        headers = {"user-agent": self._user_agent, "x-github-api-version": "2022-11-28"}
+        headers = {"user-agent": self._user_agent, **self._default_headers}
         headers.update({k.lower(): v for k, v in request.headers.items() if k.lower() != "authorization"})
-        if urlsplit(request.url).hostname in self._auth_hosts and self._token is not None:
-            headers["authorization"] = "Bearer " + self._token.reveal()
+        if urlsplit(request.url).hostname in self._auth_hosts:
+            if self._authorization is not None:
+                headers["authorization"] = self._authorization()
+            elif self._token is not None:
+                headers["authorization"] = "Bearer " + self._token.reveal()
         try:
             outgoing = _HttpsRequest(request.url, headers=headers, method=request.method)
             try:

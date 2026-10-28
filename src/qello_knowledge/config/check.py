@@ -140,8 +140,13 @@ def _code_checks(settings: Settings) -> tuple[CrossCheck, ...]:
             detail = f"{code.limit_tokens} > {budget}"
             checks.append(CrossCheck(CODE_LIMIT_OVER_CONTEXT_BUDGET, False, detail))
     chunking = index_chunking_version(ChunkingSettings(model_version=code.model_version), code)
-    version = index_version_id(model.model_version, model.dimension, chunking, metadata_schema_version(code))
-    if version not in INDEX_KEYWORD_RULES:
+    # 환경값만으로는 Confluence 켜짐을 모른다. 둘 중 하나라도 등록돼 있으면 통과하고 정확한 값은 자료원 쪽 검사가 본다
+    # (QK-ING-003 research R-10).
+    versions = {
+        index_version_id(model.model_version, model.dimension, chunking, metadata_schema_version(code, confluence))
+        for confluence in (False, True)
+    }
+    if not versions & INDEX_KEYWORD_RULES.keys():
         checks.append(CrossCheck(CODE_INDEX_VERSION_UNREGISTERED, False, CODE_INDEX_VERSION_UNREGISTERED))
     return tuple(checks)
 

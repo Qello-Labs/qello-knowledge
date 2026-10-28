@@ -1,0 +1,57 @@
+{
+ "title": "2026-10-15 정기 회의",
+ "doc_type": "회의록",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "table",
+    "content": [
+     {
+      "type": "tableRow",
+      "content": [
+       {
+        "type": "tableCell",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "회의 종류"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "정기 회의"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "본문"
+     }
+    ]
+   }
+  ]
+ }
+}

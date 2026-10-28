@@ -63,6 +63,10 @@ GEN_TEMPERATURE = _pattern(r"0(?:\.[0-9]{1,3})?|1(?:\.0{1,3})?", "0 이상 1 이
 GEN_TIMEOUT = _pattern(r"[1-9]|[1-5][0-9]|60", "1 이상 60 이하 정수(초)")
 GEN_PROMPT = _pattern(r"gen-p1|gen-base", "`gen-p1` 또는 `gen-base`")
 SWITCH = _pattern(r"off|on", "`off` 또는 `on`")
+NO_SPACE_20 = _pattern(r"\S{20,}", "공백 없는 20자 이상")
+EMAIL = _pattern(r"[^@\s]+@[^@\s]+\.[^@\s]+", "메일 주소 형식")
+UUID = _pattern(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", "UUID 형식")
+HTTPS_SITE = _pattern(r"https://[A-Za-z0-9.-]+(?:/wiki)?/?", "`https://<호스트>` 또는 `https://<호스트>/wiki`")
 
 
 def _integer_range(low: int, high: int) -> Rule:
@@ -121,6 +125,39 @@ SETTINGS: tuple[SettingSpec, ...] = (
         required=True,
         secret=True,
         rule=GITHUB_TOKEN,
+    ),
+    # Confluence 자료원(QK-ING-003 research R-12). 켜진 Confluence 자료원이 있을 때만 자료원 검사가 요구한다.
+    SettingSpec(
+        name="ATLASSIAN_API_TOKEN",
+        description="Confluence 읽기 범위만 고른 Atlassian 범위 지정 API 토큰",
+        entrypoints=frozenset({Entrypoint.INDEX}),
+        required=False,
+        secret=True,
+        rule=NO_SPACE_20,
+    ),
+    SettingSpec(
+        name="ATLASSIAN_EMAIL",
+        description="Atlassian 기본 인증에 쓰는 수집 계정 메일. 계정 정보라 값을 출력하지 않는다",
+        entrypoints=frozenset({Entrypoint.INDEX}),
+        required=False,
+        secret=True,
+        rule=EMAIL,
+    ),
+    SettingSpec(
+        name="ATLASSIAN_CLOUD_ID",
+        description="Atlassian API 게이트웨이 경로에 쓰는 사이트 Cloud ID. 내부 식별값이라 값을 출력하지 않는다",
+        entrypoints=frozenset({Entrypoint.INDEX}),
+        required=False,
+        secret=True,
+        rule=UUID,
+    ),
+    SettingSpec(
+        name="ATLASSIAN_SITE_URL",
+        description="응답에 사이트 주소(`_links.base`)가 없을 때만 쓰는 Confluence 사이트 기준 주소(선택)",
+        entrypoints=frozenset({Entrypoint.INDEX}),
+        required=False,
+        secret=True,
+        rule=HTTPS_SITE,
     ),
     SettingSpec(
         name="CLOUDFLARE_API_TOKEN",

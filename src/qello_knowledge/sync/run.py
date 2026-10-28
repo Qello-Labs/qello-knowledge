@@ -37,12 +37,13 @@ class SyncDependencies:
     clock: object
     preflight: object = None
     code_chunking: object = None  # 코드 청킹 설정. `None`이면 꺼짐(QK-CHK-001 research R-09)
+    confluence: bool = False  # 활성 Confluence 자료원이나 그 등록 이력이 있으면 참(QK-ING-003 research R-10)
 
 
 def current_spec(deps):
     model = MODELS[deps.chunking_settings.model_version]
     version = index_chunking_version(deps.chunking_settings, deps.code_chunking)
-    meta = metadata_schema_version(deps.code_chunking)
+    meta = metadata_schema_version(deps.code_chunking, deps.confluence)
     return IndexSpec(
         index_version_id(model.model_version, model.dimension, version, meta),
         model.model_version,

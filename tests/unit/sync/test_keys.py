@@ -49,3 +49,41 @@ def test_scope_key_accepts_the_common_source_scope_value():
 
     scope = SourceScope(("**/*.md",), ("private/**",), (("repo", "Owner/Repo"), ("ref", "Main")))
     assert scope_key("github_repo_files", scope) == "github_repo_files:owner/repo@main"
+
+
+def test_input_fingerprint_extra_is_optional_and_only_changes_when_given():
+    base = chunk_input_hash("hash", "docs/a.md", "Title")
+    assert chunk_input_hash("hash", "docs/a.md", "Title", extra=None) == base
+    with_extra = chunk_input_hash("hash", "docs/a.md", "Title", extra='{"rules":"adf-md-v1"}')
+    assert with_extra != base
+    assert with_extra != chunk_input_hash("hash", "docs/a.md", "Title", extra='{"rules":"adf-md-v2"}')
+    assert re.fullmatch("[a-f0-9]{64}", with_extra)
+
+
+def test_confluence_scope_key_uses_space_id():
+    from qello_knowledge.domain.source_config import SourceScope
+
+    scope = SourceScope(("**",), (), (("space_id", "12345"), ("space_key", "SCRUM")))
+    assert scope_key("confluence_pages", scope) == "confluence_pages:12345"
+    renamed = SourceScope(("**",), (), (("space_id", "12345"), ("space_key", "NEW")))
+    assert scope_key("confluence_pages", renamed) == "confluence_pages:12345"
+
+
+def test_confluence_scope_key_requires_space_id():
+    import pytest
+
+    from qello_knowledge.domain.source_config import SourceScope
+
+    with pytest.raises(ValueError):
+        scope_key("confluence_pages", SourceScope(("**",), (), (("space_id", ""), ("space_key", "SCRUM"))))
+
+
+def test_metadata_schema_version_combines_code_and_confluence():
+    from qello_knowledge.sync.keys import metadata_schema_version
+
+    code = object()
+    assert metadata_schema_version() == "meta-v1"
+    assert metadata_schema_version(code) == "meta-v2"
+    assert metadata_schema_version(None, confluence=False) == "meta-v1"
+    assert metadata_schema_version(None, confluence=True) == "meta-v1+cf1"
+    assert metadata_schema_version(code, confluence=True) == "meta-v2+cf1"

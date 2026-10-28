@@ -1,0 +1,305 @@
+{
+ "title": "기본 문서",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "heading",
+    "attrs": {
+     "level": 1
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "개요"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "굵게",
+      "marks": [
+       {
+        "type": "strong"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "text": " 그리고 "
+     },
+     {
+      "type": "text",
+      "text": "기울임",
+      "marks": [
+       {
+        "type": "em"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "text": ", "
+     },
+     {
+      "type": "text",
+      "text": "code()",
+      "marks": [
+       {
+        "type": "code"
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "text": ", "
+     },
+     {
+      "type": "text",
+      "text": "취소",
+      "marks": [
+       {
+        "type": "strike"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "bulletList",
+    "content": [
+     {
+      "type": "listItem",
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "하나"
+         }
+        ]
+       },
+       {
+        "type": "bulletList",
+        "content": [
+         {
+          "type": "listItem",
+          "content": [
+           {
+            "type": "paragraph",
+            "content": [
+             {
+              "type": "text",
+              "text": "하나-가"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "listItem",
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "둘"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "orderedList",
+    "attrs": {
+     "order": 3
+    },
+    "content": [
+     {
+      "type": "listItem",
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "셋"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "listItem",
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "넷"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "taskList",
+    "content": [
+     {
+      "type": "taskItem",
+      "attrs": {
+       "state": "DONE"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "끝난 일"
+       }
+      ]
+     },
+     {
+      "type": "taskItem",
+      "attrs": {
+       "state": "TODO"
+      },
+      "content": [
+       {
+        "type": "text",
+        "text": "남은 일"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "blockquote",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "인용 첫 줄"
+       }
+      ]
+     },
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "인용 둘째 줄"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "rule"
+   },
+   {
+    "type": "table",
+    "content": [
+     {
+      "type": "tableRow",
+      "content": [
+       {
+        "type": "tableHeader",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "열 A"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableHeader",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "열 B"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "tableRow",
+      "content": [
+       {
+        "type": "tableCell",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "a|1"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "tableCell",
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "b"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "줄"
+     },
+     {
+      "type": "hardBreak"
+     },
+     {
+      "type": "text",
+      "text": "바꿈"
+     }
+    ]
+   }
+  ]
+ }
+}

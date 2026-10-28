@@ -82,6 +82,9 @@ def source_summary(plan, execution):
         embedding=embedding,
         failures=failures,
         security_takedowns=security,
+        # 아래 두 값은 채워졌을 때만 넣어 GitHub 요약의 키가 그대로이게 한다(QK-ING-003 data-model 10절).
+        **({"incomplete_reason": plan.incomplete_reason} if plan.incomplete_reason else {}),
+        **({"kind_summary": summary_values(plan.kind_summary)} if plan.kind_summary else {}),
     )
 
 

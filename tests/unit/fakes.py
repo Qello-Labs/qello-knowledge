@@ -29,6 +29,10 @@ def valid_environ() -> dict[str, str]:
         "QK_DISCORD_GUILD_ID": "900000000000000006",
         "DISCORD_PUBLIC_KEY": "f" * 64,
         "DISCORD_BOT_TOKEN": "d" * 60,
+        "ATLASSIAN_API_TOKEN": "t" * 24,
+        "ATLASSIAN_EMAIL": "collector" + "@" + "site.invalid",
+        "ATLASSIAN_CLOUD_ID": "-".join(("0" * 8, "0" * 4, "0" * 4, "0" * 4, "0" * 12)),
+        "ATLASSIAN_SITE_URL": "https://" + "site.invalid",
     }
 
 

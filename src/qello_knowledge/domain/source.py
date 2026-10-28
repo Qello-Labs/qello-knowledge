@@ -72,6 +72,22 @@ class ResponseOutcome(StrEnum):
     AUTH = "AUTH"
 
 
+class ConversionWarningKind(StrEnum):
+    UNSUPPORTED_BLOCK = "UNSUPPORTED_BLOCK"
+    TABLE_FLATTENED = "TABLE_FLATTENED"
+    MEETING_METADATA_MISSING = "MEETING_METADATA_MISSING"
+    NOT_GLOSSARY = "NOT_GLOSSARY"
+
+
+class MissingCheck(StrEnum):
+    """목록에서 사라진 자료의 단건 확인 결과(QK-ING-003 research R-04)."""
+
+    GONE = "GONE"
+    ARCHIVED = "ARCHIVED"
+    PRESENT = "PRESENT"
+    UNCERTAIN = "UNCERTAIN"
+
+
 def _aware(value: datetime | None) -> None:
     if value is not None and (value.tzinfo is None or value.utcoffset() is None):
         raise ValueError("시간대 있는 시각이 필요하다")
@@ -103,6 +119,7 @@ class SourceItem:
     size_bytes: int | None
     access: AccessInfo
     origin_state: OriginState | None
+    exclusion: str | None = None  # 어댑터가 정한 색인 제외 사유. 보안 필터 PATH 단계가 따른다(QK-ING-003 R-07)
 
     def __post_init__(self) -> None:
         if not self.source_id.strip() or not self.change_key.strip():
@@ -111,6 +128,19 @@ class SourceItem:
         if parts.scheme != "https" or not parts.hostname:
             raise ValueError("원본 링크는 HTTPS여야 한다")
         _aware(self.modified_at)
+
+
+@dataclass(frozen=True)
+class ConversionWarning:
+    """본문 변환에서 잃은 내용. 원문은 담지 않고 종류와 최상위 블록 순번만 남긴다."""
+
+    kind: ConversionWarningKind
+    block: int
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "kind", ConversionWarningKind(self.kind))
+        if type(self.block) is not int or self.block < 0:
+            raise ValueError("블록 순번은 0 이상 정수다")
 
 
 @dataclass(frozen=True)
@@ -123,9 +153,14 @@ class SourceContent:
     title: str | None
     content_hash: str = ""
     fetched_at: datetime | None = None
+    locator_extra: Mapping[str, object] | None = field(default=None, repr=False)
+    fingerprint_extra: str | None = field(default=None, repr=False)
+    conversion_warnings: tuple[ConversionWarning, ...] = ()
 
     def __post_init__(self) -> None:
         _aware(self.fetched_at)
+        if self.locator_extra is not None:
+            object.__setattr__(self, "locator_extra", MappingProxyType(dict(self.locator_extra)))
 
 
 @dataclass(frozen=True)
@@ -145,6 +180,7 @@ class ListPage:
     next_cursor: str | None
     complete: bool = True
     origin: SourceOrigin | None = None
+    incomplete_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -164,6 +200,7 @@ class Listing:
     excluded: int = 0
     stop: StopInfo | None = None
     origin: SourceOrigin | None = None
+    incomplete_reason: str | None = None
 
 
 @dataclass(frozen=True)

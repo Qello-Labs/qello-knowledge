@@ -1,0 +1,79 @@
+{
+ "title": "이스케이프",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "```"
+     }
+    ]
+   },
+   {
+    "type": "heading",
+    "attrs": {
+     "level": 2
+    },
+    "content": [
+     {
+      "type": "text",
+      "text": "이어지는 절"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "# 제목 아님"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "- 목록 아님"
+     },
+     {
+      "type": "hardBreak"
+     },
+     {
+      "type": "text",
+      "text": "1. 번호 아님"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "중간의 # 기호"
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "코드 ```안",
+      "marks": [
+       {
+        "type": "code"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

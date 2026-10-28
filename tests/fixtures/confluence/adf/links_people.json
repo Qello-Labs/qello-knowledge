@@ -1,0 +1,95 @@
+{
+ "title": "사람 링크",
+ "doc_type": "설계 문서",
+ "doc": {
+  "type": "doc",
+  "version": 1,
+  "content": [
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "지라 프로필",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/jira/people/acct-000"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "프로필",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/people/acct-000"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "인코딩 개인",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/wiki/spaces/%7Eacct-000/overview"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "site.invalid/wiki/people/acct-000",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/wiki/people/acct-000"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "type": "paragraph",
+    "content": [
+     {
+      "type": "text",
+      "text": "일반 페이지",
+      "marks": [
+       {
+        "type": "link",
+        "attrs": {
+         "href": "https://site.invalid/wiki/x/AbCd"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
