@@ -156,3 +156,7 @@ QK_REQUIRE_LOCALDB=1 uv run pytest
   검토자는 이 작업 폴더가 `origin/main`보다 20커밋 뒤라고 지적했다(겹치는 파일은 `domain/redact.py` 하나). 다시 쌓기는 사람 승인 뒤에 한다.
 - 2026-10-28 검증(검토 반영 뒤, 같은 세션의 자기 검증): preflight(906 파일)·`git diff --check`·ruff check·format --check 통과, `qk-migrate` `applied=0 skipped=7`,
   `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,287 passed·3 deselected. 외부 호출 0건, 0 Neurons. 커밋·다시 쌓기 전이다.
+- 2026-10-28 사실(다시 쌓기, 사용자 지시): `origin/main` `d0542bb` 위로 커밋 16개를 다시 쌓았다. 15개는 충돌 없이 올라갔고, 양쪽이 고친 `domain/redact.py`는 자동 병합됐다
+  (이 브랜치 몫은 `OutputContext.opaque_item_fields` 한 줄 그대로). `TASK.md` 충돌은 이 계약을 남겨 풀었다. push는 하지 않았다.
+- 2026-10-28 검증(다시 쌓은 뒤, 같은 세션의 자기 검증): preflight(908 파일)·`git diff --check`·ruff check·format --check 통과, `qk-migrate` 두 번 모두 `applied=0 skipped=7`,
+  `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,347 passed·3 deselected(`main`에서 들어온 시험 포함), `qk-index sources check` 통과(활성 1, 비활성 3, 오류 0). 외부 호출 0건, 0 Neurons.
