@@ -290,3 +290,17 @@ test("시작 확인 실패는 상태나 예외 이름만 기록한다", async ()
   assert.deepEqual(Object.keys(start).sort(), ["elapsed_ms", "error", "kind"]);
   assert.equal(start.error, "status_409");
 });
+
+// QK-OBS-001: 원본 종류에 따른 콜백과 대체 문구.
+test("OBS component callbacks and kind-specific fallback", () => {
+  for (const type of [4, 7]) {
+    const got = relayResponse(enc(JSON.stringify({type: 3})), 200, enc(JSON.stringify({type, data: {content: "synthetic"}})), {});
+    assert.equal(got.body.type, type);
+    assert.equal(got.logKind, "relayed");
+  }
+  for (const original of [{type:3}, {type:2, data:{name:"sources"}}]) {
+    const got = relayResponse(enc(JSON.stringify(original)), null, enc(JSON.stringify({})), {});
+    assert.equal((got.body.data as Record<string, unknown>).content,
+      "지금은 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+  }
+});
