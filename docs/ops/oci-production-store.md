@@ -536,3 +536,51 @@ WantedBy=multi-user.target
 6. 되돌리기: 4번과 같은 방식으로 링크를 직전 릴리스(처음에는 `/opt/qello-knowledge-query`)로 돌리고 재시작한 뒤 5번을 다시 확인한다.
    이 구성 이전으로 완전히 되돌리려면 유닛 백업을 `/etc/systemd/system/qk-query.service`로 복원하고 `systemctl daemon-reload`·재시작한 뒤 링크를 지운다.
 7. 정리: 지금 릴리스와 직전 릴리스 하나를 남기고, 그보다 오래된 릴리스는 사람 승인 뒤 지운다. 릴리스 하나는 약 140~170 MB다.
+
+### 7.7 질의 기록·평가·동의 원문(QK-OBS-001)
+
+이 절은 사람이 수행하는 배포 절차다. 명령마다 대상과 승인을 확인한다. 이 변경은 인덱스 버전을 바꾸지 않으며 기본 설정은 `QK_QUERY_LOG_ENABLED=false`다.
+
+1. ADR-016을 사람이 승인하고 Discord 공지·Confluence 동의 문서의 링크와 날짜를 Follow-ups에 기록한다. 보존 상한 날짜도 사람이 정한다.
+2. 관리 연결로 새 릴리스의 `qk-migrate --env-file <admin-config>`를 두 번 실행한다. 첫 실행은 `0008_query_log` 성공, 두 번째는 `applied=0`이어야 한다.
+   기존 0001~0007은 고치지 않는다. 새 표는 `query_record`, `query_feedback`, `query_text`, `query_erasure_run` 네 개다.
+3. 관리 연결에서 아래 읽기 전용 질의로 소유자와 권한을 확인한다. 출력의 역할 이름은 운영 기록에 복사하지 않고 확인 결과만 적는다.
+
+   ```sql
+   SELECT p.proname, pg_get_userbyid(p.proowner) AS owner, p.prosecdef, p.proconfig,
+          NOT EXISTS (SELECT 1 FROM aclexplode(coalesce(p.proacl, acldefault('f',p.proowner))) a
+                      WHERE a.grantee=0 AND a.privilege_type='EXECUTE') AS public_execute_revoked
+   FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='qk' AND p.proname IN (
+       'query_record_insert','query_record_delivered','query_feedback_set',
+       'query_text_store','query_text_skip','query_text_status','sources_summary');
+   SELECT name, privilege, has_table_privilege('qk_query','qk.'||name,privilege) AS granted
+   FROM unnest(ARRAY['query_record','query_feedback','query_text','query_erasure_run']) name
+   CROSS JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE']) privilege;
+   SELECT has_schema_privilege('qk_query','qk','CREATE');
+   ```
+
+   여섯 기록 함수는 마이그레이션 역할 소유, `SECURITY DEFINER`, `search_path=qk, pg_temp`, PUBLIC 실행 회수여야 한다.
+   `sources_summary`는 INVOKER다. 질의 역할의 네 표 직접 권한과 스키마 CREATE는 모두 false여야 한다.
+4. `qk-query.service`의 `[Service]`에 `LimitCORE=0`을 적용하고 `systemd-analyze verify <unit-file>`로 검사한다.
+   `swapon --show --noheadings`로 스왑 사용 여부를 확인하고 원문 대기가 파일로 나가지 않는 운영 조건을 공유 인스턴스 관리자와 확인한다.
+   스왑 설정 변경은 공유 서비스에 영향을 줄 수 있어 이 절에서 자동으로 실행하지 않는다.
+5. 7.6 순서로 새 질의 릴리스를 기록 기능 꺼짐으로 배포하고 `/ask` 본문과 healthz를 확인한다.
+   `node --test workers/relay/relay.test.ts`를 통과한 중계를 재배포한다. 콜백 7은 컴포넌트에만 허용된다.
+6. 로컬 등록 설정으로 `qk-query register-commands --env-file <register-config> --dry-run`을 확인한 뒤 등록한다.
+   목록은 `/ask`와 `/sources`다. 등록은 전체 덮어쓰기이므로 다른 명령이 추가됐는지 먼저 확인한다.
+7. 숨김 입력으로 질의 설정의 `QK_QUERY_TEXT_RETAIN_UNTIL`을 승인한 UTC 날짜로, `QK_QUERY_LOG_ENABLED`를 `true`로 바꾸고 설정 검사·재시작한다.
+   질문자만 동의한 질문을 저장하며 답변 본문은 저장하지 않는다. 동의 전 대기는 메모리에 최대 1시간·500건이고 재시작하면 사라진다.
+8. 운영 확인은 명세 quickstart의 H03/M-01~M-03을 따른다. `/ask` 비용 예상량과 사람 승인이 필요하다.
+   동의 메시지에서 콜백 7이 버튼을 없애는지는 실제 화면으로 확인한다. 이 절 작성 시점에는 운영 확인을 실행하지 않았다.
+
+되돌리기: 기록 기능을 `false`로 바꾸고 재시작한다. `/sources`는 계속 동작하고 기록·버튼·원문 대기는 멈춘다. 새 표와 함수는 유지한다.
+
+사용자 삭제는 식별자를 표준 입력 한 줄로 전달해 `qk-index queries erase-user --env-file <admin-config>`로 건수를 먼저 확인하고,
+동일 명령에 `--confirm`을 붙여 실행한다. 식별자를 명령 인자·이력·운영 기록에 적지 않는다. 메모리 대기는 이 명령이 지우지 못하므로 1시간 뒤 다시 실행하거나 서비스를 재시작한다.
+전체 원문 삭제는 `qk-index queries erase-texts --env-file <admin-config>`로 확인하고 `--confirm`으로 실행한다. 질의 메타데이터·평가는 남는다.
+보존 상한 경과 시 자동 삭제하지 않으므로 집계 보고의 경고에 따라 사람이 삭제·연장을 결정한다.
+
+보고는 `qk-index queries report --since <UTC-start-date> --until <UTC-end-date> --json --env-file <admin-config>`다.
+동의 질문 내보내기는 `qk-index queries export --out <outside-worktree-file> --env-file <admin-config>`이며 기본은 👎 사례, `--all`은 전체다.
+새 파일만 권한 0600으로 만든다. 저장소에 커밋하지 않고 평가 세트로 옮길 때 개인 정보·비공개 원문을 지운다. 원문 삭제 시 내보낸 사본도 지운다.
