@@ -1,6 +1,6 @@
 # Feature Specification: QK-OBS-001 질의 로그, 👍/👎 피드백, `/sources`, 질의 원문 저장 옵션
 
-**Feature Branch**: `feat/SCRUM-120-gh-87-query-log-feedback`
+**Feature Branch**: `feat/SCRUM-123-gh-87-query-log-feedback`
 
 **Created**: 2026-10-29
 

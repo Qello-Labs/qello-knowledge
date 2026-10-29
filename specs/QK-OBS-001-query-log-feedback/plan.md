@@ -1,6 +1,6 @@
 # Implementation Plan: QK-OBS-001 질의 로그, 👍/👎 피드백, `/sources`, 질의 원문 저장 옵션
 
-**Branch**: `feat/SCRUM-120-gh-87-query-log-feedback` | **Date**: 2026-10-29 | **Spec**: [spec.md](spec.md)
+**Branch**: `feat/SCRUM-123-gh-87-query-log-feedback` | **Date**: 2026-10-29 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/QK-OBS-001-query-log-feedback/spec.md`(2026-10-29 사용자 승인)
 

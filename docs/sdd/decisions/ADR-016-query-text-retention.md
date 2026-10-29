@@ -2,7 +2,7 @@
 
 > Created at: `2026-10-10`
 > ClickUp 작업: 해당 없음: 초기 세팅 단계 예외(WBS 0.9)
-> Jira 이슈(2026-10-29 갱신): `https://tkv123.atlassian.net/browse/SCRUM-120`
+> Jira 이슈(2026-10-29 갱신, 2026-10-30 정정): `https://tkv123.atlassian.net/browse/SCRUM-123`
 > 기능명세서 ID: 해당 없음: Phase 0 준비 작업. 2026-10-29 갱신은 `QK-OBS-001`
 > Status: Proposed
 

@@ -6,11 +6,11 @@
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-120` / https://tkv123.atlassian.net/browse/SCRUM-120 (상위 `SCRUM-42` 팀 RAG 구축)
+- Jira 이슈: `SCRUM-123` / https://tkv123.atlassian.net/browse/SCRUM-123 (상위 `SCRUM-42` 팀 RAG 구축, 2026-10-30 SCRUM-120에서 정정)
 - 기능명세서 ID / 링크: `QK-OBS-001` / `specs/QK-OBS-001-query-log-feedback/spec.md`(Draft)
 - 팀 스프린트 ID: `QELLO-S2026-W44`
 - GitHub Issue: `#87`
-- Branch: `feat/SCRUM-120-gh-87-query-log-feedback`
+- Branch: `feat/SCRUM-123-gh-87-query-log-feedback`(2026-10-30 `feat/SCRUM-120-gh-87-query-log-feedback`에서 이름 변경)
 - Base branch: `main`. 2026-10-29 `origin/main` `81b974c`(#86 병합)에서 분기했다. 이전 `main`의 QK-ING-003 계약은 git 이력에 남긴다.
 
 ## Objective
@@ -197,3 +197,8 @@ node --test workers/relay/relay.test.ts
 - 2026-10-29 사실: M1 후속 재검토(오른쪽 위 검토자, 읽기 전용) 판정은 승인 권고다(새 지적 0). 새 계약이 spec FR-008·SC-004와 맞고, 구현이 계약을 지키며, 고친 시험이 네 조건(취소 요청 시각 0~+50 ms, 마감 안 timeout, 롤백, 새 연결 복구)을 검증한다고 확인했다.
   남은 위험은 네트워크 단절·취소 전달 실패·극심한 스케줄링 지연 미재현과, 서버 취소 완료 시각 비보장(계약에 명시)이다. 구현 검토는 M1·M2 범위에서 끝났다.
 - 2026-10-29 사용자 결정: `/harness-commit` 분할 초안(11개)을 승인했다("응 그대로 커밋해줘"). `query/app.py`·`jobs.py`에 기록·평가·동의·`/sources`가 섞여 7번 커밋 하나로 묶고 본문에 목적을 나눠 적었다. push·PR은 하지 않았다.
+- 2026-10-30 사실(Jira 정정, 사용자 지적): SCRUM-120은 QK-OBS-001 이슈가 아니었다(Jira 확인: "신고 양식의 흐름도와 시나리오 작성", 회의록 라벨, 상위 이슈 없음). 작성 세션이 사용자가 준 키를 Jira에서 확인하지 않고
+  #87의 "기존 Jira 이슈 키"에 넣어 SCRUM-42 하위 작업 자동 생성이 건너뛰어졌다. 위 기록의 SCRUM-120은 당시 기록으로 남기고, 이 작업의 Jira 이슈는 SCRUM-123이다.
+- 2026-10-30 사용자 결정·사실: #87 본문의 기존 키를 지우고 `Jira subtask` 워크플로를 #87로 수동 실행해 SCRUM-42 아래 SCRUM-123을 만들었다(Jira 확인: Subtask, 상위 SCRUM-42).
+  GitHub에서 브랜치 이름을 `feat/SCRUM-123-gh-87-query-log-feedback`로 바꿨다. 이때 GitHub가 head 브랜치 이름 변경을 삭제로 처리해 PR #88이 닫혔다(작성 세션이 이 동작을 미리 확인하지 않았다).
+  코드·커밋은 그대로다. SCRUM-120 자체는 고치지 않았다.
