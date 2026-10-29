@@ -83,7 +83,7 @@ def test_bot_user_fields_are_ignored_and_body_boundary():
     payload["user"] = payload["member"]["user"]
     item = parse(json.dumps(payload).encode())
     assert "synthetic-user" not in repr(item) and "synthetic-name" not in repr(item)
-    assert not hasattr(item, "user_id") and not hasattr(item, "username")
+    assert not hasattr(item, "username") and item.user_id not in repr(item)
     body = ask("q")
     assert parse(body + b" " * (65536 - len(body))).kind is InteractionKind.COMMAND
 

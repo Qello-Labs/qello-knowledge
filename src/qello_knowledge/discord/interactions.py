@@ -2,6 +2,7 @@
 
 import json
 
+from qello_knowledge.discord.components import parse_custom_id
 from qello_knowledge.domain.discord import ChannelKind, FirstResponse, Interaction, InteractionKind
 
 MAX_BODY_BYTES = 64 * 1024
@@ -29,12 +30,12 @@ def parse(body: bytes) -> Interaction:
         return _other()
     if payload["type"] == 1:
         return Interaction("", "", InteractionKind.PING, None, None, False, None, None, ChannelKind.OTHER, ())
-    if payload["type"] != 2:
+    if payload["type"] not in (2, 3):
         return _other()
     data = payload.get("data")
     channel = payload.get("channel")
     member = payload.get("member", {})
-    if not isinstance(data, dict) or data.get("name") != "ask":
+    if not isinstance(data, dict) or (payload["type"] == 2 and data.get("name") not in ("ask", "sources")):
         return _other()
     if not isinstance(channel, dict) or not isinstance(member, dict):
         return _other()
@@ -43,7 +44,9 @@ def parse(body: bytes) -> Interaction:
     guild = payload.get("guild_id")
     if guild is not None and (not isinstance(guild, str) or not guild):
         return _other()
-    options = data.get("options")
+    component = payload["type"] == 3
+    command = None if component else data["name"]
+    options = data.get("options") if command == "ask" else []
     if not isinstance(options, list):
         return _other()
     arguments = {}
@@ -55,7 +58,7 @@ def parse(body: bytes) -> Interaction:
             return _other()
         arguments[name] = option["value"]
     question = arguments.get("질문")
-    if not isinstance(question, str):
+    if command == "ask" and not isinstance(question, str):
         return _other()
     private = arguments.get("나만_보기", False)
     private = private if type(private) is bool else True
@@ -74,14 +77,25 @@ def parse(body: bytes) -> Interaction:
     return Interaction(
         payload["id"],
         payload["token"],
-        InteractionKind.COMMAND,
-        "ask",
+        InteractionKind.COMPONENT if component else InteractionKind.COMMAND,
+        command,
         question,
         private,
         guild,
         payload["channel_id"],
         channel_kind,
         tuple(roles),
+        user_id=(
+            member.get("user", {}).get("id")
+            if guild is not None and isinstance(member.get("user"), dict) and isinstance(member["user"].get("id"), str)
+            else None
+        ),
+        component_action=(
+            parsed[0]
+            if (parsed := parse_custom_id(data.get("custom_id"))) and component and data.get("component_type") == 2
+            else None
+        ),
+        component_run_id=parsed[1] if parsed and component and data.get("component_type") == 2 else None,
     )
 
 

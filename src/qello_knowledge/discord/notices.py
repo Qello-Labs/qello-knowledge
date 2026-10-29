@@ -92,3 +92,20 @@ def status_notice(
     if status is GenerationStatus.GENERATION_FAILED and generation_failure is not None:
         return failure_notice(generation_failure, run_id)
     return _with_reference(STATUS_NOTICES[status], run_id)
+
+
+OBS_NOTICES = {
+    "access_component": "여기서는 이 버튼을 쓸 수 없습니다.",
+    "access_sources": "여기서는 `/sources`를 쓸 수 없습니다.",
+    "missing": "평가를 남기지 못했습니다.",
+    "uncertain": "저장 여부를 확인하지 못했습니다. 다시 눌러 주세요.",
+    "feedback": "평가를 남겼습니다.",
+    "secret": "비밀값으로 보이는 내용이 있어 저장하지 않았습니다.",
+    "stored": "질문을 저장했습니다. 지우려면 운영 담당자에게 삭제를 요청해 주세요.",
+    "text_missing": "저장하지 못했습니다. 평가는 남았습니다.",
+    "skipped": "저장하지 않았습니다.",
+    "exists": "이미 저장된 질문입니다. 지우려면 운영 담당자에게 삭제를 요청해 주세요.",
+    "chosen": "이미 선택했습니다.",
+    "expired": "질문이 남아 있지 않아 저장하지 못했습니다. 평가는 남았습니다.",
+    "sources_failed": "지금은 자료 목록을 볼 수 없습니다. 잠시 후 다시 시도해 주세요.",
+}

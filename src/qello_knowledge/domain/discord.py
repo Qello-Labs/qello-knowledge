@@ -12,6 +12,7 @@ from types import MappingProxyType
 class InteractionKind(StrEnum):
     PING = "ping"
     COMMAND = "command"
+    COMPONENT = "component"
     OTHER = "other"
 
 
@@ -63,6 +64,9 @@ class Interaction:
     channel_id: str | None
     channel_kind: ChannelKind
     member_roles: tuple[str, ...]
+    user_id: str | None = field(default=None, repr=False)
+    component_action: str | None = None
+    component_run_id: str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "member_roles", tuple(self.member_roles))
@@ -114,6 +118,7 @@ class RenderedReply:
     messages: tuple[str, ...] = field(repr=False)
     ephemeral: bool
     body_truncated: bool = False
+    components: tuple[Mapping, ...] = field(default=(), kw_only=True)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "messages", tuple(self.messages))
@@ -143,6 +148,7 @@ class QueryRunLog:
     deliver_failure: str | None = None
     retrieval_summary: Mapping[str, object] = field(default_factory=dict)
     generation_summary: Mapping[str, object] = field(default_factory=dict)
+    record: str = "off"
 
     def __post_init__(self) -> None:
         for name in ("timings_ms", "calls", "retrieval_summary", "generation_summary"):

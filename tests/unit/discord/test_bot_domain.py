@@ -19,7 +19,7 @@ from qello_knowledge.domain.discord import (
 
 
 def test_bot_enums():
-    assert set(InteractionKind.__members__) == {"PING", "COMMAND", "OTHER"}
+    assert set(InteractionKind.__members__) == {"PING", "COMMAND", "COMPONENT", "OTHER"}
     assert set(ChannelKind.__members__) == {"TEXT", "THREAD", "DM", "OTHER"}
     assert set(AccessDecision.__members__) == {
         "ALLOWED",
@@ -70,6 +70,9 @@ def test_bot_interaction_fields_and_hidden_content():
         "channel_id",
         "channel_kind",
         "member_roles",
+        "user_id",
+        "component_action",
+        "component_run_id",
     }
     assert "synthetic-token" not in repr(item)
     assert "synthetic-question" not in repr(item)
@@ -114,6 +117,7 @@ def test_bot_run_log_exact_fields_stable_single_line_and_immutable():
         "deliver_failure",
         "retrieval_summary",
         "generation_summary",
+        "record",
     ]
     timing = {"generate": 2, "retrieve": 1}
     log = QueryRunLog("run", "allowed", False, "answer", timings_ms=timing)
