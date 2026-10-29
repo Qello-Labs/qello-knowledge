@@ -60,7 +60,8 @@ def _register_commands(args):
                 },
                 {"type": 5, "name": "나만_보기", "description": "켜면 답변을 나만 봅니다", "required": False},
             ],
-        }
+        },
+        {"name": "sources", "type": 1, "description": "봇이 검색하는 자료와 기준 시각을 봅니다", "contexts": [0]},
     ]
     if args.dry_run:
         print(json.dumps(commands, ensure_ascii=False))
@@ -146,6 +147,20 @@ def create_app(settings):
     for name in ("DATABASE_URL", "CLOUDFLARE_ACCOUNT_ID"):
         value = settings.get(name)
         source[name] = value.reveal() if isinstance(value, SecretValue) else str(value)
+    from qello_knowledge.adapters.postgres.query_log import PostgresQueryLog
+    from qello_knowledge.query.pending import PendingQuestions
+    from qello_knowledge.query.recorder import QueryRecorder
+
+    enabled = settings.get("QK_QUERY_LOG_ENABLED") == "true"
+
+    def record_factory():
+        return PostgresQueryLog(source["DATABASE_URL"])
+
+    recorder = QueryRecorder(
+        record_factory,
+        record_factory if enabled else None,
+        record_timeout_ms=int(settings.get("QK_QUERY_RECORD_TIMEOUT_MS")),
+    )
     pipeline = configured_pipeline(settings, source, policy)
     workers = int(settings.get("QK_QUERY_WORKERS"))
     queue_size = int(settings.get("QK_QUERY_QUEUE_SIZE"))
@@ -160,6 +175,13 @@ def create_app(settings):
         deadline_seconds=int(settings.get("QK_QUERY_DEADLINE_SECONDS")),
         notice_grace=int(settings.get("QK_QUERY_NOTICE_GRACE_SECONDS")),
         on_finished=write_run_log,
+        recorder=recorder,
+        pending=PendingQuestions(
+            enabled=enabled,
+            retain_until=settings.get("QK_QUERY_TEXT_RETAIN_UNTIL") or None,
+            seconds=int(settings.get("QK_QUERY_PENDING_SECONDS")),
+            maximum=int(settings.get("QK_QUERY_PENDING_MAX")),
+        ),
     )
     access = AccessPolicy(
         settings.get("QK_DISCORD_GUILD_ID"),
@@ -173,6 +195,7 @@ def create_app(settings):
         access_check=access.check,
         outgoing_check=lambda item: not check(item.question or "", None),
         on_response=write_run_log,
+        component_timeout_ms=int(settings.get("QK_DISCORD_COMPONENT_TIMEOUT_MS")),
     )
 
 

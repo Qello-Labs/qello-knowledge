@@ -44,7 +44,8 @@ def bot_expected_commands():
                 },
                 {"type": 5, "name": "나만_보기", "description": "켜면 답변을 나만 봅니다", "required": False},
             ],
-        }
+        },
+        {"name": "sources", "type": 1, "description": "봇이 검색하는 자료와 기준 시각을 봅니다", "contexts": [0]},
     ]
 
 

@@ -8,10 +8,11 @@ import secrets
 import threading
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from time import monotonic
 
+from qello_knowledge.discord.components import feedback_buttons
 from qello_knowledge.discord.interactions import deferred, notice
 from qello_knowledge.discord.notices import FIXED_NOTICES, failure_notice
 from qello_knowledge.domain.discord import (
@@ -24,6 +25,7 @@ from qello_knowledge.domain.discord import (
     RenderedReply,
 )
 from qello_knowledge.domain.generation import GenerationFailure, GenerationStatus
+from qello_knowledge.domain.query_log import QueryDelivery, QueryRecord, RecordStatus
 from qello_knowledge.domain.retrieval import RetrievalFailure
 
 
@@ -59,6 +61,8 @@ class _State:
     calls: dict = field(default_factory=lambda: {"retrieve": 0, "generate": 0})
     retrieval_summary: dict = field(default_factory=dict)
     generation_summary: dict = field(default_factory=dict)
+    received_utc: datetime = field(default_factory=lambda: datetime.now(UTC))
+    measure_started: float = 0
 
 
 class _Progress:
@@ -103,7 +107,11 @@ class QueryJobs:
         delivery_executor=None,
         autostart=True,
         on_finished=None,
+        recorder=None,
+        pending=None,
     ):
+        self.pending = pending
+        self.recorder = recorder
         self.capacity = workers + queue_size
         self._workers = workers
         self._pipeline, self._deliver, self._clock = pipeline, deliver, clock
@@ -121,6 +129,7 @@ class QueryJobs:
         self._lock = threading.RLock()
         self._jobs: dict[str, _State] = {}
         self._dedup: dict[str, DedupEntry] = {}
+        self._immediate: dict[str, float] = {}
         self._terminal: dict[str, tuple[QueryStage, QueryStage | None, float]] = {}
         self._queue = deque()
         self._running = 0
@@ -145,6 +154,13 @@ class QueryJobs:
             if state is not None and not state.claimed:
                 state.timings_ms["first_response"] = max(0, int(elapsed_ms))
 
+    def record_received(self, run_id, started, received_utc):
+        with self._lock:
+            state = self._jobs.get(run_id)
+            if state is not None and not state.claimed:
+                state.measure_started = started
+                state.received_utc = received_utc
+
     @property
     def running(self):
         with self._lock:
@@ -160,6 +176,7 @@ class QueryJobs:
         now = self._clock()
         self._dedup = {k: v for k, v in self._dedup.items() if v.expires_at > now}
         self._terminal = {k: v for k, v in self._terminal.items() if v[2] > now}
+        self._immediate = {k: v for k, v in self._immediate.items() if v > now}
 
     def stage(self, run_id):
         with self._lock:
@@ -174,7 +191,7 @@ class QueryJobs:
     def reserve(self, interaction: Interaction, signature: str, timestamp: str):
         with self._lock:
             self._prune()
-            if interaction.interaction_id in self._dedup:
+            if interaction.interaction_id in self._dedup or interaction.interaction_id in self._immediate:
                 return notice(FIXED_NOTICES["duplicate"])
             if self._stop.is_set() or len(self._jobs) >= self.capacity:
                 return notice(FIXED_NOTICES["busy"])
@@ -183,7 +200,7 @@ class QueryJobs:
             while run_id in self._jobs or run_id in self._terminal:
                 run_id = f"q-{datetime.now(UTC):%Y%m%dT%H%M%S}-{secrets.token_hex(4)}"
             job = QueryJob(run_id, interaction, now, now + self._deadline, now + self._deadline + self._grace)
-            self._jobs[run_id] = _State(job, signature, timestamp)
+            self._jobs[run_id] = _State(job, signature, timestamp, measure_started=now)
             self._dedup[interaction.interaction_id] = DedupEntry(
                 interaction.interaction_id, DedupStage.IN_PROGRESS, now + 900
             )
@@ -217,6 +234,8 @@ class QueryJobs:
                 state.phase_started = now
 
     def poll(self):
+        if self.pending is not None:
+            self.pending.prune()
         with self._lock:
             if self._stop.is_set():
                 return
@@ -268,15 +287,63 @@ class QueryJobs:
     def _claim(self, state, reply, outcome=None):
         if state.claimed:
             return
+        if (
+            self.recorder is not None
+            and self.recorder.enabled
+            and outcome is None
+            and getattr(reply, "status", "answered") in ("answered", "cannot_confirm")
+        ):
+            reply = replace(reply, components=feedback_buttons(state.job.run_id))
+            if self.pending is not None:
+                self.pending.put(
+                    state.job.run_id,
+                    state.job.interaction.user_id,
+                    state.job.interaction.question,
+                    getattr(reply, "status", "answered"),
+                )
         self._set_stage(state, QueryStage.DELIVERING)
         state.claimed = True
         state.outcome = outcome
         state.stage = QueryStage.DELIVERING
         self._delivery_executor.submit(self._send, state, reply)
 
+    def record_immediate(self, record, interaction_id):
+        if self.recorder is None or not self.recorder.enabled:
+            return "off"
+        with self._lock:
+            self._prune()
+            if interaction_id in self._immediate or interaction_id in self._dedup:
+                return "off"
+            self._immediate[interaction_id] = self._clock() + 900
+        return self.recorder.insert(record, wait=False)
+
+    def _record(self, state, reply):
+        status = state.outcome.value if state.outcome else getattr(reply, "status", "answered")
+        if status not in set(RecordStatus):
+            status = "failed"
+        return QueryRecord(
+            state.job.run_id,
+            state.received_utc,
+            state.job.interaction.user_id,
+            state.job.interaction.private,
+            RecordStatus(status),
+            failure=_safe_failure(state.outcome.value if state.outcome else getattr(reply, "failure", None)),
+            first_response_ms=state.timings_ms["first_response"],
+            stage_ms={k: v for k, v in state.timings_ms.items() if k in {"retrieve", "generate"}},
+            calls=state.calls,
+            retrieval=state.retrieval_summary or _numbers(getattr(reply, "retrieval_summary", {})),
+            generation=state.generation_summary or _numbers(getattr(reply, "generation_summary", {})),
+            **{
+                name: getattr(reply, name, None)
+                for name in ("index_version", "model_id", "prompt_version", "input_tokens", "output_tokens")
+            },
+            **{name: getattr(reply, name, ()) for name in ("context_chunk_ids", "context_block_sizes", "cited_blocks")},
+        )
+
     def _send(self, state, reply):
         terminal = QueryStage.UNDELIVERED
         result = None
+        recording = self.recorder.insert(self._record(state, reply)) if self.recorder is not None else "off"
         started = self._clock()
         try:
             result = self._deliver(state.job, reply)
@@ -292,6 +359,19 @@ class QueryJobs:
                 self._dedup[state.job.interaction.interaction_id] = DedupEntry(
                     state.job.interaction.interaction_id, DedupStage.DONE, expires
                 )
+        if self.recorder is not None:
+            self.recorder.delivered(
+                QueryDelivery(
+                    state.job.run_id,
+                    RecordStatus.UNDELIVERED if terminal is QueryStage.UNDELIVERED else None,
+                    total_ms=max(0, int((self._clock() - state.measure_started) * 1000)),
+                    deliver_ms=max(0, int((self._clock() - started) * 1000)),
+                    deliver_calls=getattr(result, "calls", 0),
+                    deliver_retries=getattr(result, "retries", 0),
+                    deliver_failure=_safe_failure(getattr(result, "failure", None))
+                    or ("connection" if terminal is QueryStage.UNDELIVERED else None),
+                )
+            )
         if self._on_finished is not None:
             status = state.outcome.value if state.outcome is not None else getattr(reply, "status", "answered")
             if terminal is QueryStage.UNDELIVERED:
@@ -311,6 +391,7 @@ class QueryJobs:
                 or ("connection" if terminal is QueryStage.UNDELIVERED else None),
                 retrieval_summary=state.retrieval_summary or _numbers(getattr(reply, "retrieval_summary", {})),
                 generation_summary=state.generation_summary or _numbers(getattr(reply, "generation_summary", {})),
+                record=recording,
             )
             try:
                 self._on_finished(record)
@@ -324,9 +405,13 @@ class QueryJobs:
             self.poll()
 
     def close(self):
+        if self.pending is not None:
+            self.pending.close()
         self._stop.set()
         self._wake.set()
         if self._monitor is not None:
             self._monitor.join()
-        self._executor.shutdown(wait=False, cancel_futures=True)
-        self._delivery_executor.shutdown(wait=False, cancel_futures=True)
+        self._executor.shutdown(wait=self.recorder is not None, cancel_futures=True)
+        self._delivery_executor.shutdown(wait=self.recorder is not None, cancel_futures=True)
+        if self.recorder is not None:
+            self.recorder.close()

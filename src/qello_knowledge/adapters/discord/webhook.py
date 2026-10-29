@@ -222,6 +222,8 @@ class DiscordWebhook:
             path = base + "/messages/@original" if index == 0 else base
             method = "PATCH" if index == 0 else "POST"
             body: dict[str, object] = {"content": content, "allowed_mentions": {"parse": []}}
+            if index == len(reply.messages) - 1 and reply.components:
+                body["components"] = list(reply.components)
             if index and reply.ephemeral:
                 body["flags"] = 64
             for attempt in range(2):
