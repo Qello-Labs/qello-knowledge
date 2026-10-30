@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from qello_knowledge.config.cli import add_check_options, run_check
 from qello_knowledge.config.registry import Entrypoint
 from qello_knowledge.indexer.ask_cli import AskFactory, add_ask_parser, postgres_ask, run_ask
+from qello_knowledge.indexer.queries_cli import main as queries_main
+from qello_knowledge.indexer.queries_cli import postgres_queries
 from qello_knowledge.indexer.search_cli import SearchFactory, add_search_parser, postgres_search, run_search
 from qello_knowledge.indexer.sync_cli import (
     add_sync_parsers,
@@ -46,7 +49,11 @@ def main(
     search_factory: SearchFactory = postgres_search,
     ask_factory: AskFactory = postgres_ask,
     stdin=None,
+    queries_factory=postgres_queries,
 ) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "queries":
+        return queries_main(arguments[1:], stdin=stdin, factory=queries_factory)
     parser = argparse.ArgumentParser(prog="qk-index", description="색인 진입점")
     sub = parser.add_subparsers(dest="command", required=True)
     add_check_options(sub.add_parser("check", help="설정만 점검한다. 외부 호출 없음"))
@@ -71,6 +78,7 @@ def main(
     add_sync_parsers(sub, run)
     add_search_parser(sub)
     add_ask_parser(sub)
+    sub.add_parser("queries", help="질의 기록 보고·내보내기·지우기")
     args = parser.parse_args(argv)
 
     if args.command == "run":

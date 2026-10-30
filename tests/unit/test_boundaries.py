@@ -446,3 +446,9 @@ def test_code_chunker_violations_are_detected(tmp_path):
         "domain/bad.py:1: qello_knowledge.chunking.code.version",
         "query/bad.py:1: qello_knowledge.chunking.code",
     ]
+
+
+def test_obs_modules_are_covered_by_boundary_scan():
+    for name in ("domain/query_log.py", "ports/query_log.py"):
+        assert (PACKAGE / name).is_file()
+    assert violations(PACKAGE) == []

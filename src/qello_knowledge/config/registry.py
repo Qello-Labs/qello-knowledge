@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date
 from enum import StrEnum
 from urllib.parse import urlsplit
 
@@ -84,6 +85,15 @@ SNOWFLAKE_LIST = Rule("쉼표로 나눈 중복·공백 없는 숫자 17~20자리
 RELAY_TIMEOUT = Rule(
     "0.5 이상 2.8 이하 초", lambda v: bool(re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", v)) and 0.5 <= float(v) <= 2.8
 )
+
+
+def _retention_date(value):
+    if not value:
+        return True
+    try:
+        return bool(re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value)) and date.fromisoformat(value) is not None
+    except ValueError:
+        return False
 
 
 @dataclass(frozen=True)
@@ -210,7 +220,7 @@ SETTINGS: tuple[SettingSpec, ...] = (
     SettingSpec(
         "QK_RELAY_TIMEOUT_SECONDS",
         "중계 제한 시간(초)",
-        frozenset({Entrypoint.RELAY}),
+        frozenset({Entrypoint.RELAY, Entrypoint.QUERY}),
         False,
         False,
         RELAY_TIMEOUT,
@@ -247,6 +257,33 @@ SETTINGS: tuple[SettingSpec, ...] = (
             ("QK_DISCORD_LINK_MAX_CHARS", "출처 링크 길이 상한", 50, 1000, "300"),
             ("QK_QUERY_WORKERS", "동시 검색·생성 실행 자리", 1, 8, "2"),
             ("QK_QUERY_QUEUE_SIZE", "수명 자리의 추가 대기 크기", 1, 16, "4"),
+        )
+    ),
+    SettingSpec(
+        "QK_QUERY_LOG_ENABLED",
+        "질의 기록·평가·원문 대기 켜짐",
+        frozenset({Entrypoint.QUERY}),
+        False,
+        False,
+        _pattern(r"true|false", "true 또는 false"),
+        "false",
+    ),
+    SettingSpec(
+        "QK_QUERY_TEXT_RETAIN_UNTIL",
+        "질문 원문 보존 상한 날짜(UTC)",
+        BOTH,
+        False,
+        False,
+        Rule("YYYY-MM-DD 또는 빈 값", _retention_date),
+        "",
+    ),
+    *tuple(
+        SettingSpec(name, description, frozenset({Entrypoint.QUERY}), False, False, _integer_range(low, high), default)
+        for name, description, low, high, default in (
+            ("QK_QUERY_PENDING_SECONDS", "원문 대기 시간(초)", 60, 3600, "3600"),
+            ("QK_QUERY_PENDING_MAX", "원문 대기 수 상한", 10, 2000, "500"),
+            ("QK_QUERY_RECORD_TIMEOUT_MS", "질의 기록 넣기 대기 상한(ms)", 100, 1500, "1000"),
+            ("QK_DISCORD_COMPONENT_TIMEOUT_MS", "버튼·자료 목록 첫 응답 상한(ms)", 500, 2000, "1500"),
         )
     ),
     SettingSpec(

@@ -42,11 +42,11 @@ function isPing(body: Uint8Array): boolean {
   return parseObject(body)?.type === 1;
 }
 
-export function fallback() {
+export function fallback(generic = false) {
   return {
     type: 4,
     data: {
-      content: "지금은 답할 수 없습니다. 잠시 후 다시 질문해 주세요.",
+      content: generic ? "지금은 처리할 수 없습니다. 잠시 후 다시 시도해 주세요." : "지금은 답할 수 없습니다. 잠시 후 다시 질문해 주세요.",
       flags: 64,
       allowed_mentions: { parse: [] },
     },
@@ -63,14 +63,17 @@ export function relayPlan(body: Uint8Array, headers: HeaderMap): RelayRequest[] 
 
 export function relayResponse(original: Uint8Array, status: number | null, body: Uint8Array, headers: HeaderMap): RelayResult {
   if (isPing(original)) return result({ type: 1 }, "relayed");
+  const input = parseObject(original);
+  const component = input?.type === 3;
+  const generic = component || (input?.type === 2 && (input?.data as Record<string, unknown>)?.name === "sources");
   if (status === 200) {
     const payload = parseObject(body);
-    if (payload && (payload.type === 1 || payload.type === 4 || payload.type === 5)) {
+    if (payload && (component ? payload.type === 4 || payload.type === 7 : payload.type === 1 || payload.type === 4 || payload.type === 5)) {
       const run = Object.entries(headers).find(([k]) => k.toLowerCase() === "x-qk-run")?.[1] ?? null;
       return result(payload, "relayed", payload.type === 5 ? run : null);
     }
   }
-  return result(fallback(), "relay_failed");
+  return result(fallback(generic), "relay_failed");
 }
 
 export function startRequest(relayed: RelayResult, headers: HeaderMap): RelayRequest | null {

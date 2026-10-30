@@ -101,6 +101,14 @@ class QueryReply(RenderedReply):
     failure: str | None = None
     retrieval_summary: dict = field(default_factory=dict, repr=False)
     generation_summary: dict = field(default_factory=dict, repr=False)
+    context_chunk_ids: tuple[int, ...] = ()
+    context_block_sizes: tuple[int, ...] = ()
+    cited_blocks: tuple[int, ...] = ()
+    index_version: str | None = None
+    model_id: str | None = None
+    prompt_version: str | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
 
 
 class _DeadlineStore:
@@ -304,6 +312,21 @@ class QueryPipeline:
                 failure,
                 retrieval_summary,
                 generation_summary,
+                context_chunk_ids=tuple(c.chunk_id for b in result.context for c in b.chunks),
+                context_block_sizes=tuple(len(b.chunks) for b in result.context),
+                cited_blocks=tuple(
+                    dict.fromkeys(
+                        n
+                        for citation in answer.citations
+                        for n, block in enumerate(result.context, 1)
+                        if citation.source_id == block.source_id
+                    )
+                ),
+                index_version=result.summary.index_version,
+                model_id=answer.summary.model_id or None,
+                prompt_version=answer.summary.prompt_version or None,
+                input_tokens=answer.summary.input_tokens,
+                output_tokens=answer.summary.output_tokens,
             )
         finally:
             if parts.counter is not None:

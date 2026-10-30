@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from datetime import UTC, date, datetime
 
 from qello_knowledge.config.loader import Settings, SettingStatus
 from qello_knowledge.config.registry import Entrypoint
@@ -173,10 +174,12 @@ def build_report(settings: Settings) -> CheckReport:
     source_check = _source_list_check(settings)
     if source_check is not None:
         checks += (source_check,)
+    checks += _obs_checks(settings)
     ok = ok and all(check.ok for check in checks)
     warnings = ()
     if settings.entrypoint is Entrypoint.QUERY and not _text(settings, "QK_DISCORD_ALLOWED_CHANNELS"):
         warnings = ("QK_DISCORD_ALLOWED_CHANNELS",)
+    warnings += _obs_warnings(settings)
     return CheckReport(settings.entrypoint, tuple(items), ok, checks, warnings)
 
 
@@ -221,3 +224,33 @@ def _source_list_check(settings: Settings) -> CrossCheck | None:
     if items < 1 or required > messages - 1:
         return CrossCheck("discord_source_capacity", False, "discord_source_capacity")
     return None
+
+
+def _obs_checks(settings):
+    if settings.entrypoint is not Entrypoint.QUERY:
+        return ()
+    checks = []
+    if _text(settings, "QK_QUERY_LOG_ENABLED") == "true" and not _text(settings, "QK_QUERY_TEXT_RETAIN_UNTIL"):
+        checks.append(CrossCheck("query_text_retention_required", False, "query_text_retention_required"))
+    component, relay = (
+        _text(settings, name) for name in ("QK_DISCORD_COMPONENT_TIMEOUT_MS", "QK_RELAY_TIMEOUT_SECONDS")
+    )
+    if component is not None and relay is not None and int(component) >= float(relay) * 1000:
+        checks.append(CrossCheck("component_before_relay", False, "component_before_relay"))
+    return tuple(checks)
+
+
+def _obs_warnings(settings):
+    from pathlib import Path
+
+    from qello_knowledge.sources.config import load_sources
+
+    warnings = []
+    retain = _text(settings, "QK_QUERY_TEXT_RETAIN_UNTIL")
+    if retain and date.fromisoformat(retain) < datetime.now(UTC).date():
+        warnings.append("원문 기록 보존 상한이 지났습니다. qk-index queries erase-texts를 확인하세요")
+    if settings.entrypoint is Entrypoint.QUERY:
+        configs, issues = load_sources(Path("config/sources.toml"))
+        if not issues and 130 * len(configs) + 150 > 2000:
+            warnings.append("sources_message_capacity")
+    return tuple(warnings)
