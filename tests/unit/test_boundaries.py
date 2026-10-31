@@ -452,3 +452,82 @@ def test_obs_modules_are_covered_by_boundary_scan():
     for name in ("domain/query_log.py", "ports/query_log.py"):
         assert (PACKAGE / name).is_file()
     assert violations(PACKAGE) == []
+
+
+# QK-EVL-001: `evaluation/`은 표준 라이브러리와 domain·ports·embedding·retrieval·evaluation만 가져온다(research R-01).
+# 저장소·접속 정보 해석은 `adapters`, 명령 조립은 `devtools`가 맡는다.
+EVALUATION_ALLOWED = (*ALLOWED_INTERNAL, "qello_knowledge.retrieval", "qello_knowledge.evaluation")
+
+
+def evaluation_violations(root: Path) -> list[str]:
+    problems = []
+    for path in sorted((root / "evaluation").rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
+            modules = []
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                if node.level:
+                    problems.append(f"{path.relative_to(root.parent)}:{node.lineno}: 상대 경로 가져오기")
+                    continue
+                module = node.module or ""
+                modules = (
+                    [module + "." + alias.name for alias in node.names] if module == "qello_knowledge" else [module]
+                )
+            for module in modules:
+                if module.split(".")[0] in sys.stdlib_module_names or module == "__future__":
+                    continue
+                if any(module == prefix or module.startswith(prefix + ".") for prefix in EVALUATION_ALLOWED):
+                    continue
+                problems.append(f"{path.relative_to(root.parent)}:{node.lineno}: {module}")
+    return problems
+
+
+def test_evaluation_dependencies_are_isolated():
+    assert (PACKAGE / "evaluation").is_dir()
+    assert evaluation_violations(PACKAGE) == []
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "import psycopg",
+        "from qello_knowledge.adapters.postgres.eval_target import PostgresEvalTarget",
+        "from qello_knowledge.devtools import eval_cli",
+        "from qello_knowledge import security",
+        "from qello_knowledge.indexer.search_cli import query_retry_delay",
+        "from . import metrics",
+    ],
+)
+def test_evaluation_violations_are_detected(tmp_path, statement):
+    root = tmp_path / "qello_knowledge"
+    (root / "evaluation").mkdir(parents=True)
+    (root / "evaluation" / "bad.py").write_text(statement)
+    assert len(evaluation_violations(root)) == 1
+
+
+def test_evaluation_allowed_imports(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    (root / "evaluation").mkdir(parents=True)
+    (root / "evaluation" / "good.py").write_text(
+        "from __future__ import annotations\nimport tomllib\nfrom qello_knowledge.domain.retrieval import X\n"
+        "from qello_knowledge.ports.evaluation import EvalTarget\nfrom qello_knowledge.embedding import estimate\n"
+        "from qello_knowledge.retrieval import retrieve\nfrom qello_knowledge.evaluation.metrics import Ratio\n"
+    )
+    assert evaluation_violations(root) == []
+
+
+@pytest.mark.parametrize("part", ["domain", "ports"])
+def test_domain_and_ports_must_not_import_evaluation(tmp_path, part):
+    root = tmp_path / "qello_knowledge"
+    for name in RESTRICTED:
+        (root / name).mkdir(parents=True)
+    (root / part / "bad.py").write_text("from qello_knowledge.evaluation import runner\n")
+    assert violations(root) == [f"qello_knowledge/{part}/bad.py:1: qello_knowledge.evaluation"]
+
+
+def test_retrieval_must_not_import_evaluation(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    (root / "retrieval").mkdir(parents=True)
+    (root / "retrieval" / "bad.py").write_text("from qello_knowledge.evaluation import runner\n")
+    assert len(retrieval_violations(root)) == 1
