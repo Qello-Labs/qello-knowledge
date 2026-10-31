@@ -1,5 +1,6 @@
 """`qk-dev db up|down|reset`: 로컬 개발 DB 관리(FR-010~013). `qk-dev store bench`: 저장소 측정(QK-STO-001).
 `qk-dev eval-index prepare`: 평가용 색인 준비(QK-RET-001 research R-09).
+`qk-dev eval check|identifiers|run|tables`: 검색 평가(QK-EVL-001 contracts/cli.md).
 
 - `up`은 재실행해도 안전하다. 떠 있으면 그대로 두고 볼륨을 지우지 않는다.
 - `reset`은 연결 대상이 로컬 compose DB일 때만 볼륨을 지운다. DB에 접속하지 않고 문자열로만 판단한다.
@@ -123,6 +124,89 @@ def _source_failure(errors: Sequence[dict[str, str]], json_output: bool) -> int:
     return 1
 
 
+def _add_eval_parsers(sub: argparse._SubParsersAction) -> None:
+    """`qk-dev eval`(QK-EVL-001 contracts/cli.md). 실행은 `devtools/eval_cli.py`가 맡는다."""
+    evaluation = sub.add_parser("eval", help="검색 평가(로컬 평가용 DB 전용, QK-EVL-001)")
+    actions = evaluation.add_subparsers(dest="eval_action", required=True)
+    check = actions.add_parser("check", help="질문 세트 형식 검증")
+    check.add_argument("set_file", type=Path)
+    check.add_argument("--target", default=None, help="근거 미색인 경고를 볼 평가 대상(qk_eval_*)")
+    identifiers = actions.add_parser("identifiers", help="식별자 세트 만들기 도우미(본문에서 뽑은 식별자와 문서 위치)")
+    identifiers.add_argument("--target", required=True, help="후보 A 평가 대상(qk_eval_*)")
+    identifiers.add_argument("--set", dest="set_file", type=Path, default=None)
+    identifiers.add_argument("--form", action="append", default=[], help="식별자 형태(여러 번). 기본 일곱 형태")
+    run = actions.add_parser("run", help="질문 세트 하나를 평가 대상에서 방식별로 검색해 실행 기록을 쓴다")
+    run.add_argument("--set", dest="set_file", type=Path, required=True)
+    run.add_argument("--target", action="append", required=True, help="평가 대상(qk_eval_*, 여러 번). 순서가 표 순서")
+    run.add_argument("--mode", action="append", choices=("vector", "keyword", "hybrid"), default=[])
+    run.add_argument("--query-rule", choices=("kw-query-v1", "kw-query-raw"), default=None)
+    run.add_argument("--candidates", type=int, default=None)
+    run.add_argument("--rrf-k", type=int, default=None)
+    run.add_argument("--source-kind", action="append", default=[])
+    run.add_argument("--artifact-kind", action="append", default=[])
+    run.add_argument("--usage-target", default=None, help="질의 임베딩 사용량을 기록할 대상. 기본 첫 --target")
+    run.add_argument("--ledger-url-env", default=None, help="운영 사용 장부 접속 정보가 든 환경 변수 이름")
+    run.add_argument("--allow-remote-read", action="store_true", help="운영 장부 읽기 허락")
+    run.add_argument("--allow-query-embedding", action="store_true", help="질의 임베딩 허락(--max-neurons와 함께)")
+    run.add_argument("--max-neurons", type=float, default=None, help="미리 보기에서 본 예상 Neurons 이상의 값")
+    run.add_argument(
+        "--out", type=Path, required=True, help="실행 기록 경로(이미 있으면 거부). 디렉터리면 <실행 ID>.json"
+    )
+    run.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
+    run.add_argument("--exceptions", type=Path, default=Path("config/security_exceptions.toml"))
+    tables = actions.add_parser("tables", help="실행 기록에서 대상별·비교 Markdown 표를 낸다")
+    tables.add_argument("--run", action="append", type=Path, required=True, help="실행 기록(여러 번)")
+    tables.add_argument("--target", action="append", default=[], help="표에 넣을 대상(여러 번). 기본 모든 대상")
+    tables.add_argument("--breakdown", action="append", choices=("type", "identifier_form", "query_form"), default=[])
+    for parser in (check, identifiers, run, tables):
+        parser.add_argument("--json", action="store_true")
+        parser.add_argument("--env-file", type=Path, default=Path(".env"))
+
+
+def _run_eval(args: argparse.Namespace, source: Mapping[str, str]) -> int:
+    from qello_knowledge.devtools import eval_cli
+
+    if args.eval_action == "check":
+        return eval_cli.run_check(args.set_file, target=args.target, as_json=args.json, source_env=source)
+    if args.eval_action == "identifiers":
+        return eval_cli.run_identifiers(
+            target=args.target, set_file=args.set_file, forms=tuple(args.form), as_json=args.json, source_env=source
+        )
+    if args.eval_action == "run":
+        return eval_cli.run_eval(args, source)
+    if args.eval_action == "tables":
+        return eval_cli.run_tables(args)
+    raise AssertionError(args.eval_action)
+
+
+_SYNC_DEFAULTS = {
+    "source": "dnd-backend-docs",
+    "from_url_env": "DATABASE_URL",
+    "allow_embed": False,
+    "sources": Path("config/sources.toml"),
+    "reviews": Path("config/source_reviews"),
+    "exceptions": Path("config/security_exceptions.toml"),
+}
+
+
+def _prepare_tokenizer(args: argparse.Namespace, source: Mapping[str, str]) -> int:
+    """`eval-index prepare --keyword-tokenizer`(QK-EVL-001 contracts/cli.md 5절).
+
+    동기화·제공자·자료원이 필요 없어 설정 점검을 하지 않는다. 옵션 조합은 먼저 검사한다.
+    """
+    from qello_knowledge.devtools.eval_index import prepare_tokenizer
+
+    def refuse(error: str) -> int:
+        print(json.dumps({"exit_code": 2, "error": error}, ensure_ascii=False))
+        return 2
+
+    if args.rule != "kw-index-baseline-v1":
+        return refuse("tokenizer_needs_baseline_rule")
+    if any(getattr(args, name) != value for name, value in _SYNC_DEFAULTS.items()):
+        return refuse("sync_option_with_tokenizer")
+    return prepare_tokenizer(commit=args.commit, tokenizer=args.keyword_tokenizer, source_env=source)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="qk-dev", description="로컬 개발 도구")
     sub = parser.add_subparsers(dest="group", required=True)
@@ -146,7 +230,14 @@ def main(argv: list[str] | None = None) -> int:
     evaluation.add_argument("--sources", type=Path, default=Path("config/sources.toml"))
     evaluation.add_argument("--reviews", type=Path, default=Path("config/source_reviews"))
     evaluation.add_argument("--exceptions", type=Path, default=Path("config/security_exceptions.toml"))
+    evaluation.add_argument(
+        "--keyword-tokenizer",
+        choices=("TokenBigramSplitSymbolAlpha",),
+        default=None,
+        help="후보 C(QK-EVL-001): 같은 커밋의 후보 A를 복제해 키워드 색인 토크나이저만 바꾼다",
+    )
     evaluation.add_argument("--env-file", type=Path, default=Path(".env"))
+    _add_eval_parsers(sub)
     source_command = sub.add_parser("source", help="자료원 수집 측정")
     source_sub = source_command.add_subparsers(dest="source_action", required=True)
     measure = source_sub.add_parser("measure", help="사전 검증 뒤 원본을 읽어 측정한다")
@@ -186,6 +277,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if measurement.ok else 1
 
     source = merge_sources(os.environ, read_env_file(args.env_file))
+    if args.group == "eval":
+        return _run_eval(args, source)
+    if args.group == "eval-index" and args.keyword_tokenizer:
+        return _prepare_tokenizer(args, source)
     if args.group == "eval-index":
         from qello_knowledge.devtools.eval_index import prepare
 
