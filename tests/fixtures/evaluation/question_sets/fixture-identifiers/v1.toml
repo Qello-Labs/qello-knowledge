@@ -1,0 +1,45 @@
+# 시험용 합성 식별자형 세트(QK-EVL-001 tasks T001). 질문 문장은 문서 위치·자료원 이름·질문 ID와 겹치지 않게 만든다(SC-008).
+[set]
+id = "fixture-identifiers"
+version = 1
+created = 2026-10-31
+confirmed = true
+confirmed_on = 2026-10-31
+labeling = "eval/question_sets/fixture-identifiers/labeling.md"
+shortfall = { url_path = 0 }
+
+[[set.sources]]
+name = "dnd-backend-docs"
+label_commit = "0000000000000000000000000000000000000001"
+
+[[question]]
+id = "camel-01-original"
+text = "retryPayment"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "camel"
+label_terms = ["retryPayment"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/A.md" }]
+
+[[question]]
+id = "camel-01-partial"
+text = "payment"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "camel"
+label_terms = ["retryPayment"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/A.md" }]
+
+[[question]]
+id = "sentence-01"
+text = "금요일에 하지 않는 일은?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["금요일", "배포"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/B.md" }]
