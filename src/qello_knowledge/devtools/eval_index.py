@@ -7,6 +7,8 @@ QK-RET-001 research R-09, spec FR-029.
 - 자료원 설정과 범위 검토 파일은 임시 사본에서만 `ref`를 커밋 SHA로 바꾼다. 저장소 파일은 그대로다.
 - 준비 중에는 `<이름>__preparing`을 쓰고 성공하면 최종 이름으로 바꾼다.
   지우는 대상은 그 준비용 이름뿐이다(AGENTS.md 4절).
+- `--keyword-tokenizer`(QK-EVL-001 후보 C, research R-12)는 같은 커밋의 후보 A 데이터베이스를 템플릿으로 복제하고
+  키워드 색인 토크나이저만 바꾼다. 동기화·임베딩·원본 호출이 없다. 옵션이 없으면 위 동작 그대로다.
 """
 
 from __future__ import annotations
@@ -37,6 +39,14 @@ _MODEL = "@cf/baai/bge-m3"
 
 def eval_db_name(rule: str, commit: str) -> str:
     return f"qk_eval_{SHORT_NAMES[rule]}_{commit[:12]}"
+
+
+TOKENIZER_NAMES = {"TokenBigramSplitSymbolAlpha": "alpha"}  # 후보 C(QK-EVL-001 contracts/cli.md 5절)
+KEYWORD_INDEX = "chunk_search_text_pgroonga"
+
+
+def eval_tokenizer_db_name(commit: str, tokenizer: str = "TokenBigramSplitSymbolAlpha") -> str:
+    return f"qk_eval_baseline_{TOKENIZER_NAMES[tokenizer]}_{commit[:12]}"
 
 
 def _pin_source_ref(text: str, name: str, commit: str) -> str | None:
@@ -214,4 +224,87 @@ def prepare(
         embedding_calls=int(calls),
         neurons=float(used),
         estimated_neurons=neurons,
+    )
+
+
+def _tokenizer_of(conn: psycopg.Connection) -> str | None:
+    row = conn.execute(
+        "SELECT c.reloptions FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace"
+        " WHERE n.nspname = 'qk' AND c.relname = %s",
+        (KEYWORD_INDEX,),
+    ).fetchone()
+    for option in (row[0] if row else None) or ():
+        key, _, value = option.partition("=")
+        if key.strip() == "tokenizer":
+            return value.strip().strip("'\"")
+    return None
+
+
+def _uses_keyword_index(conn: psycopg.Connection) -> bool:
+    """`qk.search_keyword_terms`와 같은 설정(`enable_seqscan = off`)에서 `&@~` 조건이 그 색인을 쓰는지."""
+    with conn.transaction():
+        conn.execute("SET LOCAL enable_seqscan = off")
+        plan = conn.execute("EXPLAIN SELECT id FROM qk.chunk WHERE search_text &@~ %s", ("payment",)).fetchall()
+    return any(KEYWORD_INDEX in str(line[0]) for line in plan)
+
+
+def prepare_tokenizer(*, commit: str, tokenizer: str, source_env: Mapping[str, str], out: TextIO | None = None) -> int:
+    """후보 C 평가 대상(QK-EVL-001 research R-12). 종료 코드는 QK-EVL-001 contracts/cli.md 5절.
+
+    1. 기준(후보 A)·최종 이름 확인
+    2. `__preparing`만 지우고 `STRATEGY = FILE_COPY`로 복제(PGroonga는 데이터베이스 디렉터리에 자기 파일을 둔다)
+    3. 한 트랜잭션에서 키워드 색인을 같은 이름·같은 열·바꾼 토크나이저로 다시 만들기
+    4. 토크나이저 값과 `EXPLAIN` 색인 사용 확인
+    5. 최종 이름으로 바꾸기
+    """
+    out = out or sys.stdout
+
+    def emit(code: int, **values: object) -> int:
+        print(json.dumps({"exit_code": code, **values}, ensure_ascii=False, default=str), file=out)
+        return code
+
+    if tokenizer not in TOKENIZER_NAMES:
+        return emit(2, error="unknown_tokenizer")
+    if not _SHA.fullmatch(commit):
+        return emit(2, error="commit_must_be_full_sha")
+    admin = database_url({k: v for k, v in source_env.items() if k == "QK_LOCAL_DB_PORT"})  # 로컬 컨테이너
+    base = eval_db_name(INDEX_BASELINE, commit)
+    final = eval_tokenizer_db_name(commit, tokenizer)
+    preparing = final + PREPARING_SUFFIX
+    if _exists(admin, final):
+        return emit(5, error="database_exists", database=final)
+    if not _exists(admin, base):
+        return emit(6, error="base_database_missing", base_database=base)
+    stage = "clone"
+    try:
+        with psycopg.connect(admin, autocommit=True) as conn:
+            conn.execute(f'DROP DATABASE IF EXISTS "{preparing}" WITH (FORCE)')  # 이전 실패의 준비용 잔여물만
+            conn.execute(f'CREATE DATABASE "{preparing}" TEMPLATE "{base}" STRATEGY = FILE_COPY')
+        target = with_database(admin, preparing)
+        stage = "reindex"
+        with psycopg.connect(target) as conn, conn.transaction():
+            conn.execute(f"DROP INDEX qk.{KEYWORD_INDEX}")
+            conn.execute(
+                f"CREATE INDEX {KEYWORD_INDEX} ON qk.chunk USING pgroonga (search_text)"
+                f" WITH (tokenizer = '{tokenizer}')"
+            )
+        stage = "verify"
+        with psycopg.connect(target) as conn:
+            found = _tokenizer_of(conn)
+            used = _uses_keyword_index(conn)
+            row = conn.execute("SELECT id FROM qk.index_version WHERE status = 'active'").fetchone()
+        if found != tokenizer or not used:
+            return emit(1, stage=stage, tokenizer=found, index_used=used, database=preparing)
+        stage = "rename"
+        with psycopg.connect(admin, autocommit=True) as conn:
+            conn.execute(f'ALTER DATABASE "{preparing}" RENAME TO "{final}"')
+    except (psycopg.Error, OSError) as exc:
+        return emit(1, stage=stage, error=type(exc).__name__)
+    return emit(
+        0,
+        base_database=base,
+        database=final,
+        tokenizer=tokenizer,
+        index_version=row[0] if row else None,
+        external_calls=0,
     )
