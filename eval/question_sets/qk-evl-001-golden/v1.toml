@@ -1,0 +1,123 @@
+# QK-EVL-001 골든 세트 v1(spec FR-008). H05 v2(`qk-bot-001-h05` v2)를 형식만 옮겼다. 질문 번호·문장·근거 문서·핵심 사실은 글자 그대로다.
+# "나만 보기"와 답변 판정 기준은 Discord 답변 측정용이라 옮기지 않았다(labeling.md). 바꾸려면 버전을 올리고 평가 코드와 다른 커밋에 사유를 남긴다.
+[set]
+id = "qk-evl-001-golden"
+version = 1
+created = 2026-10-31
+confirmed = false
+labeling = "eval/question_sets/qk-evl-001-golden/labeling.md"
+origin = { id = "qk-bot-001-h05", version = 2, document = "specs/QK-BOT-001-discord-ask/measurement/h05-question-set-v2.md" }
+
+[[set.sources]]
+name = "dnd-backend-docs"
+label_commit = "6aeccd039b825dcd7a2b6c046a34ef72089a1f78"
+
+[[question]]
+id = "Q01"
+original_number = "Q01"
+text = "백엔드에서 JPA와 JDBC는 각각 어떤 작업에 쓰기로 했어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "일반 aggregate CRUD는 JPA, PostGIS 거리·방위 조회·행 잠금·조건부 갱신·bulk insert·Outbox claim 같은 DB 특화 연산은 JDBC"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0002-jpa-jdbc-boundary.md" }, { source = "dnd-backend-docs", location = "docs/adr/README.md" }]
+
+[[question]]
+id = "Q02"
+original_number = "Q02"
+text = "API 성공 응답 형식은 어떻게 정했어? 204 No Content도 써?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "`ApiResponse`(status/data/timestamp)로 controller가 직접 감싼다. 204는 쓰지 않고 값이 없어도 200과 `data: null`"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0005-api-success-response-contract.md" }, { source = "dnd-backend-docs", location = "docs/api-response.md" }]
+
+[[question]]
+id = "Q03"
+original_number = "Q03"
+text = "운영자와 앱 사용자는 인증 방식이 어떻게 달라?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "운영자는 `login_id`+bcrypt 비밀번호와 서버 세션·HttpOnly 쿠키·CSRF, 앱 사용자는 기기 자격증명(`device_secret`) 기반 단기 토큰"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0006-split-operator-and-device-authentication.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "Q04"
+original_number = "Q04"
+text = "앱 사용자 계정을 만들 때 국가는 어떤 값으로 받고 어떻게 검증해?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "ISO 3166-1 alpha-2 `countryCode`, 공백 제거·대문자 변환 뒤 `region_code` 마스터의 COUNTRY와 대조, 계정 저장 전에 검증하고 실패하면 400"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "Q05"
+original_number = "Q05"
+text = "푸시 발송에 SQS나 Kafka 같은 외부 큐를 쓰지 않은 이유가 뭐야?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "초기 규모에서는 별도 broker 근거가 부족해 기존 PostgreSQL delivery 원장을 queue로 쓰고, 짧은 claim transaction과 transaction 밖 FCM 호출, lease·fencing으로 분리"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }]
+
+[[question]]
+id = "Q06"
+original_number = "Q06"
+text = "API 오류 응답의 `errorDetail.code`는 어떤 형식이야?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "`{BC}-{CATEGORY}-{SEQ}` 형식. 오류 본문의 `status`는 항상 `error`"
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/adr/0003-global-exception-handling.md" }]
+
+[[question]]
+id = "Q07"
+original_number = "Q07"
+text = "AWS 인프라는 어떤 도구로 관리하기로 했어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "Terraform 단독 채택(AWS CDK와 비교)"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0004-adopt-terraform-for-aws-iac.md" }, { source = "dnd-backend-docs", location = "AGENTS.md" }, { source = "dnd-backend-docs", location = "CLAUDE.md" }, { source = "dnd-backend-docs", location = "docs/adr/README.md" }]
+
+[[question]]
+id = "Q08"
+original_number = "Q08"
+text = "저장소에 절대 기록하면 안 되는 값에는 어떤 게 있어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "`.env` 실제 값, API 토큰·세션·비밀번호·개인 키, AWS 접근 키·계정 ID, 서버 주소·내부 endpoint·DB 연결 주소 등"
+evidence = [{ source = "dnd-backend-docs", location = "docs/harness/SECRET_HANDLING.md" }, { source = "dnd-backend-docs", location = "AGENTS.md" }]
+
+[[question]]
+id = "Q09"
+original_number = "Q09"
+text = "앱 메인 화면의 대표 색상 코드는 뭐야?"
+type = "no_answer"
+label = "done"
+origin = "synthetic"
+facts = "디자인(Figma)은 색인하지 않는다. \"제공된 자료만으로 확인할 수 없습니다.\""
+evidence = []
+
+[[question]]
+id = "Q10"
+original_number = "Q10"
+text = "안드로이드 앱에서 Kotlin 코루틴을 도입하기로 한 이유가 뭐야?"
+type = "no_answer"
+label = "done"
+origin = "synthetic"
+facts = "안드로이드 저장소는 색인하지 않는다. \"제공된 자료만으로 확인할 수 없습니다.\""
+evidence = []
+
+[[question]]
+id = "Q11"
+original_number = "Q11"
+text = "다음 팀 회식은 언제 어디서 해?"
+type = "no_answer"
+label = "done"
+origin = "synthetic"
+facts = "자료에 없다. \"제공된 자료만으로 확인할 수 없습니다.\""
+evidence = []
