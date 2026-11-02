@@ -11,7 +11,7 @@
 - 팀 스프린트 ID: `QELLO-S2026-W44`
 - GitHub Issue: `#92`
 - Branch: `feat/SCRUM-125-gh-92-index-version-gate`
-- Base branch: `main`. 2026-10-31 `origin/main` `c4ca593`(#91 병합)에서 분기했다. 이전 `main`의 QK-EVL-001 계약은 git 이력에 남긴다.
+- Base branch: `main`. 2026-10-31 `origin/main` `c4ca593`(#91 병합)에서 분기했고, 2026-11-02 `origin/main` `8adee56`(#94 병합)을 병합했다. 이전 `main`의 QK-EVL-001·QK-EVL-002 계약은 git 이력에 남긴다.
 
 ## Objective
 
@@ -105,3 +105,4 @@ git diff --check
     재처리 범위 문구(FR-025), 되돌리기 대상 문구 통일(US4, D5), 전환 순간 실패 허용(SC-004), 활성화의 `RetrievalSettings` 검사(FR-021 (9)), 기록의 임베딩 모델(FR-018, FR-032), 모델 교체 시나리오(US1-9), SC-001 시험 데이터 조건.
 - 2026-11-02 사용자 결정: `spec.md`를 승인했다("spec 승인"). 사람 확인 대상으로 남긴 기본값 D1~D7과, "작업 계속진행"을 이 계약의 승인으로 본 해석도 이 승인에 포함된 것으로 본다.
   plan·tasks·구현은 1.G 뒤에 `/speckit-plan`부터 한다(2026-10-31 사용자 결정).
+- 2026-11-02 사용자 결정: #94(QK-EVL-002 명세)가 `main`의 `TASK.md`를 바꿔 PR #95와 충돌했다. 사용자 지시로 `main`을 병합하고 `TASK.md`는 이 계약을 유지했다.
