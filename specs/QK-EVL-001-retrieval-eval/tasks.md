@@ -309,17 +309,17 @@ WBS 0.7 산출물(`eval/golden/v0.jsonl`)은 spec 범위 밖(348행)이라 이 �
 
 **Independent Test**: v2가 v1 11문항을 글자 그대로 담고, 더한 v0 문항이 형식 검증과 평가 대상 검사(`evidence_unindexed` 경고 0)를 통과한다.
 
-**입력**: v0 최종본은 수집 질문 24개(수집 페이지 DB, 사용자 수정 초안 2026-11-03 적용)와 추천 질문 26개(`cand-`)다. 추천 질문 원문은 사람이 준다. 받기 전에는 T046을 끝내지 않는다.
+**입력**: v0 최종본은 팀 질문 50문항(2026-11-03)이다. 수집 페이지 DB에 24문항이 있고(2026-11-03 수정 적용), `cand-` 26문항의 원문은 사람이 준다. 받기 전에는 T046을 끝내지 않는다.
 
 - [ ] T047 [US2] `tests/unit/evaluation/test_golden_v2.py`(T046보다 먼저 쓰고 파일이 없어 실패하는지 본다): v2의 머리 정보(`id = "qk-evl-001-golden"`, `version = 2`, 자료원 `dnd-backend-docs`와 v1과 같은 `label_commit`),
   Q01~Q11이 `v1.toml`과 필드까지 같음, v1에 없는 질문은 `original_number`가 있고 `id`와 같음, `check_question_set` 통과. v0 원본은 저장소에 없으므로 문장 대조는 시험하지 않고 H09에서 사람이 본다. 세트와 같은 커밋에 둔다
 - [ ] T046 [US2] `eval/question_sets/qk-evl-001-golden/v2.toml`(별도 커밋, 평가 코드·결과와 섞지 않음):
   - 머리 정보: `version = 2`, `created`, `confirmed = false`, `labeling`, `[[set.sources]]`는 v1과 같다. 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구하므로 두지 않고 출처는 `labeling.md`에 적는다
   - v1 Q01~Q11을 그대로 옮긴다
-  - v0 문항 가운데 근거 문서가 `dnd-backend-docs`의 라벨 기준 커밋에 있는 문항과 `no_answer` 문항을 더한다. 수집분 기준 9문항(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`,
-    `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`)이고, 추천 26문항도 같은 기준으로 고른다
+  - v0 문항 가운데 근거 문서가 `dnd-backend-docs`의 라벨 기준 커밋에 있는 문항과 `no_answer` 문항을 더한다. 수집 페이지 DB에 있는 24문항 기준 9문항(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`,
+    `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`)이고, `cand-` 26문항도 같은 기준으로 고른다
   - 더하는 문항: `id`·`original_number`는 v0 질문 ID, `text`·`type`은 최종본 그대로, `label = "done"`, `evidence`는 백엔드 문서 위치만(문서 단위, Confluence 근거는 넣지 않음), `facts`는 최종본의 기대 답 요약,
-    `origin`은 수집 질문 `team`, 추천 질문 `synthetic`. 질문에 사람을 가리키는 표현이 있으면 고치지 않고 멈춰 사람에게 묻는다
+    `origin = "team"`. 질문에 사람을 가리키는 표현이 있으면 고치지 않고 멈춰 사람에게 묻는다
   - `labeling.md`에 v2 절을 더한다: 두 출처(H05 v2, v0 최종본 2026-11-03), 고른 기준, 뺀 v0 문항 수와 이유(근거가 Confluence뿐인 문항은 QK-ING-003 색인 뒤 다음 버전), 근거에 Confluence가 함께 있던 문항은 백엔드 문서만 남겼다는 점
   - 확인: `uv run pytest tests/unit/evaluation/test_golden_v2.py`, H01 뒤 `uv run qk-dev eval check eval/question_sets/qk-evl-001-golden/v2.toml --target qk_eval_baseline_6aeccd039b82`(경고 검토)
 - [ ] T048 측정의 골든 세트를 v2로 바꾼다: T039·T040·H06의 "골든 세트"는 v2다. T039 1절과 T040의 표본 한계(지금 "한 문항이 Recall@5를 12.5%p 바꿈"은 v1 8문항 기준)는 v2의 지표 대상 문항 수로 다시 적고,
@@ -355,7 +355,7 @@ quickstart.md 2절과 같다. 각 단계는 실행 전에 사람이 허락한다
 - Phase 1 → Phase 2 → US1 → US3. US2의 코드(T013~T016)는 Phase 2 뒤 US1과 병렬로 할 수 있다(T016은 T012 뒤, 같은 `eval_cli.py`·`db.py`). T017은 T010 뒤(검증기가 있어야 시험이 돈다). T018은 H01 뒤.
 - US4의 비교(T032~T035)는 US3의 `records.py`·`metrics.py`(T026·T027) 뒤. 후보 C 준비(T036~T038)는 Phase 2와 무관해 언제든 할 수 있다.
 - US5는 사람 단계와 번갈아 간다: H00·H04 → T039 → H05(n·m) → 계약 고정 커밋 → H06 → H07 → T040 → T041 → T042.
-- Phase 9(2026-11-03 추가): T047 → T046(추천 질문 원문을 받은 뒤) → H01 → H09. T039는 H00·H04·H09 뒤에 쓴다(T048).
+- Phase 9(2026-11-03 추가): T047 → T046(`cand-` 26문항 원문을 받은 뒤) → H01 → H09. T039는 H00·H04·H09 뒤에 쓴다(T048).
 - 같은 파일을 고치는 작업은 순서대로 한다: `devtools/eval_cli.py`·`devtools/db.py`(T012 → T016 → T031 → T035, T038은 `db.py`의 `eval-index` 부분만), `tests/unit/devtools/test_eval_cli.py`(T011 → T029 → T034).
 - 실행 경로 구현 순서: T024 → T025 → T026 → T027 → T028(runner가 앞의 넷을 쓴다) → T031. T030(로컬 DB 시험)은 T031보다 먼저 쓰고 실패를 확인한다.
 

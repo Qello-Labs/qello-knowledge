@@ -17,7 +17,7 @@
 
 - 이번 단계: QK-EVL-001 `tasks.md`의 남은 측정 단계(T017 확정·T018·T039~T042·T045, 사람 단계 H00~H08)를 끝낸다. 코드는 고치지 않는다.
 - 골든셋 v0(WBS 0.7) 최종본을 입력으로 골든 세트 v2를 만들어 측정에 넣는다. spec이 정한 대로다(spec 32행 "골든셋 v0가 나오면 다음 버전으로 더한다", 345행 "다음 버전에서 다시 잰다").
-  최종본은 수집 질문 24개(사용자 수정 초안 2026-11-03 적용)와 추천 질문 26개(`cand-`)다. v2 작업은 승인된 tasks.md에 없어서 T046~T048·H09로 더하고 승인을 받은 뒤 한다.
+  최종본은 팀 질문 50문항이다(2026-11-03). v2 작업은 승인된 tasks.md에 없어서 T046~T048·H09로 더하고 승인을 받은 뒤 한다.
 - 목적: 1.G 완료 조건 가운데 "첫 검색 평가 리포트(Recall@5, MRR, 벡터·키워드·하이브리드 비교)"와 "ADR-010 Proposed"를 채운다. ADR-010 Status 결정은 사람이 한다.
 
 ## Scope
@@ -27,7 +27,7 @@
 - 골든 세트(`eval/question_sets/qk-evl-001-golden/`):
   - `v1.toml` 확정 표시(H00, `confirmed = true`, `confirmed_on`). 질문·근거는 바꾸지 않는다
   - `v2.toml`(T046): v1 11문항에 v0 문항 가운데 근거 문서가 `dnd-backend-docs`(라벨 기준 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`)에 있는 문항과 `no_answer` 문항을 더한다.
-    수집분 기준 9문항이다(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`, `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`). 추천 26문항도 같은 기준으로 고른다
+    수집 페이지 DB에 있는 24문항 기준 9문항이다(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`, `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`). `cand-` 26문항도 같은 기준으로 고른다
   - `labeling.md` 갱신: v2 라벨 기준, v0에서 뺀 문항과 이유(Confluence 근거는 QK-ING-003 색인 뒤 다음 버전), 핵심 사실 출처
   - `tests/unit/evaluation/test_golden_v2.py`(T047): v2가 v1 11문항을 글자 그대로 담고 `check_question_set`을 통과하는지 본다. 세트를 읽는 시험이라 세트와 같은 커밋에 둔다(`test_golden_v1.py`와 같은 방식)
 - 식별자 세트: `eval/question_sets/qk-evl-001-identifiers/`(`v1.toml`, `labeling.md`), T018·H04
@@ -101,9 +101,9 @@ uv run qk-dev eval check eval/question_sets/qk-evl-001-identifiers/v1.toml --tar
 - 2026-10-30~31 QK-EVL-001 명세·plan·tasks 결정과 코드 단계 기록은 `feat/SCRUM-124-gh-90-retrieval-eval`의 `TASK.md`(#91 병합 커밋 `c4ca593`)와 `tasks.md` "실행 기록"에 있다.
 - 2026-11-03 사용자 결정: 보내 준 골든셋 v0 수정 초안이 최종본이고 이를 반영한다. 초안의 "바로 정하지 못한 점" 5건도 적힌 대로 간다.
 - 2026-11-03 사실(작성 세션 확인):
-  - 수집 페이지 DB에는 수집 질문 24개가 있고 모두 채택(`accepted`)이다. 초안이 22개를 고쳤고 2개(`qmv26zrvzaicu`, `qmv270uanha2v`)는 그대로다.
-  - 추천 질문 26개(`cand-`)의 문장·유형은 수집 페이지 DB, 페이지 본문, 저장소에서 찾지 못했다. v2는 이 원문을 받아야 끝난다(BLOCKED 항목).
-  - 수집분의 백엔드 근거 문서 7개(FCM ADR 0008, README 테스트 서버 배포, 인증 분리 ADR 0006, 요청 로깅 설계, 방향 소통 ERD, `error-codes.md`, `AUTH_DESIGN.md`)는 라벨 기준 커밋 `6aeccd0`에 모두 있다(GitHub 읽기 전용 조회). 백엔드 저장소 `main`은 그 뒤로 움직였지만 라벨 기준 커밋은 그대로 둔다.
+  - 수집 페이지 DB에는 팀 질문 24개가 있고 모두 채택(`accepted`)이다. 초안이 22개를 고쳤고 2개(`qmv26zrvzaicu`, `qmv270uanha2v`)는 그대로다.
+  - 나머지 `cand-` 26문항의 문장·유형은 수집 페이지 DB, 페이지 본문, 저장소에서 찾지 못했다. v2는 이 원문을 받아야 끝난다(BLOCKED 항목).
+  - DB에 있는 24문항의 백엔드 근거 문서 7개(FCM ADR 0008, README 테스트 서버 배포, 인증 분리 ADR 0006, 요청 로깅 설계, 방향 소통 ERD, `error-codes.md`, `AUTH_DESIGN.md`)는 라벨 기준 커밋 `6aeccd0`에 모두 있다(GitHub 읽기 전용 조회). 백엔드 저장소 `main`은 그 뒤로 움직였지만 라벨 기준 커밋은 그대로 둔다.
   - 질문 세트 형식의 `type`은 `code`·`doc`·`meeting`·`synthesis`·`no_answer`이고 `unknown`은 거부된다. 최종본은 `unknown`이 0개라 그대로 옮길 수 있다.
   - 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구한다. v2는 H05 v2와 v0 두 곳에서 오고 v0 원본은 저장소에 없어서 `origin`을 두지 않고 `labeling.md`에 두 출처를 적는다.
 - 2026-11-03 사용자 결정: 첫 TASK.md 초안을 승인했다("승인"). 사람 확인 대상 4건(WBS 0.7 산출물 포함, v1 확정·v2 주 세트, 커밋 순서, 측정 PR 하나)과 스프린트 ID `QELLO-S2026-W45`도 포함했다. 그 판(`10e51ae`)이 git 이력에 있다.
