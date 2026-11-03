@@ -1,4 +1,4 @@
-# Task Contract: QK-EVL-001 측정 단계, 골든셋 v0 반영 (WBS 1.12, 0.7)
+# Task Contract: QK-EVL-001 측정 단계와 골든 세트 v2 (WBS 1.12)
 
 > Generated at: `2026-11-03`
 >
@@ -7,8 +7,8 @@
 ## Work gate
 
 - Jira 이슈: `SCRUM-124` / https://tkv123.atlassian.net/browse/SCRUM-124 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: `QK-EVL-001` / `specs/QK-EVL-001-retrieval-eval/spec.md`(Approved 2026-10-31). 구현 순서는 같은 디렉터리의 `tasks.md`(승인 2026-10-31)
-- 팀 스프린트 ID: `QELLO-S2026-W45`(작성 세션 추정, 주간 계획과 맞는지 사람 확인)
+- 기능명세서 ID / 링크: `QK-EVL-001` / `specs/QK-EVL-001-retrieval-eval/spec.md`(Approved 2026-10-31). 구현 순서는 같은 디렉터리의 `tasks.md`(승인 2026-10-31, 골든 세트 v2 작업 T046~T048·H09는 추가 승인 대상)
+- 팀 스프린트 ID: `QELLO-S2026-W45`(작성 세션이 날짜로 추정했고 2026-11-03 TASK.md 승인에 포함. Jira 주간 계획과는 대조하지 않았다)
 - GitHub Issue: `#90`(열림)
 - Branch: `docs/SCRUM-124-gh-90-retrieval-eval-measurement`
 - Base branch: `main`. 2026-11-03 `origin/main` `69c04ea`(#95 병합)에서 분기했다. 코드 단계는 #91로 병합됐고, 그 브랜치의 QK-EVL-001 계약과 `main`의 QK-STO-002 계약은 git 이력에 남긴다.
@@ -16,28 +16,27 @@
 ## Objective
 
 - 이번 단계: QK-EVL-001 `tasks.md`의 남은 측정 단계(T017 확정·T018·T039~T042·T045, 사람 단계 H00~H08)를 끝낸다. 코드는 고치지 않는다.
-- 골든셋 v0(WBS 0.7) 최종본을 반영한다. 최종본은 수집 질문 24개(수정 초안 2026-11-03 적용)와 추천 질문 26개(`cand-`), 합계 50문항이다.
-  - `eval/golden/v0.jsonl`로 질문·유형만 남긴다(로드맵 0.7 산출물).
-  - 그 가운데 현재 색인된 백엔드 문서로 답할 수 있는 문항에 라벨을 달아 골든 세트 v2로 측정에 넣는다(로드맵 1.12 4번, 2026-10-30 Issue #90 결정 "v0는 나오면 다음 버전으로 더한다").
+- 골든셋 v0(WBS 0.7) 최종본을 입력으로 골든 세트 v2를 만들어 측정에 넣는다. spec이 정한 대로다(spec 32행 "골든셋 v0가 나오면 다음 버전으로 더한다", 345행 "다음 버전에서 다시 잰다").
+  최종본은 수집 질문 24개(사용자 수정 초안 2026-11-03 적용)와 추천 질문 26개(`cand-`)다. v2 작업은 승인된 tasks.md에 없어서 T046~T048·H09로 더하고 승인을 받은 뒤 한다.
 - 목적: 1.G 완료 조건 가운데 "첫 검색 평가 리포트(Recall@5, MRR, 벡터·키워드·하이브리드 비교)"와 "ADR-010 Proposed"를 채운다. ADR-010 Status 결정은 사람이 한다.
 
 ## Scope
 
 - `TASK.md`(이 파일)
-- 골든셋 v0: `eval/golden/v0.jsonl`(한 줄에 `id`·`question`·`type`. 사람 이름, "답이 있는 곳", 근거, 기대 답은 넣지 않는다)
+- `specs/QK-EVL-001-retrieval-eval/tasks.md`: 골든 세트 v2 작업(T046~T048, 사람 단계 H09) 추가, 체크 표시와 "실행 기록". 그 밖의 명세 문서(spec FR·SC, plan 산출물)는 바꾸지 않는다
 - 골든 세트(`eval/question_sets/qk-evl-001-golden/`):
   - `v1.toml` 확정 표시(H00, `confirmed = true`, `confirmed_on`). 질문·근거는 바꾸지 않는다
-  - `v2.toml`: v1 11문항에 v0 문항 가운데 근거 문서가 `dnd-backend-docs`(라벨 기준 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`)에 있는 문항과 `no_answer` 문항을 더한다.
+  - `v2.toml`(T046): v1 11문항에 v0 문항 가운데 근거 문서가 `dnd-backend-docs`(라벨 기준 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`)에 있는 문항과 `no_answer` 문항을 더한다.
     수집분 기준 9문항이다(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`, `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`). 추천 26문항도 같은 기준으로 고른다
   - `labeling.md` 갱신: v2 라벨 기준, v0에서 뺀 문항과 이유(Confluence 근거는 QK-ING-003 색인 뒤 다음 버전), 핵심 사실 출처
-  - `tests/unit/evaluation/test_golden_v2.py`: v2와 v0.jsonl의 문장·유형 대조, `check_question_set` 통과. 세트를 읽는 시험이라 세트와 같은 커밋에 둔다(`test_golden_v1.py`와 같은 방식)
+  - `tests/unit/evaluation/test_golden_v2.py`(T047): v2가 v1 11문항을 글자 그대로 담고 `check_question_set`을 통과하는지 본다. 세트를 읽는 시험이라 세트와 같은 커밋에 둔다(`test_golden_v1.py`와 같은 방식)
 - 식별자 세트: `eval/question_sets/qk-evl-001-identifiers/`(`v1.toml`, `labeling.md`), T018·H04
 - 측정: `specs/QK-EVL-001-retrieval-eval/measurement/`(`runs/<실행 ID>.json`, `retrieval-eval-report.md`), T039·T040·T042
 - 결정 기록: `docs/sdd/decisions/ADR-010-keyword-search-text.md`(Status Proposed), T041
-- QK-EVL-001 명세 문서 가운데 `tasks.md`의 체크 표시·실행 기록과, 골든 세트 v2를 측정 대상에 넣는 데 필요한 `quickstart.md`·`tasks.md` 문구. 요구사항(spec FR·SC)은 바꾸지 않는다
 
 ## Explicit exclusions
 
+- `eval/golden/v0.jsonl` 등 WBS 0.7 산출물. QK-EVL-001 spec의 범위 밖이다(spec 348행 "골든셋 질문 수집(WBS 0.7)"). 별도 작업으로 한다
 - 평가 코드(`src/`)와 기존 시험 기대값 변경. 측정 중 결함이 나오면 멈추고 별도 작업으로 나눈다
 - 골든셋 v0 문장·유형 수정. 2026-11-03 최종본을 그대로 옮긴다. 확정한 세트 파일(v1, 확정 뒤 v2)도 고치지 않고, 바꿔야 하면 버전을 올려 평가 코드·결과와 다른 커밋에 사유를 남긴다(AGENTS.md 3.4)
 - Confluence 근거 문항의 검색 측정(Confluence 색인은 QK-ING-003, Phase 2). 답변 정답 라벨(QK-EVL-002)
@@ -65,15 +64,15 @@
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `TASK.md`, `specs/QK-EVL-001-retrieval-eval/tasks.md`·`quickstart.md` | tkv00 | 사람 리뷰 |
-| `eval/golden/v0.jsonl`, `eval/question_sets/**`, `tests/unit/evaluation/test_golden_v2.py` | tkv00 | 사람 확정(H00·H04·v2 확정), 평가 결과와 커밋 분리 확인 |
+| `TASK.md`, `specs/QK-EVL-001-retrieval-eval/tasks.md` | tkv00 | 사람 리뷰(T046~T048·H09 추가 승인) |
+| `eval/question_sets/**`, `tests/unit/evaluation/test_golden_v2.py` | tkv00 | 사람 확정(H00·H04·H09), 평가 결과와 커밋 분리 확인 |
 | `specs/QK-EVL-001-retrieval-eval/measurement/**` | tkv00 | 독립 검토 에이전트(리포트 대조 T042), 사람 리뷰 |
 | `docs/sdd/decisions/ADR-010-keyword-search-text.md` | tkv00 | 사람 승인(H08) |
 
 ## Existing user-owned changes
 
 - 2026-11-03 `origin/main`(`69c04ea`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
-- 저장소 밖: 골든셋 v0 수정 초안(`~/Downloads/golden-v0-revision-draft.md`, 사용자 작성). 저장소에 복사하지 않고 v0.jsonl·v2 작성의 입력으로만 쓴다
+- 저장소 밖: 골든셋 v0 수정 초안(`~/Downloads/golden-v0-revision-draft.md`, 사용자 작성). 저장소에 복사하지 않고 v2 작성의 입력으로만 쓴다
 
 ## Validation
 
@@ -93,8 +92,7 @@ uv run qk-dev eval check eval/question_sets/qk-evl-001-identifiers/v1.toml --tar
 
 ## Completion criteria
 
-- `eval/golden/v0.jsonl`에 50문항이 질문·유형만으로 있고, 사람 이름과 비밀값이 없다(preflight, 사람 확인)
-- 골든 세트 v2와 식별자 세트 v1이 확정되고 `qk-dev eval check`를 평가 대상에 대해 통과한다 — 확정 커밋, 검사 출력
+- 골든 세트 v1·v2와 식별자 세트 v1이 확정되고, v2와 식별자 세트가 `qk-dev eval check`를 평가 대상에 대해 통과한다 — 확정 커밋, 검사 출력
 - 같은 질문 세트·고정 커밋·임베딩 모델로 세 검색 방식과 ADR-010 후보 A·B·C의 Recall@5·MRR이 표본 수와 함께 리포트에 남는다. 목표에 못 미쳐도 기록한다 — 리포트, 실행 기록(운영 DB 쓰기 0건)
 - ADR-010이 Status Proposed로 리포트 수치를 그대로 인용한다. Status 결정은 사람이 한다
 
@@ -104,12 +102,15 @@ uv run qk-dev eval check eval/question_sets/qk-evl-001-identifiers/v1.toml --tar
 - 2026-11-03 사용자 결정: 보내 준 골든셋 v0 수정 초안이 최종본이고 이를 반영한다. 초안의 "바로 정하지 못한 점" 5건도 적힌 대로 간다.
 - 2026-11-03 사실(작성 세션 확인):
   - 수집 페이지 DB에는 수집 질문 24개가 있고 모두 채택(`accepted`)이다. 초안이 22개를 고쳤고 2개(`qmv26zrvzaicu`, `qmv270uanha2v`)는 그대로다.
-  - 추천 질문 26개(`cand-`)의 문장·유형은 수집 페이지 DB, 페이지 본문, 저장소에서 찾지 못했다. v0.jsonl과 v2는 이 원문을 받아야 끝난다(BLOCKED 항목).
+  - 추천 질문 26개(`cand-`)의 문장·유형은 수집 페이지 DB, 페이지 본문, 저장소에서 찾지 못했다. v2는 이 원문을 받아야 끝난다(BLOCKED 항목).
   - 수집분의 백엔드 근거 문서 7개(FCM ADR 0008, README 테스트 서버 배포, 인증 분리 ADR 0006, 요청 로깅 설계, 방향 소통 ERD, `error-codes.md`, `AUTH_DESIGN.md`)는 라벨 기준 커밋 `6aeccd0`에 모두 있다(GitHub 읽기 전용 조회). 백엔드 저장소 `main`은 그 뒤로 움직였지만 라벨 기준 커밋은 그대로 둔다.
   - 질문 세트 형식의 `type`은 `code`·`doc`·`meeting`·`synthesis`·`no_answer`이고 `unknown`은 거부된다. 최종본은 `unknown`이 0개라 그대로 옮길 수 있다.
-- 사람 확인 대상(작성 세션 제안):
-  - WBS 0.7 산출물(v0.jsonl)을 이 브랜치와 SCRUM-124에 포함한다. 0.7에는 따로 연결된 Jira 이슈가 없다.
+  - 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구한다. v2는 H05 v2와 v0 두 곳에서 오고 v0 원본은 저장소에 없어서 `origin`을 두지 않고 `labeling.md`에 두 출처를 적는다.
+- 2026-11-03 사용자 결정: 첫 TASK.md 초안을 승인했다("승인"). 사람 확인 대상 4건(WBS 0.7 산출물 포함, v1 확정·v2 주 세트, 커밋 순서, 측정 PR 하나)과 스프린트 ID `QELLO-S2026-W45`도 포함했다. 그 판(`10e51ae`)이 git 이력에 있다.
+- 2026-11-03 정정: 첫 판은 spec 범위 밖인 WBS 0.7 산출물(`eval/golden/v0.jsonl`)을 Scope에 넣었고, 승인된 tasks.md에 없는 v2 작업을 tasks 추가 없이 진행하려 했다. 작성 세션이 승인받을 때 이를 알리지 않았다.
+  사용자 결정("명세 범위로 고치기"): v0.jsonl은 이 작업에서 빼서 별도로 한다. v2는 남기고 tasks.md에 T046~T048·H09를 더해 승인받은 뒤 진행한다. `test_golden_v2.py`는 v0.jsonl과 대조하지 않는다.
+- 사람 확인 대상(작성 세션 제안, 위 정정 반영):
   - v1은 확정만 하고 그대로 둔다. 측정과 리포트의 주 세트는 v2이고, v1 수치는 v2의 부분 집합으로 함께 적는다.
-  - 커밋 순서: 이 계약 → v0.jsonl → v1 확정 → v2와 `test_golden_v2.py` → v2 확정 → 식별자 세트 초안 → 확정 → 리포트 계약 고정(T039·H05) → 실행 기록·리포트 → ADR-010. 평가 세트와 평가 결과는 다른 커밋이다.
+  - 커밋 순서: 이 계약 정정과 tasks.md 추가 → v1 확정 → v2와 `test_golden_v2.py` → v2 확정 → 식별자 세트 초안 → 확정 → 리포트 계약 고정(T039·H05) → 실행 기록·리포트 → ADR-010. 평가 세트와 평가 결과는 다른 커밋이다.
   - 측정 PR은 하나로 낸다.
-- 2026-11-03 사용자 결정: 이 TASK.md 초안을 승인했다("승인"). 위 사람 확인 대상 4건과 스프린트 ID `QELLO-S2026-W45`도 이 승인에 포함된 것으로 본다.
+- 2026-11-03 사용자 결정: 정정한 TASK.md와 tasks.md Phase 9(T046~T048, H09)를 승인했다("승인하고 커밋"). 위 사람 확인 대상 3건도 포함한다. Phase 9 추가분은 별도 에이전트 검토를 받지 않았다.
