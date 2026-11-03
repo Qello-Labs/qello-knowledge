@@ -28,7 +28,7 @@
   - `v1.toml` 확정 표시(H00, `confirmed = true`, `confirmed_on`). 질문·근거는 바꾸지 않는다
   - `v2.toml`(T046): v1 11문항에 v0 문항 가운데 근거 문서가 `dnd-backend-docs`(라벨 기준 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`)에 있는 문항과 `no_answer` 문항을 더한다.
     수집 페이지 DB에 있는 24문항 기준 9문항이다(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`, `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`). `cand-` 26문항도 같은 기준으로 고른다
-  - `labeling.md` 갱신: v2 라벨 기준, v0에서 뺀 문항과 이유(Confluence 근거는 QK-ING-003 색인 뒤 다음 버전), 핵심 사실 출처
+  - `labeling-v2.md`(새 파일, `labeling.md`는 v1 확정 뒤 고치지 않는 규칙이라 그대로 둔다): v2 라벨 기준, v0에서 뺀 문항과 이유(Confluence 근거는 QK-ING-003 색인 뒤 다음 버전), 핵심 사실 출처
   - `tests/unit/evaluation/test_golden_v2.py`(T047): v2가 v1 11문항을 글자 그대로 담고 `check_question_set`을 통과하는지 본다. 세트를 읽는 시험이라 세트와 같은 커밋에 둔다(`test_golden_v1.py`와 같은 방식)
 - 식별자 세트: `eval/question_sets/qk-evl-001-identifiers/`(`v1.toml`, `labeling.md`), T018·H04
 - 측정: `specs/QK-EVL-001-retrieval-eval/measurement/`(`runs/<실행 ID>.json`, `retrieval-eval-report.md`), T039·T040·T042

@@ -311,7 +311,7 @@ WBS 0.7 산출물(`eval/golden/v0.jsonl`)은 spec 범위 밖(348행)이라 이 �
 
 **입력**: v0 최종본은 팀 질문 50문항(2026-11-03)이다. 수집 페이지 DB에 24문항이 있고(2026-11-03 수정 적용), `cand-` 26문항의 원문은 사람이 준다. 받기 전에는 T046을 끝내지 않는다.
 
-- [ ] T047 [US2] `tests/unit/evaluation/test_golden_v2.py`(T046보다 먼저 쓰고 파일이 없어 실패하는지 본다): v2의 머리 정보(`id = "qk-evl-001-golden"`, `version = 2`, 자료원 `dnd-backend-docs`와 v1과 같은 `label_commit`),
+- [X] T047 [US2] `tests/unit/evaluation/test_golden_v2.py`(T046보다 먼저 쓰고 파일이 없어 실패하는지 본다): v2의 머리 정보(`id = "qk-evl-001-golden"`, `version = 2`, 자료원 `dnd-backend-docs`와 v1과 같은 `label_commit`),
   Q01~Q11이 `v1.toml`과 필드까지 같음, v1에 없는 질문은 `original_number`가 있고 `id`와 같음, `check_question_set` 통과. v0 원본은 저장소에 없으므로 문장 대조는 시험하지 않고 H09에서 사람이 본다. 세트와 같은 커밋에 둔다
 - [ ] T046 [US2] `eval/question_sets/qk-evl-001-golden/v2.toml`(별도 커밋, 평가 코드·결과와 섞지 않음):
   - 머리 정보: `version = 2`, `created`, `confirmed = false`, `labeling`, `[[set.sources]]`는 v1과 같다. 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구하므로 두지 않고 출처는 `labeling.md`에 적는다
@@ -320,7 +320,7 @@ WBS 0.7 산출물(`eval/golden/v0.jsonl`)은 spec 범위 밖(348행)이라 이 �
     `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`)이고, `cand-` 26문항도 같은 기준으로 고른다
   - 더하는 문항: `id`·`original_number`는 v0 질문 ID, `text`·`type`은 최종본 그대로, `label = "done"`, `evidence`는 백엔드 문서 위치만(문서 단위, Confluence 근거는 넣지 않음), `facts`는 최종본의 기대 답 요약,
     `origin = "team"`. 질문에 사람을 가리키는 표현이 있으면 고치지 않고 멈춰 사람에게 묻는다
-  - `labeling.md`에 v2 절을 더한다: 두 출처(H05 v2, v0 최종본 2026-11-03), 고른 기준, 뺀 v0 문항 수와 이유(근거가 Confluence뿐인 문항은 QK-ING-003 색인 뒤 다음 버전), 근거에 Confluence가 함께 있던 문항은 백엔드 문서만 남겼다는 점
+  - `labeling-v2.md`를 새로 쓰고 머리 정보 `labeling`이 그 파일을 가리킨다(`labeling.md`는 "확정 뒤 고치지 않는다"는 규칙이 있어 v2 절을 더하지 않는다): 두 출처(H05 v2, v0 최종본 2026-11-03), 고른 기준, 뺀 v0 문항 수와 이유(근거가 Confluence뿐인 문항은 QK-ING-003 색인 뒤 다음 버전), 근거에 Confluence가 함께 있던 문항은 백엔드 문서만 남겼다는 점
   - 확인: `uv run pytest tests/unit/evaluation/test_golden_v2.py`, H01 뒤 `uv run qk-dev eval check eval/question_sets/qk-evl-001-golden/v2.toml --target qk_eval_baseline_6aeccd039b82`(경고 검토)
 - [ ] T048 측정의 골든 세트를 v2로 바꾼다: T039·T040·H06의 "골든 세트"는 v2다. T039 1절과 T040의 표본 한계(지금 "한 문항이 Recall@5를 12.5%p 바꿈"은 v1 8문항 기준)는 v2의 지표 대상 문항 수로 다시 적고,
   v1 11문항의 수치를 v2 결과의 부분 집합으로 함께 적는다(같은 실행 기록에서 질문 ID로 거른다, 별도 실행 없음). H06 비용 상한은 v2 문항 수로 다시 계산해 실행 전에 보고한다
@@ -433,3 +433,7 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
   - 낮음 9: T029의 설정·정책 오류 종료 2와 T020의 "실행 전 검사 실패에서 장부 읽기 0"을 CLI 시험으로 더했다(`test_config_and_policy_errors_exit_2`, `test_precheck_failures_read_no_ledger_and_call_no_provider`).
   반영분은 다시 검토받지 않았다.
 - 2026-10-31 검토 반영 뒤 기본 검증 전체 다시 실행: preflight 998개 통과, `git diff --check`, ruff check·format --check 통과, `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,776 passed(3 deselected는 `external`).
+- 2026-11-04 T047: `test_golden_v2.py`를 먼저 쓰고 세트 파일이 없어 실패하는 것을 확인했다(`FileNotFoundError`). T046 세트를 쓴 뒤 통과했다.
+- 2026-11-04 T046: `v2.toml` 32문항(v1 11, v0 근거 있음 15, v0 `no_answer` 6, 지표 대상 23)과 `labeling-v2.md`를 썼다. `uv run qk-dev eval check …/v2.toml`(대상 없이) 통과.
+  `cand-` 문항의 근거·핵심 사실은 작성 세션이 라벨 기준 커밋을 작업 공간에 읽기 전용으로 받아 색인 대상 80개 문서에서 찾은 초안이다. 평가 대상에 대한 검사(`--target`)는 H01 뒤에 한다. `confirmed = false`이며 확정은 H09다.
+  계획과 다른 점: `labeling.md`에 v2 절을 더하지 않고 `labeling-v2.md`를 따로 썼다. `labeling.md`에 "확정 뒤 고치지 않는다"는 규칙이 있고 v1 확정(H00)이 v2 확정보다 먼저다.
