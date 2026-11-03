@@ -8,7 +8,7 @@
 
 - Jira 이슈: `SCRUM-124` / https://tkv123.atlassian.net/browse/SCRUM-124 (상위 `SCRUM-42` 팀 RAG 구축)
 - 기능명세서 ID / 링크: `QK-EVL-001` / `specs/QK-EVL-001-retrieval-eval/spec.md`(Approved 2026-10-31). 구현 순서는 같은 디렉터리의 `tasks.md`(승인 2026-10-31, 골든 세트 v2 작업 T046~T048·H09는 추가 승인 대상)
-- 팀 스프린트 ID: `QELLO-S2026-W45`(작성 세션이 날짜로 추정했고 2026-11-03 TASK.md 승인에 포함. Jira 주간 계획과는 대조하지 않았다)
+- 팀 스프린트 ID: `QELLO-S2026-W44`(Jira SCRUM-124 본문 값, 2026-11-03 확인)
 - GitHub Issue: `#90`(열림)
 - Branch: `docs/SCRUM-124-gh-90-retrieval-eval-measurement`
 - Base branch: `main`. 2026-11-03 `origin/main` `69c04ea`(#95 병합)에서 분기했다. 코드 단계는 #91로 병합됐고, 그 브랜치의 QK-EVL-001 계약과 `main`의 QK-STO-002 계약은 git 이력에 남긴다.
@@ -114,3 +114,5 @@ uv run qk-dev eval check eval/question_sets/qk-evl-001-identifiers/v1.toml --tar
   - 커밋 순서: 이 계약 정정과 tasks.md 추가 → v1 확정 → v2와 `test_golden_v2.py` → v2 확정 → 식별자 세트 초안 → 확정 → 리포트 계약 고정(T039·H05) → 실행 기록·리포트 → ADR-010. 평가 세트와 평가 결과는 다른 커밋이다.
   - 측정 PR은 하나로 낸다.
 - 2026-11-03 사용자 결정: 정정한 TASK.md와 tasks.md Phase 9(T046~T048, H09)를 승인했다("승인하고 커밋"). 위 사람 확인 대상 3건도 포함한다. Phase 9 추가분은 별도 에이전트 검토를 받지 않았다.
+- 2026-11-03 정정: 스프린트 ID `W45`는 작성 세션이 날짜로 추정한 값이었다. Jira SCRUM-124(읽기 전용 조회)의 `QELLO-S2026-W44`와 달라 사용자 결정("W44로 맞추기")으로 W44로 고쳤다.
+  같은 조회에서 SCRUM-124 상태는 "해야 할 일"이었다. Jira 쓰기는 하지 않았다.
