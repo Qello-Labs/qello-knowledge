@@ -138,7 +138,7 @@ description: "QK-EVL-001 구현 작업 목록"
   출력에 대상 고정 커밋, 형태별 식별자·문서 수·문서 위치, 비밀값 규칙으로 뺀 수가 있고 본문 문장·줄은 없다. `--set`이 대상 고정 커밋과 다른 라벨 기준 커밋이면 1, 근거 문서가 다른 질문이 있으면 1과 그 질문 ID·(빠진 위치, 더 있는 위치),
   모두 같으면 0. 출력에 질문 문장과 `label_terms` 값이 없다. 인자 오류·대상 연결 실패 2
 - [X] T016 [US2] `src/qello_knowledge/devtools/eval_cli.py`에 `run_identifiers`, `devtools/db.py`의 `eval` 묶음에 `identifiers`(`--target` 필수, `--set`, `--form` 여러 번)를 더한다. 본문은 `PostgresEvalTarget.visible_chunk_texts()`로 읽는다
-- [ ] T017 [US2] 골든 세트(별도 커밋, research R-14 2번):
+- [X] T017 [US2] 골든 세트(별도 커밋, research R-14 2번):
   - `eval/question_sets/qk-evl-001-golden/v1.toml`: spec FR-008 그대로. 세트 ID `qk-evl-001-golden`, `origin = { id = "qk-bot-001-h05", version = 2, document = "specs/QK-BOT-001-discord-ask/measurement/h05-question-set-v2.md" }`,
     자료원 `dnd-backend-docs`와 `label_commit = "6aeccd039b825dcd7a2b6c046a34ef72089a1f78"`, 질문 Q01~Q11(`id`와 `original_number`가 원본 번호), 질문 문장·근거 문서·핵심 사실 글자 그대로, "있음"은 `doc`, "없음"은 `no_answer`(근거 빈 배열),
     `label = "done"`, `origin = "synthetic"`, `confirmed = false`. "나만 보기"와 답변 판정 기준은 옮기지 않는다
@@ -442,3 +442,4 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
   앞선 시도는 모두 데이터베이스를 만들기 전에 멈췄다(설정 점검 `DATABASE_URL` 누락, 캐시 원본 접속 실패, GitHub 토큰 403, 캐시 원본 미설정으로 종료 4 예상 921 Neurons). 임베딩 호출은 0이었다.
   GitHub 403은 조직 정책(수명 366일 초과 fine-grained 토큰 차단) 때문이었고 사용자가 토큰을 다시 발급했다. 목록 조회 실패 사유가 동기화 기록에 남지 않는 점(`sources/collect.py:40`)은 범위 밖이라 고치지 않았다.
 - 2026-11-04 H01 뒤 `uv run qk-dev eval check …/qk-evl-001-golden/v2.toml --target qk_eval_baseline_6aeccd039b82` 통과(32문항, 경고 0, sha256 `2cb7a3da9fd0`). 같은 대상으로 v1도 통과(11문항, 경고 0).
+- 2026-11-04 H00: 사용자가 골든 세트 v1 11문항을 확정했다("v1 확정"). `v1.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 질문·유형·근거 문서·핵심 사실은 바꾸지 않았다. T017을 닫는다.
