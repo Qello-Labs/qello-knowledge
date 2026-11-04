@@ -1,108 +1,85 @@
-# Task Contract: QK-STO-002 인덱스 버전 생성·평가 게이트·활성화 (WBS 2.1)
+# Task Contract: QK-OBS-001 운영 반영 H01~H03 준비 문서 초안
 
-> Generated at: `2026-10-31`
+> Generated at: `2026-11-04`
 >
-> 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
+> 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다. 2026-11-04 사람 승인(Decisions).
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-125` / https://tkv123.atlassian.net/browse/SCRUM-125 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: `QK-STO-002` / `specs/QK-STO-002-index-version-gate/spec.md`(작성 예정)
-- 팀 스프린트 ID: `QELLO-S2026-W44`
-- GitHub Issue: `#92`
-- Branch: `feat/SCRUM-125-gh-92-index-version-gate`
-- Base branch: `main`. 2026-10-31 `origin/main` `c4ca593`(#91 병합)에서 분기했고, 2026-11-02 `origin/main` `8adee56`(#94 병합)을 병합했다. 이전 `main`의 QK-EVL-001·QK-EVL-002 계약은 git 이력에 남긴다.
+- Jira 이슈: `SCRUM-131` / https://tkv123.atlassian.net/browse/SCRUM-131 (상위 `SCRUM-42`, #96 자동 생성 댓글로 오케스트레이터 확인)
+- 기능명세서 ID / 링크: `QK-OBS-001` / [spec.md](specs/QK-OBS-001-query-log-feedback/spec.md)
+- 팀 스프린트 ID: `QELLO-S2026-W45` (GitHub Issue 본문)
+- GitHub Issue: [#96](https://github.com/Qello-Labs/qello-knowledge/issues/96)
+- Branch: `feat/SCRUM-131-gh-96-query-log-rollout`
+- Base branch: `main` / 로컬 `origin/main`·HEAD `69c04ea7ac48072e5330114249165f38050d11e9` 일치 확인. 원격 최신성은 재확인하지 못했다.
 
 ## Objective
 
-- 이번 단계: 명세 단계다. 이 계약이 승인되면 `/speckit-specify`로 `spec.md`를 쓰고, 작성에 관여하지 않은 별도 에이전트의 읽기 전용 검토를 반영한 뒤 사람 승인을 받는다.
-  plan·tasks·구현은 1.G 뒤에 시작한다.
-- 목적: C-07과 AGENTS.md 3.3의 "평가를 통과한 버전만 활성화"를 실행할 수 있는 절차로 정한다. 2.G 완료 조건 "청킹·검색 설정을 바꿔 새 인덱스 버전을 만들고, 평가를 통과한 뒤 활성화하는 절차를 한 번 실행했다"와
-  QK-CHK-001·QK-ING-003의 켜는 변경, ADR-010 운영 반영이 이 절차를 선행으로 둔다.
+- #96의 운영 반영·확인 자체가 아니라, 사람이 H01~H03을 판단·실행할 준비 문서 네 개를 만들고 2026-11-04 사람 결정을 ADR-016에 기록한다.
+- 공지·동의 문구를 ADR-016과 명세에 맞추고, 현재 질의 릴리스부터 배포 후보까지의 차이 및 예약 동기화 영향을 근거와 함께 정리한다.
 
 ## Scope
 
-- `specs/QK-STO-002-index-version-gate/`: `spec.md`, `checklists/requirements.md`
-- `TASK.md`(이 파일)
-- 명세 단계라 코드·시험·마이그레이션·설정 파일은 바꾸지 않는다.
+- `TASK.md`: 이 계약 초안으로 교체. 이전 QK-STO-002 내용은 git 이력에 남는다.
+- `specs/QK-OBS-001-query-log-feedback/rollout/notice-draft.md`
+- `specs/QK-OBS-001-query-log-feedback/rollout/consent-doc-draft.md`
+- `specs/QK-OBS-001-query-log-feedback/rollout/rollout-preflight.md`
+- `docs/sdd/decisions/ADR-016-query-text-retention.md`: 2026-11-04 사람 결정(상태, 승인, 보존 상한 날짜) 기록만
 
 ## Explicit exclusions
 
-- plan·tasks·구현(1.G 뒤), 색인·평가 실행, 외부 API 호출, 운영 DB 접근(읽기 포함)
-- QK-EVL-001 계약 문서(`contracts/question-set.md`, `contracts/run-record.md`, `contracts/cli.md`)와 평가 코드 수정. 게이트는 이 계약을 입력으로만 쓰고, 바꿔야 할 점이 나오면 spec에 넘김 항목으로 남긴다
-- 다른 명세 문서(QK-STO-001, QK-SYN-001, QK-EMB-001, QK-EVL-001, QK-CHK-001, QK-ING-003 등) 수정
-- 운영 키워드 규칙·토크나이저 교체와 ADR-010 결정, 코드 청킹·Confluence 자료원 켜기
-- 답변 평가(QK-EVL-002), 쓰지 않는 벡터·내린 문서의 물리 정리(QK-SYN-003)
-- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, 결정 기록(ADR), `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정
-- `.env`·`.env.*` 읽기. 설정은 항목 이름으로만 가리킨다
-- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문, DB 연결 주소·서버 주소는 기록하지 않는다.
+- 운영 명령 일체(OCI, SSH, 운영 DB 읽기·쓰기, Discord 등록, Worker 배포), Jira·Confluence·Discord·GitHub 쓰기.
+- 커밋·push·PR 생성, src·tests 수정, 평가 실행, 비용 발생 외부 API 호출.
+- 위 기록 외 ADR-016 변경, tasks.md·roadmap·AGENTS.md·CLAUDE.md·CODEX.md·.claude/**·.codex/**·.agents/** 수정.
+- `.env`·`.env.*`·`secrets/` 읽기. 서버 주소, 내부 도메인, OCID, 역할 이름, 사용자 식별자, 실제 질의 원문을 기록하지 않는다.
+- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 하지 않는다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 없음
-- 외부 API로 보내는 데이터: 없음
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 명세 단계 0 Neurons. 새 인덱스 버전 전체 재색인과 게이트 평가의 예상 Neurons는 plan에서 추정한다
-- 인덱스 버전 변경: 없음
+- 새로 읽는 자료원: GitHub Issue #96(읽기 전용), 로컬 저장소 문서·코드·git 이력. 운영 자료원 접근 없음.
+- 외부 API로 보내는 데이터: Issue 조회 식별 정보 외 로컬 자료·질의 원문 전송 없음.
+- 예상 임베딩·생성 호출량과 무료 한도 대비: 준비 문서 작성 0회, 0 Neurons. H03의 재시도 없는 가정의 예상량 약 255 Neurons 사용은 후속 사람 승인 대상이다.
+- 인덱스 버전 변경: 없음.
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `specs/QK-STO-002-index-version-gate/`, `TASK.md` | tkv00 | 독립 검토 에이전트, 사람 리뷰 |
+| 위 Scope 다섯 파일 | Byuntil | 별도 검토자 검증, 사람 계약·운영 승인 |
 
 ## Existing user-owned changes
 
-- 2026-10-31 `origin/main`(`c4ca593`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 시작 시 `git status --short` 실행: 변경 행 없음. 다만 차단 경로에 대한 `Operation not permitted` 경고가 있어 완전한 무변경 확인으로 단정하지 않는다. 해당 경로를 읽거나 정리하지 않았다.
+- 브랜치와 기준 커밋은 Work gate와 일치한다. 기존 파일은 이 요청에서 교체하도록 지정한 `TASK.md`만 수정한다.
 
 ## Validation
 
 ```bash
-python scripts/preflight.py
+uv run python scripts/preflight.py
 git diff --check
 ```
 
-`python`이 없는 환경에서는 `uv run python scripts/preflight.py`로 실행한다.
+- 문서 초안 범위이며 DB·운영·평가 검증은 하지 않는다. 샌드박스 차단은 우회하지 않고 보고한다.
+- 실행 에이전트의 자체 점검은 독립 검토나 승인이 아니다.
+- 실행 결과(2026-11-04): `uv run python scripts/preflight.py`는 uv 캐시의 잠금용 임시 파일 생성 권한 오류로 종료 코드 2. 검사는 시작하지 못했으며 우회하지 않았다. `git diff --check`는 종료 코드 0이나 차단 경로 경고가 있었다. 네 문서의 공백·로컬 파일 링크 자체 점검은 통과했다. 필수 preflight가 남아 최종 상태는 BLOCKED다.
+- 2026-11-04 오케스트레이터가 샌드박스 밖에서 다시 실행: `uv run python scripts/preflight.py` 통과(저장소 텍스트 파일 1005개, 미추적 새 문서 포함), `git diff --check` 종료 코드 0(새 문서 포함).
 
 ## Completion criteria
 
-- `TASK.md`가 사람 승인을 받는다 — 이 파일의 Decisions
-- `spec.md`가 별도 에이전트 검토를 반영한 뒤 사람 리뷰로 승인된다 — 검토 기록, 이 파일의 Decisions
-- spec의 평가 게이트가 QK-EVL-001 계약(질문 세트 형식, 실행 기록 `qk-evl-001-run/v1`, `qk-dev eval run`·`tables`)을 바꾸지 않고 입력으로 쓰고,
-  QK-EVL-001 FR-030(토크나이저를 가릴 식별자)을 요구사항이나 사람 결정 항목으로 담는다 — spec 본문, 검토 기록
+- Discord 공지·Confluence 동의 문서 초안에 저장 범위, 질의별 동의, 메모리 대기, 보존 상한, 삭제 경로가 있고 확정값은 반영하고 미확정값만 placeholder로 남긴다.
+- 사전 점검에 `ce6d1d8..origin/main`의 질의 경로·설정·의존성·마이그레이션 변화와 `0008` 미적용 시 예약 동기화 영향이 파일:줄 근거로 정리된다.
+- 사람 단계 순서표에 실행 주체·승인·예상 Neurons·되돌리기가 있고, 미확인·문서 차이와 필수 검증 결과가 구분된다. Issue #96의 운영 완료 조건은 이 문서 작성으로 충족되지 않는다.
 
 ## Decisions
 
-- 2026-10-31 사용자 결정: QK-STO-002 이슈를 `/harness-issue`로 만든다. GitHub Issue #92를 저장소 작업 폼 형식으로 열었고, Jira 하위 작업 `SCRUM-125`는 `jira-subtask` 워크플로가 만들었다. 팀 스프린트 ID는 `QELLO-S2026-W44`다.
-  사용자 스킬의 type 라벨·Project 필드 단계는 이 저장소가 쓰지 않아(#90도 라벨·Project 없음) 건너뛰었다.
-- 2026-10-31 사용자 결정: 1.G(Phase 1 완료 리뷰)가 끝나지 않은 상태에서 명세 단계만 진행한다. plan·tasks·구현은 1.G 뒤에 한다(로드맵 1절 5번).
-- 2026-10-31 사실(작성 세션 확인):
-  - Jira 하위 작업의 스프린트가 상위 이슈를 따라 `Backend·Sprint 3 (12/10–18/10)`으로 잡혔다(#90의 `SCRUM-124`와 같다). 스프린트 이동은 사람이 Jira에서 한다.
-  - 백로그 요구사항 열의 FR-STO-04, FR-EMB-05, ADR-018은 저장소와 git 이력에 원문이 없다. `git log --all -S`로 찾으면 로드맵을 처음 더한 커밋(`2aa2f8e`)에만 나오고 `docs/sdd/decisions/`에 ADR-018이 없다.
-    QK-STO-001·QK-EMB-001과 같은 상황이라 뜻을 추측해 대응시키지 않는다.
-  - 검색 함수는 활성 인덱스 버전만 대상으로 한다(`migrations/0002_search_functions.sql:9-10`의 `qk.active_index_version()`). 준비 상태 버전의 청크는 검색되지 않는다(QK-STO-001 FR-008).
-  - QK-EVL-001 실행기의 평가 대상은 로컬 컨테이너의 `qk_eval_*` DB뿐이다(`contracts/cli.md` 머리말). 그래서 운영 DB의 준비 버전을 어디서 어떻게 평가할지가 spec의 핵심 결정이다.
-  - 동기화는 활성 버전이 있고 현재 설정의 버전과 다르면 바뀐 문서 처리를 멈춘다(QK-SYN-001 FR-020, `sync/run.py:93-94`). 문서별 처리 상태는 버전 하나만 기록한다(`artifact.processed_index_version`, `migrations/0004_sync.sql:7`).
-  - 첫 버전 활성화 명령은 활성 버전이 없을 때만 동작한다(`adapters/postgres/sync_store.py`의 `_activation_check`, 조건 `active_exists`).
-  - 인덱스 버전 재료는 임베딩 모델, 차원, 청킹 규칙 버전, 메타데이터 스키마 버전 넷이다(`sync/keys.py`의 `index_version_id`). 키워드 색인 토크나이저는 재료가 아니다(QK-EVL-001 FR-030).
-    벡터 차원은 스키마가 1024로 고정한다(`migrations/0001_initial_schema.sql:12`, `:44`).
-  - 코드 청킹·Confluence가 켜진 인덱스 버전은 키워드 규칙 대응표(`domain/keyword_rules.py`의 `INDEX_KEYWORD_RULES`)에 없으면 설정 점검이 막는다(`config/check.py:150`, `indexer/sync_cli.py:135-138`).
-  - 다른 명세가 이 명세에 넘긴 일: QK-SYN-001 plan(쓰지 않게 된 준비 버전 정리, 평가 게이트를 거친 버전 교체, 버전 불일치 해소), QK-EVL-001 plan(질문 세트·실행 기록을 게이트 입력으로 사용, FR-030 식별자),
-    QK-CHK-001 `contracts/chunker.md` 7절(켜짐 인덱스 버전을 대응표에 더하고 생성·평가·활성화), QK-ING-003 plan(`+cf1` 제거는 새 인덱스 버전 절차).
-- 2026-11-02 사용자 결정: 이 초안의 승인 질문을 닫고 "작업 계속진행"이라고 지시했다. 이 계약을 승인한 것으로 보고 `/speckit-specify`로 넘어간다(작성 세션 해석, 사람 확인 대상).
-- 2026-11-02 사실: `/speckit-specify`로 `specs/QK-STO-002-index-version-gate/spec.md`와 `checklists/requirements.md`를 썼다.
-  spec 독립 검토(작성에 관여하지 않은 별도 서브에이전트, 읽기 전용) 판정은 변경 요청이다(높음 3, 중간 11, 낮음 5). 작성 세션이 지적 근거를 코드로 다시 확인하고 모두 반영했다. 반영분은 다시 검토받지 않았다.
-  - 확인한 근거: 불일치 보류는 처리·원본 사라짐·일반 내림을 막는다(`domain/sync.py:88`). 다시 처리한 문서는 그 버전만 본문 삭제 대기에서 빠진다(`adapters/postgres/sync_store.py:189-194`).
-    문서 행 갱신이 원본 링크·제목·원본 수정 시각·수집 시각을 덮어쓴다(`sync_store.py:151-162`). 검색 결과의 원본 링크는 문서 행, 원본 버전은 청크에서 온다(`migrations/0002_search_functions.sql:20-21`).
-    QK-EVL-001 공통 질문 집합은 근거 미색인·실패·하이브리드 생략을 비교에서 뺀다(`evaluation/compare.py:96-102`, `:137-149`). 보류된 실행은 현재 설정 버전을 적고 "멈춤"으로 끝난다(`sync/run.py:74-85`, `sync/report.py:65`).
-    예산 초과의 기본 동작은 실행하지 않음이다(QK-EMB-001 FR-024). 버전 재등록은 `ON CONFLICT DO NOTHING`이다(`sync_store.py:63-70`). 실행기는 후보 A·B·C 조합만 받는다(`evaluation/prechecks.py:67-76`).
-    전환 순간 검색은 `index_version_changed`로 실패하고 다시 시도하지 않는다(`retrieval/service.py:204-205`, `:219-220`).
-  - 반영(높음): 활성화·되돌리기에 본문 삭제 대기 0 조건(FR-021 (10), FR-024), 정리 때 대기 목록 갱신(FR-027). 불일치 중 일반 내림 보류를 Edge Cases에 바로 적고, 재색인 실행이 설정과 무관한 일반 내림을 하게 함(FR-010, D2).
-    판정 질문 집합을 기준 대상으로 정하고 후보에서만 생긴 실패를 놓침으로 셈(FR-016), 가드레일 G1.
-  - 반영(중간·낮음): 재색인 실행만 보는 활성화 조건(FR-021 (2)), 예산 초과 기본 실행 안 함과 미리 보기 제한 문구(FR-006, US1-1·US1-3), 출처 정보 항목에 수집 시각·원본 링크·원본 수정 시각(FR-005, SC-001),
-    되돌리기의 출처 어긋남 확인(FR-024, D7), 토크나이저 선택지 셋과 FR-021 (8) 문구(FR-033, D6), 정책 지문·`main` 병합 고정·코드 커밋 검사(FR-012, FR-015 (8), D4), 가드레일 목록(FR-017),
-    "대상 아님"을 덮음에 셈과 영구 실패 처리(FR-010, FR-011), 재사용 전환(FR-001, US1-8), 평가 대상 준비 한계와 넘김(FR-013, Assumptions), 평가 사용량 합산 보고(FR-034), `+cf1`을 범위 밖과 넘김으로,
-    재처리 범위 문구(FR-025), 되돌리기 대상 문구 통일(US4, D5), 전환 순간 실패 허용(SC-004), 활성화의 `RetrievalSettings` 검사(FR-021 (9)), 기록의 임베딩 모델(FR-018, FR-032), 모델 교체 시나리오(US1-9), SC-001 시험 데이터 조건.
-- 2026-11-02 사용자 결정: `spec.md`를 승인했다("spec 승인"). 사람 확인 대상으로 남긴 기본값 D1~D7과, "작업 계속진행"을 이 계약의 승인으로 본 해석도 이 승인에 포함된 것으로 본다.
-  plan·tasks·구현은 1.G 뒤에 `/speckit-plan`부터 한다(2026-10-31 사용자 결정).
-- 2026-11-02 사용자 결정: #94(QK-EVL-002 명세)가 `main`의 `TASK.md`를 바꿔 PR #95와 충돌했다. 사용자 지시로 `main`을 병합하고 `TASK.md`는 이 계약을 유지했다.
+- 2026-11-04 사용자 지시: 이 세션을 오케스트레이터로 두고 worktree의 Codex(gpt-6.1-sol, medium)로 진행한다. 범위를 네 준비 문서로 잡은 것은 오케스트레이터의 판단이다. 이 계약과 운영 반영의 사람 승인을 받았다고 해석하지 않는다.
+- 2026-11-04 이슈 확인: `gh issue view 96`은 샌드박스 내·승격 재시도 모두 GitHub 연결 실패. 읽기 전용 GitHub 커넥터로 본문을 확인했다. 주간 계획 합의 체크박스는 미체크이므로 합의 완료로 추정하지 않는다.
+- 2026-11-04 운영 배경은 사용자·오케스트레이터 및 #96의 읽기 전용 확인 기록을 인용한다. 실행 에이전트는 운영 상태를 직접 확인하지 않았다.
+- 2026-11-04 사용자 결정: 이 계약을 승인했다("1: 승인"). 네 준비 문서 범위의 승인이고 운영 반영 승인이 아니다. 주간 계획 합의 여부는 이때 답을 받지 못했다(아래 2026-11-04 결정으로 확인).
+- 2026-11-04 사용자 결정: 준비 문서 독립 검토를 새 Codex 패널(읽기 전용)에 맡긴다("2: 좋아").
+- 2026-11-04 사실: 독립 검토(새 Codex 세션 `review96`, 작성 미관여, 읽기 전용) 1차 판정은 변경 요청이다(높음 2, 중간 4). 오케스트레이터가 근거를 코드·문서로 다시 확인했고 실행 에이전트가 반영했다. 2차에서 6건이 해소되고 낮음 1건(공지 게시 경계)이 나와 공지를 다시 썼다. 3차(공지만) 판정은 승인 권고이고 새 지적은 없다. 치환 전 공지 본문은 1,133자(UTF-16)다. 검토자는 전체 preflight를 실행하지 않았고(`.env.*` 읽기 가능성), 오케스트레이터가 `uv run python scripts/preflight.py`(1,005개 파일)와 `git diff --check`를 실행해 통과했다.
+- 2026-11-04 사용자 결정(H01 값): 기록 기능은 운영 배포일부터 켠다. 보존 상한은 약 1개월이며 날짜는 배포일이 정해지면 계산한다. 원문 열람은 byuntil, tkv00이다. 삭제·문의는 운영 담당자 두 명에게 받는다. 담당자 실명과 Discord 식별자는 공개 저장소에 적지 않고 게시본에서만 치환한다(오케스트레이터 판단).
+- 2026-11-04 사실(사용자 승인 뒤 오케스트레이터 읽기 전용 확인): Workers AI 공개 문서(2026-10-16 갱신)는 입력·출력을 학습에 쓰지 않고 일반 요청은 처리 뒤 보관하지 않는다고 밝힌다. 이 프로젝트는 AI Gateway·batch 없이 REST를 직접 호출한다. 확인한 도구·설정·경로에서 운영 DB 백업은 발견하지 못했다(다른 컴파트먼트의 수동 백업, 이름이 다른 스크립트, 서버 밖 복사는 미확인). 서버 관리 권한이 있으면 원문을 기술적으로 읽을 수 있고, 권한 보유자 명단은 미확인이다. 원본 수치 중 계정·키 수는 저장소에 적지 않는다. 검토자(`review96`)는 백업 문구 단정 표현 1건을 지적했고 반영했다. 이 마지막 문구 수정은 다시 검토받지 않았다.
+- 2026-11-04 사용자 결정: 운영 담당자 두 명과 열람자 byuntil, tkv00은 같은 사람이다. 운영 서버 소유자는 tkv00이다. 기록 기능은 오늘(2026-11-04)부터 켜고 보존 상한은 2026-12-04(UTC)로 계산했다. ADR-016을 승인하고 메모리 대기 해석을 받아들였다. `0008` 지연 적용 순서를 받아들였다. 주간 계획에서 합의된 작업이다. 커밋과 PR을 요청했다. 이 결정들은 운영 명령 실행 승인이 아니며, H02 명령은 명령마다 승인받는다. 서버 관리 권한 전체 명단은 아직 미확인이다.
+- H01 공지·동의 문서 게시와 링크 기록, H02·H03 운영 수행 및 결과 기록은 미완료다.
