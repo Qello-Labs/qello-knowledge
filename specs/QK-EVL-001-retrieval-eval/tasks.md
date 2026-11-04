@@ -450,3 +450,8 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
   `uv run qk-dev eval check …/v1.toml --target qk_eval_baseline_6aeccd039b82` 통과(경고 0), `uv run qk-dev eval identifiers --target … --set …/v1.toml` 종료 0(근거 문서가 다른 질문 0).
   일반 라이브러리 이름, 해시값, 사람 계정 이름, 홈 디렉터리 경로, 호스트가 섞인 값은 작성 세션이 하나씩 보고 뺐다. H04에서 사람이 다시 본다. T018은 H04 확정 커밋 뒤 닫는다.
 - 2026-11-04 H04: 작성 세션이 식별자 35개(형태·일부 낱말·근거 문서 수)와 문장형 질문 12개를 표로 보였고, 사용자가 "식별자 세트 확정"으로 확정했다. `v1.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 문항은 바꾸지 않았다. T018을 닫는다.
+- 2026-11-04 H02: `uv run qk-dev eval-index prepare --rule kw-index-idsplit-v1 --commit 6aeccd039b825dcd7a2b6c046a34ef72089a1f78 --from-url-env <H01 데이터베이스 접속 정보 변수>` 종료 0.
+  데이터베이스 `qk_eval_idsplit_6aeccd039b82`, 인덱스 버전 `iv-8b7e93b22051`, 캐시 복사 1,309개(H01 로컬 데이터베이스에서, 운영 DB 접근 없음), 임베딩 호출 0, 0 Neurons. GitHub 읽기 전용.
+- 2026-11-04 H03: `uv run qk-dev eval-index prepare --rule kw-index-baseline-v1 --commit 6aeccd039b825dcd7a2b6c046a34ef72089a1f78 --keyword-tokenizer TokenBigramSplitSymbolAlpha` 종료 0.
+  기준 `qk_eval_baseline_6aeccd039b82`를 복제한 `qk_eval_baseline_alpha_6aeccd039b82`, 토크나이저 `TokenBigramSplitSymbolAlpha`, 인덱스 버전 `iv-4c0bc4fcc642`(후보 A와 같음, 토크나이저는 버전 재료가 아님), 외부 호출 0.
+- 2026-11-04 H02·H03 뒤 골든 v2와 식별자 v1을 두 대상에 대해 `eval check --target`으로 검사했다. 모두 통과, 근거 문서 경고 0.
