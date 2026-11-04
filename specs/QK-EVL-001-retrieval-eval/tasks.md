@@ -273,7 +273,7 @@ description: "QK-EVL-001 구현 작업 목록"
 
 **Independent Test**: 리포트 4절의 수치가 커밋한 실행 기록에 `qk-dev eval tables`를 다시 돌린 출력과 같고, 1절이 측정 전 커밋과 같으며, 측정 결과·작성 세션 해석·사람 결정이 나뉘어 있다.
 
-- [ ] T039 [US5] 측정 전 계약(H00·H04 뒤, 측정 전): 두 세트가 확정되어 표본 수가 정해진 뒤 `specs/QK-EVL-001-retrieval-eval/measurement/retrieval-eval-report.md`를 `templates/eval-report.md` 양식으로 만들고 1절(가설, 주 지표, 가드레일 지표, 성공 기준, 중단 기준)과
+- [X] T039 [US5] 측정 전 계약(H00·H04 뒤, 측정 전): 두 세트가 확정되어 표본 수가 정해진 뒤 `specs/QK-EVL-001-retrieval-eval/measurement/retrieval-eval-report.md`를 `templates/eval-report.md` 양식으로 만들고 1절(가설, 주 지표, 가드레일 지표, 성공 기준, 중단 기준)과
   ADR-010 판단 규칙만 채운다. 판단 규칙 초안은 research R-14 그대로(주 지표: 식별자 세트에서 camelCase·PascalCase·약어 경계·숫자 경계의 일부 질문에 대한 키워드 전용 상위 20건 포함 비율. 가드레일: 골든 세트 하이브리드 Recall@5·MRR(공통 질문 집합),
   식별자 세트 키워드 전용 Precision@5, 키워드 전용 상한 도달 비율, 대조군(snake·kebab·URL 경로) 포함 비율). "주 지표가 A보다 n문항 이상 오르고 가드레일이 각각 m문항 넘게 나빠지지 않으면 권고"의 n·m 자리는 비워 두고 표본 수를 함께 적는다.
   사람이 H05에서 n·m을 정하면 그 값을 넣어 "계약 고정" 커밋 하나로 남긴다. 이 커밋이 측정 전 기준이고, 그 뒤로 1절과 판단 규칙을 바꾸지 않는다
@@ -455,3 +455,6 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
 - 2026-11-04 H03: `uv run qk-dev eval-index prepare --rule kw-index-baseline-v1 --commit 6aeccd039b825dcd7a2b6c046a34ef72089a1f78 --keyword-tokenizer TokenBigramSplitSymbolAlpha` 종료 0.
   기준 `qk_eval_baseline_6aeccd039b82`를 복제한 `qk_eval_baseline_alpha_6aeccd039b82`, 토크나이저 `TokenBigramSplitSymbolAlpha`, 인덱스 버전 `iv-4c0bc4fcc642`(후보 A와 같음, 토크나이저는 버전 재료가 아님), 외부 호출 0.
 - 2026-11-04 H02·H03 뒤 골든 v2와 식별자 v1을 두 대상에 대해 `eval check --target`으로 검사했다. 모두 통과, 근거 문서 경고 0.
+- 2026-11-04 T039: `measurement/retrieval-eval-report.md`에 1절(가설, 비교 대상, 질문 세트, 주 지표, 가드레일 G1~G5와 비용, 세는 방법, 성공·중단 기준, 표본 한계)과 1.1절 ADR-010 판단 규칙을 썼다.
+  계획과 다른 점: research R-14의 가드레일을 모두 문항 수로 읽도록 G2(MRR)는 첫 근거 순위가 나빠진 질문 수, G3(Precision@5)은 값이 낮아진 질문 수, G4는 상한에 닿은 질문 수로 정했다. `eval tables`는 비율만 내므로 질문 수는 실행 기록에서 센다.
+- 2026-11-04 H05: 사용자가 n = 3, m = 1로 정했다("n=3, m=1"). 이 값을 넣은 커밋이 계약 고정 커밋이고, 그 뒤로 1절과 판단 규칙을 바꾸지 않는다.
