@@ -445,3 +445,7 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
 - 2026-11-04 H00: 사용자가 골든 세트 v1 11문항을 확정했다("v1 확정"). `v1.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 질문·유형·근거 문서·핵심 사실은 바꾸지 않았다. T017을 닫는다.
 - 2026-11-04 H09: 작성 세션이 더한 21문항(근거 있음 15, `no_answer` 6)의 질문·유형·근거 문서·핵심 사실을 표로 보였고, 사용자가 "오케이"로 확정했다. 50문항 가운데 29문항을 뺀 이유(근거가 Confluence 문서·회의록뿐이라 평가 대상에 없음)도 같은 자리에서 설명했다.
   `v2.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 문항은 바꾸지 않았다. `cand-` 문항의 근거·핵심 사실 초안도 이 확정에 포함된다. T046을 닫는다. T048은 T039·T040에서 한다.
+- 2026-11-04 T018 초안: `uv run qk-dev eval identifiers --target qk_eval_baseline_6aeccd039b82`로 후보 3,207개(노출 청크가 있는 문서 79개, 비밀값 규칙으로 뺀 후보 0)를 받아
+  `eval/question_sets/qk-evl-001-identifiers/v1.toml` 82문항(형태 7개 × 식별자 5개 × 원형·일부, 문장형 12)과 `labeling.md`를 썼다. `confirmed = false`, `shortfall` 없음.
+  `uv run qk-dev eval check …/v1.toml --target qk_eval_baseline_6aeccd039b82` 통과(경고 0), `uv run qk-dev eval identifiers --target … --set …/v1.toml` 종료 0(근거 문서가 다른 질문 0).
+  일반 라이브러리 이름, 해시값, 사람 계정 이름, 홈 디렉터리 경로, 호스트가 섞인 값은 작성 세션이 하나씩 보고 뺐다. H04에서 사람이 다시 본다. T018은 H04 확정 커밋 뒤 닫는다.
