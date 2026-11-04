@@ -298,7 +298,7 @@ description: "QK-EVL-001 구현 작업 목록"
   고친·지운 파일이 `tests/unit/test_boundaries.py` 하나뿐이다(새 파일 `adapters/postgres/eval_target.py`, ADR-010, 새 시험은 `--diff-filter=A`로 따로 본다)
 - [X] T044 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `QK_REQUIRE_LOCALDB=1 uv run pytest`).
   결과를 "실행 기록"에 적고 이 목록 체크 표시를 갱신한다
-- [ ] T045 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
+- [X] T045 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
 
 ---
 
@@ -471,3 +471,4 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
   4.1·4.2절이 다시 돌린 `eval tables` 출력과 diff 0, 1절 범위 변경 0(`9561733` 기준), 4.3·4.4절과 ADR-010 수치를 독립 계산으로 다시 세어 일치, 9절 명령도 같은 값, SC-011 일치(0.43 ≤ 2.3177, 0.61 ≤ 2.4338), 실행 기록에 질문 문장·본문·비밀값 없음.
   지적 4건을 작성 세션이 실행 기록으로 다시 확인하고 문구만 고쳤다: 7·8절에 일부 질문 문장과 같은 낱말을 인용한 곳, 8.2절 "하이브리드 지표를 바꾸지 않았다"(식별자 세트 `acronym-04-partial`·`pascal-01-partial`에서 달랐음),
   T042 전 `Result: PASS` 표기, 7절 `url-path-03-partial` 누락. 수치는 바꾸지 않았다. 고친 부분은 다시 대조받지 않았다. ADR-010 Evidence의 T042 문장도 갱신했다.
+- 2026-11-04 T045: 기본 검증 전체 통과(preflight 1011개, `git diff --check`, ruff check·format --check, `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed, 3 deselected는 `external`). TASK.md Decisions·검증 기록을 갱신했다. PR 초안은 `/pr-draft-summary`로 만든다.

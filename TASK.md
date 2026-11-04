@@ -127,3 +127,11 @@ uv run qk-dev eval check eval/question_sets/qk-evl-001-identifiers/v1.toml --tar
   클라우드 설정(대상 VCN·서브넷·사설 IP, 보안 목록 22번, Bastion 플러그인)은 모두 맞았고, 서버 안 원인은 확인하지 못했다(작성 세션은 서버에 접속하지 않았다).
   캐시 원본 접속 정보는 사용자가 서버의 동기화용 접속 정보를 터널 포트로 바꿔 `.env`의 `QK_PROD_READ_URL`에 넣었다. 값은 화면·저장소·대화에 남기지 않았다.
   결과: `qk_eval_baseline_6aeccd039b82` 준비 완료, 캐시 복사 1,309개, 임베딩 호출 0, 0 Neurons. 운영 DB 쓰기 0건. Bastion 경로가 서버 안에서 막힌 문제는 이 작업 밖이라 서버 관리자가 따로 본다.
+- 2026-11-04 사용자 결정: 골든 세트 v1("v1 확정"), v2("오케이", H09), 식별자 세트 v1("식별자 세트 확정", H04)을 확정했다. 각각 확정 표시만 넣은 별도 커밋이다.
+- 2026-11-04 사실: H02(후보 B)·H03(후보 C) 평가용 DB를 운영 DB 접근 없이 0 Neurons로 준비했다(H02 캐시 원본은 H01 로컬 DB).
+- 2026-11-04 사용자 결정(H05, "n=3, m=1"): ADR-010 판단 규칙의 n·m을 정했고 리포트 계약을 측정 전에 고정했다(커밋 `9561733`).
+- 2026-11-04 사용자 결정(H06, "실행 승인"): 미리 보기(골든 2.3177, 식별자 2.4338 Neurons, 당일 잔여 10,000)를 보고 `--max-neurons 3`으로 실행을 승인했다. 실제 0.43 + 0.61 = 1.04 Neurons, 두 실행 모두 `complete = true`, 운영 DB 쓰기 0.
+- 2026-11-04 사실(측정 결과): 고정한 판단 규칙으로 후보 B(G4 +2)와 C(G3 5문항, G4 +4) 모두 권고 가능이 아니고, 작성 세션 권고는 A(현행 유지)다. ADR-010은 Status Proposed로 썼다. Status 결정(H08)은 사람이 한다.
+- 2026-11-04 사실(T042): 작성에 관여하지 않은 별도 서브에이전트가 리포트를 읽기 전용으로 대조했다. 수치는 모두 맞았고 문구 지적 4건을 고쳤다(고친 부분은 다시 대조받지 않음).
+- 2026-11-04 검증(T045): `python3 scripts/preflight.py`(1011개 통과), `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`(733개), `uv run qk-dev db up`,
+  `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed(3 deselected는 `external`). `uv run qk-dev eval check …/qk-evl-001-golden/v2.toml`·`…/qk-evl-001-identifiers/v1.toml --target` 세 평가 대상 모두 통과(경고 0).
