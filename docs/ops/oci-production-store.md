@@ -572,7 +572,7 @@ WantedBy=multi-user.target
 7. 숨김 입력으로 질의 설정의 `QK_QUERY_TEXT_RETAIN_UNTIL`을 승인한 UTC 날짜로, `QK_QUERY_LOG_ENABLED`를 `true`로 바꾸고 설정 검사·재시작한다.
    질문자만 동의한 질문을 저장하며 답변 본문은 저장하지 않는다. 동의 전 대기는 메모리에 최대 1시간·500건이고 재시작하면 사라진다.
 8. 운영 확인은 명세 quickstart의 H03/M-01~M-03을 따른다. `/ask` 비용 예상량과 사람 승인이 필요하다.
-   동의 메시지에서 콜백 7이 버튼을 없애는지는 실제 화면으로 확인한다. 이 절 작성 시점에는 운영 확인을 실행하지 않았다.
+   동의 메시지에서 콜백 7이 버튼을 없애는지는 실제 화면으로 확인한다. 2026-11-04 운영에 반영했고 결과는 QK-OBS-001 `tasks.md`의 사람 단계 기록에 있다.
 
 되돌리기: 기록 기능을 `false`로 바꾸고 재시작한다. `/sources`는 계속 동작하고 기록·버튼·원문 대기는 멈춘다. 새 표와 함수는 유지한다.
 
@@ -580,6 +580,8 @@ WantedBy=multi-user.target
 동일 명령에 `--confirm`을 붙여 실행한다. 식별자를 명령 인자·이력·운영 기록에 적지 않는다. 메모리 대기는 이 명령이 지우지 못하므로 1시간 뒤 다시 실행하거나 서비스를 재시작한다.
 전체 원문 삭제는 `qk-index queries erase-texts --env-file <admin-config>`로 확인하고 `--confirm`으로 실행한다. 질의 메타데이터·평가는 남는다.
 보존 상한 경과 시 자동 삭제하지 않으므로 집계 보고의 경고에 따라 사람이 삭제·연장을 결정한다.
+
+`qk-index queries`는 동기화 릴리스(`/opt/qello-knowledge`)에서 실행한다. 질의 릴리스는 `index` 추가 의존성을 설치하지 않아 `markdown_it`이 없어 실행되지 않는다(2026-11-04 확인). 서버에는 관리 설정 파일을 상시 두지 않는다. `<admin-config>`는 root 전용 임시 파일로 만들어 쓰고 바로 지운다. 비밀번호를 출력하거나 서버 밖으로 보내지 않는다.
 
 보고는 `qk-index queries report --since <UTC-start-date> --until <UTC-end-date> --json --env-file <admin-config>`다.
 동의 질문 내보내기는 `qk-index queries export --out <outside-worktree-file> --env-file <admin-config>`이며 기본은 👎 사례, `--all`은 전체다.
