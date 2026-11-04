@@ -313,7 +313,7 @@ WBS 0.7 산출물(`eval/golden/v0.jsonl`)은 spec 범위 밖(348행)이라 이 �
 
 - [X] T047 [US2] `tests/unit/evaluation/test_golden_v2.py`(T046보다 먼저 쓰고 파일이 없어 실패하는지 본다): v2의 머리 정보(`id = "qk-evl-001-golden"`, `version = 2`, 자료원 `dnd-backend-docs`와 v1과 같은 `label_commit`),
   Q01~Q11이 `v1.toml`과 필드까지 같음, v1에 없는 질문은 `original_number`가 있고 `id`와 같음, `check_question_set` 통과. v0 원본은 저장소에 없으므로 문장 대조는 시험하지 않고 H09에서 사람이 본다. 세트와 같은 커밋에 둔다
-- [ ] T046 [US2] `eval/question_sets/qk-evl-001-golden/v2.toml`(별도 커밋, 평가 코드·결과와 섞지 않음):
+- [X] T046 [US2] `eval/question_sets/qk-evl-001-golden/v2.toml`(별도 커밋, 평가 코드·결과와 섞지 않음):
   - 머리 정보: `version = 2`, `created`, `confirmed = false`, `labeling`, `[[set.sources]]`는 v1과 같다. 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구하므로 두지 않고 출처는 `labeling.md`에 적는다
   - v1 Q01~Q11을 그대로 옮긴다
   - v0 문항 가운데 근거 문서가 `dnd-backend-docs`의 라벨 기준 커밋에 있는 문항과 `no_answer` 문항을 더한다. 수집 페이지 DB에 있는 24문항 기준 9문항(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`,
@@ -443,3 +443,5 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
   GitHub 403은 조직 정책(수명 366일 초과 fine-grained 토큰 차단) 때문이었고 사용자가 토큰을 다시 발급했다. 목록 조회 실패 사유가 동기화 기록에 남지 않는 점(`sources/collect.py:40`)은 범위 밖이라 고치지 않았다.
 - 2026-11-04 H01 뒤 `uv run qk-dev eval check …/qk-evl-001-golden/v2.toml --target qk_eval_baseline_6aeccd039b82` 통과(32문항, 경고 0, sha256 `2cb7a3da9fd0`). 같은 대상으로 v1도 통과(11문항, 경고 0).
 - 2026-11-04 H00: 사용자가 골든 세트 v1 11문항을 확정했다("v1 확정"). `v1.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 질문·유형·근거 문서·핵심 사실은 바꾸지 않았다. T017을 닫는다.
+- 2026-11-04 H09: 작성 세션이 더한 21문항(근거 있음 15, `no_answer` 6)의 질문·유형·근거 문서·핵심 사실을 표로 보였고, 사용자가 "오케이"로 확정했다. 50문항 가운데 29문항을 뺀 이유(근거가 Confluence 문서·회의록뿐이라 평가 대상에 없음)도 같은 자리에서 설명했다.
+  `v2.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 문항은 바꾸지 않았다. `cand-` 문항의 근거·핵심 사실 초안도 이 확정에 포함된다. T046을 닫는다. T048은 T039·T040에서 한다.
