@@ -203,7 +203,7 @@ description: "QK-OBS-001 구현 작업 목록"
 ## 사람 단계 (구현 뒤, 이 작업의 완료 조건 밖)
 
 - [ ] H01 ADR-016 리뷰·승인, Discord 공지와 Confluence 동의 문서 작성, 링크·날짜를 ADR-016 Follow-ups에 기록(spec FR-024).
-- [ ] H02 운영 반영(quickstart 3절, 명령마다 승인): `0008` 적용·함수 소유자 확인, `LimitCORE=0`·스왑 확인, 질의 서비스 배포(꺼짐), 중계 재배포, `/sources` 등록, 보존 상한 날짜를 정해 기록 기능 켜기.
+- [X] H02 운영 반영(quickstart 3절, 명령마다 승인): `0008` 적용·함수 소유자 확인, `LimitCORE=0`·스왑 확인, 질의 서비스 배포(꺼짐), 중계 재배포, `/sources` 등록, 보존 상한 날짜를 정해 기록 기능 켜기.
 - [ ] H03 운영 확인(spec SC-012, quickstart 4절): 예상 약 255 Neurons 이하 보고·승인 뒤 M-01~M-03. 콜백 7로 동의 버튼이 사라지는지(research R-01 미확인) 화면으로 확인.
 
 ---
@@ -386,3 +386,16 @@ description: "QK-OBS-001 구현 작업 목록"
 - executed_checks / passed_checks: `UV_CACHE_DIR=/private/tmp/qk-obs-uv-cache QK_REQUIRE_LOCALDB=1 uv run pytest --ignore=.env --ignore-glob='.env.*' tests/localdb/query/test_obs_adapter.py tests/unit/query/test_obs_adapter_deadline.py tests/unit/query/test_obs_recorder.py -q --tb=short` → 13 passed(4.60s). 대상 시험 파일 ruff check·format --check 통과. 변경 문서 diff check와 미추적 시험 파일 no-index 공백 검사에서 오류 출력 없음(no-index exit 1은 새 파일 차이). 첫 시험 실행은 닫힌 연결에서 backend_pid를 읽는 시험 계측 오류로 2 failed·2 passed였고, PID를 연결 생성 때 캡처하도록 고친 뒤 위 최종 시험이 통과했다. 구현 결함으로 인한 RED라고 주장하지 않는다.
 - failed_checks=없음(최종 실행), blocked_checks=없음(이번 범위). 전체 preflight·전체 pytest·마이그레이션·중계 등 기본 검증은 이번 사용자 지시대로 오케스트레이터가 재실행하며 이번 세션에서는 실행하지 않았다. pytest의 차단 경로 탐색은 ignore 옵션으로 제외했으며 .env·.env.*·secrets 내용 읽기, 시험 삭제·skip·noqa, git 상태 변경·커밋·외부 API 호출 없음. 이번 시험은 기존 로컬 DB의 세션 전용 시험 DB만 사용했다. Neurons=0.
 - assumptions / risks / required_human_decisions: OS 부하가 측정 허용 오차 50ms를 넘으면 시험이 실패할 수 있다. 취소 요청은 서버 완료 시각을 보장하지 않고, 늦은 커밋은 기존 결과 불명·재시도 계약을 따른다. 독립 재검토와 오케스트레이터의 전체 검증이 남았다. 이번 자기 검증은 독립 승인·병합·운영 승인이 아니다.
+
+## 사람 단계 기록 (2026-11-04, Issue #96)
+
+사람(사용자)이 승인한 범위에서 오케스트레이터 세션이 실행했다. 아래는 그 세션의 실행 보고이며, 운영 수치는 별도 검토자가 독립 확인하지 않았다. 리뷰어는 운영 문서 7.7의 `qk-index queries report`와 7.7 3번 질의로 다시 확인할 수 있다. 주소·식별자·역할 이름·토큰·질문 원문은 적지 않는다.
+
+- H01 미완료: ADR-016은 승인했고 Confluence 동의 문서를 게시했다. Discord 공지는 사람이 따로 올리며 링크·날짜는 아직 없다. 공지 링크 기록 전에 기능을 켠 것은 사용자가 결정한 FR-024 예외다(ADR-016 Follow-ups).
+- H02 완료: 운영 DB에 `0008` 적용(두 번째 실행 `applied=0`, 최신 버전 8). 기록 함수 6개는 마이그레이션 역할 소유·`SECURITY DEFINER`·고정 `search_path`·PUBLIC 실행 회수, `sources_summary`는 INVOKER. 질의 역할의 새 표 직접 권한 0개, 스키마 CREATE 없음.
+  `LimitCORE=0` 적용(실행 중 프로세스 core 제한 0), 스왑 장치 0개. 질의 릴리스를 `ce6d1d8`에서 `55a6ab5`로 전환. 중계 Worker 재배포(서명 없는 요청 401, `/healthz` 200). 명령을 `ask`에서 `ask`, `sources`로 등록. `QK_QUERY_TEXT_RETAIN_UNTIL=2026-12-04`, `QK_QUERY_LOG_ENABLED=true`.
+  계획과 다른 점: `0008`은 #89 병합 뒤에 적용했다(사용자 수용). 터널 대신 서버 안에서 root 전용 임시 설정 파일로 실행했다. Worker 첫 배포 때 점검 스크립트가 잘못된 경로를 호출해 한 번 되돌렸고, 경로를 고쳐 다시 배포했다. 명령 등록과 현재 명령 조회는 로컬 `.env`의 봇 토큰을 프로그램이 읽었다(사용자 지시로 진행, 값 미출력).
+- H03 일부 미확인(사용자가 비용을 승인했고, 시험은 사용자가 Discord에서 직접 실행했다): `qk-index queries report`(2026-11-04~05, UTC) 기준 표본 5건, 답변 2·확인 불가 3, 실패 0. "나만 보기" 4건·공개 1건. 👍 2·👎 3, 원문 저장 동의 3건. 측정 107.57 Neurons(추정 0), 인덱스 `iv-4c0bc4fcc642`, 모델 `@cf/qwen/qwen3-30b-a3b-fp8`. 재시작 0회, 확인 시점 최근 3시간 traceback 0줄.
+  `/sources` 응답 정상(사용자 화면). 동의 뒤 버튼이 사라짐(사용자 화면, research R-01 확인). 다른 팀원 👍는 미실행이다. 평가자 고유 수가 1이다. 사용자는 정상 동작할 것으로 본다. 이 항목을 실행하면 H03을 체크한다.
+- 첫 응답 시간(p50 0 ms, p95 0.8 ms)은 요청 처리 시작부터 첫 응답 반환 준비까지의 개별 시간을 정수 ms로 저장하고 보간한 값이다. 직렬화·전송·Worker 구간은 들어가지 않으므로(보고의 `measurement_boundary`) 사용자가 느끼는 시간으로 읽지 않는다.
+- 되돌리기: `/root/query.env.before-gh96`, `/root/qk-query.service.before-gh96`, 이전 릴리스 링크 `ce6d1d8`.
