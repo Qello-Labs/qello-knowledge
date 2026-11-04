@@ -437,3 +437,8 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
 - 2026-11-04 T046: `v2.toml` 32문항(v1 11, v0 근거 있음 15, v0 `no_answer` 6, 지표 대상 23)과 `labeling-v2.md`를 썼다. `uv run qk-dev eval check …/v2.toml`(대상 없이) 통과.
   `cand-` 문항의 근거·핵심 사실은 작성 세션이 라벨 기준 커밋을 작업 공간에 읽기 전용으로 받아 색인 대상 80개 문서에서 찾은 초안이다. 평가 대상에 대한 검사(`--target`)는 H01 뒤에 한다. `confirmed = false`이며 확정은 H09다.
   계획과 다른 점: `labeling.md`에 v2 절을 더하지 않고 `labeling-v2.md`를 따로 썼다. `labeling.md`에 "확정 뒤 고치지 않는다"는 규칙이 있고 v1 확정(H00)이 v2 확정보다 먼저다.
+- 2026-11-04 H01: `uv run qk-dev eval-index prepare --rule kw-index-baseline-v1 --commit 6aeccd039b825dcd7a2b6c046a34ef72089a1f78 --from-url-env QK_PROD_READ_URL` 종료 0.
+  데이터베이스 `qk_eval_baseline_6aeccd039b82`, 인덱스 버전 `iv-4c0bc4fcc642`, 캐시 복사 1,309개(운영 DB 읽기 전용), 임베딩 호출 0, 0 Neurons.
+  앞선 시도는 모두 데이터베이스를 만들기 전에 멈췄다(설정 점검 `DATABASE_URL` 누락, 캐시 원본 접속 실패, GitHub 토큰 403, 캐시 원본 미설정으로 종료 4 예상 921 Neurons). 임베딩 호출은 0이었다.
+  GitHub 403은 조직 정책(수명 366일 초과 fine-grained 토큰 차단) 때문이었고 사용자가 토큰을 다시 발급했다. 목록 조회 실패 사유가 동기화 기록에 남지 않는 점(`sources/collect.py:40`)은 범위 밖이라 고치지 않았다.
+- 2026-11-04 H01 뒤 `uv run qk-dev eval check …/qk-evl-001-golden/v2.toml --target qk_eval_baseline_6aeccd039b82` 통과(32문항, 경고 0, sha256 `2cb7a3da9fd0`). 같은 대상으로 v1도 통과(11문항, 경고 0).
