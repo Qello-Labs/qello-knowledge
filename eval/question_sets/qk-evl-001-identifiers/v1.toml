@@ -4,7 +4,8 @@
 id = "qk-evl-001-identifiers"
 version = 1
 created = 2026-11-04
-confirmed = false
+confirmed = true
+confirmed_on = 2026-11-04
 labeling = "eval/question_sets/qk-evl-001-identifiers/labeling.md"
 
 [[set.sources]]

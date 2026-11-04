@@ -145,7 +145,7 @@ description: "QK-EVL-001 구현 작업 목록"
   - `eval/question_sets/qk-evl-001-golden/labeling.md`: 라벨 기준(H05 v2 "v1과 바뀐 점"·판정 기준을 가리키고 옮기지 않은 항목과 이유), Recall@5 정의(spec Assumptions)
   - `tests/unit/evaluation/test_golden_v1.py`(SC-002): H05 v2 Markdown 표를 읽어 11문항의 번호·문장·근거(백틱 안 경로 목록, `—`은 빈 목록)·핵심 사실·유형이 세트 파일과 같고 `check_question_set`이 통과한다. 이 시험은 세트 파일을 읽으므로 세트와 같은 커밋에 둔다
   - 사람이 확인하면(사람 단계 H00) `confirmed = true`, `confirmed_on`을 넣는 확정 커밋을 따로 둔다
-- [ ] T018 [US2] 식별자 세트 초안(사람 단계 H01 뒤, 별도 커밋, research R-14 3번):
+- [X] T018 [US2] 식별자 세트 초안(사람 단계 H01 뒤, 별도 커밋, research R-14 3번):
   - `uv run qk-dev eval identifiers --target qk_eval_baseline_6aeccd039b82`로 후보를 받아 `eval/question_sets/qk-evl-001-identifiers/v1.toml`을 쓴다. spec US2-3·US2-4·FR-009 그대로:
     형태마다 식별자 5개 이상(모자라면 있는 만큼과 `shortfall`), 식별자마다 `original`·`partial` 질문, `sentence` 질문 10개 이상, `label_terms`(원형·일부는 식별자 원형 하나), 근거 문서는 도우미가 다시 계산한 목록, `confirmed = false`.
     문서 문장을 그대로 옮겨 질문으로 쓰지 않는다
@@ -449,3 +449,4 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
   `eval/question_sets/qk-evl-001-identifiers/v1.toml` 82문항(형태 7개 × 식별자 5개 × 원형·일부, 문장형 12)과 `labeling.md`를 썼다. `confirmed = false`, `shortfall` 없음.
   `uv run qk-dev eval check …/v1.toml --target qk_eval_baseline_6aeccd039b82` 통과(경고 0), `uv run qk-dev eval identifiers --target … --set …/v1.toml` 종료 0(근거 문서가 다른 질문 0).
   일반 라이브러리 이름, 해시값, 사람 계정 이름, 홈 디렉터리 경로, 호스트가 섞인 값은 작성 세션이 하나씩 보고 뺐다. H04에서 사람이 다시 본다. T018은 H04 확정 커밋 뒤 닫는다.
+- 2026-11-04 H04: 작성 세션이 식별자 35개(형태·일부 낱말·근거 문서 수)와 문장형 질문 12개를 표로 보였고, 사용자가 "식별자 세트 확정"으로 확정했다. `v1.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 문항은 바꾸지 않았다. T018을 닫는다.
