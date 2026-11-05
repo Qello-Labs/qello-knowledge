@@ -3,7 +3,7 @@
 from qello_knowledge.domain.sync import ChangeReason
 
 
-def change_reason(stored, fingerprint, chunking_version, index_version):
+def change_reason(stored, fingerprint, chunking_version, index_version, *, reindex=False):
     if stored is None:
         return ChangeReason.NEW
     if stored.chunk_input_hash != fingerprint:
@@ -14,6 +14,10 @@ def change_reason(stored, fingerprint, chunking_version, index_version):
         return ChangeReason.REINSTATED
     if stored.processed_index_version != index_version:
         return ChangeReason.INDEX_CHANGED
+    # 재색인이 대상 아님으로 처리한 문서는 그 버전이 쓰일 때 다시 청킹해 지금 규칙대로 내린다(QK-STO-002 R-03).
+    # 재색인 안에서는 처리 완료로 본다(이어 하기, FR-007).
+    if stored.processed_outcome == "not_target" and not reindex:
+        return ChangeReason.NOT_TARGET_PENDING
     return None
 
 

@@ -31,6 +31,10 @@ class StoreUnavailable(StoreError):  # noqa: N818 - 계약의 이름을 따른�
     """연결 실패, 운영 인스턴스 중지·회수."""
 
 
+class SchemaOutdated(StoreError):  # noqa: N818 - CLI 오류 이름 `schema_outdated`와 맞춘다
+    """필요한 마이그레이션(0009 이상)이 적용되지 않았다. 쓰기 전에 멈춘다(QK-STO-002 research R-18)."""
+
+
 @dataclass(frozen=True)
 class ArtifactRecord:
     source_kind: str

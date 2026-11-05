@@ -23,6 +23,12 @@ class ChangeReason(StrEnum):
     CHUNKING_CHANGED = "CHUNKING_CHANGED"
     REINSTATED = "REINSTATED"
     INDEX_CHANGED = "INDEX_CHANGED"
+    NOT_TARGET_PENDING = (
+        "NOT_TARGET_PENDING"  # 재색인에서 대상 아님으로 처리한 문서를 활성화 뒤 내린다(QK-STO-002 R-03)
+    )
+
+
+REINDEX_HIDDEN = "reindex_hidden"  # 재색인이 지금 노출되지 않는 문서를 처리하지 않은 결과(QK-STO-002 R-02)
 
 
 class DocumentOutcome(StrEnum):
@@ -119,9 +125,14 @@ class DocumentDecision:
     rule: str | None = None
     lines: tuple[int, ...] = ()
     hold: HoldReason | None = None
+    not_target: bool = False  # 재색인에서 노출 문서의 청킹 결과가 대상 아님(QK-STO-002 R-03). 청크 0개로 처리한다
 
     def __post_init__(self):
         actions = tuple(Action(a) for a in self.actions)
+        if self.not_target and (
+            self.chunked is None or self.chunked.drafts or Action.TAKE_DOWN in actions or Action.SKIP in actions
+        ):
+            raise ValueError("not-target decision must carry an empty chunk result")
         if not actions or len(set(actions)) != len(actions) or len(actions) > 2:
             raise ValueError("invalid decision actions")
         if len(actions) == 2 and (actions[0] != Action.PURGE or actions[1] == Action.PURGE):

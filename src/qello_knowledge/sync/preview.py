@@ -65,3 +65,42 @@ def preview(plans, embedder, model_version, index_state, options):
         options.confirm_takedown,
         options.allow_partial_budget,
     )
+
+
+def reindex_preview(plans, embedder, spec, state, *, candidate_status, coverage, options):
+    """재색인 미리 보기 값(contracts/cli.md 1절 `reindex`, research R-05). 임베딩 호출·저장소 쓰기 없음."""
+    from qello_knowledge.sync.versions import estimated_days
+
+    estimate = embedder.preview(
+        embedding_request(plans, spec.embedding_model, allow_partial=options.allow_partial_budget)
+    )
+    decisions = [d for p in plans for d in p.decisions]
+    hidden = sum(1 for d in decisions if Action.HOLD in d.actions and d.failure == "reindex_hidden")
+    security = sum(1 for d in decisions if Action.TAKE_DOWN in d.actions and d.takedown_reason.is_security)
+    value = {
+        "candidate": spec.id,
+        "candidate_status": candidate_status,
+        "documents": len(decisions),
+        "to_process": sum(1 for d in decisions if Action.PROCESS in d.actions),
+        "embedding": {
+            "requested": estimate.requested,
+            "cache_hits": estimate.cache_hits,
+            "to_embed": estimate.to_embed,
+            "estimated_neurons": estimate.estimated_neurons,
+            "basis": {
+                "bytes_total": estimate.basis.bytes_total,
+                "bytes_per_token": estimate.basis.bytes_per_token,
+                "neurons_per_million_tokens": estimate.basis.neurons_per_million_tokens,
+            },
+        },
+        "budget": {
+            "index_budget": estimate.index_budget,
+            "used_today": estimate.index_used_today,
+            "remaining_today": estimate.index_remaining,
+        },
+        "estimated_days": estimated_days(estimate.estimated_neurons, estimate.index_remaining, estimate.index_budget),
+        "coverage": coverage,
+        "hidden_held": hidden,
+        "security_takedowns": security,
+    }
+    return value, estimate.runnable or options.allow_partial_budget
