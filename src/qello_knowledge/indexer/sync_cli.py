@@ -17,7 +17,7 @@ from qello_knowledge.config.registry import Entrypoint
 from qello_knowledge.domain.chunking import ChunkingSettings
 from qello_knowledge.domain.embedding import EmbedError
 from qello_knowledge.domain.redact import FieldKind, safe_text
-from qello_knowledge.domain.store import StoreError, StoreUnavailable
+from qello_knowledge.domain.store import SchemaOutdated, StoreError, StoreUnavailable
 from qello_knowledge.security.policy import SecurityPolicy, load_policy
 from qello_knowledge.sources.config import load_sources
 from qello_knowledge.sources.report import render_report, source_report
@@ -25,9 +25,17 @@ from qello_knowledge.sources.scope_review import confluence_review_context, load
 from qello_knowledge.sync.activate import activate_first_index
 from qello_knowledge.sync.identity import IdentityError, select_targets
 from qello_knowledge.sync.plan import SyncTarget, plan_source
-from qello_knowledge.sync.preview import preview
+from qello_knowledge.sync.preview import preview, reindex_preview
 from qello_knowledge.sync.report import preview_dict, render, run_dict, summary_values
-from qello_knowledge.sync.run import SyncDependencies, SyncOptions, current_spec, run_sync
+from qello_knowledge.sync.run import (
+    SyncDependencies,
+    SyncOptions,
+    current_spec,
+    mismatch_coverage,
+    plan_all,
+    reindex_refusal,
+    run_sync,
+)
 
 
 @dataclass
@@ -198,7 +206,7 @@ def build_runtime(
     )
     url = database_url(source)
     cache = PostgresStore(url)
-    store = PostgresSyncStore(url)
+    store = PostgresSyncStore(url, target=target_label(source))
     ledger = PostgresUsageLedger(url, budget_settings(settings))
     provider = (provider_factory or workers_ai_provider)(source, settings)
     embedder = EmbeddingService(provider, cache, ledger, budget_settings(settings), security_outgoing_check(policy))
@@ -216,7 +224,7 @@ def build_runtime(
 def postgres_sync_store(source, current_version):
     from qello_knowledge.adapters.postgres.sync_store import PostgresSyncStore
 
-    return PostgresSyncStore(database_url(source), current_version=current_version)
+    return PostgresSyncStore(database_url(source), current_version=current_version, target=target_label(source))
 
 
 def positive(value):
@@ -236,6 +244,7 @@ def add_sync_parsers(sub, run):
     run.add_argument("--allow-partial-budget", action="store_true")
     run.add_argument("--confirm-takedown", action="store_true")
     run.add_argument("--source")
+    run.add_argument("--reindex", action="store_true", help="불일치 상태에서 현재 설정 버전을 채운다(QK-STO-002)")
     runs = sub.add_parser("runs")
     commands = runs.add_subparsers(dest="runs_command", required=True)
     listing = commands.add_parser("list")
@@ -252,7 +261,25 @@ def add_sync_parsers(sub, run):
     activate = indexes.add_parser("activate")
     activate.add_argument("version")
     activate.add_argument("--allow-remote", action="store_true")
-    for parser in (listing, show, prune, status, activate):
+    # QK-STO-002 contracts/cli.md 3~5절. 활성 버전이 없으면 `activate`는 지금 첫 활성화 그대로다.
+    activate.add_argument("--gate", type=Path, default=None, help="게이트 기록(활성 버전이 있을 때 필수)")
+    activate.add_argument("--confirm", action="store_true", help="조건을 모두 채우면 전환한다. 없으면 미리 보기만")
+    rollback = indexes.add_parser("rollback", help="보관 버전을 다시 활성으로 바꾼다")
+    rollback.add_argument("version")
+    rollback.add_argument("--reason", default=None, help="1~200자. 사람 이름을 쓰지 않는다")
+    rollback.add_argument("--confirm", action="store_true")
+    rollback.add_argument(
+        "--confirm-stale", action="store_true", help="옛 원본 버전 청크가 있는 문서가 있어도 되돌린다"
+    )
+    rollback.add_argument("--allow-remote", action="store_true")
+    prune_index = indexes.add_parser("prune", help="쓰지 않는 준비·보관 버전의 청크를 지운다")
+    prune_index.add_argument("version")
+    prune_index.add_argument("--confirm", action="store_true")
+    prune_index.add_argument(
+        "--confirm-rollback-target", action="store_true", help="되돌리기 대상(가장 최근 보관)도 지운다"
+    )
+    prune_index.add_argument("--allow-remote", action="store_true")
+    for parser in (listing, show, prune, status, activate, rollback, prune_index):
         parser.add_argument("--json", action="store_true")
         parser.add_argument("--env-file", type=Path, default=Path(".env"))
 
@@ -330,6 +357,7 @@ def run_command(args, sync_factory, policy_path):
         source=args.source,
         confirm_takedown=args.confirm_takedown,
         allow_partial_budget=args.allow_partial_budget,
+        reindex=getattr(args, "reindex", False),
     )
     runtime = None
     try:
@@ -340,6 +368,8 @@ def run_command(args, sync_factory, policy_path):
         # 저장소를 연 뒤 등록 이력까지 본 두 번째 검사(QK-ING-003 research R-10). 원본 호출 전이다.
         if getattr(runtime.deps, "confluence", False) and confluence_index_unregistered(current_spec(runtime.deps).id):
             return _failure(1, "confluence_index_version_unregistered")
+        if args.preview and options.reindex:
+            return _reindex_preview(runtime, options, policy, label)
         if args.preview:
             targets = select_targets(runtime.targets, runtime.deps.store.load_sources(), options.source)
             state = runtime.deps.store.index_state()
@@ -371,6 +401,10 @@ def run_command(args, sync_factory, policy_path):
             _emit(data)
             return 0 if result.runnable else 5
         result = run_sync(runtime.targets, runtime.deps, options)
+        if options.reindex and not result.run_id:
+            # 쓰기 전 거부(research R-02): no_active_version·not_mismatched·budget_exceeded
+            _emit({"exit_code": result.exit_code, "error": result.summary["reason"], **_extra(result.summary)})
+            return result.exit_code
         if args.json:
             _emit(run_dict(result))
         else:
@@ -390,11 +424,60 @@ def run_command(args, sync_factory, policy_path):
         return result.exit_code
     except IdentityError as error:
         return _failure(1, error.code)
+    except SchemaOutdated:
+        return _failure(1, "schema_outdated")
     except (StoreError, EmbedError):
         return _failure(2, "store_unavailable")
     finally:
         if runtime is not None:
             runtime.close()
+
+
+def _extra(summary):
+    return {k: v for k, v in summary.items() if k != "reason"}
+
+
+def _candidate_status(store, version):
+    opener = getattr(store, "index_versions", None)
+    if opener is None:
+        return None
+    versions = opener()
+    try:
+        return next((row.status for row in versions.versions() if row.id == version), None)
+    finally:
+        versions.close()
+
+
+def _reindex_preview(runtime, options, policy, label):
+    """`qk-index run --reindex --preview`(contracts/cli.md 1절). 원본 읽기만 하고 쓰기·임베딩 호출은 없다."""
+    deps = runtime.deps
+    targets = select_targets(runtime.targets, deps.store.load_sources(), None)
+    state = deps.store.index_state()
+    spec = current_spec(deps)
+    refusal = reindex_refusal(state, spec)
+    if refusal:
+        return _failure(1, refusal)
+    plans = plan_all(targets, deps, spec, state, options)
+    result = preview(plans, deps.embedder, spec.embedding_model, state, options)
+    value, runnable = reindex_preview(
+        plans,
+        deps.embedder,
+        spec,
+        state,
+        candidate_status=_candidate_status(deps.store, spec.id),
+        coverage=mismatch_coverage(deps.store, spec.id),
+        options=options,
+    )
+    data = preview_dict(result)
+    data.update(
+        index_version=spec.id,
+        rules_version=policy.version,
+        chunking_version=spec.chunking_version,
+        target=label,
+        reindex=value,
+    )
+    _emit(data)
+    return 0 if runnable else 5
 
 
 def _rescreen(value, policy):
@@ -407,11 +490,19 @@ def _rescreen(value, policy):
     return value
 
 
-def query_command(args, store_factory, policy_path):
+INDEX_WRITES = ("activate", "rollback", "prune")
+
+
+def query_command(args, store_factory, policy_path, *, index_handler=None):
+    """`runs`·`index` 공용 사전 처리(설정 점검, 현재 설정 버전 계산, 원격 확인)와 실행.
+
+    `index_handler(args, store, version, label) -> (종료 코드, 출력 값)`을 주면 `index` 명령을 그쪽이 맡는다
+    (QK-STO-002 `indexer/index_cli.py`). 없으면 지금 `status`·첫 활성화 그대로다.
+    """
     source = merge_sources(os.environ, read_env_file(args.env_file))
     label = target_label(source)
     writes = (args.command == "runs" and args.runs_command == "prune") or (
-        args.command == "index" and args.index_command == "activate"
+        args.command == "index" and args.index_command in INDEX_WRITES
     )
     if writes and label == "remote":
         if not args.allow_remote:
@@ -453,7 +544,9 @@ def query_command(args, store_factory, policy_path):
                     return _failure(6, "already_running")
                 select_targets(targets, store.load_sources())
         code = 0
-        if args.command == "index":
+        if args.command == "index" and index_handler is not None:
+            code, value = index_handler(args, store, version, label)
+        elif args.command == "index":
             if args.index_command == "status":
                 state = store.index_state()
                 value = {
@@ -462,10 +555,12 @@ def query_command(args, store_factory, policy_path):
                     "current": version,
                     "matches": state.active in (None, version),
                 }
-            else:
+            elif args.index_command == "activate":
                 result = activate_first_index(store, args.version)
                 value = summary_values(result)
                 code = 0 if not result.failed_conditions else 1
+            else:
+                return _failure(2, "store_unavailable")
         elif args.runs_command == "list":
             value = store.list_runs(args.limit)
         elif args.runs_command == "show":
@@ -480,6 +575,8 @@ def query_command(args, store_factory, policy_path):
         return code
     except IdentityError as error:
         return _failure(1, error.code)
+    except SchemaOutdated:
+        return _failure(1, "schema_outdated")
     except (StoreUnavailable, StoreError):
         return _failure(2, "store_unavailable")
     finally:
