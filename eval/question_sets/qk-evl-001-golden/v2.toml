@@ -1,0 +1,333 @@
+# QK-EVL-001 골든 세트 v2(tasks T046). v1 11문항을 그대로 두고 골든셋 v0(WBS 0.7, 2026-11-03 최종본 50문항)에서 백엔드 문서로 답할 수 있는 문항과 답 없음 문항을 더했다.
+# 더한 문항의 질문 문장·유형은 v0 최종본 그대로다. 기준과 뺀 문항은 labeling-v2.md. 바꾸려면 버전을 올리고 평가 코드와 다른 커밋에 사유를 남긴다.
+[set]
+id = "qk-evl-001-golden"
+version = 2
+created = 2026-11-04
+confirmed = true
+confirmed_on = 2026-11-04
+labeling = "eval/question_sets/qk-evl-001-golden/labeling-v2.md"
+
+[[set.sources]]
+name = "dnd-backend-docs"
+label_commit = "6aeccd039b825dcd7a2b6c046a34ef72089a1f78"
+
+[[question]]
+id = "Q01"
+original_number = "Q01"
+text = "백엔드에서 JPA와 JDBC는 각각 어떤 작업에 쓰기로 했어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "일반 aggregate CRUD는 JPA, PostGIS 거리·방위 조회·행 잠금·조건부 갱신·bulk insert·Outbox claim 같은 DB 특화 연산은 JDBC"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0002-jpa-jdbc-boundary.md" }, { source = "dnd-backend-docs", location = "docs/adr/README.md" }]
+
+[[question]]
+id = "Q02"
+original_number = "Q02"
+text = "API 성공 응답 형식은 어떻게 정했어? 204 No Content도 써?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "`ApiResponse`(status/data/timestamp)로 controller가 직접 감싼다. 204는 쓰지 않고 값이 없어도 200과 `data: null`"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0005-api-success-response-contract.md" }, { source = "dnd-backend-docs", location = "docs/api-response.md" }]
+
+[[question]]
+id = "Q03"
+original_number = "Q03"
+text = "운영자와 앱 사용자는 인증 방식이 어떻게 달라?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "운영자는 `login_id`+bcrypt 비밀번호와 서버 세션·HttpOnly 쿠키·CSRF, 앱 사용자는 기기 자격증명(`device_secret`) 기반 단기 토큰"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0006-split-operator-and-device-authentication.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "Q04"
+original_number = "Q04"
+text = "앱 사용자 계정을 만들 때 국가는 어떤 값으로 받고 어떻게 검증해?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "ISO 3166-1 alpha-2 `countryCode`, 공백 제거·대문자 변환 뒤 `region_code` 마스터의 COUNTRY와 대조, 계정 저장 전에 검증하고 실패하면 400"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "Q05"
+original_number = "Q05"
+text = "푸시 발송에 SQS나 Kafka 같은 외부 큐를 쓰지 않은 이유가 뭐야?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "초기 규모에서는 별도 broker 근거가 부족해 기존 PostgreSQL delivery 원장을 queue로 쓰고, 짧은 claim transaction과 transaction 밖 FCM 호출, lease·fencing으로 분리"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }]
+
+[[question]]
+id = "Q06"
+original_number = "Q06"
+text = "API 오류 응답의 `errorDetail.code`는 어떤 형식이야?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "`{BC}-{CATEGORY}-{SEQ}` 형식. 오류 본문의 `status`는 항상 `error`"
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/adr/0003-global-exception-handling.md" }]
+
+[[question]]
+id = "Q07"
+original_number = "Q07"
+text = "AWS 인프라는 어떤 도구로 관리하기로 했어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "Terraform 단독 채택(AWS CDK와 비교)"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0004-adopt-terraform-for-aws-iac.md" }, { source = "dnd-backend-docs", location = "AGENTS.md" }, { source = "dnd-backend-docs", location = "CLAUDE.md" }, { source = "dnd-backend-docs", location = "docs/adr/README.md" }]
+
+[[question]]
+id = "Q08"
+original_number = "Q08"
+text = "저장소에 절대 기록하면 안 되는 값에는 어떤 게 있어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+facts = "`.env` 실제 값, API 토큰·세션·비밀번호·개인 키, AWS 접근 키·계정 ID, 서버 주소·내부 endpoint·DB 연결 주소 등"
+evidence = [{ source = "dnd-backend-docs", location = "docs/harness/SECRET_HANDLING.md" }, { source = "dnd-backend-docs", location = "AGENTS.md" }]
+
+[[question]]
+id = "Q09"
+original_number = "Q09"
+text = "앱 메인 화면의 대표 색상 코드는 뭐야?"
+type = "no_answer"
+label = "done"
+origin = "synthetic"
+facts = "디자인(Figma)은 색인하지 않는다. \"제공된 자료만으로 확인할 수 없습니다.\""
+evidence = []
+
+[[question]]
+id = "Q10"
+original_number = "Q10"
+text = "안드로이드 앱에서 Kotlin 코루틴을 도입하기로 한 이유가 뭐야?"
+type = "no_answer"
+label = "done"
+origin = "synthetic"
+facts = "안드로이드 저장소는 색인하지 않는다. \"제공된 자료만으로 확인할 수 없습니다.\""
+evidence = []
+
+[[question]]
+id = "Q11"
+original_number = "Q11"
+text = "다음 팀 회식은 언제 어디서 해?"
+type = "no_answer"
+label = "done"
+origin = "synthetic"
+facts = "자료에 없다. \"제공된 자료만으로 확인할 수 없습니다.\""
+evidence = []
+
+[[question]]
+id = "qmv26kb2qzu4q"
+original_number = "qmv26kb2qzu4q"
+text = "푸시 알림을 구현할 때 FCM으로 하시는 건가요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "FCM으로 발송"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }]
+
+[[question]]
+id = "qmv26yx2nf6zx"
+original_number = "qmv26yx2nf6zx"
+text = "테스트 서버에는 어떻게 배포돼요? 직접 올려야 해요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "main에 병합되면 deploy-test-server.yml이 이미지를 ECR에 push하고 자동 배포. 수동은 workflow_dispatch에 image_sha 지정"
+evidence = [{ source = "dnd-backend-docs", location = "README.md" }]
+
+[[question]]
+id = "qmv3nxemzw984"
+original_number = "qmv3nxemzw984"
+text = "운영자 로그인이랑 앱 사용자 인증은 왜 따로 나눴어요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "클라이언트·인증 수단·세션 수명·위협 모델이 달라 하나로 묶으면 한쪽 보안 설정이 다른 쪽을 해침(CSRF 예)"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0006-split-operator-and-device-authentication.md" }]
+
+[[question]]
+id = "qmvap800bkpxt"
+original_number = "qmvap800bkpxt"
+text = "앱에서 API 오류가 났을 때 서버 로그에서 그 요청을 찾으려면 뭘 보면 돼요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "응답 헤더 X-Request-ID와 같은 값의 로그 requestId로 찾음. 근거가 설계 문서라 구현 여부는 따로 확인"
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-05-structured-request-logging-design.md" }]
+
+[[question]]
+id = "qmvapdxvo621o"
+original_number = "qmvapdxvo621o"
+text = "ERD 기준으로 질문글마다 받은 사람 수랑 답변 수를 같이 세는 SQL 써줘"
+type = "code"
+label = "done"
+origin = "team"
+facts = "direction_post 1:N post_recipient 1:N answer 관계로 조인해 집계. SQL 품질은 답변 평가로 따로 본다"
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }]
+
+[[question]]
+id = "qmvb1yugb6wda"
+original_number = "qmvb1yugb6wda"
+text = "닉네임 중복검사는 실시하나요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "한다. 이미 쓰는 닉네임이면 409 DUPLICATED_NICKNAME"
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }]
+
+[[question]]
+id = "qmvcgtyx83h8s"
+original_number = "qmvcgtyx83h8s"
+text = "서버가 423 에러를 주면 무슨 상황이에요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "CREDENTIAL_LOCKED. 로그인 실패로 계정이 잠긴 상태(locked_until이 지나지 않음)"
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "cand-S11"
+original_number = "cand-S11"
+text = "탈퇴하면 계정 바로 지워져요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "바로 지워지지 않는다. 30일 유예(WITHDRAWAL_PENDING) 뒤 만료 처리에서 DELETED가 되고, 유예 중에는 철회할 수 있다"
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "cand-S13"
+original_number = "cand-S13"
+text = "폰 바꾸면 기존 계정 그대로 쓸 수 있나요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "쓸 수 없다. 새 기기는 기존 사용자임을 증명할 수단이 없어 새 계정이 된다"
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "cand-S17"
+original_number = "cand-S17"
+text = "답변 수정은 몇 번까지 돼요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "3번. 실효 상한 3은 운영 설정값으로 애플리케이션이 막고, DB 안전 상한은 10"
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }]
+
+[[question]]
+id = "cand-S25"
+original_number = "cand-S25"
+text = "브랜치 이름 어떻게 지어야 돼요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "<type>/gh-<ISSUE-NUMBER>-<short-slug> 형식(예: feat/gh-42-direction-post)"
+evidence = [{ source = "dnd-backend-docs", location = "AGENTS.md" }, { source = "dnd-backend-docs", location = "README.md" }]
+
+[[question]]
+id = "cand-S31"
+original_number = "cand-S31"
+text = "DB 테이블 바꿀 때 JPA ddl-auto로 자동 반영해도 되나요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "안 된다. 스키마 변경은 Flyway versioned migration으로만 하고 Hibernate는 ddl-auto=validate로 검증만 한다"
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0001-database-schema-ownership.md" }, { source = "dnd-backend-docs", location = "README.md" }]
+
+[[question]]
+id = "cand-S39"
+original_number = "cand-S39"
+text = "같은 사람이 같은 답변 두 번 신고하면 어떻게 처리돼요?"
+type = "code"
+label = "done"
+origin = "team"
+facts = "같은 신고자·같은 대상의 열린 신고는 하나뿐이라 새로 만들지 않고 기존 접수증을 돌려준다(alreadyReceived). 종결 뒤 내용이 그대로면 사건을 만들지 않는다"
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }]
+
+[[question]]
+id = "cand-S47"
+original_number = "cand-S47"
+text = "푸시 꺼둔 사람도 알림함에는 알림 쌓여요?"
+type = "synthesis"
+label = "done"
+origin = "team"
+facts = "쌓인다. 알림함은 기록이라 푸시가 억제되거나 실패해도 남는다"
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }]
+
+[[question]]
+id = "cand-S54"
+original_number = "cand-S54"
+text = "인프라 스택은 어떤 순서로 올려야 돼요?"
+type = "synthesis"
+label = "done"
+origin = "team"
+facts = "bootstrap(State Backend, 최초 1회 로컬 State 뒤 원격 이전) → dev/storage → dev/test-server(storage가 먼저 적용되어야 함)"
+evidence = [{ source = "dnd-backend-docs", location = "infra/bootstrap/README.md" }, { source = "dnd-backend-docs", location = "infra/environments/dev/test-server/README.md" }, { source = "dnd-backend-docs", location = "infra/README.md" }]
+
+[[question]]
+id = "qmv272r8raqgk"
+original_number = "qmv272r8raqgk"
+text = "테스트 서버 언제까지 배포해드리면 될까요?"
+type = "no_answer"
+label = "done"
+origin = "team"
+facts = "테스트 서버 배포 일정은 자료에 없다고 답함"
+evidence = []
+
+[[question]]
+id = "qmvap6omullmy"
+original_number = "qmvap6omullmy"
+text = "현재 서버 상태는?"
+type = "no_answer"
+label = "done"
+origin = "team"
+facts = "색인 자료로는 지금 서버 상태를 알 수 없다고 답하고 원본 확인을 안내"
+evidence = []
+
+[[question]]
+id = "cand-S70"
+original_number = "cand-S70"
+text = "푸시 알림 소리나 진동 따로 설정할 수 있어요?"
+type = "no_answer"
+label = "done"
+origin = "team"
+facts = "푸시 알림 소리·진동 설정은 자료에 없다고 답함"
+evidence = []
+
+[[question]]
+id = "cand-S74"
+original_number = "cand-S74"
+text = "PR 머지할 때 squash로 해요 아니면 merge commit으로 해요?"
+type = "no_answer"
+label = "done"
+origin = "team"
+facts = "PR 병합 방식(squash·merge commit)은 자료에 없다고 답함"
+evidence = []
+
+[[question]]
+id = "cand-S77"
+original_number = "cand-S77"
+text = "테스트 서버 DB 데이터 백업은 며칠마다 떠요?"
+type = "no_answer"
+label = "done"
+origin = "team"
+facts = "테스트 서버 DB 백업 주기는 자료에 없다고 답함"
+evidence = []
+
+[[question]]
+id = "cand-S78"
+original_number = "cand-S78"
+text = "웹 버전도 만들 계획 있어요?"
+type = "no_answer"
+label = "done"
+origin = "team"
+facts = "웹 버전 계획은 자료에 없다고 답함"
+evidence = []

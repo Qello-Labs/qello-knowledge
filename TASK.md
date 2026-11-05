@@ -1,89 +1,137 @@
-# Task Contract: QK-OBS-001 운영 반영 H01~H03 준비 문서 초안
+# Task Contract: QK-EVL-001 측정 단계와 골든 세트 v2 (WBS 1.12)
 
-> Generated at: `2026-11-04`
+> Generated at: `2026-11-03`
 >
-> 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다. 2026-11-04 사람 승인(Decisions).
+> 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-131` / https://tkv123.atlassian.net/browse/SCRUM-131 (상위 `SCRUM-42`, #96 자동 생성 댓글로 오케스트레이터 확인)
-- 기능명세서 ID / 링크: `QK-OBS-001` / [spec.md](specs/QK-OBS-001-query-log-feedback/spec.md)
-- 팀 스프린트 ID: `QELLO-S2026-W45` (GitHub Issue 본문)
-- GitHub Issue: [#96](https://github.com/Qello-Labs/qello-knowledge/issues/96)
-- Branch: `feat/SCRUM-131-gh-96-query-log-rollout`
-- Base branch: `main` / 로컬 `origin/main`·HEAD `69c04ea7ac48072e5330114249165f38050d11e9` 일치 확인. 원격 최신성은 재확인하지 못했다.
+- Jira 이슈: `SCRUM-124` / https://tkv123.atlassian.net/browse/SCRUM-124 (상위 `SCRUM-42` 팀 RAG 구축)
+- 기능명세서 ID / 링크: `QK-EVL-001` / `specs/QK-EVL-001-retrieval-eval/spec.md`(Approved 2026-10-31). 구현 순서는 같은 디렉터리의 `tasks.md`(승인 2026-10-31, 골든 세트 v2 작업 T046~T048·H09는 추가 승인 대상)
+- 팀 스프린트 ID: `QELLO-S2026-W44`(Jira SCRUM-124 본문 값, 2026-11-03 확인)
+- GitHub Issue: `#90`(열림)
+- Branch: `docs/SCRUM-124-gh-90-retrieval-eval-measurement`
+- Base branch: `main`. 2026-11-03 `origin/main` `69c04ea`(#95 병합)에서 분기했다. 코드 단계는 #91로 병합됐고, 그 브랜치의 QK-EVL-001 계약과 `main`의 QK-STO-002 계약은 git 이력에 남긴다.
 
 ## Objective
 
-- #96의 운영 반영·확인 자체가 아니라, 사람이 H01~H03을 판단·실행할 준비 문서 네 개를 만들고 2026-11-04 사람 결정을 ADR-016에 기록한다.
-- 공지·동의 문구를 ADR-016과 명세에 맞추고, 현재 질의 릴리스부터 배포 후보까지의 차이 및 예약 동기화 영향을 근거와 함께 정리한다.
+- 이번 단계: QK-EVL-001 `tasks.md`의 남은 측정 단계(T017 확정·T018·T039~T042·T045, 사람 단계 H00~H08)를 끝낸다. 코드는 고치지 않는다.
+- 골든셋 v0(WBS 0.7) 최종본을 입력으로 골든 세트 v2를 만들어 측정에 넣는다. spec이 정한 대로다(spec 32행 "골든셋 v0가 나오면 다음 버전으로 더한다", 345행 "다음 버전에서 다시 잰다").
+  최종본은 팀 질문 50문항이다(2026-11-03). v2 작업은 승인된 tasks.md에 없어서 T046~T048·H09로 더하고 승인을 받은 뒤 한다.
+- 목적: 1.G 완료 조건 가운데 "첫 검색 평가 리포트(Recall@5, MRR, 벡터·키워드·하이브리드 비교)"와 "ADR-010 Proposed"를 채운다. ADR-010 Status 결정은 사람이 한다.
 
 ## Scope
 
-- `TASK.md`: 이 계약 초안으로 교체. 이전 QK-STO-002 내용은 git 이력에 남는다.
-- `specs/QK-OBS-001-query-log-feedback/rollout/notice-draft.md`
-- `specs/QK-OBS-001-query-log-feedback/rollout/consent-doc-draft.md`
-- `specs/QK-OBS-001-query-log-feedback/rollout/rollout-preflight.md`
-- `docs/sdd/decisions/ADR-016-query-text-retention.md`: 2026-11-04 사람 결정(상태, 승인, 보존 상한 날짜, 동의 문서 링크, FR-024 예외) 기록만
-- 운영 반영 결과 기록: `specs/QK-OBS-001-query-log-feedback/tasks.md`, `docs/ops/oci-production-store.md` 7.7
+- `TASK.md`(이 파일)
+- `specs/QK-EVL-001-retrieval-eval/tasks.md`: 골든 세트 v2 작업(T046~T048, 사람 단계 H09) 추가, 체크 표시와 "실행 기록". 그 밖의 명세 문서(spec FR·SC, plan 산출물)는 바꾸지 않는다
+- 골든 세트(`eval/question_sets/qk-evl-001-golden/`):
+  - `v1.toml` 확정 표시(H00, `confirmed = true`, `confirmed_on`). 질문·근거는 바꾸지 않는다
+  - `v2.toml`(T046): v1 11문항에 v0 문항 가운데 근거 문서가 `dnd-backend-docs`(라벨 기준 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`)에 있는 문항과 `no_answer` 문항을 더한다.
+    수집 페이지 DB에 있는 24문항 기준 9문항이다(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`, `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`). `cand-` 26문항도 같은 기준으로 고른다
+  - `labeling-v2.md`(새 파일, `labeling.md`는 v1 확정 뒤 고치지 않는 규칙이라 그대로 둔다): v2 라벨 기준, v0에서 뺀 문항과 이유(Confluence 근거는 QK-ING-003 색인 뒤 다음 버전), 핵심 사실 출처
+  - `tests/unit/evaluation/test_golden_v2.py`(T047): v2가 v1 11문항을 글자 그대로 담고 `check_question_set`을 통과하는지 본다. 세트를 읽는 시험이라 세트와 같은 커밋에 둔다(`test_golden_v1.py`와 같은 방식)
+- 식별자 세트: `eval/question_sets/qk-evl-001-identifiers/`(`v1.toml`, `labeling.md`), T018·H04
+- 측정: `specs/QK-EVL-001-retrieval-eval/measurement/`(`runs/<실행 ID>.json`, `retrieval-eval-report.md`), T039·T040·T042
+- 결정 기록: `docs/sdd/decisions/ADR-010-keyword-search-text.md`(Status Proposed), T041
 
 ## Explicit exclusions
 
-- 운영 명령 일체(OCI, SSH, 운영 DB 읽기·쓰기, Discord 등록, Worker 배포), Jira·Confluence·Discord·GitHub 쓰기.
-- 커밋·push·PR 생성, src·tests 수정, 평가 실행, 비용 발생 외부 API 호출.
-- 위 기록 외 ADR-016·tasks.md 변경, roadmap·AGENTS.md·CLAUDE.md·CODEX.md·.claude/**·.codex/**·.agents/** 수정.
-- `.env`·`.env.*`·`secrets/` 읽기. 서버 주소, 내부 도메인, OCID, 역할 이름, 사용자 식별자, 실제 질의 원문을 기록하지 않는다.
-- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문은 기록하지 않는다.
+- `eval/golden/v0.jsonl` 등 WBS 0.7 산출물. QK-EVL-001 spec의 범위 밖이다(spec 348행 "골든셋 질문 수집(WBS 0.7)"). 별도 작업으로 한다
+- 평가 코드(`src/`)와 기존 시험 기대값 변경. 측정 중 결함이 나오면 멈추고 별도 작업으로 나눈다
+- 골든셋 v0 문장·유형 수정. 2026-11-03 최종본을 그대로 옮긴다. 확정한 세트 파일(v1, 확정 뒤 v2)도 고치지 않고, 바꿔야 하면 버전을 올려 평가 코드·결과와 다른 커밋에 사유를 남긴다(AGENTS.md 3.4)
+- Confluence 근거 문항의 검색 측정(Confluence 색인은 QK-ING-003, Phase 2). 답변 정답 라벨(QK-EVL-002)
+- 운영 키워드 규칙·운영 인덱스 버전 교체, `RetrievalSettings` 기본값 변경. 수치와 조정 제안까지만 리포트에 남긴다
+- 운영 DB 쓰기와 운영 마이그레이션. 평가 대상은 로컬 평가용 DB(`qk_eval_*`)뿐이다
+- 수집 페이지(Artifact) DB 쓰기. 읽기만 한다. 예외: 2026-11-03 사용자 결정으로 v0 최종본 50문항 반영(`cand-` 26문항 추가, 수정 22문항의 내보낼 문장·유형, 페이지 주인의 진행 개수)만 한다
+- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, ADR-010 밖의 결정 기록, 다른 명세 문서, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정
+- `.env`·`.env.*` 읽기. 설정은 항목 이름으로만 가리킨다
+- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
+- 비밀값, 토큰, `.env` 값, 비공개 원문, 민감한 질의 원문, 사람 이름은 기록하지 않는다. v0 질문에 사람을 가리키는 표현이 있으면 역할로 바꾸지 않고 멈춰 사람에게 묻는다
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: GitHub Issue #96(읽기 전용), 로컬 저장소 문서·코드·git 이력. 운영 자료원 접근 없음.
-- 외부 API로 보내는 데이터: Issue 조회 식별 정보 외 로컬 자료·질의 원문 전송 없음.
-- 예상 임베딩·생성 호출량과 무료 한도 대비: 준비 문서 작성 0회, 0 Neurons. H03의 재시도 없는 가정의 예상량 약 255 Neurons 사용은 후속 사람 승인 대상이다.
-- 인덱스 버전 변경: 없음.
+- 새로 읽는 자료원: 없음. `dnd-backend-docs`를 고정 커밋 `6aeccd0`으로 다시 읽어 로컬 평가용 DB에 색인한다(GitHub 읽기 전용, H01·H02).
+  골든셋 v0 원문은 수집 페이지 DB를 읽기 전용으로 읽는다
+- 외부 API로 보내는 데이터: 평가 질문 문장만 Workers AI 임베딩으로 보낸다(H06). 생성 호출 0건
+- 예상 임베딩·생성 호출량과 무료 한도 대비:
+  - H01~H03 평가용 DB 준비: 캐시로 처리되면 0 Neurons. 모자라면 후보당 약 900 Neurons가 들 수 있어 준비 명령이 멈추고(종료 4) 사람이 정한다
+  - H06 질의 임베딩: research R-15의 상한 약 8.3 Neurons(골든 8문항 + 식별자 80문항 가정)에서 골든 v2 문항만큼 늘어난다.
+    골든 v2를 최대 45문항으로 잡으면 상한 약 13 Neurons이고, 일일 무료 할당 10,000 Neurons의 0.2% 아래다. 실행 명령의 미리 보기(종료 4)로 실제 값을 확인한 뒤 사람이 `--max-neurons`를 정한다
+- 운영 DB 읽기: H06 실행 전 잔여량 확인을 위해 운영 사용 장부를 읽기 전용 트랜잭션으로 조회한다(Bastion 터널). 실행 때 사람이 허락한다
+- 운영 DB 읽기(H01): 로컬 개발 DB의 임베딩 캐시가 비어 있어 평가용 DB 준비의 캐시 원본으로 운영 DB를 읽기 전용 트랜잭션으로 읽는다(SSH 터널, 2026-11-04는 공인 IP 경유).
+  읽는 것은 `qk.embedding`의 입력 해시·모델 버전·벡터뿐이고 운영 DB에 쓰지 않는다. 접속 정보는 환경 변수 이름으로만 `--from-url-env`에 준다
+- 인덱스 버전 변경: 운영 없음. 로컬 평가용 DB에만 후보 A(`kw-index-baseline-v1`), B(`kw-index-idsplit-v1`), C(토크나이저 교체) 색인이 생긴다
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| 위 Scope 다섯 파일 | Byuntil | 별도 검토자 검증, 사람 계약·운영 승인 |
+| `TASK.md`, `specs/QK-EVL-001-retrieval-eval/tasks.md` | tkv00 | 사람 리뷰(T046~T048·H09 추가 승인) |
+| `eval/question_sets/**`, `tests/unit/evaluation/test_golden_v2.py` | tkv00 | 사람 확정(H00·H04·H09), 평가 결과와 커밋 분리 확인 |
+| `specs/QK-EVL-001-retrieval-eval/measurement/**` | tkv00 | 독립 검토 에이전트(리포트 대조 T042), 사람 리뷰 |
+| `docs/sdd/decisions/ADR-010-keyword-search-text.md` | tkv00 | 사람 승인(H08) |
 
 ## Existing user-owned changes
 
-- 시작 시 `git status --short` 실행: 변경 행 없음. 다만 차단 경로에 대한 `Operation not permitted` 경고가 있어 완전한 무변경 확인으로 단정하지 않는다. 해당 경로를 읽거나 정리하지 않았다.
-- 브랜치와 기준 커밋은 Work gate와 일치한다. 기존 파일은 이 요청에서 교체하도록 지정한 `TASK.md`만 수정한다.
+- 2026-11-03 `origin/main`(`69c04ea`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
+- 저장소 밖: 골든셋 v0 수정 초안(`~/Downloads/golden-v0-revision-draft.md`, 사용자 작성). 저장소에 복사하지 않고 v2 작성의 입력으로만 쓴다
 
 ## Validation
 
 ```bash
-uv run python scripts/preflight.py
+python scripts/preflight.py
 git diff --check
+uv run ruff check .
+uv run ruff format --check .
+uv run qk-dev db up
+QK_REQUIRE_LOCALDB=1 uv run pytest
+uv run qk-dev eval check eval/question_sets/qk-evl-001-golden/v2.toml --target <H01 데이터베이스>
+uv run qk-dev eval check eval/question_sets/qk-evl-001-identifiers/v1.toml --target <H01 데이터베이스>
 ```
 
-- 문서 초안 범위이며 DB·운영·평가 검증은 하지 않는다. 샌드박스 차단은 우회하지 않고 보고한다.
-- 실행 에이전트의 자체 점검은 독립 검토나 승인이 아니다.
-- 실행 결과(2026-11-04): `uv run python scripts/preflight.py`는 uv 캐시의 잠금용 임시 파일 생성 권한 오류로 종료 코드 2. 검사는 시작하지 못했으며 우회하지 않았다. `git diff --check`는 종료 코드 0이나 차단 경로 경고가 있었다. 네 문서의 공백·로컬 파일 링크 자체 점검은 통과했다. 필수 preflight가 남아 최종 상태는 BLOCKED다.
-- 2026-11-04 오케스트레이터가 샌드박스 밖에서 다시 실행: `uv run python scripts/preflight.py` 통과(저장소 텍스트 파일 1005개, 미추적 새 문서 포함), `git diff --check` 종료 코드 0(새 문서 포함).
+외부 호출 시험(`-m external`)은 넣지 않는다. 측정 단계의 실행 기록·리포트 대조는 tasks T042다.
+`python`이 없는 환경에서는 `uv run python scripts/preflight.py`로 실행한다.
 
 ## Completion criteria
 
-- Discord 공지·Confluence 동의 문서 초안에 저장 범위, 질의별 동의, 메모리 대기, 보존 상한, 삭제 경로가 있고 확정값은 반영하고 미확정값만 placeholder로 남긴다.
-- 사전 점검에 `ce6d1d8..origin/main`의 질의 경로·설정·의존성·마이그레이션 변화와 `0008` 미적용 시 예약 동기화 영향이 파일:줄 근거로 정리된다.
-- 사람 단계 순서표에 실행 주체·승인·예상 Neurons·되돌리기가 있고, 미확인·문서 차이와 필수 검증 결과가 구분된다. Issue #96의 운영 완료 조건은 이 문서 작성으로 충족되지 않는다.
+- 골든 세트 v1·v2와 식별자 세트 v1이 확정되고, v2와 식별자 세트가 `qk-dev eval check`를 평가 대상에 대해 통과한다 — 확정 커밋, 검사 출력
+- 같은 질문 세트·고정 커밋·임베딩 모델로 세 검색 방식과 ADR-010 후보 A·B·C의 Recall@5·MRR이 표본 수와 함께 리포트에 남는다. 목표에 못 미쳐도 기록한다 — 리포트, 실행 기록(운영 DB 쓰기 0건)
+- ADR-010이 Status Proposed로 리포트 수치를 그대로 인용한다. Status 결정은 사람이 한다
 
 ## Decisions
 
-- 2026-11-04 사용자 지시: 이 세션을 오케스트레이터로 두고 worktree의 Codex(gpt-6.1-sol, medium)로 진행한다. 범위를 네 준비 문서로 잡은 것은 오케스트레이터의 판단이다. 이 계약과 운영 반영의 사람 승인을 받았다고 해석하지 않는다.
-- 2026-11-04 이슈 확인: `gh issue view 96`은 샌드박스 내·승격 재시도 모두 GitHub 연결 실패. 읽기 전용 GitHub 커넥터로 본문을 확인했다. 주간 계획 합의 체크박스는 미체크이므로 합의 완료로 추정하지 않는다.
-- 2026-11-04 운영 배경은 사용자·오케스트레이터 및 #96의 읽기 전용 확인 기록을 인용한다. 실행 에이전트는 운영 상태를 직접 확인하지 않았다.
-- 2026-11-04 사용자 결정: 이 계약을 승인했다("1: 승인"). 네 준비 문서 범위의 승인이고 운영 반영 승인이 아니다. 주간 계획 합의 여부는 이때 답을 받지 못했다(아래 2026-11-04 결정으로 확인).
-- 2026-11-04 사용자 결정: 준비 문서 독립 검토를 새 Codex 패널(읽기 전용)에 맡긴다("2: 좋아").
-- 2026-11-04 사실: 독립 검토(새 Codex 세션 `review96`, 작성 미관여, 읽기 전용) 1차 판정은 변경 요청이다(높음 2, 중간 4). 오케스트레이터가 근거를 코드·문서로 다시 확인했고 실행 에이전트가 반영했다. 2차에서 6건이 해소되고 낮음 1건(공지 게시 경계)이 나와 공지를 다시 썼다. 3차(공지만) 판정은 승인 권고이고 새 지적은 없다. 치환 전 공지 본문은 1,133자(UTF-16)다. 검토자는 전체 preflight를 실행하지 않았고(`.env.*` 읽기 가능성), 오케스트레이터가 `uv run python scripts/preflight.py`(1,005개 파일)와 `git diff --check`를 실행해 통과했다.
-- 2026-11-04 사용자 결정(H01 값): 기록 기능은 운영 배포일부터 켠다. 보존 상한은 약 1개월이며 날짜는 배포일이 정해지면 계산한다. 원문 열람은 byuntil, tkv00이다. 삭제·문의는 운영 담당자 두 명에게 받는다. 담당자 실명과 Discord 식별자는 공개 저장소에 적지 않고 게시본에서만 치환한다(오케스트레이터 판단).
-- 2026-11-04 사실(사용자 승인 뒤 오케스트레이터 읽기 전용 확인): Workers AI 공개 문서(2026-10-16 갱신)는 입력·출력을 학습에 쓰지 않고 일반 요청은 처리 뒤 보관하지 않는다고 밝힌다. 이 프로젝트는 AI Gateway·batch 없이 REST를 직접 호출한다. 확인한 도구·설정·경로에서 운영 DB 백업은 발견하지 못했다(다른 컴파트먼트의 수동 백업, 이름이 다른 스크립트, 서버 밖 복사는 미확인). 서버 관리 권한이 있으면 원문을 기술적으로 읽을 수 있고, 권한 보유자 명단은 미확인이다. 원본 수치 중 계정·키 수는 저장소에 적지 않는다. 검토자(`review96`)는 백업 문구 단정 표현 1건을 지적했고 반영했다. 이 마지막 문구 수정은 다시 검토받지 않았다.
-- 2026-11-04 사용자 결정: 운영 담당자 두 명과 열람자 byuntil, tkv00은 같은 사람이다. 운영 서버 소유자는 tkv00이다. 기록 기능은 오늘(2026-11-04)부터 켜고 보존 상한은 2026-12-04(UTC)로 계산했다. ADR-016을 승인하고 메모리 대기 해석을 받아들였다. `0008` 지연 적용 순서를 받아들였다. 주간 계획에서 합의된 작업이다. 커밋과 PR을 요청했다. 이 결정들은 운영 명령 실행 승인이 아니며, H02 명령은 명령마다 승인받는다. 서버 관리 권한 전체 명단은 아직 미확인이다.
-- 2026-11-04 사용자 결정: 머지 뒤 운영 반영을 시작하라고 지시했다. 위 제외 범위의 운영 명령은 이 지시와 묶음별 승인으로 실행했다(결과는 `tasks.md` 사람 단계 기록). 공지 링크 기록 전 기능 켜기를 FR-024 예외로 승인했다. 공지는 사람이 따로 올린다.
-- 2026-11-04 사실: 명령 등록과 현재 명령 조회는 로컬 `.env`의 봇 토큰을 프로그램이 읽었다. 위 제외 범위의 `.env` 읽기에 대한 예외이고 값은 출력하지 않았다. 동의 문서는 사용자가 내용을 미리 보지 않은 채 오케스트레이터가 게시했다.
-- 2026-11-04 사용자 결정: 👎 이유 선택지는 만들지 않는다. 자세한 피드백은 운영 담당자 DM으로 받고 공지에 더한다.
-- 2026-11-04 사용자 결정: 공지 링크·날짜를 ADR-016에 기록하는 일과 다른 팀원 👍 확인을 뺐다. 다른 팀원 평가는 실행하지 않았다. #96을 닫는다.
+- 2026-10-30~31 QK-EVL-001 명세·plan·tasks 결정과 코드 단계 기록은 `feat/SCRUM-124-gh-90-retrieval-eval`의 `TASK.md`(#91 병합 커밋 `c4ca593`)와 `tasks.md` "실행 기록"에 있다.
+- 2026-11-03 사용자 결정: 보내 준 골든셋 v0 수정 초안이 최종본이고 이를 반영한다. 초안의 "바로 정하지 못한 점" 5건도 적힌 대로 간다.
+- 2026-11-03 사실(작성 세션 확인):
+  - 수집 페이지 DB에는 팀 질문 24개가 있고 모두 채택(`accepted`)이다. 초안이 22개를 고쳤고 2개(`qmv26zrvzaicu`, `qmv270uanha2v`)는 그대로다.
+  - 나머지 `cand-` 26문항의 문장·유형은 수집 페이지 DB, 페이지 본문, 저장소에서 찾지 못했다. v2는 이 원문을 받아야 끝난다(BLOCKED 항목).
+  - DB에 있는 24문항의 백엔드 근거 문서 7개(FCM ADR 0008, README 테스트 서버 배포, 인증 분리 ADR 0006, 요청 로깅 설계, 방향 소통 ERD, `error-codes.md`, `AUTH_DESIGN.md`)는 라벨 기준 커밋 `6aeccd0`에 모두 있다(GitHub 읽기 전용 조회). 백엔드 저장소 `main`은 그 뒤로 움직였지만 라벨 기준 커밋은 그대로 둔다.
+  - 질문 세트 형식의 `type`은 `code`·`doc`·`meeting`·`synthesis`·`no_answer`이고 `unknown`은 거부된다. 최종본은 `unknown`이 0개라 그대로 옮길 수 있다.
+  - 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구한다. v2는 H05 v2와 v0 두 곳에서 오고 v0 원본은 저장소에 없어서 `origin`을 두지 않고 `labeling.md`에 두 출처를 적는다.
+- 2026-11-03 사용자 결정: 첫 TASK.md 초안을 승인했다("승인"). 사람 확인 대상 4건(WBS 0.7 산출물 포함, v1 확정·v2 주 세트, 커밋 순서, 측정 PR 하나)과 스프린트 ID `QELLO-S2026-W45`도 포함했다. 그 판(`10e51ae`)이 git 이력에 있다.
+- 2026-11-03 정정: 첫 판은 spec 범위 밖인 WBS 0.7 산출물(`eval/golden/v0.jsonl`)을 Scope에 넣었고, 승인된 tasks.md에 없는 v2 작업을 tasks 추가 없이 진행하려 했다. 작성 세션이 승인받을 때 이를 알리지 않았다.
+  사용자 결정("명세 범위로 고치기"): v0.jsonl은 이 작업에서 빼서 별도로 한다. v2는 남기고 tasks.md에 T046~T048·H09를 더해 승인받은 뒤 진행한다. `test_golden_v2.py`는 v0.jsonl과 대조하지 않는다.
+- 사람 확인 대상(작성 세션 제안, 위 정정 반영):
+  - v1은 확정만 하고 그대로 둔다. 측정과 리포트의 주 세트는 v2이고, v1 수치는 v2의 부분 집합으로 함께 적는다.
+  - 커밋 순서: 이 계약 정정과 tasks.md 추가 → v1 확정 → v2와 `test_golden_v2.py` → v2 확정 → 식별자 세트 초안 → 확정 → 리포트 계약 고정(T039·H05) → 실행 기록·리포트 → ADR-010. 평가 세트와 평가 결과는 다른 커밋이다.
+  - 측정 PR은 하나로 낸다.
+- 2026-11-03 사용자 결정: 정정한 TASK.md와 tasks.md Phase 9(T046~T048, H09)를 승인했다("승인하고 커밋"). 위 사람 확인 대상 3건도 포함한다. Phase 9 추가분은 별도 에이전트 검토를 받지 않았다.
+- 2026-11-03 정정: 스프린트 ID `W45`는 작성 세션이 날짜로 추정한 값이었다. Jira SCRUM-124(읽기 전용 조회)의 `QELLO-S2026-W44`와 달라 사용자 결정("W44로 맞추기")으로 W44로 고쳤다.
+  같은 조회에서 SCRUM-124 상태는 "해야 할 일"이었다. Jira 쓰기는 하지 않았다.
+- 2026-11-03 사용자 결정("DB 반영 승인"): 골든셋 v0 최종본 50문항을 수집 페이지 DB에 반영한다. 최종 목록은 사용자가 준 50문항 표(질문·유형, 근거 없음)이고 수정 초안과 문장·유형 분포가 같다.
+  `cand-` 26문항은 페이지 주인 문서에 채택 상태로 넣고, 수정 22문항은 원래 문장을 두고 검토 기록에 내보낼 문장·유형을 넣는다. 쓰기는 읽은 버전에 고정하고 다시 읽어 대조한다.
+  `cand-` 문항의 근거 문서는 이 표에 없어 v2(T046) 전에 정한다.
+- 2026-11-04 사용자 결정("운영 DB 읽기 전용"): H01~H02 평가용 DB 준비의 임베딩 캐시 원본은 운영 DB다. 로컬 개발 DB의 임베딩 캐시가 0건이라 로컬 복사로는 종료 4(약 900 Neurons)가 되기 때문이다.
+  `eval-index prepare`는 원본 연결을 `read_only`로 열고 `qk.embedding`만 읽는다(`devtools/eval_index.py:81-93`). 대상은 로컬 컨테이너의 평가용 DB뿐이다. `--allow-embed`는 주지 않아 캐시가 모자라면 임베딩 없이 종료 4로 멈춘다.
+- 2026-11-04 사실(H01): 운영 DB에는 Bastion이 아니라 공인 IP SSH 터널로 닿았다. Bastion 관리형 SSH 세션은 만들어지고 인증도 됐지만, 서버 22번으로 넘기는 순간 끊겼다.
+  클라우드 설정(대상 VCN·서브넷·사설 IP, 보안 목록 22번, Bastion 플러그인)은 모두 맞았고, 서버 안 원인은 확인하지 못했다(작성 세션은 서버에 접속하지 않았다).
+  캐시 원본 접속 정보는 사용자가 서버의 동기화용 접속 정보를 터널 포트로 바꿔 `.env`의 `QK_PROD_READ_URL`에 넣었다. 값은 화면·저장소·대화에 남기지 않았다.
+  결과: `qk_eval_baseline_6aeccd039b82` 준비 완료, 캐시 복사 1,309개, 임베딩 호출 0, 0 Neurons. 운영 DB 쓰기 0건. Bastion 경로가 서버 안에서 막힌 문제는 이 작업 밖이라 서버 관리자가 따로 본다.
+- 2026-11-04 사용자 결정: 골든 세트 v1("v1 확정"), v2("오케이", H09), 식별자 세트 v1("식별자 세트 확정", H04)을 확정했다. 각각 확정 표시만 넣은 별도 커밋이다.
+- 2026-11-04 사실: H02(후보 B)·H03(후보 C) 평가용 DB를 운영 DB 접근 없이 0 Neurons로 준비했다(H02 캐시 원본은 H01 로컬 DB).
+- 2026-11-04 사용자 결정(H05, "n=3, m=1"): ADR-010 판단 규칙의 n·m을 정했고 리포트 계약을 측정 전에 고정했다(커밋 `9561733`).
+- 2026-11-04 사용자 결정(H06, "실행 승인"): 미리 보기(골든 2.3177, 식별자 2.4338 Neurons, 당일 잔여 10,000)를 보고 `--max-neurons 3`으로 실행을 승인했다. 실제 0.43 + 0.61 = 1.04 Neurons, 두 실행 모두 `complete = true`, 운영 DB 쓰기 0.
+- 2026-11-04 사실(측정 결과): 고정한 판단 규칙으로 후보 B(G4 +2)와 C(G3 5문항, G4 +4) 모두 권고 가능이 아니고, 작성 세션 권고는 A(현행 유지)다. ADR-010은 Status Proposed로 썼다. Status 결정(H08)은 사람이 한다.
+- 2026-11-04 사실(T042): 작성에 관여하지 않은 별도 서브에이전트가 리포트를 읽기 전용으로 대조했다. 수치는 모두 맞았고 문구 지적 4건을 고쳤다(고친 부분은 다시 대조받지 않음).
+- 2026-11-04 검증(T045): `python3 scripts/preflight.py`(1011개 통과), `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`(733개), `uv run qk-dev db up`,
+  `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed(3 deselected는 `external`). `uv run qk-dev eval check …/qk-evl-001-golden/v2.toml`·`…/qk-evl-001-identifiers/v1.toml --target` 세 평가 대상 모두 통과(경고 0).

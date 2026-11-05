@@ -138,14 +138,14 @@ description: "QK-EVL-001 구현 작업 목록"
   출력에 대상 고정 커밋, 형태별 식별자·문서 수·문서 위치, 비밀값 규칙으로 뺀 수가 있고 본문 문장·줄은 없다. `--set`이 대상 고정 커밋과 다른 라벨 기준 커밋이면 1, 근거 문서가 다른 질문이 있으면 1과 그 질문 ID·(빠진 위치, 더 있는 위치),
   모두 같으면 0. 출력에 질문 문장과 `label_terms` 값이 없다. 인자 오류·대상 연결 실패 2
 - [X] T016 [US2] `src/qello_knowledge/devtools/eval_cli.py`에 `run_identifiers`, `devtools/db.py`의 `eval` 묶음에 `identifiers`(`--target` 필수, `--set`, `--form` 여러 번)를 더한다. 본문은 `PostgresEvalTarget.visible_chunk_texts()`로 읽는다
-- [ ] T017 [US2] 골든 세트(별도 커밋, research R-14 2번):
+- [X] T017 [US2] 골든 세트(별도 커밋, research R-14 2번):
   - `eval/question_sets/qk-evl-001-golden/v1.toml`: spec FR-008 그대로. 세트 ID `qk-evl-001-golden`, `origin = { id = "qk-bot-001-h05", version = 2, document = "specs/QK-BOT-001-discord-ask/measurement/h05-question-set-v2.md" }`,
     자료원 `dnd-backend-docs`와 `label_commit = "6aeccd039b825dcd7a2b6c046a34ef72089a1f78"`, 질문 Q01~Q11(`id`와 `original_number`가 원본 번호), 질문 문장·근거 문서·핵심 사실 글자 그대로, "있음"은 `doc`, "없음"은 `no_answer`(근거 빈 배열),
     `label = "done"`, `origin = "synthetic"`, `confirmed = false`. "나만 보기"와 답변 판정 기준은 옮기지 않는다
   - `eval/question_sets/qk-evl-001-golden/labeling.md`: 라벨 기준(H05 v2 "v1과 바뀐 점"·판정 기준을 가리키고 옮기지 않은 항목과 이유), Recall@5 정의(spec Assumptions)
   - `tests/unit/evaluation/test_golden_v1.py`(SC-002): H05 v2 Markdown 표를 읽어 11문항의 번호·문장·근거(백틱 안 경로 목록, `—`은 빈 목록)·핵심 사실·유형이 세트 파일과 같고 `check_question_set`이 통과한다. 이 시험은 세트 파일을 읽으므로 세트와 같은 커밋에 둔다
   - 사람이 확인하면(사람 단계 H00) `confirmed = true`, `confirmed_on`을 넣는 확정 커밋을 따로 둔다
-- [ ] T018 [US2] 식별자 세트 초안(사람 단계 H01 뒤, 별도 커밋, research R-14 3번):
+- [X] T018 [US2] 식별자 세트 초안(사람 단계 H01 뒤, 별도 커밋, research R-14 3번):
   - `uv run qk-dev eval identifiers --target qk_eval_baseline_6aeccd039b82`로 후보를 받아 `eval/question_sets/qk-evl-001-identifiers/v1.toml`을 쓴다. spec US2-3·US2-4·FR-009 그대로:
     형태마다 식별자 5개 이상(모자라면 있는 만큼과 `shortfall`), 식별자마다 `original`·`partial` 질문, `sentence` 질문 10개 이상, `label_terms`(원형·일부는 식별자 원형 하나), 근거 문서는 도우미가 다시 계산한 목록, `confirmed = false`.
     문서 문장을 그대로 옮겨 질문으로 쓰지 않는다
@@ -273,18 +273,18 @@ description: "QK-EVL-001 구현 작업 목록"
 
 **Independent Test**: 리포트 4절의 수치가 커밋한 실행 기록에 `qk-dev eval tables`를 다시 돌린 출력과 같고, 1절이 측정 전 커밋과 같으며, 측정 결과·작성 세션 해석·사람 결정이 나뉘어 있다.
 
-- [ ] T039 [US5] 측정 전 계약(H00·H04 뒤, 측정 전): 두 세트가 확정되어 표본 수가 정해진 뒤 `specs/QK-EVL-001-retrieval-eval/measurement/retrieval-eval-report.md`를 `templates/eval-report.md` 양식으로 만들고 1절(가설, 주 지표, 가드레일 지표, 성공 기준, 중단 기준)과
+- [X] T039 [US5] 측정 전 계약(H00·H04 뒤, 측정 전): 두 세트가 확정되어 표본 수가 정해진 뒤 `specs/QK-EVL-001-retrieval-eval/measurement/retrieval-eval-report.md`를 `templates/eval-report.md` 양식으로 만들고 1절(가설, 주 지표, 가드레일 지표, 성공 기준, 중단 기준)과
   ADR-010 판단 규칙만 채운다. 판단 규칙 초안은 research R-14 그대로(주 지표: 식별자 세트에서 camelCase·PascalCase·약어 경계·숫자 경계의 일부 질문에 대한 키워드 전용 상위 20건 포함 비율. 가드레일: 골든 세트 하이브리드 Recall@5·MRR(공통 질문 집합),
   식별자 세트 키워드 전용 Precision@5, 키워드 전용 상한 도달 비율, 대조군(snake·kebab·URL 경로) 포함 비율). "주 지표가 A보다 n문항 이상 오르고 가드레일이 각각 m문항 넘게 나빠지지 않으면 권고"의 n·m 자리는 비워 두고 표본 수를 함께 적는다.
   사람이 H05에서 n·m을 정하면 그 값을 넣어 "계약 고정" 커밋 하나로 남긴다. 이 커밋이 측정 전 기준이고, 그 뒤로 1절과 판단 규칙을 바꾸지 않는다
-- [ ] T040 [US5] 측정 뒤 리포트 2~9절(사람 단계 H06·H07 뒤, 측정 커밋): `measurement/runs/<실행 ID>.json`을 커밋하고 `qk-dev eval tables` 출력을 4절에 붙인다. spec US5-2 그대로 채운다:
+- [X] T040 [US5] 측정 뒤 리포트 2~9절(사람 단계 H06·H07 뒤, 측정 커밋): `measurement/runs/<실행 ID>.json`을 커밋하고 `qk-dev eval tables` 출력을 4절에 붙인다. spec US5-2 그대로 채운다:
   생성 결과 절 "해당 없음(QK-EVL-002)", 검색 p50·p95 "해당 없음(로컬 평가용 데이터베이스, 운영 지연과 비교하지 않음)", 질문 유형 분포 칸에는 이 명세의 유형별 수와 양식 분류와 대응하지 않는다는 문장,
   Precision@5 행은 식별자 세트만 채우고 골든 세트는 "해당 없음(근거 문서 목록이 전부가 아님)". Recall@5 정의(하나라도 찾은 비율, Hit@5와 같음), 골든 세트 표본 한계(한 문항이 Recall@5를 12.5%p 바꿈, US5-6),
   비용 절에 실제 Neurons와 예상치, 평가 사용량이 평가 대상에만 기록되어 운영 장부에 보이지 않는다는 점(spec Assumptions). 측정 결과, 작성 세션 해석, 사람 결정을 나눈다(FR-027). 목표에 못 미쳐도 기록한다.
   Recall@5·MRR 목표 후보와 검색 설정 조정은 수치 근거와 함께 제안으로만 적는다(FR-028·FR-029). 질문 문장·핵심 사실·청크 본문은 넣지 않고 질문 ID와 문서 위치로 가리킨다. 확정 전 세트의 수치는 결론에 쓰지 않는다
-- [ ] T041 [US5] `docs/sdd/decisions/ADR-010-keyword-search-text.md`(별도 커밋, `templates/decision-record.md` 양식): Status Proposed. 맥락, 후보 A·B·C, 비교 기준, T039에서 고정한 판단 규칙, 리포트의 측정 수치와 실행 조건(그대로 인용, SC-012), 리포트 링크, 작성 세션 권고.
+- [X] T041 [US5] `docs/sdd/decisions/ADR-010-keyword-search-text.md`(별도 커밋, `templates/decision-record.md` 양식): Status Proposed. 맥락, 후보 A·B·C, 비교 기준, T039에서 고정한 판단 규칙, 리포트의 측정 수치와 실행 조건(그대로 인용, SC-012), 리포트 링크, 작성 세션 권고.
   후보 C를 고를 때의 영향(토크나이저가 인덱스 버전 재료가 아니어서 운영에 반영하면 인덱스 버전이 그대로인 채 키워드 동작이 바뀜, QK-STO-002 평가 게이트와 `domain/keyword_rules.py` 대응표에 이를 가릴 식별자가 필요하고 방법은 사람 결정)을 적는다(FR-030). Status 결정과 운영 반영은 사람이 별도 작업으로 한다
-- [ ] T042 [US5] 리포트 대조: 커밋한 실행 기록으로 `qk-dev eval tables`를 다시 돌려 리포트 4절과 글자 단위로 같은지, 1절과 판단 규칙이 "계약 고정" 커밋과 같은지(`git diff <계약 고정 커밋> -- …`에서 1절 범위 변경 0),
+- [X] T042 [US5] 리포트 대조: 커밋한 실행 기록으로 `qk-dev eval tables`를 다시 돌려 리포트 4절과 글자 단위로 같은지, 1절과 판단 규칙이 "계약 고정" 커밋과 같은지(`git diff <계약 고정 커밋> -- …`에서 1절 범위 변경 0),
   ADR-010 수치가 리포트와 같은지, 실행 기록 `usage`의 실제 Neurons가 실행 전 미리 보기의 예상치 이하인지(SC-011) 확인하고 "실행 기록"에 적는다
 
 **Checkpoint**: SC-011·SC-012 확인, ADR-010 Proposed
@@ -298,7 +298,34 @@ description: "QK-EVL-001 구현 작업 목록"
   고친·지운 파일이 `tests/unit/test_boundaries.py` 하나뿐이다(새 파일 `adapters/postgres/eval_target.py`, ADR-010, 새 시험은 `--diff-filter=A`로 따로 본다)
 - [X] T044 quickstart.md 1절 전체 실행(`python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `QK_REQUIRE_LOCALDB=1 uv run pytest`).
   결과를 "실행 기록"에 적고 이 목록 체크 표시를 갱신한다
-- [ ] T045 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
+- [X] T045 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용)
+
+---
+
+## Phase 9: 골든 세트 v2 - 골든셋 v0를 다음 버전으로 더한다 (2026-11-03 추가)
+
+**Goal**: spec 32행("골든셋 v0가 나오면 다음 버전으로 더한다")과 345행("다음 버전에서 다시 잰다")대로 골든셋 v0(WBS 0.7) 최종본에서 현재 색인으로 잴 수 있는 문항을 골든 세트 v2에 더하고, 측정의 골든 세트를 v2로 한다.
+WBS 0.7 산출물(`eval/golden/v0.jsonl`)은 spec 범위 밖(348행)이라 이 단계에서 만들지 않는다.
+
+**Independent Test**: v2가 v1 11문항을 글자 그대로 담고, 더한 v0 문항이 형식 검증과 평가 대상 검사(`evidence_unindexed` 경고 0)를 통과한다.
+
+**입력**: v0 최종본은 팀 질문 50문항(2026-11-03)이다. 수집 페이지 DB에 24문항이 있고(2026-11-03 수정 적용), `cand-` 26문항의 원문은 사람이 준다. 받기 전에는 T046을 끝내지 않는다.
+
+- [X] T047 [US2] `tests/unit/evaluation/test_golden_v2.py`(T046보다 먼저 쓰고 파일이 없어 실패하는지 본다): v2의 머리 정보(`id = "qk-evl-001-golden"`, `version = 2`, 자료원 `dnd-backend-docs`와 v1과 같은 `label_commit`),
+  Q01~Q11이 `v1.toml`과 필드까지 같음, v1에 없는 질문은 `original_number`가 있고 `id`와 같음, `check_question_set` 통과. v0 원본은 저장소에 없으므로 문장 대조는 시험하지 않고 H09에서 사람이 본다. 세트와 같은 커밋에 둔다
+- [X] T046 [US2] `eval/question_sets/qk-evl-001-golden/v2.toml`(별도 커밋, 평가 코드·결과와 섞지 않음):
+  - 머리 정보: `version = 2`, `created`, `confirmed = false`, `labeling`, `[[set.sources]]`는 v1과 같다. 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구하므로 두지 않고 출처는 `labeling.md`에 적는다
+  - v1 Q01~Q11을 그대로 옮긴다
+  - v0 문항 가운데 근거 문서가 `dnd-backend-docs`의 라벨 기준 커밋에 있는 문항과 `no_answer` 문항을 더한다. 수집 페이지 DB에 있는 24문항 기준 9문항(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`,
+    `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`)이고, `cand-` 26문항도 같은 기준으로 고른다
+  - 더하는 문항: `id`·`original_number`는 v0 질문 ID, `text`·`type`은 최종본 그대로, `label = "done"`, `evidence`는 백엔드 문서 위치만(문서 단위, Confluence 근거는 넣지 않음), `facts`는 최종본의 기대 답 요약,
+    `origin = "team"`. 질문에 사람을 가리키는 표현이 있으면 고치지 않고 멈춰 사람에게 묻는다
+  - `labeling-v2.md`를 새로 쓰고 머리 정보 `labeling`이 그 파일을 가리킨다(`labeling.md`는 "확정 뒤 고치지 않는다"는 규칙이 있어 v2 절을 더하지 않는다): 두 출처(H05 v2, v0 최종본 2026-11-03), 고른 기준, 뺀 v0 문항 수와 이유(근거가 Confluence뿐인 문항은 QK-ING-003 색인 뒤 다음 버전), 근거에 Confluence가 함께 있던 문항은 백엔드 문서만 남겼다는 점
+  - 확인: `uv run pytest tests/unit/evaluation/test_golden_v2.py`, H01 뒤 `uv run qk-dev eval check eval/question_sets/qk-evl-001-golden/v2.toml --target qk_eval_baseline_6aeccd039b82`(경고 검토)
+- [X] T048 측정의 골든 세트를 v2로 바꾼다: T039·T040·H06의 "골든 세트"는 v2다. T039 1절과 T040의 표본 한계(지금 "한 문항이 Recall@5를 12.5%p 바꿈"은 v1 8문항 기준)는 v2의 지표 대상 문항 수로 다시 적고,
+  v1 11문항의 수치를 v2 결과의 부분 집합으로 함께 적는다(같은 실행 기록에서 질문 ID로 거른다, 별도 실행 없음). H06 비용 상한은 v2 문항 수로 다시 계산해 실행 전에 보고한다
+
+**Checkpoint**: H09로 v2 확정. 그 뒤에 T039를 쓴다
 
 ---
 
@@ -317,6 +344,7 @@ quickstart.md 2절과 같다. 각 단계는 실행 전에 사람이 허락한다
 | H06 | `qk-dev eval run`을 세트마다 대상 셋(H01·H02·H03)으로. 먼저 `--ledger-url-env`·`--allow-remote-read`만 주고 미리 보기(종료 4), 사람이 값을 보고 `--allow-query-embedding --max-neurons X`로 다시 실행 | H00·H04·H05 뒤 | 운영 장부 읽기 전용 조회(Bastion 터널), 질의 임베딩 두 세트 상한 약 8.3 Neurons |
 | H07 | `qk-dev eval tables`로 대상별·비교 표 → T040 | H06 뒤 | 없음 |
 | H08 | ADR-010 Proposed 검토, Status·운영 반영 결정(별도 작업) | T041 뒤 | 없음 |
+| H09 | 골든 세트 v2 확인(더한 v0 문항의 문장·유형·근거·핵심 사실을 v0 최종본과 대조, `qk-dev eval check --target <H01 데이터베이스>` 경고 검토) → 확정 커밋 | T046 뒤, H01 뒤 | 없음 |
 
 정리: 평가용 데이터베이스(최종 이름)는 사람이 `DROP DATABASE`로 지운다. 명령은 `__preparing` 잔여물만 지운다.
 
@@ -327,6 +355,7 @@ quickstart.md 2절과 같다. 각 단계는 실행 전에 사람이 허락한다
 - Phase 1 → Phase 2 → US1 → US3. US2의 코드(T013~T016)는 Phase 2 뒤 US1과 병렬로 할 수 있다(T016은 T012 뒤, 같은 `eval_cli.py`·`db.py`). T017은 T010 뒤(검증기가 있어야 시험이 돈다). T018은 H01 뒤.
 - US4의 비교(T032~T035)는 US3의 `records.py`·`metrics.py`(T026·T027) 뒤. 후보 C 준비(T036~T038)는 Phase 2와 무관해 언제든 할 수 있다.
 - US5는 사람 단계와 번갈아 간다: H00·H04 → T039 → H05(n·m) → 계약 고정 커밋 → H06 → H07 → T040 → T041 → T042.
+- Phase 9(2026-11-03 추가): T047 → T046(`cand-` 26문항 원문을 받은 뒤) → H01 → H09. T039는 H00·H04·H09 뒤에 쓴다(T048).
 - 같은 파일을 고치는 작업은 순서대로 한다: `devtools/eval_cli.py`·`devtools/db.py`(T012 → T016 → T031 → T035, T038은 `db.py`의 `eval-index` 부분만), `tests/unit/devtools/test_eval_cli.py`(T011 → T029 → T034).
 - 실행 경로 구현 순서: T024 → T025 → T026 → T027 → T028(runner가 앞의 넷을 쓴다) → T031. T030(로컬 DB 시험)은 T031보다 먼저 쓰고 실패를 확인한다.
 
@@ -339,6 +368,7 @@ quickstart.md 2절과 같다. 각 단계는 실행 전에 사람이 허락한다
 5. 리포트 계약 절과 ADR-010 판단 규칙(T039, H05의 n·m을 넣은 "계약 고정" 커밋)
 6. 측정: 실행 기록과 리포트 2~9절(T040)
 7. ADR-010 Proposed(T041)
+8. (2026-11-03 추가) 골든 세트 v2와 `test_golden_v2.py`(T046·T047) → 확정 표시(H09). 3 뒤, 5 앞
 
 질문 세트(3·4)와 평가 코드(2)를 한 커밋에 넣지 않는다. 라벨을 고쳐야 하면 세트 버전을 올려 별도 커밋에 사유를 남긴다.
 
@@ -403,3 +433,42 @@ US4:     T032, T034, T036, T037 (시험) → T033 → T035 / T038
   - 낮음 9: T029의 설정·정책 오류 종료 2와 T020의 "실행 전 검사 실패에서 장부 읽기 0"을 CLI 시험으로 더했다(`test_config_and_policy_errors_exit_2`, `test_precheck_failures_read_no_ledger_and_call_no_provider`).
   반영분은 다시 검토받지 않았다.
 - 2026-10-31 검토 반영 뒤 기본 검증 전체 다시 실행: preflight 998개 통과, `git diff --check`, ruff check·format --check 통과, `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,776 passed(3 deselected는 `external`).
+- 2026-11-04 T047: `test_golden_v2.py`를 먼저 쓰고 세트 파일이 없어 실패하는 것을 확인했다(`FileNotFoundError`). T046 세트를 쓴 뒤 통과했다.
+- 2026-11-04 T046: `v2.toml` 32문항(v1 11, v0 근거 있음 15, v0 `no_answer` 6, 지표 대상 23)과 `labeling-v2.md`를 썼다. `uv run qk-dev eval check …/v2.toml`(대상 없이) 통과.
+  `cand-` 문항의 근거·핵심 사실은 작성 세션이 라벨 기준 커밋을 작업 공간에 읽기 전용으로 받아 색인 대상 80개 문서에서 찾은 초안이다. 평가 대상에 대한 검사(`--target`)는 H01 뒤에 한다. `confirmed = false`이며 확정은 H09다.
+  계획과 다른 점: `labeling.md`에 v2 절을 더하지 않고 `labeling-v2.md`를 따로 썼다. `labeling.md`에 "확정 뒤 고치지 않는다"는 규칙이 있고 v1 확정(H00)이 v2 확정보다 먼저다.
+- 2026-11-04 H01: `uv run qk-dev eval-index prepare --rule kw-index-baseline-v1 --commit 6aeccd039b825dcd7a2b6c046a34ef72089a1f78 --from-url-env QK_PROD_READ_URL` 종료 0.
+  데이터베이스 `qk_eval_baseline_6aeccd039b82`, 인덱스 버전 `iv-4c0bc4fcc642`, 캐시 복사 1,309개(운영 DB 읽기 전용), 임베딩 호출 0, 0 Neurons.
+  앞선 시도는 모두 데이터베이스를 만들기 전에 멈췄다(설정 점검 `DATABASE_URL` 누락, 캐시 원본 접속 실패, GitHub 토큰 403, 캐시 원본 미설정으로 종료 4 예상 921 Neurons). 임베딩 호출은 0이었다.
+  GitHub 403은 조직 정책(수명 366일 초과 fine-grained 토큰 차단) 때문이었고 사용자가 토큰을 다시 발급했다. 목록 조회 실패 사유가 동기화 기록에 남지 않는 점(`sources/collect.py:40`)은 범위 밖이라 고치지 않았다.
+- 2026-11-04 H01 뒤 `uv run qk-dev eval check …/qk-evl-001-golden/v2.toml --target qk_eval_baseline_6aeccd039b82` 통과(32문항, 경고 0, sha256 `2cb7a3da9fd0`). 같은 대상으로 v1도 통과(11문항, 경고 0).
+- 2026-11-04 H00: 사용자가 골든 세트 v1 11문항을 확정했다("v1 확정"). `v1.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 질문·유형·근거 문서·핵심 사실은 바꾸지 않았다. T017을 닫는다.
+- 2026-11-04 H09: 작성 세션이 더한 21문항(근거 있음 15, `no_answer` 6)의 질문·유형·근거 문서·핵심 사실을 표로 보였고, 사용자가 "오케이"로 확정했다. 50문항 가운데 29문항을 뺀 이유(근거가 Confluence 문서·회의록뿐이라 평가 대상에 없음)도 같은 자리에서 설명했다.
+  `v2.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 문항은 바꾸지 않았다. `cand-` 문항의 근거·핵심 사실 초안도 이 확정에 포함된다. T046을 닫는다. T048은 T039·T040에서 한다.
+- 2026-11-04 T018 초안: `uv run qk-dev eval identifiers --target qk_eval_baseline_6aeccd039b82`로 후보 3,207개(노출 청크가 있는 문서 79개, 비밀값 규칙으로 뺀 후보 0)를 받아
+  `eval/question_sets/qk-evl-001-identifiers/v1.toml` 82문항(형태 7개 × 식별자 5개 × 원형·일부, 문장형 12)과 `labeling.md`를 썼다. `confirmed = false`, `shortfall` 없음.
+  `uv run qk-dev eval check …/v1.toml --target qk_eval_baseline_6aeccd039b82` 통과(경고 0), `uv run qk-dev eval identifiers --target … --set …/v1.toml` 종료 0(근거 문서가 다른 질문 0).
+  일반 라이브러리 이름, 해시값, 사람 계정 이름, 홈 디렉터리 경로, 호스트가 섞인 값은 작성 세션이 하나씩 보고 뺐다. H04에서 사람이 다시 본다. T018은 H04 확정 커밋 뒤 닫는다.
+- 2026-11-04 H04: 작성 세션이 식별자 35개(형태·일부 낱말·근거 문서 수)와 문장형 질문 12개를 표로 보였고, 사용자가 "식별자 세트 확정"으로 확정했다. `v1.toml`에 `confirmed = true`, `confirmed_on = 2026-11-04`만 넣었고 문항은 바꾸지 않았다. T018을 닫는다.
+- 2026-11-04 H02: `uv run qk-dev eval-index prepare --rule kw-index-idsplit-v1 --commit 6aeccd039b825dcd7a2b6c046a34ef72089a1f78 --from-url-env <H01 데이터베이스 접속 정보 변수>` 종료 0.
+  데이터베이스 `qk_eval_idsplit_6aeccd039b82`, 인덱스 버전 `iv-8b7e93b22051`, 캐시 복사 1,309개(H01 로컬 데이터베이스에서, 운영 DB 접근 없음), 임베딩 호출 0, 0 Neurons. GitHub 읽기 전용.
+- 2026-11-04 H03: `uv run qk-dev eval-index prepare --rule kw-index-baseline-v1 --commit 6aeccd039b825dcd7a2b6c046a34ef72089a1f78 --keyword-tokenizer TokenBigramSplitSymbolAlpha` 종료 0.
+  기준 `qk_eval_baseline_6aeccd039b82`를 복제한 `qk_eval_baseline_alpha_6aeccd039b82`, 토크나이저 `TokenBigramSplitSymbolAlpha`, 인덱스 버전 `iv-4c0bc4fcc642`(후보 A와 같음, 토크나이저는 버전 재료가 아님), 외부 호출 0.
+- 2026-11-04 H02·H03 뒤 골든 v2와 식별자 v1을 두 대상에 대해 `eval check --target`으로 검사했다. 모두 통과, 근거 문서 경고 0.
+- 2026-11-04 T039: `measurement/retrieval-eval-report.md`에 1절(가설, 비교 대상, 질문 세트, 주 지표, 가드레일 G1~G5와 비용, 세는 방법, 성공·중단 기준, 표본 한계)과 1.1절 ADR-010 판단 규칙을 썼다.
+  계획과 다른 점: research R-14의 가드레일을 모두 문항 수로 읽도록 G2(MRR)는 첫 근거 순위가 나빠진 질문 수, G3(Precision@5)은 값이 낮아진 질문 수, G4는 상한에 닿은 질문 수로 정했다. `eval tables`는 비율만 내므로 질문 수는 실행 기록에서 센다.
+- 2026-11-04 H05: 사용자가 n = 3, m = 1로 정했다("n=3, m=1"). 이 값을 넣은 커밋이 계약 고정 커밋이고, 그 뒤로 1절과 판단 규칙을 바꾸지 않는다.
+- 2026-11-04 H06: 운영 장부를 읽기 전용으로 조회해 미리 보기(종료 4)를 본 뒤 사용자 승인("실행 승인")으로 `--allow-query-embedding --max-neurons 3`을 붙여 세트마다 세 대상(A·B·C)을 한 번에 쟀다.
+  골든 v2 `evl-20261104T074124Z-003c0063`(예상 2.3177, 실제 0.43 Neurons, 호출 23), 식별자 v1 `evl-20261104T074138Z-a9f47f48`(예상 2.4338, 실제 0.61 Neurons, 호출 82). 둘 다 `complete = true`. 실행 전 당일 사용 0, 잔여 10,000.
+  식별자 실행 기록의 `code_commit.dirty`가 `true`다. 앞선 골든 실행 기록 파일이 커밋 전이었기 때문이고, 계약 고정 커밋 `9561733` 뒤 `src/`·세트 변경은 없다. 리포트 3절에 적었다.
+- 2026-11-04 H07·T040: `qk-dev eval tables`(골든 `--breakdown type`, 식별자 `--breakdown identifier_form --breakdown query_form`) 출력을 리포트 4.1·4.2절에 그대로 붙이고 2~9절을 채웠다.
+  1.1절 규칙(n = 3, m = 1)으로 센 결과: 주 지표 A 15/20, B 19/20, C 20/20. B는 G4(+2), C는 G3(5문항)·G4(+4)가 m을 넘어 둘 다 권고 가능이 아니고, 규칙에 따른 권고는 A(현행 유지)다.
+  주 지표와 G1~G5, v1 부분 집합(T048)은 리포트 9절의 명령으로 실행 기록에서 셌고 다시 돌려 4.3·4.4절과 같음을 확인했다. 리포트 1절은 계약 고정 커밋과 같다. 독립 대조(T042)는 아직이다.
+- 2026-11-04 T041: `docs/sdd/decisions/ADR-010-keyword-search-text.md`를 Status Proposed로 썼다. 작성 세션 권고는 판단 규칙에 따라 A(현행 유지)다.
+  판단 수치 표는 리포트 4.4절과 글자 단위로 같고(diff 0), 인용한 수치(골든 하이브리드 MRR, 일부 질문 Recall@5·MRR, Neurons)는 리포트에 있는 값이다. 후보 C의 인덱스 버전 문제(FR-030)를 Consequences에 적었다.
+  Status 결정과 운영 반영은 사람(H08)이 한다. 리포트 독립 대조(T042)는 아직이다.
+- 2026-11-04 T042: 측정·리포트·ADR 작성에 관여하지 않은 별도 서브에이전트가 읽기 전용으로 대조했다. 판정은 경미한 불일치다.
+  4.1·4.2절이 다시 돌린 `eval tables` 출력과 diff 0, 1절 범위 변경 0(`9561733` 기준), 4.3·4.4절과 ADR-010 수치를 독립 계산으로 다시 세어 일치, 9절 명령도 같은 값, SC-011 일치(0.43 ≤ 2.3177, 0.61 ≤ 2.4338), 실행 기록에 질문 문장·본문·비밀값 없음.
+  지적 4건을 작성 세션이 실행 기록으로 다시 확인하고 문구만 고쳤다: 7·8절에 일부 질문 문장과 같은 낱말을 인용한 곳, 8.2절 "하이브리드 지표를 바꾸지 않았다"(식별자 세트 `acronym-04-partial`·`pascal-01-partial`에서 달랐음),
+  T042 전 `Result: PASS` 표기, 7절 `url-path-03-partial` 누락. 수치는 바꾸지 않았다. 고친 부분은 다시 대조받지 않았다. ADR-010 Evidence의 T042 문장도 갱신했다.
+- 2026-11-04 T045: 기본 검증 전체 통과(preflight 1011개, `git diff --check`, ruff check·format --check, `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed, 3 deselected는 `external`). TASK.md Decisions·검증 기록을 갱신했다. PR 초안은 `/pr-draft-summary`로 만든다.

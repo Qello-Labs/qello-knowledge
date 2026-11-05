@@ -4,7 +4,8 @@
 id = "qk-evl-001-golden"
 version = 1
 created = 2026-10-31
-confirmed = false
+confirmed = true
+confirmed_on = 2026-11-04
 labeling = "eval/question_sets/qk-evl-001-golden/labeling.md"
 origin = { id = "qk-bot-001-h05", version = 2, document = "specs/QK-BOT-001-discord-ask/measurement/h05-question-set-v2.md" }
 

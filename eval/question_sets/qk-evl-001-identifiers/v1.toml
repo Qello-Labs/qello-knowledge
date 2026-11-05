@@ -1,0 +1,903 @@
+# QK-EVL-001 식별자 세트 v1 초안(tasks T018, spec FR-009·US2-3·US2-4). 후보는 `qk-dev eval identifiers --target qk_eval_baseline_6aeccd039b82`에서 골랐다.
+# 원형·일부 질문은 식별자 원형을 담은 문서 전부, 문장형 질문은 고른 낱말을 모두 담은 문서 전부가 근거다. 기준과 뺀 후보는 labeling.md. 바꾸려면 버전을 올린다.
+[set]
+id = "qk-evl-001-identifiers"
+version = 1
+created = 2026-11-04
+confirmed = true
+confirmed_on = 2026-11-04
+labeling = "eval/question_sets/qk-evl-001-identifiers/labeling.md"
+
+[[set.sources]]
+name = "dnd-backend-docs"
+label_commit = "6aeccd039b825dcd7a2b6c046a34ef72089a1f78"
+
+[[question]]
+id = "camel-01-original"
+text = "recipientId"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "camel"
+label_terms = ["recipientId"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }]
+
+[[question]]
+id = "camel-01-partial"
+text = "recipient"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "camel"
+label_terms = ["recipientId"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }]
+
+[[question]]
+id = "camel-02-original"
+text = "coarseRegionCode"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "camel"
+label_terms = ["coarseRegionCode"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }]
+
+[[question]]
+id = "camel-02-partial"
+text = "coarse"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "camel"
+label_terms = ["coarseRegionCode"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }]
+
+[[question]]
+id = "camel-03-original"
+text = "installationId"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "camel"
+label_terms = ["installationId"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }]
+
+[[question]]
+id = "camel-03-partial"
+text = "installation"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "camel"
+label_terms = ["installationId"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }]
+
+[[question]]
+id = "camel-04-original"
+text = "hasRemainingTime"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "camel"
+label_terms = ["hasRemainingTime"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "camel-04-partial"
+text = "remaining"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "camel"
+label_terms = ["hasRemainingTime"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "camel-05-original"
+text = "segmentKey"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "camel"
+label_terms = ["segmentKey"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }]
+
+[[question]]
+id = "camel-05-partial"
+text = "segment"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "camel"
+label_terms = ["segmentKey"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }]
+
+[[question]]
+id = "pascal-01-original"
+text = "GlobalExceptionHandler"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "pascal"
+label_terms = ["GlobalExceptionHandler"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0003-global-exception-handling.md" }, { source = "dnd-backend-docs", location = "docs/adr/0005-api-success-response-contract.md" }, { source = "dnd-backend-docs", location = "docs/api-response.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-05-structured-request-logging-design.md" }]
+
+[[question]]
+id = "pascal-01-partial"
+text = "handler"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "pascal"
+label_terms = ["GlobalExceptionHandler"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0003-global-exception-handling.md" }, { source = "dnd-backend-docs", location = "docs/adr/0005-api-success-response-contract.md" }, { source = "dnd-backend-docs", location = "docs/api-response.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-05-structured-request-logging-design.md" }]
+
+[[question]]
+id = "pascal-02-original"
+text = "PushDeliveryDispatchWorker"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "pascal"
+label_terms = ["PushDeliveryDispatchWorker"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "pascal-02-partial"
+text = "dispatch"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "pascal"
+label_terms = ["PushDeliveryDispatchWorker"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "pascal-03-original"
+text = "DirectionMatchingWorker"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "pascal"
+label_terms = ["DirectionMatchingWorker"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-04-postgis-e3-evidence.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "pascal-03-partial"
+text = "matching"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "pascal"
+label_terms = ["DirectionMatchingWorker"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-04-postgis-e3-evidence.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "pascal-04-original"
+text = "OutboxRetryPolicy"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "pascal"
+label_terms = ["OutboxRetryPolicy"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-04-postgis-e3-evidence.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "pascal-04-partial"
+text = "retry"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "pascal"
+label_terms = ["OutboxRetryPolicy"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-04-postgis-e3-evidence.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "pascal-05-original"
+text = "AccountEligibilityGate"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "pascal"
+label_terms = ["AccountEligibilityGate"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-11-codex-instruction-architecture-phase2.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-11-codex-instruction-architecture-phase2-design.md" }]
+
+[[question]]
+id = "pascal-05-partial"
+text = "eligibility"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "pascal"
+label_terms = ["AccountEligibilityGate"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-11-codex-instruction-architecture-phase2.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-11-codex-instruction-architecture-phase2-design.md" }]
+
+[[question]]
+id = "acronym-01-original"
+text = "OpenAPI"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "acronym"
+label_terms = ["OpenAPI"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/api-response.md" }, { source = "dnd-backend-docs", location = "docs/api/OPENAPI_WRITING_GUIDE.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-11-codex-instruction-architecture-phase2-design.md" }]
+
+[[question]]
+id = "acronym-01-partial"
+text = "open"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "acronym"
+label_terms = ["OpenAPI"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/api-response.md" }, { source = "dnd-backend-docs", location = "docs/api/OPENAPI_WRITING_GUIDE.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-11-codex-instruction-architecture-phase2-design.md" }]
+
+[[question]]
+id = "acronym-02-original"
+text = "randomUUID"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "acronym"
+label_terms = ["randomUUID"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-05-structured-request-logging-design.md" }]
+
+[[question]]
+id = "acronym-02-partial"
+text = "uuid"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "acronym"
+label_terms = ["randomUUID"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-05-structured-request-logging-design.md" }]
+
+[[question]]
+id = "acronym-03-original"
+text = "GeoJSON"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "acronym"
+label_terms = ["GeoJSON"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }]
+
+[[question]]
+id = "acronym-03-partial"
+text = "geo"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "acronym"
+label_terms = ["GeoJSON"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }]
+
+[[question]]
+id = "acronym-04-original"
+text = "BCryptPasswordEncoder"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "acronym"
+label_terms = ["BCryptPasswordEncoder"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "acronym-04-partial"
+text = "encoder"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "acronym"
+label_terms = ["BCryptPasswordEncoder"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "acronym-05-original"
+text = "getMDCPropertyMap"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "acronym"
+label_terms = ["getMDCPropertyMap"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }]
+
+[[question]]
+id = "acronym-05-partial"
+text = "mdc"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "acronym"
+label_terms = ["getMDCPropertyMap"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }]
+
+[[question]]
+id = "digit-01-original"
+text = "FcmHttpV1PushProvider"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "digit"
+label_terms = ["FcmHttpV1PushProvider"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }]
+
+[[question]]
+id = "digit-01-partial"
+text = "fcm"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "digit"
+label_terms = ["FcmHttpV1PushProvider"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }]
+
+[[question]]
+id = "digit-02-original"
+text = "DirectionMatchingE3MutableClock"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "digit"
+label_terms = ["DirectionMatchingE3MutableClock"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-04-postgis-e3-evidence.md" }]
+
+[[question]]
+id = "digit-02-partial"
+text = "mutable"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "digit"
+label_terms = ["DirectionMatchingE3MutableClock"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-04-postgis-e3-evidence.md" }]
+
+[[question]]
+id = "digit-03-original"
+text = "Inbox124IntegrationFixtures"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "digit"
+label_terms = ["Inbox124IntegrationFixtures"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }]
+
+[[question]]
+id = "digit-03-partial"
+text = "fixtures"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "digit"
+label_terms = ["Inbox124IntegrationFixtures"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-inbox-list-isolation.md" }]
+
+[[question]]
+id = "digit-04-original"
+text = "Phase4"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "digit"
+label_terms = ["Phase4"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-14-instruction-hybrid-workflow-phase4-v2.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-14-instruction-rollout-phase4.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-14-instruction-rollout-phase4-design.md" }]
+
+[[question]]
+id = "digit-04-partial"
+text = "phase"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "digit"
+label_terms = ["Phase4"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-14-instruction-hybrid-workflow-phase4-v2.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-14-instruction-rollout-phase4.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-14-instruction-rollout-phase4-design.md" }]
+
+[[question]]
+id = "digit-05-original"
+text = "Flyway11"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "digit"
+label_terms = ["Flyway11"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-26-erd-dbml-refresh.md" }]
+
+[[question]]
+id = "digit-05-partial"
+text = "flyway"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "digit"
+label_terms = ["Flyway11"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-26-erd-dbml-refresh.md" }]
+
+[[question]]
+id = "snake-01-original"
+text = "notification_delivery"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "snake"
+label_terms = ["notification_delivery"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "snake-01-partial"
+text = "delivery"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "snake"
+label_terms = ["notification_delivery"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "snake-02-original"
+text = "push_daily_budget"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "snake"
+label_terms = ["push_daily_budget"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-26-erd-dbml-refresh.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "snake-02-partial"
+text = "budget"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "snake"
+label_terms = ["push_daily_budget"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-26-erd-dbml-refresh.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "snake-03-original"
+text = "dedup_key"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "snake"
+label_terms = ["dedup_key"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }]
+
+[[question]]
+id = "snake-03-partial"
+text = "dedup"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "snake"
+label_terms = ["dedup_key"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }]
+
+[[question]]
+id = "snake-04-original"
+text = "INVALID_COUNTRY_CODE"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "snake"
+label_terms = ["INVALID_COUNTRY_CODE"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }]
+
+[[question]]
+id = "snake-04-partial"
+text = "country"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "snake"
+label_terms = ["INVALID_COUNTRY_CODE"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }]
+
+[[question]]
+id = "snake-05-original"
+text = "operator_credential"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "snake"
+label_terms = ["operator_credential"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0006-split-operator-and-device-authentication.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }]
+
+[[question]]
+id = "snake-05-partial"
+text = "credential"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "snake"
+label_terms = ["operator_credential"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0006-split-operator-and-device-authentication.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }]
+
+[[question]]
+id = "kebab-01-original"
+text = "generation-fenced"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "kebab"
+label_terms = ["generation-fenced"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "kebab-01-partial"
+text = "fenced"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "kebab"
+label_terms = ["generation-fenced"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-27-core-worker-scheduling-design.md" }]
+
+[[question]]
+id = "kebab-02-original"
+text = "fail-closed"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "kebab"
+label_terms = ["fail-closed"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/filtering-production-gate.md" }, { source = "dnd-backend-docs", location = "docs/product/BACKEND_ROADMAP.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-13-instruction-model-phase3.md" }]
+
+[[question]]
+id = "kebab-02-partial"
+text = "closed"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "kebab"
+label_terms = ["fail-closed"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/filtering-production-gate.md" }, { source = "dnd-backend-docs", location = "docs/product/BACKEND_ROADMAP.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-13-instruction-model-phase3.md" }]
+
+[[question]]
+id = "kebab-03-original"
+text = "bundle-window"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "kebab"
+label_terms = ["bundle-window"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "kebab-03-partial"
+text = "bundle"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "kebab"
+label_terms = ["bundle-window"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "kebab-04-original"
+text = "direction-reserved"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "kebab"
+label_terms = ["direction-reserved"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "kebab-04-partial"
+text = "reserved"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "kebab"
+label_terms = ["direction-reserved"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "kebab-05-original"
+text = "failure-recovery"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "kebab"
+label_terms = ["failure-recovery"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-java-convention-gates.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-production-convention-ratchet.md" }]
+
+[[question]]
+id = "kebab-05-partial"
+text = "recovery"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "kebab"
+label_terms = ["failure-recovery"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-27-core-worker-scheduling.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-java-convention-gates.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-02-production-convention-ratchet.md" }]
+
+[[question]]
+id = "url-path-01-original"
+text = "/api/v1/auth/devices"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "url_path"
+label_terms = ["/api/v1/auth/devices"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }]
+
+[[question]]
+id = "url-path-01-partial"
+text = "devices"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "url_path"
+label_terms = ["/api/v1/auth/devices"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0007-require-country-before-user-account-creation.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/ONBOARDING_COUNTRY_DESIGN.md" }]
+
+[[question]]
+id = "url-path-02-original"
+text = "/api/v1/direction/inbox"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "url_path"
+label_terms = ["/api/v1/direction/inbox"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-observability-metrics-exposure.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }]
+
+[[question]]
+id = "url-path-02-partial"
+text = "inbox"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "url_path"
+label_terms = ["/api/v1/direction/inbox"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-observability-metrics-exposure.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-structured-request-logging.md" }]
+
+[[question]]
+id = "url-path-03-original"
+text = "/api/v1/notifications/devices/revoke"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "url_path"
+label_terms = ["/api/v1/notifications/devices/revoke"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }]
+
+[[question]]
+id = "url-path-03-partial"
+text = "revoke"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "url_path"
+label_terms = ["/api/v1/notifications/devices/revoke"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }]
+
+[[question]]
+id = "url-path-04-original"
+text = "/admin/csrf"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "url_path"
+label_terms = ["/admin/csrf"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0006-split-operator-and-device-authentication.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "url-path-04-partial"
+text = "csrf"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "url_path"
+label_terms = ["/admin/csrf"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0006-split-operator-and-device-authentication.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "url-path-05-original"
+text = "/actuator/prometheus"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "original"
+identifier_form = "url_path"
+label_terms = ["/actuator/prometheus"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-observability-metrics-exposure.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-05-observability-metrics-exposure-design.md" }]
+
+[[question]]
+id = "url-path-05-partial"
+text = "prometheus"
+type = "code"
+label = "done"
+origin = "synthetic"
+query_form = "partial"
+identifier_form = "url_path"
+label_terms = ["/actuator/prometheus"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-05-observability-metrics-exposure.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-05-observability-metrics-exposure-design.md" }]
+
+[[question]]
+id = "sentence-01"
+text = "탈퇴를 신청한 뒤에 철회할 수 있어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["탈퇴", "철회"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }]
+
+[[question]]
+id = "sentence-02"
+text = "로그인을 계속 틀려서 잠긴 계정은 언제 다시 쓸 수 있어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["로그인", "잠긴"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }]
+
+[[question]]
+id = "sentence-03"
+text = "알림함 목록은 한 페이지에 몇 개씩 보여 줘?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["알림함", "페이지"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }]
+
+[[question]]
+id = "sentence-04"
+text = "신고가 접수되면 신고한 사람에게 무엇을 돌려줘?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["신고", "접수"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/filtering-production-gate.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }]
+
+[[question]]
+id = "sentence-05"
+text = "푸시를 묶음으로 보내는 기준이 뭐야?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["묶음", "푸시"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/push-production-setup.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-26-erd-dbml-refresh.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-14-instruction-hybrid-phase4-v2-design.md" }]
+
+[[question]]
+id = "sentence-06"
+text = "테스트 서버가 쓰는 이미지는 ECR 어디에서 가져와?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["ECR", "이미지"]
+evidence = [{ source = "dnd-backend-docs", location = "README.md" }, { source = "dnd-backend-docs", location = "infra/environments/dev/test-server/README.md" }]
+
+[[question]]
+id = "sentence-07"
+text = "받는 사람을 고를 때 반경이나 거리 기준이 있어?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["반경", "거리"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }]
+
+[[question]]
+id = "sentence-08"
+text = "푸시 일일 예산을 다 쓰면 어떻게 돼?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["일일", "예산"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0008-adopt-fcm-push-delivery-pipeline.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-26-erd-dbml-refresh.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-08-25-push-bundling-budget-design.md" }]
+
+[[question]]
+id = "sentence-09"
+text = "알림을 읽음으로 바꾸면 무엇이 달라져?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["읽음", "알림"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-09-26-erd-dbml-refresh.md" }]
+
+[[question]]
+id = "sentence-10"
+text = "outbox 이벤트 처리가 실패하면 재시도는 어떻게 해?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["outbox", "재시도"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0002-jpa-jdbc-boundary.md" }, { source = "dnd-backend-docs", location = "docs/error-codes.md" }, { source = "dnd-backend-docs", location = "docs/product/ANSWER_REPORT_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }]
+
+[[question]]
+id = "sentence-11"
+text = "PostGIS 거리 계산은 어떤 방식으로 조회해?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["PostGIS", "거리"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/0002-jpa-jdbc-boundary.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/DIRECTION_COMMUNICATION_ERD.md" }, { source = "dnd-backend-docs", location = "docs/product/data-model/schema-manifest.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/plans/2026-08-25-push-bundling-budget.md" }]
+
+[[question]]
+id = "sentence-12"
+text = "FCM 토큰은 언제 서버에 등록해?"
+type = "doc"
+label = "done"
+origin = "synthetic"
+query_form = "sentence"
+label_terms = ["FCM", "토큰"]
+evidence = [{ source = "dnd-backend-docs", location = "docs/adr/README.md" }, { source = "dnd-backend-docs", location = "docs/product/AUTH_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/product/NOTIFICATION_INBOX_DESIGN.md" }, { source = "dnd-backend-docs", location = "docs/superpowers/specs/2026-09-14-instruction-hybrid-phase4-v2-design.md" }]
