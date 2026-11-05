@@ -12,6 +12,7 @@ from qello_knowledge.domain.scope import in_scope
 from qello_knowledge.domain.security import AccessScope, Verdict
 from qello_knowledge.domain.source import ItemStatus, MissingCheck, RunStopped
 from qello_knowledge.domain.sync import (
+    REINDEX_HIDDEN,
     Action,
     DocumentDecision,
     HoldReason,
@@ -48,7 +49,12 @@ def _settled_security_takedown(previous, reason, access_scope=None):
     )
 
 
+def _visible(previous):
+    return previous.status == "active" and previous.access_scope == "team"
+
+
 def plan_source(target, deps, stored, index_version, options):
+    reindex = getattr(options, "reindex", False)
     decisions, to_chunk, chunk_results = {}, [], []
     settled = set()
     holds = set(target.holds)
@@ -95,7 +101,13 @@ def plan_source(target, deps, stored, index_version, options):
             )
             # 그 문서를 맡는 청커의 버전과 비교한다(QK-CHK-001 research R-10)
             version = version_for(content, deps.chunking_settings, deps.code_chunking)
-            reason = change_reason(previous, fingerprint, version, index_version)
+            reason = change_reason(previous, fingerprint, version, index_version, reindex=reindex)
+            if reason and reindex and previous is not None and not _visible(previous):
+                # 재색인은 내린 문서를 되살리지 않는다. 되살리면 활성 버전의 옛 청크가 다시 검색된다(QK-STO-002 R-02).
+                decisions[item.source_id] = doc(
+                    item.source_id, Action.HOLD, change_reason=reason, fingerprint=fingerprint, failure=REINDEX_HIDDEN
+                )
+                continue
             decision = doc(
                 item.source_id,
                 Action.PROCESS if reason else Action.UNCHANGED,
@@ -115,6 +127,9 @@ def plan_source(target, deps, stored, index_version, options):
                     decision = replace(
                         decision, actions=(Action.FAIL,), stage="chunk", failure=chunked.failure.value.lower()
                     )
+                elif chunked.outcome == ChunkOutcomeKind.NOT_MARKDOWN and reindex and decision.artifact_id:
+                    # 새 설정에서만 대상 아님이면 활성 버전에서 내리지 않고 후보 버전 처리 완료로 센다(FR-010, R-03).
+                    decision = replace(decision, chunked=chunked, not_target=True)
                 elif chunked.outcome == ChunkOutcomeKind.NOT_MARKDOWN:
                     decision = replace(
                         decision,
