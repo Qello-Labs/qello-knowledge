@@ -396,7 +396,9 @@ class PostgresStore:
         with self._db() as conn:
             row = conn.execute(
                 """
-                SELECT a.source_url, c.source_version, c.locator, c.heading_path, a.collected_at, a.source_modified_at,
+                SELECT coalesce(c.source_url, a.source_url), c.source_version, c.locator, c.heading_path,
+                       coalesce(c.collected_at, a.collected_at),
+                       CASE WHEN c.source_url IS NULL THEN a.source_modified_at ELSE c.source_modified_at END,
                        c.chunking_version, c.index_version, e.model_version
                 FROM qk.chunk c
                 JOIN qk.artifact a ON a.id = c.artifact_id
@@ -434,15 +436,24 @@ class PostgresStore:
 
 
 def _replace_chunk_rows(conn, artifact_id, index_version, source_version, chunks):
-    """같은 트랜잭션의 연결에서 청크 행만 교체한다."""
+    """같은 트랜잭션의 연결에서 청크 행만 교체한다.
+
+    청크마다 그 트랜잭션의 자료 행 출처 값(원본 링크·원본 수정 시각·수집 시각)을 함께 쓴다. 다른 인덱스 버전의
+    처리가 자료 행을 바꿔도 이 청크의 검색 결과 출처 정보는 그대로다(QK-STO-002 research R-01).
+    """
     embedding_ids = PostgresStore._embedding_ids(conn, chunks)
+    provenance = conn.execute(
+        "SELECT source_url, source_modified_at, collected_at FROM qk.artifact WHERE id = %s", (artifact_id,)
+    ).fetchone()
+    source_url, source_modified_at, collected_at = provenance if provenance is not None else (None, None, None)
     conn.execute("DELETE FROM qk.chunk WHERE artifact_id = %s AND index_version = %s", (artifact_id, index_version))
     with conn.cursor() as cur:
         cur.executemany(
             """
             INSERT INTO qk.chunk (artifact_id, index_version, source_version, locator, heading_path, ordinal,
-                                  body, search_text, chunking_version, embedding_id)
-            VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s)
+                                  body, search_text, chunking_version, embedding_id,
+                                  source_url, source_modified_at, collected_at)
+            VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             [
                 (
@@ -456,6 +467,9 @@ def _replace_chunk_rows(conn, artifact_id, index_version, source_version, chunks
                     c.search_text,
                     c.chunking_version,
                     embedding_ids.get(c.ordinal),
+                    source_url,
+                    source_modified_at,
+                    collected_at,
                 )
                 for c in chunks
             ],
