@@ -586,3 +586,53 @@ WantedBy=multi-user.target
 보고는 `qk-index queries report --since <UTC-start-date> --until <UTC-end-date> --json --env-file <admin-config>`다.
 동의 질문 내보내기는 `qk-index queries export --out <outside-worktree-file> --env-file <admin-config>`이며 기본은 👎 사례, `--all`은 전체다.
 새 파일만 권한 0600으로 만든다. 저장소에 커밋하지 않고 평가 세트로 옮길 때 개인 정보·비공개 원문을 지운다. 원문 삭제 시 내보낸 사본도 지운다.
+
+## 8. 인덱스 버전 교체 (QK-STO-002)
+
+청킹 규칙·임베딩 모델·메타데이터 스키마가 바뀌어 현재 설정 버전이 활성 버전과 달라지면(불일치) 예약 동기화는 바뀐 문서 처리와 일반 내림을 보류하고 보안 내림만 한다.
+이 절은 새 버전을 만들고 평가를 통과한 뒤 바꾸는 절차다. 명령 계약은 `specs/QK-STO-002-index-version-gate/contracts/cli.md`, 판단 근거는 같은 디렉터리의 `research.md`다.
+원격 대상 명령은 모두 `--allow-remote`가 있어야 하고 `config/store_policy.toml`을 검사한다. 쓰는 명령은 마이그레이션 `0009` 이상이 없으면 쓰기 없이 `schema_outdated`(종료 1)로 멈춘다.
+
+### 8.1 시작 전
+
+1. 마이그레이션 `0009_index_versions`를 이 기능의 PR을 병합하기 전에 2절 4번으로 운영 DB에 적용한다(6절 "마이그레이션 순서"). `--dry-run` → 적용 → 다시 실행해 `applied=0`.
+   0009보다 새 코드가 먼저 돌면 예약 동기화가 `schema_outdated`로 멈추고 실패 알림이 온다(데이터는 바뀌지 않는다).
+2. `qk-index index status --allow-remote --env-file <sync-config>`로 `active`, `current`, `matches`, `mismatch_since`, `coverage`, `resolutions`를 본다. 불일치를 해소하는 방법은 둘이다.
+   재색인 → 게이트 → 활성화(8.2~8.4), 또는 설정을 활성 버전의 설정으로 되돌려 배포한다.
+3. 예상 Neurons 합계를 보고하고 승인받는다(AGENTS.md 3.5, spec FR-034). 재색인 미리 보기, 평가 대상 준비 미리 보기, 질의 임베딩 미리 보기 값을 더하고 `qk-index usage`의 오늘 잔여량과 비교한다.
+   평가 대상의 사용량은 운영 장부에 보이지 않으므로 같은 날 실행하면 직접 더한다. 넘을 것 같으면 날을 나눈다.
+
+### 8.2 재색인
+
+1. `qk-index run --reindex --preview --allow-remote --env-file <sync-config>`로 대상 문서 수, 새로 임베딩할 청크 수, 예상 Neurons, 예상 실행 일수, 지금 덮음, 처리하지 않는 숨은 문서 수, 보안 내림 수를 본다.
+2. `qk-index run --reindex --allow-remote --env-file <sync-config>`. 예산을 넘으면 실행 기록 없이 종료 5로 멈춘다. 날을 나누려면 `--allow-partial-budget`을 주고 다음 날 같은 명령을 다시 돌린다(처리한 문서는 다시 처리하지 않는다).
+   내림 비율 안전장치(20%)에 걸리면 내림 목록을 확인하고 `--confirm-takedown`을 준다.
+3. 재색인은 활성 버전 검색을 바꾸지 않는다. 예외: 내린 문서는 검색에서 빠지고, 지금 노출되지 않는 문서는 다시 처리하지 않는다(활성화 뒤 첫 동기화가 처리한다).
+   벡터 근사 색인을 모든 버전이 함께 써서, 임베딩 입력이 바뀐 재색인은 활성 버전의 벡터 검색 결과를 근사 오차 범위에서 바꿀 수 있다(키워드 검색과 출처 정보는 그대로).
+4. `status`의 `coverage.remaining`이 0이고 `failed`가 비어 있을 때까지 반복한다. 계속 실패하는 문서는 원인을 고친 코드를 배포하거나 자료원 설정에서 뺀다(실패를 무시하는 옵션은 없다).
+
+### 8.3 평가와 게이트
+
+1. 게이트 정책은 측정 전에 정책만 담은 PR로 `main`에 병합한다(`eval/gate_policies/<정책 ID>/v<N>.toml`, contracts/gate-policy.md). 병합 뒤에는 고치지 않고 새 버전을 더한다.
+2. 평가 대상을 만든다. 후보는 지금 코드로 `qk-dev eval-index prepare`, 기준은 활성 버전을 만든 코드 커밋을 `git worktree add <작업 디렉터리> <커밋>`으로 꺼내 그 안에서 같은 명령을 돌린다.
+   지금 평가 계약으로 만들 수 있는 조합은 QK-EVL-001 후보 A·B·C뿐이다.
+3. 정책을 병합한 커밋을 포함한 코드, 커밋하지 않은 변경 없이 `qk-dev eval run`으로 필수 질문 세트마다 실행 기록을 만든다.
+4. `qk-dev eval gate --policy <정책> --run <실행 기록> … --baseline-target <기준 대상> --candidate-target <후보 대상> --baseline-version <active> --candidate-version <current> --out eval/gate_records/{gate_id}.json`.
+   종료 0 통과, 1 실패, 3 판정 불가. 셋 다 기록을 쓴다. 실패·판정 불가면 활성화하지 않고 기록을 남긴다.
+5. 입력 실행 기록과 게이트 기록을 저장소에 커밋한다. 활성화가 두 파일의 지문을 다시 확인한다.
+
+### 8.4 활성화
+
+1. 저장소 체크아웃에서 `git fetch origin`으로 `origin/main`을 최신으로 받는다(활성화가 정책 병합 여부와 최신 여부를 `origin/main`으로 확인한다).
+2. `qk-index index activate <current> --gate <게이트 기록> --allow-remote --env-file <sync-config>`로 미리 보기를 본다(종료 4). 조건 이름은 contracts/cli.md 3절, data-model 2.4.
+   `uncovered_sources`(평가가 다루지 않은 자료원)와 `retrieval_settings`(정책과 배포 코드의 검색 설정)를 확인한다.
+3. 같은 명령에 `--confirm`. 이전 활성 버전은 보관 상태가 되고 전환 기록에 게이트 기록 ID와 지문이 남는다. 동기화가 실행 중이면 종료 6이다.
+4. 다음 예약 동기화가 보류했던 바뀐 문서 처리와 일반 내림을 한다. 게이트 기록·전환 기록·실제 Neurons를 Jira 이슈 증빙으로 남긴다.
+
+### 8.5 되돌리기와 정리
+
+- 되돌리기: `qk-index index rollback <보관 버전> --reason "<사유>" --allow-remote`로 미리 보기, `--confirm`으로 실행한다. 사유는 1~200자이고 사람 이름을 쓰지 않는다.
+  되돌릴 버전의 청크가 문서의 마지막 처리 원본 버전보다 옛 문서가 있으면 `--confirm-stale`이 필요하다. 되돌린 뒤 현재 설정 버전이 다르면 불일치로 돌아가므로 8.1의 해소 방법을 따른다.
+- 정리: `qk-index index prune <버전> --allow-remote`로 지울 청크 수를 보고 `--confirm`으로 지운다. 활성 버전과 현재 설정 버전은 거부한다.
+  가장 최근 보관 버전(되돌리기 대상)은 `--confirm-rollback-target`이 있어야 지운다. 중단되면 같은 명령을 다시 돌려 남은 청크만 지운다. 임베딩 벡터는 지우지 않는다(QK-SYN-003).
+- QK-STO-001 `replace_chunks` 경로(`devtools/bench.py`)는 0009가 없는 DB에서 SQL 오류로 실패한다. 운영에서는 쓰지 않는다.
