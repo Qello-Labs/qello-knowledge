@@ -1,0 +1,31 @@
+source = "confluence-scrum"
+reviewed_on = 2026-11-05
+reviewer_role = "팀원, SCRUM 스페이스 소유자"
+method = "Confluence SCRUM 스페이스 페이지를 Atlassian MCP 검색으로 개인 정보 패턴(개인 메일 도메인, 연락처·전화번호·계좌·주민등록·생년월일·주소, 비밀번호·토큰)을 훑고, 걸린 페이지 발췌를 사람이 확인"
+result = "팀원 이름 외 개인 정보 없음"
+team_member_names = "허용"
+
+[scope]
+include = ["**"]
+space_key = "SCRUM"
+space_id = "98307"
+judge_mode = "site_users"
+exclude_trees = ["3571713"]
+
+[scope.doc_types]
+"98458" = "회의록"
+"66695" = "용어집"
+"66183" = "기능 명세"
+"295131" = "설계 문서"
+"65931" = "설계 문서"
+"65957" = "API 문서"
+"98650" = "디자인 문서"
+"66119" = "개발 규칙"
+"131791" = "색인 안 함"
+"98435" = "색인 안 함"
+"296811" = "색인 안 함"
+"294915" = "색인 안 함"
+
+[site_users]
+reviewed_on = 2026-11-05
+user_count = 3
