@@ -3,7 +3,7 @@
 > Created at: `2026-10-27`
 > Jira 이슈: `https://tkv123.atlassian.net/browse/SCRUM-119`
 > 기능명세서 ID: `QK-ING-003`
-> Status: Proposed
+> Status: Accepted
 
 ## Context
 
@@ -187,6 +187,6 @@ QK-SEC-001 FR-016대로, 아래 조건을 모두 만족할 때만 "팀 공용"�
 
 ## Approval
 
-- Approvers:
-- Approved at:
-- 이 초안은 Claude 세션이 썼고 그 세션은 승인하지 않는다(AGENTS.md 2절).
+- Approvers: 사용자(GitHub `tkv00`)
+- Approved at: 2026-11-05. QK-ING-003 마무리 세션(#72, H01)에서 승인했다("ADR-026 승인"). 토큰 범위·접두어 확인(H02)과 켜기 준비(H03)는 이 승인과 따로 기록한다.
+  이 초안은 Claude 세션이 썼고, 기록을 쓴 세션과 승인자가 다르다(AGENTS.md 2절).
