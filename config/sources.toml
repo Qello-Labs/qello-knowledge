@@ -61,8 +61,8 @@ repo = "dnd-side-project/dnd-15th-2-android"
 ref = "main"
 include = ["app/src/main/**/*.kt", "data/src/main/**/*.kt", "domain/src/main/**/*.kt", "presentation/src/main/**/*.kt"]
 
-# Confluence SCRUM 스페이스(ADR-026 Proposed, QK-ING-003). 활성화 선행 조건: ADR-026 승인, space_id·doc_types 채우기,
-# 사람의 개인 정보 확인 기록(팀원 이름 색인 허용, 사이트 사용자 확인), 첫 측정(FR-027), INDEX_KEYWORD_RULES 등록과 QK-STO-002 절차
+# Confluence SCRUM 스페이스(ADR-026 Accepted, QK-ING-003). 확인 기록(config/source_reviews/confluence-scrum.toml)과 첫 측정(FR-027)은 끝났다.
+# 남은 활성화 선행 조건: INDEX_KEYWORD_RULES 등록과 QK-STO-002 절차
 [[source]]
 name = "confluence-scrum"
 kind = "confluence_pages"
@@ -72,7 +72,21 @@ allowed_hosts = ["api.atlassian.com"]
 [source.scope]
 include = ["**"]
 space_key = "SCRUM"
-space_id = ""
+space_id = "98307"
 judge_mode = "site_users"
-doc_types = {}
-exclude_trees = []
+# 3571713: 골든셋 v0 질문 목록(검색 평가 오염 방지)
+exclude_trees = ["3571713"]
+# 홈(98420) 바로 아래 콘텐츠 ID → 문서 종류(FR-020). 대응표에 없는 첫 단계 아래 페이지는 미분류로 색인하지 않는다
+[source.scope.doc_types]
+"98458" = "회의록"
+"66695" = "용어집"
+"66183" = "기능 명세"
+"295131" = "설계 문서"
+"65931" = "설계 문서"
+"65957" = "API 문서"
+"98650" = "디자인 문서"
+"66119" = "개발 규칙"
+"131791" = "색인 안 함"
+"98435" = "색인 안 함"
+"296811" = "색인 안 함"
+"294915" = "색인 안 함"
