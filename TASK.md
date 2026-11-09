@@ -1,80 +1,68 @@
-# Task Contract: QK-EVL-001 측정 단계와 골든 세트 v2 (WBS 1.12)
+# Task Contract: QK-ING-003 Confluence 페이지 수집 마무리 (WBS 2.3)
 
-> Generated at: `2026-11-03`
+> Generated at: `2026-11-05`
 >
 > 이 파일은 현재 작업 브랜치의 계약이다. 저장소 공통 정책은 `AGENTS.md`를 따른다.
 
 ## Work gate
 
-- Jira 이슈: `SCRUM-124` / https://tkv123.atlassian.net/browse/SCRUM-124 (상위 `SCRUM-42` 팀 RAG 구축)
-- 기능명세서 ID / 링크: `QK-EVL-001` / `specs/QK-EVL-001-retrieval-eval/spec.md`(Approved 2026-10-31). 구현 순서는 같은 디렉터리의 `tasks.md`(승인 2026-10-31, 골든 세트 v2 작업 T046~T048·H09는 추가 승인 대상)
-- 팀 스프린트 ID: `QELLO-S2026-W44`(Jira SCRUM-124 본문 값, 2026-11-03 확인)
-- GitHub Issue: `#90`(열림)
-- Branch: `docs/SCRUM-124-gh-90-retrieval-eval-measurement`
-- Base branch: `main`. 2026-11-03 `origin/main` `69c04ea`(#95 병합)에서 분기했다. 코드 단계는 #91로 병합됐고, 그 브랜치의 QK-EVL-001 계약과 `main`의 QK-STO-002 계약은 git 이력에 남긴다.
+- Jira 이슈: `SCRUM-119` / https://tkv123.atlassian.net/browse/SCRUM-119 (상위 `SCRUM-42` 팀 RAG 구축). 2026-11-05 읽기 전용 조회 상태 "해야 할 일"
+- 기능명세서 ID / 링크: `QK-ING-003` / `specs/QK-ING-003-confluence-pages/spec.md`(2026-10-28 승인). 구현 순서는 같은 디렉터리의 `tasks.md`(2026-10-28 승인)
+- 팀 스프린트 ID: `QELLO-S2026-W44`(Jira SCRUM-119 본문 값)
+- GitHub Issue: `#72`(열림)
+- Branch: `docs/SCRUM-119-gh-72-confluence-pages-closeout`
+- Base branch: `main`. 2026-11-05 `origin/main` `6685b88`(#99 병합)에서 분기했다. 명세는 #77, 구현(T001~T057)은 #86으로 병합됐고 그 브랜치의 계약과 `main`의 QK-EVL-001 계약은 git 이력에 남긴다.
 
 ## Objective
 
-- 이번 단계: QK-EVL-001 `tasks.md`의 남은 측정 단계(T017 확정·T018·T039~T042·T045, 사람 단계 H00~H08)를 끝낸다. 코드는 고치지 않는다.
-- 골든셋 v0(WBS 0.7) 최종본을 입력으로 골든 세트 v2를 만들어 측정에 넣는다. spec이 정한 대로다(spec 32행 "골든셋 v0가 나오면 다음 버전으로 더한다", 345행 "다음 버전에서 다시 잰다").
-  최종본은 팀 질문 50문항이다(2026-11-03). v2 작업은 승인된 tasks.md에 없어서 T046~T048·H09로 더하고 승인을 받은 뒤 한다.
-- 목적: 1.G 완료 조건 가운데 "첫 검색 평가 리포트(Recall@5, MRR, 벡터·키워드·하이브리드 비교)"와 "ADR-010 Proposed"를 채운다. ADR-010 Status 결정은 사람이 한다.
+- 이번 단계: QK-ING-003 `tasks.md`의 남은 4개(T058, 사람 단계 H01~H03)를 끝내거나, 사람이 미루기로 정한 이유를 기록한다. 수집·변환·판정 코드는 고치지 않는다.
+- 목적: 구현 PR(#86)에서 열어 둔 사람 결정(ADR-026 승인, 토큰 범위·접두어 확인, 켜기 준비)을 닫아 Confluence 자료원을 켤 수 있는 상태인지 판단할 근거를 남긴다.
+- 단계 게이트: 로드맵상 Phase 2는 1.G 뒤인데 1.G는 아직 끝나지 않았다. 이 작업은 2026-10-27 사용자 결정(1.G 전 예외 진행)을 이어 간다. 원본 호출이 생기는 단계(H02 실측 스크립트, H03 측정)는 실행 전에 따로 승인받는다.
 
 ## Scope
 
 - `TASK.md`(이 파일)
-- `specs/QK-EVL-001-retrieval-eval/tasks.md`: 골든 세트 v2 작업(T046~T048, 사람 단계 H09) 추가, 체크 표시와 "실행 기록". 그 밖의 명세 문서(spec FR·SC, plan 산출물)는 바꾸지 않는다
-- 골든 세트(`eval/question_sets/qk-evl-001-golden/`):
-  - `v1.toml` 확정 표시(H00, `confirmed = true`, `confirmed_on`). 질문·근거는 바꾸지 않는다
-  - `v2.toml`(T046): v1 11문항에 v0 문항 가운데 근거 문서가 `dnd-backend-docs`(라벨 기준 커밋 `6aeccd039b825dcd7a2b6c046a34ef72089a1f78`)에 있는 문항과 `no_answer` 문항을 더한다.
-    수집 페이지 DB에 있는 24문항 기준 9문항이다(백엔드 근거 7: `qmv26kb2qzu4q`·`qmv26yx2nf6zx`·`qmv3nxemzw984`·`qmvap800bkpxt`·`qmvapdxvo621o`·`qmvb1yugb6wda`·`qmvcgtyx83h8s`, `no_answer` 2: `qmv272r8raqgk`·`qmvap6omullmy`). `cand-` 26문항도 같은 기준으로 고른다
-  - `labeling-v2.md`(새 파일, `labeling.md`는 v1 확정 뒤 고치지 않는 규칙이라 그대로 둔다): v2 라벨 기준, v0에서 뺀 문항과 이유(Confluence 근거는 QK-ING-003 색인 뒤 다음 버전), 핵심 사실 출처
-  - `tests/unit/evaluation/test_golden_v2.py`(T047): v2가 v1 11문항을 글자 그대로 담고 `check_question_set`을 통과하는지 본다. 세트를 읽는 시험이라 세트와 같은 커밋에 둔다(`test_golden_v1.py`와 같은 방식)
-- 식별자 세트: `eval/question_sets/qk-evl-001-identifiers/`(`v1.toml`, `labeling.md`), T018·H04
-- 측정: `specs/QK-EVL-001-retrieval-eval/measurement/`(`runs/<실행 ID>.json`, `retrieval-eval-report.md`), T039·T040·T042
-- 결정 기록: `docs/sdd/decisions/ADR-010-keyword-search-text.md`(Status Proposed), T041
+- `specs/QK-ING-003-confluence-pages/tasks.md`: T058·H01~H03 체크 표시와 "마무리 기록"(결정, 미룬 이유, 측정 결과 요약). 다른 명세 문서(spec FR·SC, plan 산출물)는 바꾸지 않는다
+- `docs/sdd/decisions/ADR-026-confluence-source.md`: H01 사람 결정에 따른 `Status`·`Approval` 기록과 H02·H03에서 확인한 사실 정정. 결정 내용(Decision) 자체를 바꿔야 하면 멈추고 다시 승인받는다
+- H02 조건부: 토큰 접두어가 `ATATT`와 다르면 비밀값 규칙 추가(`src/qello_knowledge/domain/secret_rules.py`, `src/qello_knowledge/sources/config.py`와 사례 추가 시험). 이 작업에 넣을지 후속으로 미룰지는 확인 결과를 보고 사람이 정한다
+- H03 조건부(사람이 이 작업에서 하기로 정할 때만):
+  - `config/sources.toml`의 `confluence-scrum` `space_id`·`doc_types`·`exclude_trees` 채우기. `enabled = false`는 그대로 둔다
+  - `config/source_reviews/confluence-scrum.toml`: 사람이 쓴다(에이전트는 대신 쓰지 않는다)
+  - 첫 측정 기록: `specs/QK-ING-003-confluence-pages/measurement/first-measurement.md`(집계 값만, 페이지 ID 외 제목·경로·링크·본문·이름 없음)
 
 ## Explicit exclusions
 
-- `eval/golden/v0.jsonl` 등 WBS 0.7 산출물. QK-EVL-001 spec의 범위 밖이다(spec 348행 "골든셋 질문 수집(WBS 0.7)"). 별도 작업으로 한다
-- 평가 코드(`src/`)와 기존 시험 기대값 변경. 측정 중 결함이 나오면 멈추고 별도 작업으로 나눈다
-- 골든셋 v0 문장·유형 수정. 2026-11-03 최종본을 그대로 옮긴다. 확정한 세트 파일(v1, 확정 뒤 v2)도 고치지 않고, 바꿔야 하면 버전을 올려 평가 코드·결과와 다른 커밋에 사유를 남긴다(AGENTS.md 3.4)
-- Confluence 근거 문항의 검색 측정(Confluence 색인은 QK-ING-003, Phase 2). 답변 정답 라벨(QK-EVL-002)
-- 운영 키워드 규칙·운영 인덱스 버전 교체, `RetrievalSettings` 기본값 변경. 수치와 조정 제안까지만 리포트에 남긴다
-- 운영 DB 쓰기와 운영 마이그레이션. 평가 대상은 로컬 평가용 DB(`qk_eval_*`)뿐이다
-- 수집 페이지(Artifact) DB 쓰기. 읽기만 한다. 예외: 2026-11-03 사용자 결정으로 v0 최종본 50문항 반영(`cand-` 26문항 추가, 수정 22문항의 내보낼 문장·유형, 페이지 주인의 진행 개수)만 한다
-- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, ADR-010 밖의 결정 기록, 다른 명세 문서, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정
-- `.env`·`.env.*` 읽기. 설정은 항목 이름으로만 가리킨다
-- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경은 별도 승인 없이 하지 않는다.
-- 비밀값, 토큰, `.env` 값, 비공개 원문, 민감한 질의 원문, 사람 이름은 기록하지 않는다. v0 질문에 사람을 가리키는 표현이 있으면 역할로 바꾸지 않고 멈춰 사람에게 묻는다
+- 자료원 켜기(`enabled = true`), `INDEX_KEYWORD_RULES` 등록, QK-STO-002 활성화 절차, 운영 서버 반영, 실제 색인과 임베딩
+- QK-STO-002(인덱스 버전 게이트) 브랜치·파일. 다른 세션이 진행 중이다
+- 골든셋 v0의 Confluence 근거 29문항을 다음 골든셋 버전에 넣는 일(QK-EVL-001 후속)
+- Confluence·Jira·GitHub 원본 쓰기, Jira 이슈 상태 변경. 원본 호출은 승인 뒤 `GET`만 한다. 예외: 2026-11-05 사용자 요청으로 `SCRUM` 스페이스의 분류 페이지 11개를 `98435` 아래에서 홈(`98420`) 바로 아래로 옮기는 일만 Atlassian MCP로 한다(내용·제목·권한은 바꾸지 않는다)
+- 수집기·변환기·판정 코드와 기존 시험 기대값 변경(H02 조건부 비밀값 규칙 추가는 예외로 사람이 정한다)
+- `docs/sdd/roadmap.md`, `docs/sdd/constitution.md`, ADR-026 밖의 결정 기록, 다른 명세 문서, `AGENTS.md`, `CLAUDE.md`, `.claude/**` 수정
+- `.env`·`.env.*`·`secrets/` 읽기. 토큰 값은 묻거나 읽지 않고, 설정은 항목 이름으로만 가리킨다
+- 공유 DB 초기화, 인덱스 전체 삭제, 유료 과금 설정 변경, 운영 DB 쓰기
+- 비밀값, 토큰, `.env` 값, 비공개 원문, 페이지 제목·본문, 사람 이름·메일·계정 ID 기록
 
 ## Data and cost impact
 
-- 새로 읽는 자료원: 없음. `dnd-backend-docs`를 고정 커밋 `6aeccd0`으로 다시 읽어 로컬 평가용 DB에 색인한다(GitHub 읽기 전용, H01·H02).
-  골든셋 v0 원문은 수집 페이지 DB를 읽기 전용으로 읽는다
-- 외부 API로 보내는 데이터: 평가 질문 문장만 Workers AI 임베딩으로 보낸다(H06). 생성 호출 0건
-- 예상 임베딩·생성 호출량과 무료 한도 대비:
-  - H01~H03 평가용 DB 준비: 캐시로 처리되면 0 Neurons. 모자라면 후보당 약 900 Neurons가 들 수 있어 준비 명령이 멈추고(종료 4) 사람이 정한다
-  - H06 질의 임베딩: research R-15의 상한 약 8.3 Neurons(골든 8문항 + 식별자 80문항 가정)에서 골든 v2 문항만큼 늘어난다.
-    골든 v2를 최대 45문항으로 잡으면 상한 약 13 Neurons이고, 일일 무료 할당 10,000 Neurons의 0.2% 아래다. 실행 명령의 미리 보기(종료 4)로 실제 값을 확인한 뒤 사람이 `--max-neurons`를 정한다
-- 운영 DB 읽기: H06 실행 전 잔여량 확인을 위해 운영 사용 장부를 읽기 전용 트랜잭션으로 조회한다(Bastion 터널). 실행 때 사람이 허락한다
-- 운영 DB 읽기(H01): 로컬 개발 DB의 임베딩 캐시가 비어 있어 평가용 DB 준비의 캐시 원본으로 운영 DB를 읽기 전용 트랜잭션으로 읽는다(SSH 터널, 2026-11-04는 공인 IP 경유).
-  읽는 것은 `qk.embedding`의 입력 해시·모델 버전·벡터뿐이고 운영 DB에 쓰지 않는다. 접속 정보는 환경 변수 이름으로만 `--from-url-env`에 준다
-- 인덱스 버전 변경: 운영 없음. 로컬 평가용 DB에만 후보 A(`kw-index-baseline-v1`), B(`kw-index-idsplit-v1`), C(토크나이저 교체) 색인이 생긴다
+- 새로 읽는 자료원: 기본 0건. H03을 이 작업에서 하면 Confluence `SCRUM` 스페이스를 `qk-dev source measure`로 한 번 읽는다(`GET`만, 비활성 자료원, 저장·임베딩 없음)
+- 외부 API로 보내는 데이터: 기본 0건. H03 측정은 Atlassian 게이트웨이에 요청 경로와 토큰만 보낸다. Workers AI 호출 0건
+- 예상 호출량과 무료 한도 대비:
+  - Workers AI: 0 Neurons. `--chunk`의 예상 Neurons는 계산값이고 호출하지 않는다
+  - Atlassian 요청: 약 `2N + 2F + ⌈N/250⌉ + 1`(N 페이지, F 폴더, research R-02). 실행당 상한 2,000요청·분당 60·1,800초(약 880페이지)이고 넘으면 측정이 불완전으로 멈춘다. N은 측정 전 사람에게 확인한다
+- 인덱스 버전 변경: 없음. 자료원이 꺼져 있어 `iv-4c0bc4fcc642`·`meta-v1`·`chk-md-20d966f730bb` 그대로다
 
 ## Ownership
 
 | Area (paths) | Owner | Required review |
 | --- | --- | --- |
-| `TASK.md`, `specs/QK-EVL-001-retrieval-eval/tasks.md` | tkv00 | 사람 리뷰(T046~T048·H09 추가 승인) |
-| `eval/question_sets/**`, `tests/unit/evaluation/test_golden_v2.py` | tkv00 | 사람 확정(H00·H04·H09), 평가 결과와 커밋 분리 확인 |
-| `specs/QK-EVL-001-retrieval-eval/measurement/**` | tkv00 | 독립 검토 에이전트(리포트 대조 T042), 사람 리뷰 |
-| `docs/sdd/decisions/ADR-010-keyword-search-text.md` | tkv00 | 사람 승인(H08) |
+| `TASK.md`, `specs/QK-ING-003-confluence-pages/tasks.md` | tkv00 | 사람 리뷰 |
+| `docs/sdd/decisions/ADR-026-confluence-source.md` | tkv00 | 사람 승인(H01) |
+| `config/sources.toml`, `config/source_reviews/confluence-scrum.toml`, 측정 기록(H03 조건부) | tkv00 | 사람 작성·확인 |
+| 비밀값 규칙(H02 조건부) | tkv00 | 사람 리뷰, 독립 검토 에이전트 |
 
 ## Existing user-owned changes
 
-- 2026-11-03 `origin/main`(`69c04ea`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
-- 저장소 밖: 골든셋 v0 수정 초안(`~/Downloads/golden-v0-revision-draft.md`, 사용자 작성). 저장소에 복사하지 않고 v2 작성의 입력으로만 쓴다
+- 2026-11-05 `origin/main`(`6685b88`)에서 브랜치 생성 시 `git status --short` 결과: 변경 없음
 
 ## Validation
 
@@ -85,53 +73,69 @@ uv run ruff check .
 uv run ruff format --check .
 uv run qk-dev db up
 QK_REQUIRE_LOCALDB=1 uv run pytest
-uv run qk-dev eval check eval/question_sets/qk-evl-001-golden/v2.toml --target <H01 데이터베이스>
-uv run qk-dev eval check eval/question_sets/qk-evl-001-identifiers/v1.toml --target <H01 데이터베이스>
+uv run qk-index sources check
 ```
 
-외부 호출 시험(`-m external`)은 넣지 않는다. 측정 단계의 실행 기록·리포트 대조는 tasks T042다.
+외부 호출 시험(`-m external`)은 넣지 않는다. H03 측정은 사람 승인 뒤 따로 실행하고 결과를 측정 기록에 남긴다.
 `python`이 없는 환경에서는 `uv run python scripts/preflight.py`로 실행한다.
 
 ## Completion criteria
 
-- 골든 세트 v1·v2와 식별자 세트 v1이 확정되고, v2와 식별자 세트가 `qk-dev eval check`를 평가 대상에 대해 통과한다 — 확정 커밋, 검사 출력
-- 같은 질문 세트·고정 커밋·임베딩 모델로 세 검색 방식과 ADR-010 후보 A·B·C의 Recall@5·MRR이 표본 수와 함께 리포트에 남는다. 목표에 못 미쳐도 기록한다 — 리포트, 실행 기록(운영 DB 쓰기 0건)
-- ADR-010이 Status Proposed로 리포트 수치를 그대로 인용한다. Status 결정은 사람이 한다
+- `tasks.md`의 T058·H01·H02·H03이 체크되거나, 미루기로 한 항목은 사람 결정과 이유가 `tasks.md` 마무리 기록에 있다 — `tasks.md`
+- ADR-026 `Status`가 사람 결정대로이고 승인했다면 승인자 역할·날짜가 있다 — ADR-026
+- 기본 검증이 통과하고 `sources check`에서 `confluence-scrum`이 비활성이며 인덱스 버전이 그대로다 — 명령 출력
+- 최종 보고에 AGENTS.md 8절 항목과 `index_version`·`embedding_model`·`chunking_version`·`eval_set_version`·`metrics_with_sample_size`·`estimated_or_used_neurons`가 있다
 
 ## Decisions
 
-- 2026-10-30~31 QK-EVL-001 명세·plan·tasks 결정과 코드 단계 기록은 `feat/SCRUM-124-gh-90-retrieval-eval`의 `TASK.md`(#91 병합 커밋 `c4ca593`)와 `tasks.md` "실행 기록"에 있다.
-- 2026-11-03 사용자 결정: 보내 준 골든셋 v0 수정 초안이 최종본이고 이를 반영한다. 초안의 "바로 정하지 못한 점" 5건도 적힌 대로 간다.
-- 2026-11-03 사실(작성 세션 확인):
-  - 수집 페이지 DB에는 팀 질문 24개가 있고 모두 채택(`accepted`)이다. 초안이 22개를 고쳤고 2개(`qmv26zrvzaicu`, `qmv270uanha2v`)는 그대로다.
-  - 나머지 `cand-` 26문항의 문장·유형은 수집 페이지 DB, 페이지 본문, 저장소에서 찾지 못했다. v2는 이 원문을 받아야 끝난다(BLOCKED 항목).
-  - DB에 있는 24문항의 백엔드 근거 문서 7개(FCM ADR 0008, README 테스트 서버 배포, 인증 분리 ADR 0006, 요청 로깅 설계, 방향 소통 ERD, `error-codes.md`, `AUTH_DESIGN.md`)는 라벨 기준 커밋 `6aeccd0`에 모두 있다(GitHub 읽기 전용 조회). 백엔드 저장소 `main`은 그 뒤로 움직였지만 라벨 기준 커밋은 그대로 둔다.
-  - 질문 세트 형식의 `type`은 `code`·`doc`·`meeting`·`synthesis`·`no_answer`이고 `unknown`은 거부된다. 최종본은 `unknown`이 0개라 그대로 옮길 수 있다.
-  - 머리 정보 `origin`은 원본 하나만 담고 저장소 경로를 요구한다. v2는 H05 v2와 v0 두 곳에서 오고 v0 원본은 저장소에 없어서 `origin`을 두지 않고 `labeling.md`에 두 출처를 적는다.
-- 2026-11-03 사용자 결정: 첫 TASK.md 초안을 승인했다("승인"). 사람 확인 대상 4건(WBS 0.7 산출물 포함, v1 확정·v2 주 세트, 커밋 순서, 측정 PR 하나)과 스프린트 ID `QELLO-S2026-W45`도 포함했다. 그 판(`10e51ae`)이 git 이력에 있다.
-- 2026-11-03 정정: 첫 판은 spec 범위 밖인 WBS 0.7 산출물(`eval/golden/v0.jsonl`)을 Scope에 넣었고, 승인된 tasks.md에 없는 v2 작업을 tasks 추가 없이 진행하려 했다. 작성 세션이 승인받을 때 이를 알리지 않았다.
-  사용자 결정("명세 범위로 고치기"): v0.jsonl은 이 작업에서 빼서 별도로 한다. v2는 남기고 tasks.md에 T046~T048·H09를 더해 승인받은 뒤 진행한다. `test_golden_v2.py`는 v0.jsonl과 대조하지 않는다.
-- 사람 확인 대상(작성 세션 제안, 위 정정 반영):
-  - v1은 확정만 하고 그대로 둔다. 측정과 리포트의 주 세트는 v2이고, v1 수치는 v2의 부분 집합으로 함께 적는다.
-  - 커밋 순서: 이 계약 정정과 tasks.md 추가 → v1 확정 → v2와 `test_golden_v2.py` → v2 확정 → 식별자 세트 초안 → 확정 → 리포트 계약 고정(T039·H05) → 실행 기록·리포트 → ADR-010. 평가 세트와 평가 결과는 다른 커밋이다.
-  - 측정 PR은 하나로 낸다.
-- 2026-11-03 사용자 결정: 정정한 TASK.md와 tasks.md Phase 9(T046~T048, H09)를 승인했다("승인하고 커밋"). 위 사람 확인 대상 3건도 포함한다. Phase 9 추가분은 별도 에이전트 검토를 받지 않았다.
-- 2026-11-03 정정: 스프린트 ID `W45`는 작성 세션이 날짜로 추정한 값이었다. Jira SCRUM-124(읽기 전용 조회)의 `QELLO-S2026-W44`와 달라 사용자 결정("W44로 맞추기")으로 W44로 고쳤다.
-  같은 조회에서 SCRUM-124 상태는 "해야 할 일"이었다. Jira 쓰기는 하지 않았다.
-- 2026-11-03 사용자 결정("DB 반영 승인"): 골든셋 v0 최종본 50문항을 수집 페이지 DB에 반영한다. 최종 목록은 사용자가 준 50문항 표(질문·유형, 근거 없음)이고 수정 초안과 문장·유형 분포가 같다.
-  `cand-` 26문항은 페이지 주인 문서에 채택 상태로 넣고, 수정 22문항은 원래 문장을 두고 검토 기록에 내보낼 문장·유형을 넣는다. 쓰기는 읽은 버전에 고정하고 다시 읽어 대조한다.
-  `cand-` 문항의 근거 문서는 이 표에 없어 v2(T046) 전에 정한다.
-- 2026-11-04 사용자 결정("운영 DB 읽기 전용"): H01~H02 평가용 DB 준비의 임베딩 캐시 원본은 운영 DB다. 로컬 개발 DB의 임베딩 캐시가 0건이라 로컬 복사로는 종료 4(약 900 Neurons)가 되기 때문이다.
-  `eval-index prepare`는 원본 연결을 `read_only`로 열고 `qk.embedding`만 읽는다(`devtools/eval_index.py:81-93`). 대상은 로컬 컨테이너의 평가용 DB뿐이다. `--allow-embed`는 주지 않아 캐시가 모자라면 임베딩 없이 종료 4로 멈춘다.
-- 2026-11-04 사실(H01): 운영 DB에는 Bastion이 아니라 공인 IP SSH 터널로 닿았다. Bastion 관리형 SSH 세션은 만들어지고 인증도 됐지만, 서버 22번으로 넘기는 순간 끊겼다.
-  클라우드 설정(대상 VCN·서브넷·사설 IP, 보안 목록 22번, Bastion 플러그인)은 모두 맞았고, 서버 안 원인은 확인하지 못했다(작성 세션은 서버에 접속하지 않았다).
-  캐시 원본 접속 정보는 사용자가 서버의 동기화용 접속 정보를 터널 포트로 바꿔 `.env`의 `QK_PROD_READ_URL`에 넣었다. 값은 화면·저장소·대화에 남기지 않았다.
-  결과: `qk_eval_baseline_6aeccd039b82` 준비 완료, 캐시 복사 1,309개, 임베딩 호출 0, 0 Neurons. 운영 DB 쓰기 0건. Bastion 경로가 서버 안에서 막힌 문제는 이 작업 밖이라 서버 관리자가 따로 본다.
-- 2026-11-04 사용자 결정: 골든 세트 v1("v1 확정"), v2("오케이", H09), 식별자 세트 v1("식별자 세트 확정", H04)을 확정했다. 각각 확정 표시만 넣은 별도 커밋이다.
-- 2026-11-04 사실: H02(후보 B)·H03(후보 C) 평가용 DB를 운영 DB 접근 없이 0 Neurons로 준비했다(H02 캐시 원본은 H01 로컬 DB).
-- 2026-11-04 사용자 결정(H05, "n=3, m=1"): ADR-010 판단 규칙의 n·m을 정했고 리포트 계약을 측정 전에 고정했다(커밋 `9561733`).
-- 2026-11-04 사용자 결정(H06, "실행 승인"): 미리 보기(골든 2.3177, 식별자 2.4338 Neurons, 당일 잔여 10,000)를 보고 `--max-neurons 3`으로 실행을 승인했다. 실제 0.43 + 0.61 = 1.04 Neurons, 두 실행 모두 `complete = true`, 운영 DB 쓰기 0.
-- 2026-11-04 사실(측정 결과): 고정한 판단 규칙으로 후보 B(G4 +2)와 C(G3 5문항, G4 +4) 모두 권고 가능이 아니고, 작성 세션 권고는 A(현행 유지)다. ADR-010은 Status Proposed로 썼다. Status 결정(H08)은 사람이 한다.
-- 2026-11-04 사실(T042): 작성에 관여하지 않은 별도 서브에이전트가 리포트를 읽기 전용으로 대조했다. 수치는 모두 맞았고 문구 지적 4건을 고쳤다(고친 부분은 다시 대조받지 않음).
-- 2026-11-04 검증(T045): `python3 scripts/preflight.py`(1011개 통과), `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`(733개), `uv run qk-dev db up`,
-  `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed(3 deselected는 `external`). `uv run qk-dev eval check …/qk-evl-001-golden/v2.toml`·`…/qk-evl-001-identifiers/v1.toml --target` 세 평가 대상 모두 통과(경고 0).
+- 2026-10-27~28 QK-ING-003 명세·plan·tasks·구현 결정과 검증은 `feat/SCRUM-119-gh-72-confluence-pages`의 `TASK.md`(#86 병합 커밋 `81b974c`)와 `tasks.md` "구현 기록"에 있다.
+- 2026-11-05 사실(작성 세션 확인): `tasks.md` 61개 가운데 57개 체크, 남은 것은 T058·H01·H02·H03이다. `tasks.md`는 H01~H03을 "사람 단계, 이 작업의 완료 조건 밖"으로, H03을 "별도 변경"으로 적었다.
+  `config/sources.toml`의 `confluence-scrum`은 `enabled = false`, `space_id = ""`, `doc_types = {}`, `exclude_trees = []`이고 `config/source_reviews/confluence-scrum.toml`은 없다.
+- 2026-11-05 사실: Jira SCRUM-119 본문은 결정 기록을 ADR-025로 적었지만 저장소의 기록은 ADR-026이다. Jira 본문을 고칠지는 사람이 정한다(Jira 쓰기는 하지 않았다).
+- 2026-11-05 사용자 결정: 이 TASK.md 초안을 승인했다("TASK.md 승인"). 아래 H01~H03은 따로 정한다.
+- 2026-11-05 사용자 결정(H01, "ADR-026 승인"): ADR-026을 승인했다. `Status: Accepted`와 Approval(승인자 GitHub `tkv00`, 날짜)만 바꿨고 Decision·Rationale은 그대로다.
+- 2026-11-05 사용자 결정(H03, "지금 측정까지"): H03을 이 작업에서 측정까지 한다. 사용자가 확인 기록을 쓰고, 작성 세션은 설정을 채운 뒤 측정 실행 승인을 따로 받는다.
+- 2026-11-05 사실(H03 준비, Atlassian MCP 읽기 전용 조회. 사용자 계정 권한이라 수집 계정과 보이는 범위가 다를 수 있다):
+  - `SCRUM` 스페이스 ID `98307`, 종류 `global`, 상태 `current`, 홈 콘텐츠 ID `98420`. 팀 종류라 FR-002를 통과한다.
+  - CQL로 센 현재 페이지 160개, 폴더 0개. 예상 Atlassian 요청은 약 `2×160 + 0 + 1 + 1 ≈ 322`건(research R-02)으로 실행당 상한 2,000건 안이다. Workers AI 0 Neurons.
+  - 홈 바로 아래 첫 단계 콘텐츠는 페이지 3개(`98435`, `296811`, `294915`)다. 문서 분류 페이지 11개는 첫 단계가 아니라 `98435` 아래 두 번째 단계에 있다.
+    수집기는 홈 바로 아래 콘텐츠만 대응표로 본다(`adapters/confluence.py:322`, FR-020). 그래서 지금 규칙으로는 `98435` 아래 모든 페이지가 같은 종류 하나가 된다.
+  - 골든셋 v0 질문 목록 페이지(`3571713`)가 `98435` 아래에 있다. 색인되면 검색 평가가 오염되므로 `exclude_trees` 후보다(작성 세션 판단, 사람 확인 대상).
+- 2026-11-05 사용자 결정("원본 구조 옮기기"): 사용자가 Confluence에서 `98435` 아래 분류 페이지를 홈 바로 아래로 직접 옮긴다. 작성 세션은 원본에 쓰지 않고, 옮긴 뒤 읽기 전용으로 구조를 다시 확인해 대응표를 채운다.
+- 2026-11-05 사용자 요청("mcp 써서 너가 옮겨줘. 지금 안옮겨지는데"): 사용자가 화면에서 옮기지 못해 작성 세션이 Atlassian MCP `moveConfluenceContent`로 옮긴다. 옮긴 뒤 다시 읽어 부모를 대조한다.
+- 2026-11-05 사실(원본 이동): `moveConfluenceContent`로 분류 페이지 10개(`98458`, `98650`, `66695`, `66183`, `66119`, `65957`, `65931`, `295131`, `131791`, `131387`)를 `98435` 아래에서 홈 `98420` 아래로 옮겼다.
+  모든 응답의 `parentId`가 `98420`이었고 스페이스는 그대로다. 골든셋 질문 목록(`3571713`) 이동은 실행 환경의 권한 판정이 막아 `98435` 아래에 남았다. 다시 시도하지 않았다.
+  CQL 검색 결과는 이동을 늦게 반영해서, 상위 조회(`getConfluenceContentAncestors`)로 `295131`의 상위가 홈인 것을 다시 확인했다. 내용·제목·권한은 바꾸지 않았다.
+- 2026-11-05 작성 세션 제안(사람 확인 대상): `config/sources.toml` `confluence-scrum`에 `space_id = "98307"`, `exclude_trees = ["3571713"]`, 대응표 12개를 채웠다(`enabled = false` 그대로).
+  대응표: 회의록 1, 용어집 1, 기능 명세 1, 설계 문서 2(설계 문서·ADR), API 문서 1, 디자인 문서 1, 개발 규칙 1, 색인 안 함 4(`131791`, `98435`, `296811`, `294915`). `131387`은 대응표에 넣지 않아 미분류다.
+  `98435`는 "색인 안 함"이라 아래에 남은 `3571713`도 색인되지 않고, `exclude_trees`가 한 번 더 막는다. 범위 검증기(`sources/kinds.py` `_confluence_scope`)는 오류 0건이다.
+- 2026-11-05 사용자 결정("이대로 확정"): 위 `space_id`·`exclude_trees`·대응표 12개를 확정했다. `131387`은 미분류로 둔다. 확인 기록은 이 값과 같게 사용자가 쓴다.
+- 2026-11-05 사용자 요청("RAG 골든셋 v0 질문 목록도 가장 바깥으로 빼줘"): `3571713`도 `moveConfluenceContent`로 홈 `98420` 아래로 옮겼다(응답 `parentId` `98420`). 이제 첫 단계 콘텐츠이고 대응표에 없어 미분류이며, `exclude_trees`가 계속 막는다. 설정·대응표는 그대로다.
+- 2026-11-05 사실(H02 접두어, 사용자 확인): 사용자가 로컬 `.env`에서 `grep -c '^ATLASSIAN_API_TOKEN=ATATT'`를 직접 실행해 `1`을 받았다. 접두어가 기존 비밀값 규칙과 같아 규칙 추가는 필요 없다. 작성 세션은 `.env`를 읽지 않았다.
+  범위 세 개의 포함 여부는 화면에서 확인하지 못했고, H03 측정의 엔드포인트별 결과로 확인한다.
+- 2026-11-05 사용자 결정("1. 승인"): 확인 기록 `config/source_reviews/confluence-scrum.toml`은 사용자가 준 값으로 작성 세션이 쓴다(`config/source_reviews/README.md`의 "에이전트는 대신 만들지 않는다" 규칙 예외). 개인 정보 패턴 훑어보기는 Atlassian MCP 읽기 전용으로 하고 페이지 ID만 보고한다. 판단은 사용자가 한다.
+- 2026-11-05 사실(개인 정보 패턴 훑어보기, CQL 읽기 전용, 토큰 단위 검색이라 빠짐없는 검사는 아니다): 개인 메일 도메인(gmail·naver·kakao.com·daum.net·hanmail) 0건.
+  연락처·전화번호·휴대폰·010·계좌·주민등록·생년월일·집 주소 11건, password·비밀번호·token·토큰·secret·@ 8건이 걸렸다. 발췌로 보면 하나(`294979`, 회의록 참석자 이름)를 빼면 모두 기능 명세·설계 문서의 제품 용어(휴대폰 회전, 푸시 토큰, 액세스 토큰 등)였다.
+  참석자 이름은 `team_member_names = "허용"` 대상이다. 비밀값은 색인 때 QK-SEC-001 검사가 한 번 더 거른다. 판단은 사용자가 한다.
+- 2026-11-05 사용자 답(확인 기록 값): 사이트 사용자 3명이고 모두 팀원이다. 결과는 "없음"(→ `팀원 이름 외 개인 정보 없음`). 사용자는 이름을 써도 된다고 했지만 `config/source_reviews/README.md`와 AGENTS.md 6절에 따라 역할(`팀원, SCRUM 스페이스 소유자`)로 적었다.
+  역할은 MCP 조회에서 스페이스 소유자가 사용자 계정인 것으로 정했다(작성 세션 해석, 사람 확인 대상).
+- 2026-11-05 사실: `config/source_reviews/confluence-scrum.toml`을 썼다. `enabled = true`로 바꾼 임시 설정 사본(작업 폴더 밖)으로 `check_scope`를 돌려 오류 0건, `confluence_review_context`의 사이트 사용자 확인 유효(`True`)를 확인했다. 저장소 설정은 `enabled = false` 그대로다.
+- 2026-11-05 사실(H03 측정 1차, 사용자 승인 "측정 실행 승인"): `uv run qk-dev source measure --name confluence-scrum --chunk --json --env-file <원래 저장소 .env>`가 설정 점검에서 멈췄다(종료 1, Atlassian 요청 0건, 0 Neurons).
+  점검 출력에서 `ATLASSIAN_API_TOKEN`·`ATLASSIAN_EMAIL`·`ATLASSIAN_CLOUD_ID`·`DATABASE_URL`이 `MISSING`이었다. 작성 세션은 `.env`를 읽지 않았고, 셸 환경 변수에도 같은 이름이 없다.
+- 2026-11-05 검증 1차: preflight(1,015 파일)·`git diff --check`·ruff check·format --check(736 파일)·`qk-index sources check` 통과. `qk-dev db up`은 Docker 데몬이 꺼져 실패했고,
+  그래서 `QK_REQUIRE_LOCALDB=1 uv run pytest`는 3,424 passed·3 deselected·353 errors(모두 로컬 DB 시험)다. Docker를 켠 뒤 다시 돌린다.
+- 2026-11-05 검증 2차(사용자 요청 "너가 좀 해줘"로 작성 세션이 Docker Desktop을 켰다): `uv run qk-dev db up` 로컬 DB 준비 완료, `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed·3 deselected(`external`). 같은 세션의 자기 검증이다.
+- 2026-11-05 사실: `.env` 설정 이름을 점검하는 명령(`qk-index check --env-file`, 상태만 출력)은 실행 환경의 권한 판정이 막았다. 작성 세션은 `.env`를 읽지 않으므로 측정 1차의 `MISSING` 원인은 사람이 확인한다.
+- 2026-11-05 사용자 결정(".env 고친 뒤 측정"): 사용자가 `.env`에 설정을 넣은 뒤 같은 조건(GET만, 약 322건, 0 Neurons)으로 측정을 다시 실행한다.
+- 2026-11-09 사실(H03 측정 2차): 사용자가 `.env`를 고친 뒤 다시 돌렸다. 설정 점검에서 `DATABASE_URL`이 `INVALID`라 다시 멈췄다(Atlassian 요청 0건). 사용자가 형식을 고쳤다.
+  `ATLASSIAN_SITE_URL`은 선택 항목이라 비어 있어도 된다.
+- 2026-11-09 사실(H03 측정 3차, 같은 승인 조건): 정상 종료. 요청 308건(모두 `GET`·`200`), 306초, 목록 완전, 160페이지, 본문 146, 판정 `PASSED` 145·`PATH_EXCLUDED` 14·`SECRET_BLOCKED` 1(페이지 `98694`),
+  미분류 1, 조회 실패 0, 청크 2,346, 예상 약 763 Neurons(하루 색인 예산 5,000 안), Workers AI 0건. 집계는 `specs/QK-ING-003-confluence-pages/measurement/first-measurement.md`에 페이지 ID만으로 남겼다.
+  H02의 `read:space`·`read:page` 범위는 `200`으로 확인했고, `read:folder`는 폴더 0개라 확인하지 못했다.
+- 2026-11-09 사실: `tasks.md` H01~H03을 체크하고 "마무리 기록"을 더했다. `SECRET_BLOCKED` 1건과 `UNSUPPORTED_BLOCK` 2,175건은 켜기 전에 사람이 본다(켜기는 이 작업 밖).
+- 2026-11-09 검증 3차(측정 기록·`tasks.md` 반영 뒤): preflight(1,016 파일)·`git diff --check`·ruff check·format --check(737 파일)·`qk-index sources check`(활성 1, 비활성 3, 오류 0, `confluence-scrum` 비활성) 통과.
+  Docker가 꺼져 있어 작성 세션이 다시 켠 뒤 `qk-dev db up` 준비 완료, `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed·3 deselected(`external`). 같은 세션의 자기 검증이다.
+- 사람 확인 대상(작성 세션 제안, 2026-11-09 기준 모두 위 기록대로 정했다):
+  - H01: ADR-026 승인 여부
+  - H02: Atlassian 화면에서 본 토큰 범위 세 개 포함 여부와 접두어가 `ATATT`인지(값은 묻지 않는다)
+  - H03: 이 작업에서 측정까지 할지, 켜기 변경(QK-STO-002 절차와 함께)으로 미룰지
