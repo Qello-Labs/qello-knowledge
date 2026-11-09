@@ -209,18 +209,34 @@ description: "QK-ING-003 구현 작업 목록"
 - [X] T056 [P] 문서 갱신: ADR-026에 구현 결과의 사실 정정(있으면), `specs/QK-ING-003-confluence-pages/quickstart.md`의 시험 파일 이름을 실제와 맞춘다
 - [X] T057 기본 검증(quickstart 1절): `uv run python scripts/preflight.py`, `git diff --check`, `uv run ruff check .`, `uv run ruff format --check .`, `uv run qk-dev db up`, `uv run qk-migrate`(두 번, 두 번째 `applied=0`),
   `QK_REQUIRE_LOCALDB=1 uv run pytest`. 결과를 TASK.md에 기록한다
-- [ ] T058 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용). 최종 보고에 `index_version`(꺼짐 `iv-4c0bc4fcc642`), `embedding_model`, `chunking_version`,
+- [X] T058 `TASK.md` Decisions·검증 기록 갱신, `/pr-draft-summary`로 PR 초안(CLAUDE.md 의무 사용). 최종 보고에 `index_version`(꺼짐 `iv-4c0bc4fcc642`), `embedding_model`, `chunking_version`,
   `eval_set_version`(해당 없음, 사유), `metrics_with_sample_size`(해당 없음), `estimated_or_used_neurons`(0)를 넣는다
 
 ---
 
 ## 사람 단계 (구현 뒤, 이 작업의 완료 조건 밖)
 
-- [ ] H01 ADR-026 리뷰·승인(사람). 승인 전에는 Proposed로 둔다.
-- [ ] H02 Atlassian 토큰 범위·접두어 확인(사람): 범위 `read:space:confluence`·`read:page:confluence`·`read:folder:confluence` 포함 여부, 접두어가 `ATATT`와 다르면 비밀값 규칙 추가를 이 작업이나 후속에 넣는다.
+- [X] H01 ADR-026 리뷰·승인(사람). 승인 전에는 Proposed로 둔다.
+- [X] H02 Atlassian 토큰 범위·접두어 확인(사람): 범위 `read:space:confluence`·`read:page:confluence`·`read:folder:confluence` 포함 여부, 접두어가 `ATATT`와 다르면 비밀값 규칙 추가를 이 작업이나 후속에 넣는다.
   필요하면 plan 실측 스크립트를 돌린다(contracts/cli.md).
-- [ ] H03 켜기 준비(사람, 별도 변경): `space_id`·`doc_types`·`exclude_trees`를 채우고 확인 기록을 쓴 뒤 `qk-dev source measure --name confluence-scrum --chunk --json`으로 첫 측정(FR-027, SC-010).
+- [X] H03 켜기 준비(사람, 별도 변경): `space_id`·`doc_types`·`exclude_trees`를 채우고 확인 기록을 쓴 뒤 `qk-dev source measure --name confluence-scrum --chunk --json`으로 첫 측정(FR-027, SC-010).
   예상 Neurons가 하루 색인 예산을 넘으면 켜기 전에 보고한다. 켜는 변경에서 `INDEX_KEYWORD_RULES` 항목과 QK-STO-002 절차를 함께 한다.
+
+
+### 마무리 기록 (2026-11-05~09, #72 마무리 브랜치)
+
+- H01: 사용자가 ADR-026을 승인했다("ADR-026 승인", 2026-11-05). `Status: Accepted`와 Approval만 바꿨고 Decision·Rationale은 그대로다.
+- H02: 사용자가 로컬 `.env`에서 토큰 접두어가 `ATATT`인 것을 직접 확인했다(작성 세션은 `.env`를 읽지 않았다). 기존 비밀값 규칙과 같아 규칙 추가는 하지 않았다.
+  첫 측정에서 `/spaces`·`/pages`·`restriction-state` 요청이 모두 `200`이라 `read:space:confluence`·`read:page:confluence`는 포함돼 있다.
+  `read:folder:confluence`는 스페이스에 폴더가 0개라 확인하지 못했다. 폴더가 생기면 다음 측정에서 본다.
+- H03: 이 작업에서 측정까지 했다(사용자 결정 "지금 측정까지").
+  - 원본 구조: 문서 분류 페이지가 홈 아래 두 번째 단계에 있어 FR-020 대응표로 나눌 수 없었다. 사용자 요청으로 분류 페이지 10개와 골든셋 v0 질문 목록(`3571713`)을
+    Atlassian MCP로 홈(`98420`) 바로 아래로 옮겼다(내용·제목·권한은 그대로).
+  - 설정: `config/sources.toml`에 `space_id = "98307"`, `exclude_trees = ["3571713"]`, 대응표 12개를 채웠다(사용자 확정 "이대로 확정"). `131387`은 미분류로 둔다. `enabled = false` 그대로다.
+  - 확인 기록: `config/source_reviews/confluence-scrum.toml`. 사용자가 준 값(사이트 사용자 3명 모두 팀원, 개인 정보 없음)으로 작성 세션이 썼다(사용자 승인한 README 규칙 예외). 이름 대신 역할을 적었다.
+  - 첫 측정: [measurement/first-measurement.md](measurement/first-measurement.md). 요청 308건(모두 `GET`·`200`), 160페이지, 예상 약 763 Neurons(하루 색인 예산 5,000 안), Workers AI 0건.
+    `SECRET_BLOCKED` 1건(페이지 `98694`)과 `UNSUPPORTED_BLOCK` 2,175건은 켜기 전에 사람이 본다.
+  - 켜기(`enabled = true`), `INDEX_KEYWORD_RULES` 등록, QK-STO-002 활성화 절차는 이 작업에 넣지 않았다. 켜는 변경에서 함께 한다.
 
 ---
 
