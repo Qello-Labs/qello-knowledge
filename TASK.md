@@ -135,6 +135,7 @@ uv run qk-index sources check
 - 2026-11-09 사실: `tasks.md` H01~H03을 체크하고 "마무리 기록"을 더했다. `SECRET_BLOCKED` 1건과 `UNSUPPORTED_BLOCK` 2,175건은 켜기 전에 사람이 본다(켜기는 이 작업 밖).
 - 2026-11-09 검증 3차(측정 기록·`tasks.md` 반영 뒤): preflight(1,016 파일)·`git diff --check`·ruff check·format --check(737 파일)·`qk-index sources check`(활성 1, 비활성 3, 오류 0, `confluence-scrum` 비활성) 통과.
   Docker가 꺼져 있어 작성 세션이 다시 켠 뒤 `qk-dev db up` 준비 완료, `QK_REQUIRE_LOCALDB=1 uv run pytest` 3,777 passed·3 deselected(`external`). 같은 세션의 자기 검증이다.
+- 2026-11-09 사실: PR 전에 `origin/main` `5ef1c17`(#101 QK-STO-002 병합)을 merge했다. 겹친 파일은 `TASK.md` 하나이고, 이 브랜치의 계약을 남겼다(QK-STO-002 계약은 git 이력에 남는다). 코드·설정 충돌은 없었다.
 - 사람 확인 대상(작성 세션 제안, 2026-11-09 기준 모두 위 기록대로 정했다):
   - H01: ADR-026 승인 여부
   - H02: Atlassian 화면에서 본 토큰 범위 세 개 포함 여부와 접두어가 `ATATT`인지(값은 묻지 않는다)

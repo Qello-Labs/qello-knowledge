@@ -50,7 +50,18 @@ def main(
     ask_factory: AskFactory = postgres_ask,
     stdin=None,
     queries_factory=postgres_queries,
+    history_factory=None,
+    gate_verifier=None,
+    repo_root=None,
 ) -> int:
+    if history_factory is None:
+        from qello_knowledge.adapters.git_history import GitHistory
+
+        history_factory = GitHistory
+    if gate_verifier is None:
+        from qello_knowledge.gate.verify import verify_for_activation
+
+        gate_verifier = verify_for_activation
     arguments = list(sys.argv[1:] if argv is None else argv)
     if arguments and arguments[0] == "queries":
         return queries_main(arguments[1:], stdin=stdin, factory=queries_factory)
@@ -84,9 +95,15 @@ def main(
     if args.command == "run":
         if args.preview and args.trigger is not None:
             parser.error("--preview and --trigger cannot be combined")
+        if args.reindex and (args.trigger == "schedule" or args.source is not None):
+            # 재색인은 사람이 모든 자료원을 대상으로 시작한다(QK-STO-002 FR-029, research R-02).
+            parser.error("--reindex cannot be combined with --trigger schedule or --source")
         return run_command(args, sync_factory, store_policy_path)
     if args.command in {"runs", "index"}:
-        return query_command(args, sync_store_factory, store_policy_path)
+        from qello_knowledge.indexer.index_cli import make_handler
+
+        handler = make_handler(history_factory=history_factory, gate_verifier=gate_verifier, repo_root=repo_root)
+        return query_command(args, sync_store_factory, store_policy_path, index_handler=handler)
     if args.command == "usage":
         return run_usage(args, ledger_factory, generation_ledger_factory)
     if args.command == "search":

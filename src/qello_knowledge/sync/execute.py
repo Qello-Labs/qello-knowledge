@@ -157,7 +157,7 @@ def execute_source(plan, target, deps, options, run_id, index_version, exhausted
                 content.location,
                 doc.fingerprint,
                 chunked.chunking_version,
-                "chunked" if chunks else "empty",
+                "not_target" if doc.not_target else "chunked" if chunks else "empty",
             )
             deps.store.apply_document(run_id, doc, artifact, index_version, chunks)
             execution.outcomes.append(

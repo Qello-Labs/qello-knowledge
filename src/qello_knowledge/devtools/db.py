@@ -158,7 +158,10 @@ def _add_eval_parsers(sub: argparse._SubParsersAction) -> None:
     tables.add_argument("--run", action="append", type=Path, required=True, help="실행 기록(여러 번)")
     tables.add_argument("--target", action="append", default=[], help="표에 넣을 대상(여러 번). 기본 모든 대상")
     tables.add_argument("--breakdown", action="append", choices=("type", "identifier_form", "query_form"), default=[])
-    for parser in (check, identifiers, run, tables):
+    from qello_knowledge.devtools.gate_cli import add_gate_parser
+
+    gate = add_gate_parser(actions)  # QK-STO-002 contracts/cli.md 6절
+    for parser in (check, identifiers, run, tables, gate):
         parser.add_argument("--json", action="store_true")
         parser.add_argument("--env-file", type=Path, default=Path(".env"))
 
@@ -176,6 +179,10 @@ def _run_eval(args: argparse.Namespace, source: Mapping[str, str]) -> int:
         return eval_cli.run_eval(args, source)
     if args.eval_action == "tables":
         return eval_cli.run_tables(args)
+    if args.eval_action == "gate":
+        from qello_knowledge.devtools.gate_cli import run_gate
+
+        return run_gate(args)
     raise AssertionError(args.eval_action)
 
 

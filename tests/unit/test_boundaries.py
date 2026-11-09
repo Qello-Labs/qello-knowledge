@@ -531,3 +531,68 @@ def test_retrieval_must_not_import_evaluation(tmp_path):
     (root / "retrieval").mkdir(parents=True)
     (root / "retrieval" / "bad.py").write_text("from qello_knowledge.evaluation import runner\n")
     assert len(retrieval_violations(root)) == 1
+
+
+# QK-STO-002: `gate/`는 표준 라이브러리와 domain·ports·embedding·evaluation·gate만 가져온다(tasks T002, research R-15).
+# 저장소·git·CLI는 경계 밖에서 주입받는다. `sync/versions.py`는 위 `sync_violations`를 그대로 따른다.
+GATE_ALLOWED = (*ALLOWED_INTERNAL, "qello_knowledge.evaluation", "qello_knowledge.gate")
+
+
+def gate_violations(root: Path) -> list[str]:
+    problems = []
+    for path in sorted((root / "gate").rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"), filename=str(path))):
+            modules = []
+            if isinstance(node, ast.Import):
+                modules = [alias.name for alias in node.names]
+            elif isinstance(node, ast.ImportFrom):
+                if node.level:
+                    problems.append(f"{path.relative_to(root.parent)}:{node.lineno}: 상대 경로 가져오기")
+                    continue
+                module = node.module or ""
+                modules = (
+                    [module + "." + alias.name for alias in node.names] if module == "qello_knowledge" else [module]
+                )
+            for module in modules:
+                if module.split(".")[0] in sys.stdlib_module_names or module == "__future__":
+                    continue
+                if any(module == prefix or module.startswith(prefix + ".") for prefix in GATE_ALLOWED):
+                    continue
+                problems.append(f"{path.relative_to(root.parent)}:{node.lineno}: {module}")
+    return problems
+
+
+def test_gate_dependencies_are_isolated():
+    assert gate_violations(PACKAGE) == []
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "import psycopg",
+        "from qello_knowledge.adapters.git_history import GitHistory",
+        "from qello_knowledge import devtools",
+        "from qello_knowledge.indexer import cli",
+        "from qello_knowledge.sync import versions",
+        "from . import judge",
+    ],
+)
+def test_gate_violations_are_detected(tmp_path, statement):
+    root = tmp_path / "qello_knowledge"
+    (root / "gate").mkdir(parents=True)
+    (root / "gate" / "bad.py").write_text(statement, encoding="utf-8")
+    assert len(gate_violations(root)) == 1
+
+
+def test_gate_allowed_imports(tmp_path):
+    root = tmp_path / "qello_knowledge"
+    (root / "gate").mkdir(parents=True)
+    (root / "gate" / "good.py").write_text(
+        "from __future__ import annotations\nimport tomllib\nfrom fractions import Fraction\n"
+        "from qello_knowledge.domain.retrieval import RetrievalSettings\n"
+        "from qello_knowledge.ports.history import RepoHistory\n"
+        "from qello_knowledge.evaluation.records import RunRecord\n"
+        "from qello_knowledge.gate.policy import GatePolicy\n",
+        encoding="utf-8",
+    )
+    assert gate_violations(root) == []

@@ -12,6 +12,7 @@ from qello_knowledge.adapters.postgres.connection import connect
 from qello_knowledge.adapters.postgres.store import _replace_chunk_rows
 from qello_knowledge.domain.store import (
     InvalidRecord,
+    SchemaOutdated,
     StoreError,
     StoreUnavailable,
     chunk_set_hash,
@@ -21,12 +22,41 @@ from qello_knowledge.domain.store import (
 from qello_knowledge.domain.sync import Action, DocumentOutcome
 from qello_knowledge.ports.sync import IndexState, StoredDocument, StoredSource
 
+REQUIRED_MIGRATION = 9  # 0009_index_versions(QK-STO-002 research R-18)
+
+
+def schema_ready(conn) -> bool:
+    """`qk.schema_migration`에 0009 이상 성공 행이 있는지. 뒤 마이그레이션이 생겨도 그대로 쓴다."""
+    row = conn.execute(
+        "SELECT EXISTS (SELECT 1 FROM qk.schema_migration WHERE version >= %s AND result = 'success')",
+        (REQUIRED_MIGRATION,),
+    ).fetchone()
+    return bool(row and row[0])
+
+
+def require_schema(conn) -> None:
+    if not schema_ready(conn):
+        raise SchemaOutdated("schema_outdated")
+
 
 class PostgresSyncStore:
-    def __init__(self, url, *, current_version=None):
+    def __init__(self, url, *, current_version=None, target="local"):
         self._url = url
         self._conn = None
         self.current_version = current_version
+        self.target = target
+        self._schema_checked = False
+
+    def _require_schema(self, conn):
+        if not self._schema_checked:
+            require_schema(conn)
+            self._schema_checked = True
+
+    def index_versions(self):
+        """같은 접속 정보로 버전 저장소를 연다(research R-15). 부른 쪽이 닫는다."""
+        from qello_knowledge.adapters.postgres.index_versions import PostgresIndexVersionStore
+
+        return PostgresIndexVersionStore(self._url, current_version=self.current_version, target=self.target)
 
     def __enter__(self):
         return self
@@ -70,6 +100,39 @@ class PostgresSyncStore:
             )
         return spec.id
 
+    def prepare_candidate(self, spec, *, target):
+        """재색인 후보 버전을 준비한다(research R-06). 보관 버전이면 재사용 전환을 기록한다."""
+        with self._db() as conn:
+            self._require_schema(conn)
+        with self._db() as conn, conn.transaction():
+            row = conn.execute("SELECT status FROM qk.index_version WHERE id=%s FOR UPDATE", (spec.id,)).fetchone()
+            if row is None:
+                conn.execute(
+                    "INSERT INTO qk.index_version(id,embedding_model,dimension,chunking_version,"
+                    "metadata_schema_version,status) VALUES (%s,%s,%s,%s,%s,'ready')",
+                    (
+                        spec.id,
+                        spec.embedding_model,
+                        spec.dimension,
+                        spec.chunking_version,
+                        spec.metadata_schema_version,
+                    ),
+                )
+            elif row[0] == "archived":
+                conn.execute("UPDATE qk.index_version SET status='ready',pruned_at=NULL WHERE id=%s", (spec.id,))
+                active = conn.execute("SELECT id FROM qk.index_version WHERE status='active'").fetchone()
+                documents, chunks = conn.execute(
+                    "SELECT count(DISTINCT c.artifact_id) FILTER (WHERE a.status='active' AND a.access_scope='team'),"
+                    "count(c.id) FROM qk.chunk c JOIN qk.artifact a ON a.id=c.artifact_id WHERE c.index_version=%s",
+                    (spec.id,),
+                ).fetchone()
+                conn.execute(
+                    "INSERT INTO qk.index_transition(kind,version,before_active,after_active,documents,chunks,target) "
+                    "VALUES ('reuse',%s,%s,%s,%s,%s,%s)",
+                    (spec.id, active[0] if active else None, active[0] if active else None, documents, chunks, target),
+                )
+        return spec.id
+
     def load_documents(self, source_kind):
         with self._db() as conn, conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
@@ -90,6 +153,8 @@ class PostgresSyncStore:
         return {r[0]: StoredSource(*r) for r in rows}
 
     def begin_run(self, run, source_names):
+        with self._db() as conn:
+            self._require_schema(conn)
         with self._db() as conn, conn.transaction():
             conn.execute(
                 "UPDATE qk.sync_run_source rs SET status='unfinished' WHERE status='running' AND "
@@ -103,9 +168,17 @@ class PostgresSyncStore:
                 "AND NOT EXISTS(SELECT 1 FROM qk.sync_run_source s WHERE s.run_id=r.run_id AND s.status='running')"
             )
             conn.execute(
-                "INSERT INTO qk.sync_run(run_id,trigger,target,rules_version,chunking_version,index_version,status) "
-                "VALUES (%s,%s,%s,%s,%s,%s,'running')",
-                (run.run_id, run.trigger, run.target, run.rules_version, run.chunking_version, run.index_version),
+                "INSERT INTO qk.sync_run(run_id,trigger,target,rules_version,chunking_version,index_version,"
+                "status,kind) VALUES (%s,%s,%s,%s,%s,%s,'running',%s)",
+                (
+                    run.run_id,
+                    run.trigger,
+                    run.target,
+                    run.rules_version,
+                    run.chunking_version,
+                    run.index_version,
+                    getattr(run, "kind", "sync"),
+                ),
             )
             for name, kind in zip(source_names, run.source_kinds, strict=True):
                 conn.execute(
@@ -337,6 +410,7 @@ class PostgresSyncStore:
         from dataclasses import replace
 
         with self._db() as conn:
+            self._require_schema(conn)
             if not conn.execute("SELECT pg_try_advisory_lock(hashtext('qk-sync-index')::bigint)").fetchone()[0]:
                 return replace(self._activation_check(conn, version), failed_conditions=("sync_running",))
             try:
@@ -345,6 +419,12 @@ class PostgresSyncStore:
                     if not check.failed_conditions:
                         conn.execute(
                             "UPDATE qk.index_version SET status='active',activated_at=now() WHERE id=%s", (version,)
+                        )
+                        # 첫 활성화도 전환 기록을 남긴다(QK-STO-002 FR-002, research R-07).
+                        conn.execute(
+                            "INSERT INTO qk.index_transition(kind,version,before_active,after_active,documents,chunks,"
+                            "target) VALUES ('first_activation',%s,NULL,%s,%s,%s,%s)",
+                            (version, version, check.documents, check.chunks, self.target),
                         )
                     return check
             finally:
